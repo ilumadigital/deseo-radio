@@ -63,10 +63,10 @@ function deseo_t(string $key): string {
             'lang.switch_to_el' => 'Ελληνικά',
             'lang.switch_to_en' => 'English',
 
-            'meta.title' => 'Deseo Radio | Live House Music 24/7',
-            'meta.description' => 'Άκου live Deseo Radio 24/7: House, Afro House, Deep House και electronic music. Δες ποιος DJ είναι on air, το σημερινό πρόγραμμα και το weekly airplay.',
-            'meta.keywords' => 'Deseo Radio, house music, afro house, deep house, live radio, Ελλάδα',
-            'schema.description' => 'Online ραδιοφωνικός σταθμός με House, Afro House και electronic music, 24/7.',
+            'meta.title' => 'Deseo Radio | Το Soundtrack της ζωής σου! | House Music',
+            'meta.description' => 'Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.',
+            'meta.keywords' => 'ραδιόφωνο, δεσεο, deseo, radio, house music',
+            'schema.description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
 
             'hero.sr_title' => 'Deseo Radio: Το soundtrack της ζωής σου',
             'hero.now_playing' => 'ΤΩΡΑ ΠΑΙΖΕΙ',
@@ -147,10 +147,10 @@ function deseo_t(string $key): string {
             'lang.switch_to_el' => 'Greek',
             'lang.switch_to_en' => 'English',
 
-            'meta.title' => 'Deseo Radio | Live House Music 24/7',
-            'meta.description' => 'Listen to Deseo Radio live 24/7: House, Afro House, Deep House and electronic music. See who is on air, today’s schedule and the weekly airplay chart.',
-            'meta.keywords' => 'Deseo Radio, house music, afro house, deep house, live radio, Greece',
-            'schema.description' => 'Online radio station broadcasting House, Afro House and electronic music 24/7.',
+            'meta.title' => 'Deseo Radio | Το Soundtrack της ζωής σου! | House Music',
+            'meta.description' => 'Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.',
+            'meta.keywords' => 'ραδιόφωνο, δεσεο, deseo, radio, house music',
+            'schema.description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
 
             'hero.sr_title' => 'Deseo Radio: The soundtrack of your life',
             'hero.now_playing' => 'NOW PLAYING',
