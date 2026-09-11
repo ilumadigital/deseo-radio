@@ -1,7 +1,9 @@
 <?php
-$meta_title = $meta_title ?? 'Deseo Radio | House Music, Live DJs & Non-Stop Vibes';
-$meta_desc = $meta_desc ?? 'Άκου live το Deseo Radio: House, Afro House, Deep House και electronic music, 24/7. Live DJs, πρόγραμμα και weekly airplay.';
-$meta_keywords = $meta_keywords ?? 'Deseo Radio, house music, afro house, deep house, live radio, Greece';
+require_once __DIR__ . '/i18n.php';
+
+$meta_title = $meta_title ?? deseo_t('meta.title');
+$meta_desc = $meta_desc ?? deseo_t('meta.description');
+$meta_keywords = $meta_keywords ?? deseo_t('meta.keywords');
 
 $assetFiles = [
     __DIR__ . '/../assets/css/style.css',
@@ -23,34 +25,39 @@ if (!headers_sent()) {
 }
 ?>
 <!doctype html>
-<html lang="el" class="no-js">
+<html lang="<?= deseo_e(deseo_lang()) ?>" class="no-js">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#090909">
     <meta name="color-scheme" content="dark">
-    <meta name="description" content="<?= htmlspecialchars($meta_desc, ENT_QUOTES, 'UTF-8') ?>">
-    <meta name="keywords" content="<?= htmlspecialchars($meta_keywords, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="description" content="<?= deseo_e($meta_desc) ?>">
+    <meta name="keywords" content="<?= deseo_e($meta_keywords) ?>">
     <meta name="robots" content="index,follow,max-image-preview:large">
     <meta name="application-name" content="Deseo Radio">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Deseo Radio">
 
-    <title><?= htmlspecialchars($meta_title, ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= deseo_e($meta_title) ?></title>
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Deseo Radio">
-    <meta property="og:title" content="<?= htmlspecialchars($meta_title, ENT_QUOTES, 'UTF-8') ?>">
-    <meta property="og:description" content="<?= htmlspecialchars($meta_desc, ENT_QUOTES, 'UTF-8') ?>">
-    <meta property="og:url" content="https://deseoradio.com/">
+    <meta property="og:title" content="<?= deseo_e($meta_title) ?>">
+    <meta property="og:description" content="<?= deseo_e($meta_desc) ?>">
+    <meta property="og:url" content="<?= deseo_e(deseo_canonical_url()) ?>">
     <meta property="og:image" content="https://deseoradio.com/assets/img/bg.png">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="canonical" href="https://deseoradio.com/">
+    <link rel="canonical" href="<?= deseo_e(deseo_canonical_url()) ?>">
+    <link rel="alternate" hreflang="el" href="https://deseoradio.com/">
+    <link rel="alternate" hreflang="en" href="https://deseoradio.com/?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://deseoradio.com/">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap">
+
     <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= $assetVersion ?>">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png?v=<?= $assetVersion ?>">
     <link rel="manifest" href="/manifest.json?v=<?= $assetVersion ?>">
@@ -69,7 +76,7 @@ if (!headers_sent()) {
       "url":"https://deseoradio.com/",
       "logo":"https://deseoradio.com/assets/img/deseoradio-logo.png",
       "image":"https://deseoradio.com/assets/img/bg.png",
-      "description":"House, Afro House and electronic music radio station broadcasting 24/7.",
+      "description":<?= json_encode(deseo_t('schema.description'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
       "email":"radio@iluma.gr",
       "telephone":"+302103000825",
       "address":{
@@ -87,4 +94,4 @@ if (!headers_sent()) {
     </script>
 </head>
 <body>
-<a class="skip-link" href="#main-content">Μετάβαση στο περιεχόμενο</a>
+<a class="skip-link" href="#main-content" data-i18n="skip.content"><?= deseo_e(deseo_t('skip.content')) ?></a>
