@@ -1,11 +1,48 @@
 <?php
 // iluma/connection.php
-// Database credentials are loaded from environment variables or a local .env file.
+// Database credentials are loaded from environment variables or from a .env
+// file kept outside the deploy directory whenever possible.
+//
+// Recommended Hostinger layout:
+//   domains/example.com/.env
+//   domains/example.com/public_html/
+//
+// Keeping .env one level above public_html means Git redeploys of public_html
+// cannot overwrite or remove production credentials.
 
 $projectRoot = dirname(__DIR__);
-$envFile = $projectRoot . '/.env';
+$domainRoot = dirname($projectRoot);
 
-if (is_file($envFile) && is_readable($envFile)) {
+$envCandidates = [];
+
+// Optional explicit path, useful on hosts that expose environment variables.
+$customEnvFile = getenv('DESEO_ENV_FILE');
+if ($customEnvFile !== false && trim($customEnvFile) !== '') {
+    $envCandidates[] = trim($customEnvFile);
+}
+
+// Preferred: outside public_html / deployment target.
+$envCandidates[] = $domainRoot . '/.env';
+
+// Legacy fallback: inside project root. Supported for compatibility, but the
+// parent-directory location above is safer for production deployments.
+$envCandidates[] = $projectRoot . '/.env';
+
+// Optional account-home fallback.
+$homeDir = getenv('HOME');
+if ($homeDir !== false && trim($homeDir) !== '') {
+    $envCandidates[] = rtrim($homeDir, '/\\') . '/.deseo-radio.env';
+}
+
+$envFile = null;
+foreach (array_unique($envCandidates) as $candidate) {
+    if (is_file($candidate) && is_readable($candidate)) {
+        $envFile = $candidate;
+        break;
+    }
+}
+
+if ($envFile !== null) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         $line = trim($line);
@@ -37,7 +74,9 @@ $db_user = getenv('DB_USER') ?: '';
 $db_pass = getenv('DB_PASS') ?: '';
 
 if ($db_host === '' || $db_name === '' || $db_user === '') {
-    throw new RuntimeException('Database configuration is missing. Configure DB_HOST, DB_NAME, DB_USER and DB_PASS.');
+    throw new RuntimeException(
+        'Database configuration is missing. Configure DB_HOST, DB_NAME, DB_USER and DB_PASS.'
+    );
 }
 
 try {
