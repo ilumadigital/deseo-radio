@@ -224,3 +224,39 @@ button{cursor:pointer}
 .header-actions .icon-link{background:rgba(8,8,8,.38);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .listen-button{box-shadow:0 8px 28px rgba(202,255,0,.14)}
 @media(max-width:760px){.header-actions .icon-link{display:grid}.listen-button{display:none}.header-actions{gap:7px}.site-header{background:linear-gradient(to bottom,rgba(0,0,0,.78),transparent)}}
+
+
+/* Deseo minimal floating header */
+.deseo-header{
+  padding:18px 0;
+  background:linear-gradient(to bottom,rgba(0,0,0,.78) 0%,rgba(0,0,0,.38) 55%,transparent 100%);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  pointer-events:none;
+}
+.deseo-header-inner{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.deseo-brand,.deseo-header-actions{pointer-events:auto}
+.deseo-brand img{width:158px;height:auto;filter:drop-shadow(0 8px 22px rgba(0,0,0,.55))}
+.deseo-header-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.deseo-live-pill{
+  display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;
+  border:1px solid rgba(255,255,255,.12);border-radius:999px;
+  background:rgba(8,8,8,.42);color:#fff;font-size:10px;font-weight:900;
+  letter-spacing:.16em;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:background .2s,border-color .2s,transform .2s
+}
+.deseo-live-pill:hover{background:rgba(202,255,0,.12);border-color:rgba(202,255,0,.28);transform:translateY(-1px)}
+.deseo-live-dot{width:7px;height:7px;border-radius:50%;background:#caff00;box-shadow:0 0 0 0 rgba(202,255,0,.5);animation:pulse 2s infinite}
+.deseo-social{
+  width:40px;height:40px;border-color:rgba(255,255,255,.12);
+  background:rgba(8,8,8,.42);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:background .2s,border-color .2s,transform .2s
+}
+.deseo-social:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-1px)}
+.gsap-scroll-indicator .fa-chevron-down:before{content:"⌄";font-family:Arial,sans-serif;font-style:normal;font-size:22px;color:#fff}
+@media(max-width:760px){
+  .deseo-header{padding:12px 0}
+  .deseo-brand img{width:128px}
+  .deseo-live-pill{height:36px;padding:0 11px}
+  .deseo-social{display:grid!important;width:36px;height:36px}
+}
