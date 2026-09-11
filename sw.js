@@ -1,56 +1,101 @@
-/* =========================================================================
-   DESEO RADIO - MASTER COMBINED SERVICE WORKER (PWA + WEBPUSHR)
-========================================================================= */
-const CACHE_NAME = 'deseo-pwa-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/assets/css/style.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+/* Deseo Radio — resilient, update-first service worker */
+var VERSION = '1';
+try {
+  VERSION = new URL(self.location.href).searchParams.get('v') || VERSION;
+} catch (e) {}
+
+var CACHE_NAME = 'deseo-runtime-' + VERSION;
+var OFFLINE_URL = '/offline.html';
+var PRECACHE = [
+  OFFLINE_URL,
+  '/assets/img/deseoradio-logo.png',
+  '/assets/img/favicon.png',
+  '/assets/img/bg.png'
 ];
 
-// Install Event - Caching the key shell assets
-self.addEventListener('install', event => {
+self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => {
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME)
+      .then(function (cache) {
+        return Promise.all(PRECACHE.map(function (url) {
+          return cache.add(url).catch(function () { return null; });
+        }));
+      })
+      .then(function () { return self.skipWaiting(); })
   );
 });
 
-// Activate Event - Cleaning old caches if any
-self.addEventListener('activate', event => {
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+    caches.keys()
+      .then(function (keys) {
+        return Promise.all(keys.map(function (key) {
+          if (key.indexOf('deseo-runtime-') === 0 && key !== CACHE_NAME) {
+            return caches.delete(key);
           }
-        })
-      );
-    }).then(() => {
-      return self.clients.claim();
-    })
+          return null;
+        }));
+      })
+      .then(function () { return self.clients.claim(); })
   );
 });
 
-// Fetch Event - Serve assets from cache or network fallback
-self.addEventListener('fetch', event => {
-  // Παράκαμψη για τα requests του Webpushr ώστε να μην μπλοκάρονται από το cache
-  if (event.request.url.includes('webpushr.com') || event.request.url.includes('iradios.gr')) {
+function networkFirst(request) {
+  return fetch(request, { cache: 'no-cache' })
+    .then(function (response) {
+      if (response && response.ok) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function (cache) { cache.put(request, copy); });
+      }
+      return response;
+    })
+    .catch(function () {
+      return caches.match(request);
+    });
+}
+
+function staleWhileRevalidate(request) {
+  return caches.match(request).then(function (cached) {
+    var update = fetch(request).then(function (response) {
+      if (response && response.ok) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function (cache) { cache.put(request, copy); });
+      }
+      return response;
+    }).catch(function () { return cached; });
+
+    return cached || update;
+  });
+}
+
+self.addEventListener('fetch', function (event) {
+  var request = event.request;
+  if (request.method !== 'GET') return;
+
+  var url;
+  try { url = new URL(request.url); } catch (e) { return; }
+
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.indexOf('/iluma/') === 0) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request, { cache: 'no-cache' })
+        .catch(function () {
+          return caches.match(request).then(function (cached) {
+            return cached || caches.match(OFFLINE_URL);
+          });
+        })
+    );
     return;
   }
-  
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
-    })
-  );
+
+  if (url.pathname === '/sw.js' || url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  if (/\.(png|jpg|jpeg|webp|svg|ico)$/i.test(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(request));
+  }
 });
