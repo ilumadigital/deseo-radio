@@ -145,7 +145,7 @@ $daysEl = [
             
             <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950">
                 <!-- Native Iframe Player - Always Visible, Zero Hover Interference -->
-                <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" class="w-full h-full object-cover block"></iframe>
+                <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
             </div>
         </div>
 
