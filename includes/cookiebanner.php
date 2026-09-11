@@ -1,121 +1,141 @@
 <script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
+(function () {
+    'use strict';
 
-const consentUpdate = localStorage.getItem('cookieConsent') ? JSON.parse(localStorage.getItem('cookieConsent')) : null;
+    var STORAGE_KEY = 'deseoCookieConsentV2';
 
-if (consentUpdate) {
-    gtag('consent', 'default', consentUpdate);
-} else {
-    gtag('consent', 'default', {
-        'ad_storage': 'denied',
-        'ad_user_data': 'denied',
-        'ad_personalization': 'denied',
-        'analytics_storage': 'denied',
-        'wait_for_update': 500
-    });
-}
+    function safeGet() {
+        try { return window.localStorage.getItem(STORAGE_KEY); } catch (e) { return null; }
+    }
+    function safeSet(value) {
+        try { window.localStorage.setItem(STORAGE_KEY, value); } catch (e) {}
+    }
+    function gtag() {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(arguments);
+    }
+    function loadWebpushr() {
+        if (window.__deseoWebpushrLoaded) return;
+        window.__deseoWebpushrLoaded = true;
 
-// Custom Function για την ασφαλή ενεργοποίηση του Webpushr κατόπιν συγκατάθεσης
-function initWebpushr() {
-    if(typeof window.webpushrInitDone !== 'undefined') return;
-    window.webpushrInitDone = true;
-    
-    (function(w,d,s,i) {
-        if(typeof(w.webpushr)!=='undefined') return;
-        w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
-        var js, fjs = d.getElementsByTagName(s)[0];
-        js = d.createElement(s); js.id = i; js.async=1;
-        js.src = "https://cdn.webpushr.com/app.min.js";
-        fjs.parentNode.insertBefore(js,fjs);
-    }(window,document,'script','webpushr-jssdk'));
-    
-    webpushr('setup', {'key':'BKgQeRKClX2ZYF6gJkeWih74UwVtgQ0F22w6ARHnINyalkH8KVKUFoGicN0aUEZAIsCc3cghGj3x3Daw85_cw8U' });
-}
+        window.webpushr = window.webpushr || function () {
+            (window.webpushr.q = window.webpushr.q || []).push(arguments);
+        };
+
+        var js = document.createElement('script');
+        js.id = 'webpushr-jssdk';
+        js.async = true;
+        js.src = 'https://cdn.webpushr.com/app.min.js';
+        js.onerror = function () { window.__deseoWebpushrLoaded = false; };
+        (document.head || document.documentElement).appendChild(js);
+
+        window.webpushr('setup', {
+            key: 'BKgQeRKClX2ZYF6gJkeWih74UwVtgQ0F22w6ARHnINyalkH8KVKUFoGicN0aUEZAIsCc3cghGj3x3Daw85_cw8U'
+        });
+    }
+
+    var raw = safeGet();
+    var consent = null;
+    if (raw) {
+        try { consent = JSON.parse(raw); } catch (e) { consent = null; }
+    }
+
+    var defaults = consent || {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied'
+    };
+
+    gtag('consent', 'default', defaults);
+
+    window.DeseoConsent = {
+        current: defaults,
+        save: function (analytics, marketing) {
+            var next = {
+                analytics_storage: analytics ? 'granted' : 'denied',
+                ad_storage: marketing ? 'granted' : 'denied',
+                ad_user_data: marketing ? 'granted' : 'denied',
+                ad_personalization: marketing ? 'granted' : 'denied'
+            };
+            this.current = next;
+            safeSet(JSON.stringify(next));
+            gtag('consent', 'update', next);
+            if (analytics) loadWebpushr();
+        },
+        loadWebpushr: loadWebpushr
+    };
+
+    if (consent && consent.analytics_storage === 'granted') {
+        loadWebpushr();
+    }
+}());
 </script>
 
-<div id="cookie-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:max-w-md bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-[2rem] shadow-2xl z-[9999] transform translate-y-40 opacity-0 transition-all duration-700 pointer-events-none">
-    <div class="flex items-start gap-4">
-        <div class="text-[#ccff00] text-2xl pt-1">
-            <i class="fa-solid fa-cookie-bite"></i>
-        </div>
-        <div class="space-y-3">
-            <h4 class="text-white font-bold tracking-wide">Cookie Preferences</h4>
-            <p class="text-zinc-400 text-xs leading-relaxed">
-                Χρησιμοποιούμε cookies για να βελτιώσουμε την ακουστική σου εμπειρία και να αναλύουμε την επισκεψιμότητά μας σύμφωνα με το Google Consent Mode v2.
-            </p>
-            
-            <div id="cookie-options" class="hidden space-y-2 pt-2 border-t border-white/5">
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-zinc-300">Απαραίτητα (Λειτουργικότητα)</span>
-                    <span class="text-[#ccff00] uppercase text-[10px] font-bold">Πάντα Ενεργά</span>
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-zinc-300">Στατιστικά & Analytics</span>
-                    <input type="checkbox" id="consent-analytics" checked class="accent-[#ccff00]">
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-zinc-300">Διαφήμιση & Προσωποποίηση</span>
-                    <input type="checkbox" id="consent-marketing" checked class="accent-[#ccff00]">
-                </div>
-            </div>
+<div class="cookie-banner" id="cookie-banner" role="dialog" aria-modal="false" aria-labelledby="cookie-title" hidden>
+    <div class="cookie-icon" aria-hidden="true">◌</div>
+    <div class="cookie-content">
+        <h2 id="cookie-title">Your privacy, your choice.</h2>
+        <p>Χρησιμοποιούμε απαραίτητα local storage για τη λειτουργία του site και, μόνο με επιλογή σου, analytics / marketing services.</p>
 
-            <div class="flex flex-wrap gap-2 pt-2">
-                <button id="btn-accept-all" class="px-4 py-2 bg-[#ccff00] text-black font-bold text-xs rounded-xl hover:bg-white transition-colors uppercase tracking-wider">Αποδοχή Όλων</button>
-                <button id="btn-customize" class="px-3 py-2 bg-white/5 border border-white/10 text-white font-medium text-xs rounded-xl hover:bg-white/10 transition-colors uppercase tracking-wider">Ρυθμίσεις</button>
-                <button id="btn-reject" class="px-3 py-2 text-zinc-500 hover:text-white transition-colors text-xs uppercase tracking-wider">Απόρριψη</button>
-            </div>
+        <div class="cookie-options" id="cookie-options" hidden>
+            <label><span>Analytics & push services</span><input type="checkbox" id="consent-analytics"></label>
+            <label><span>Marketing & personalization</span><input type="checkbox" id="consent-marketing"></label>
+        </div>
+
+        <div class="cookie-actions">
+            <button class="button button-primary" type="button" id="cookie-accept">Accept</button>
+            <button class="button button-ghost" type="button" id="cookie-customize">Customize</button>
+            <button class="text-button" type="button" id="cookie-reject">Reject optional</button>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const banner = document.getElementById('cookie-banner');
-    const optDiv = document.getElementById('cookie-options');
-    
-    // Αν ο χρήστης έχει ήδη αποδεχτεί cookies στο παρελθόν, τρέξε το Webpushr αμέσως
-    if (localStorage.getItem('cookieConsent')) {
-        const currentConsent = JSON.parse(localStorage.getItem('cookieConsent'));
-        if (currentConsent.analytics_storage === 'granted') {
-            initWebpushr();
-        }
-    } else {
-        setTimeout(() => {
-            banner.classList.remove('translate-y-40', 'opacity-0', 'pointer-events-none');
-        }, 2000);
+(function () {
+    'use strict';
+
+    function ready(fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
     }
 
-    document.getElementById('btn-customize').addEventListener('click', () => {
-        optDiv.classList.toggle('hidden');
-    });
+    ready(function () {
+        var banner = document.getElementById('cookie-banner');
+        var options = document.getElementById('cookie-options');
+        var analytics = document.getElementById('consent-analytics');
+        var marketing = document.getElementById('consent-marketing');
+        var accept = document.getElementById('cookie-accept');
+        var reject = document.getElementById('cookie-reject');
+        var customize = document.getElementById('cookie-customize');
 
-    function saveConsent(analytics, marketing) {
-        const consentObject = {
-            'analytics_storage': analytics ? 'granted' : 'denied',
-            'ad_storage': marketing ? 'granted' : 'denied',
-            'ad_user_data': marketing ? 'granted' : 'denied',
-            'ad_personalization': marketing ? 'granted' : 'denied'
-        };
-        localStorage.setItem('cookieConsent', JSON.stringify(consentObject));
-        gtag('consent', 'update', consentObject);
-        banner.classList.add('translate-y-40', 'opacity-0', 'pointer-events-none');
-        
-        if (analytics) {
-            initWebpushr();
-        }
-    }
+        var hasChoice = false;
+        try { hasChoice = !!window.localStorage.getItem('deseoCookieConsentV2'); } catch (e) {}
 
-    document.getElementById('btn-reject').addEventListener('click', () => saveConsent(false, false));
-    
-    document.getElementById('btn-accept-all').addEventListener('click', () => {
-        if(!optDiv.classList.contains('hidden')) {
-            const ana = document.getElementById('consent-analytics').checked;
-            const mar = document.getElementById('consent-marketing').checked;
-            saveConsent(ana, mar);
-        } else {
-            saveConsent(true, true);
+        if (!hasChoice) {
+            banner.hidden = false;
+            window.setTimeout(function () { banner.className += ' is-visible'; }, 200);
         }
+
+        function closeBanner() {
+            banner.className = banner.className.replace(' is-visible', '');
+            window.setTimeout(function () { banner.hidden = true; }, 260);
+        }
+
+        customize.addEventListener('click', function () {
+            options.hidden = !options.hidden;
+        });
+
+        accept.addEventListener('click', function () {
+            if (options.hidden) window.DeseoConsent.save(true, true);
+            else window.DeseoConsent.save(analytics.checked, marketing.checked);
+            closeBanner();
+        });
+
+        reject.addEventListener('click', function () {
+            window.DeseoConsent.save(false, false);
+            closeBanner();
+        });
     });
-});
+}());
 </script>
