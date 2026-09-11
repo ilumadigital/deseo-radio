@@ -1,0 +1,49 @@
+name: Deseo quality check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            php -l "$file"
+          done < <(find . -type f -name '*.php' -print0)
+
+      - name: JavaScript syntax
+        run: node --check sw.js
+
+      - name: Critical files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.php
+          test -f assets/css/style.css
+          test -f iluma/connection.php
+          test -f iluma/db.php
+          test -f manifest.json
+          test -f offline.html
+          test ! -f .env
+
+      - name: No plaintext production env in Git
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "A production .env file is tracked by Git."
+            exit 1
+          fi
