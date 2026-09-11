@@ -1,0 +1,12 @@
+# Local / production secrets
+.env
+.env.*
+!.env.example
+
+# Local temporary files
+.mytmp/
+*.log
+.DS_Store
+
+# Local Tailwind standalone binary (runtime uses assets/css/style.css)
+tailwindcss
