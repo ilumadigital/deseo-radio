@@ -127,14 +127,14 @@ $daysEl = [
 <main id="main-content" class="relative w-full min-h-screen flex flex-col items-center justify-center pt-36 pb-24 overflow-hidden">
     
     <!-- Background Gradient Setup -->
-    <div class="absolute inset-0 z-[-1] pointer-events-none select-none">
-        <img src="/assets/img/bg.png" alt="Deseo Radio Deep Sunset Cover" class="w-full h-full object-cover filter brightness-[0.6] contrast-[1.05]">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
+    <div class="deseo-hero-background pointer-events-none select-none" aria-hidden="true">
+        <img src="/assets/img/bg.png" alt="" class="deseo-hero-background-image">
+        <div class="deseo-hero-background-dim"></div>
+        <div class="deseo-hero-background-gradient"></div>
     </div>
 
     <!-- 3-Column Pure Grid (Enforced Max Width at 1600px for Cinematic Desktops) -->
-    <section class="w-full max-w-[1600px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 items-start mt-6">
+    <section class="deseo-hero-content w-full max-w-[1600px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 items-start mt-6">
         
         <!-- Deck 01: NOW PLAYING (Native Iframe Player) -->
         <div class="gsap-hero-left w-full flex flex-col items-center">
