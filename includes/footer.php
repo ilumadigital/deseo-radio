@@ -1,55 +1,37 @@
 <footer class="site-footer deseo-footer">
-    <div class="deseo-footer-glow" aria-hidden="true"></div>
+    <div class="deseo-footer-inner">
+        <div class="deseo-footer-main">
+            <div class="deseo-footer-identity">
+                <img class="deseo-footer-logo" src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+                <p class="deseo-footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
 
-    <div class="footer-shell">
-        <div class="deseo-footer-top">
-            <div class="deseo-footer-brand">
-                <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
-                <p data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
-            </div>
-
-            <div class="deseo-footer-actions">
-                <a class="deseo-footer-live" href="#main-content">
-                    <span class="deseo-live-dot"></span>
-                    <span>LIVE</span>
-                </a>
-
-                <a class="deseo-footer-social" href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                    Instagram ↗
-                </a>
-                <a class="deseo-footer-social" href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                    Facebook ↗
+                <a class="deseo-footer-live-link" href="#main-content">
+                    <span class="deseo-live-dot" aria-hidden="true"></span>
+                    <span>LIVE RADIO</span>
                 </a>
             </div>
-        </div>
 
-        <div class="deseo-footer-divider"></div>
+            <div class="deseo-footer-nav">
+                <div class="deseo-footer-group">
+                    <span class="deseo-footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
+                    <a href="#main-content" data-i18n="footer.live_player"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
+                    <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
+                    <a href="#airplay" data-i18n="footer.weekly_airplay"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
+                </div>
 
-        <div class="deseo-footer-grid">
-            <div class="deseo-footer-column">
-                <span class="footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
-                <a href="#main-content" data-i18n="footer.live_player"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
-                <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
-                <a href="#airplay" data-i18n="footer.weekly_airplay"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
-            </div>
+                <div class="deseo-footer-group">
+                    <span class="deseo-footer-label" data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
+                    <a href="tel:+302103000825">+30 210 300 0825</a>
+                    <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
+                    <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
+                </div>
 
-            <div class="deseo-footer-column">
-                <span class="footer-label" data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
-                <a href="tel:+302103000825">+30 210 300 0825</a>
-                <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
-                <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
-            </div>
-
-            <div class="deseo-footer-column">
-                <span class="footer-label" data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
-                <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
-                <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
-                <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer">ILUMA Radios ↗</a>
-            </div>
-
-            <div class="deseo-footer-signoff">
-                <span>DESEO RADIO</span>
-                <strong>HOUSE<br>MUSIC<br>24/7</strong>
+                <div class="deseo-footer-group">
+                    <span class="deseo-footer-label" data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
+                    <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+                    <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+                    <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer">ILUMA Radios ↗</a>
+                </div>
             </div>
         </div>
 
