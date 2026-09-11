@@ -1,18 +1,26 @@
 {
+  "id": "/",
   "name": "Deseo Radio",
   "short_name": "Deseo",
-  "description": "The Soundtrack of your Life! Premium House Music Station.",
-  "start_url": "/",
+  "description": "The Soundtrack of your Life — House music live from Athens.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#050505",
-  "orientation": "portrait",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#090909",
+  "theme_color": "#090909",
+  "orientation": "any",
+  "categories": ["music", "entertainment"],
   "icons": [
     {
       "src": "/assets/img/favicon.png",
-      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/img/favicon.png",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
