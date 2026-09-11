@@ -118,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
 
 ?>
 
-<h1 class="sr-only"><?= deseo_e(deseo_t('hero.sr_title')) ?></h1>
+<h1 class="sr-only" data-i18n="hero.sr_title"><?= deseo_e(deseo_t('hero.sr_title')) ?></h1>
 
 <!-- =========================================================================
      2. MASTER HERO LAYER (Cinematic 3-Column Console)
@@ -139,7 +139,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="gsap-hero-left w-full flex flex-col items-center">
             <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
                 <span class="w-1.5 h-1.5 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00] animate-pulse"></span>
-                # <?= deseo_e(deseo_t('hero.now_playing')) ?>
+                # <span data-i18n="hero.now_playing"><?= deseo_e(deseo_t('hero.now_playing')) ?></span>
             </div>
             
             <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950">
@@ -152,7 +152,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="gsap-hero-left w-full flex flex-col items-center" style="animation-delay: 150ms;">
             <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
                 <span class="w-1.5 h-1.5 rounded-full <?= $live_dj ? 'bg-[#ccff00] shadow-[0_0_8px_#ccff00]' : 'bg-zinc-600' ?>"></span>
-                # <?= deseo_e(deseo_t('hero.now_on_air')) ?>
+                # <span data-i18n="hero.now_on_air"><?= deseo_e(deseo_t('hero.now_on_air')) ?></span>
             </div>
             
             <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950 flex flex-col justify-end">
@@ -161,15 +161,15 @@ require_once __DIR__ . '/includes/header.php';
                     <img src="<?= htmlspecialchars($live_dj['photo_path']) ?>" alt="<?= htmlspecialchars($live_dj['dj_name']) ?>" class="absolute inset-0 w-full h-full object-cover">
                     <!-- Elegant Bottom Slate Info -->
                     <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/70 to-transparent w-full">
-                        <span class="text-[#ccff00] text-[9px] uppercase tracking-[0.3em] font-bold block mb-1"><?= deseo_e(deseo_t('hero.live_broadcast')) ?></span>
+                        <span class="text-[#ccff00] text-[9px] uppercase tracking-[0.3em] font-bold block mb-1" data-i18n="hero.live_broadcast"><?= deseo_e(deseo_t('hero.live_broadcast')) ?></span>
                         <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate"><?= htmlspecialchars($live_dj['dj_name']) ?></h2>
                     </div>
                 <?php else: ?>
                     <!-- Fallback / Auto Mix Graphics Layout -->
                     <img src="/assets/img/bg.png" alt="<?= deseo_e(deseo_t('hero.auto_dj_alt')) ?>" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
                     <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/80 to-transparent w-full">
-                        <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1"><?= deseo_e(deseo_t('hero.non_stop_mix')) ?></span>
-                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight"><?= deseo_e(deseo_t('hero.auto_dj')) ?></h2>
+                        <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1" data-i18n="hero.non_stop_mix"><?= deseo_e(deseo_t('hero.non_stop_mix')) ?></span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight" data-i18n="hero.auto_dj"><?= deseo_e(deseo_t('hero.auto_dj')) ?></h2>
                     </div>
                 <?php endif; ?>
             </div>
@@ -178,7 +178,7 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Deck 03: SPONSOR (Bespoke Agency Banner) -->
         <div class="gsap-hero-right w-full flex flex-col items-center">
             <div class="mb-5 flex items-center gap-2.5 opacity-40 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
-                # <?= deseo_e(deseo_t('hero.sponsor')) ?>
+                # <span data-i18n="hero.sponsor"><?= deseo_e(deseo_t('hero.sponsor')) ?></span>
             </div>
             
             <a href="https://iluma.gr" target="_blank" rel="noopener" class="block w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 transition-all duration-500 hover:scale-[1.015] hover:border-white/10 bg-zinc-950">
@@ -200,10 +200,10 @@ require_once __DIR__ . '/includes/header.php';
         <div class="shell">
             <div class="section-heading reveal">
                 <div>
-                    <span class="eyebrow"><?= deseo_e(deseo_t('program.eyebrow')) ?></span>
-                    <h2><?= deseo_e(deseo_t('program.heading')) ?> <em><?= deseo_e(deseo_t('program.heading_em')) ?></em></h2>
+                    <span class="eyebrow" data-i18n="program.eyebrow"><?= deseo_e(deseo_t('program.eyebrow')) ?></span>
+                    <h2><span data-i18n="program.heading"><?= deseo_e(deseo_t('program.heading')) ?></span> <em data-i18n="program.heading_em"><?= deseo_e(deseo_t('program.heading_em')) ?></em></h2>
                 </div>
-                <p><?= deseo_e(deseo_t('program.description')) ?></p>
+                <p data-i18n="program.description"><?= deseo_e(deseo_t('program.description')) ?></p>
             </div>
 
             <div class="schedule-grid">
@@ -220,7 +220,7 @@ require_once __DIR__ . '/includes/header.php';
                                  data-fallback="/assets/img/bg.png"
                                  alt="<?= deseo_e($show['dj_name']) ?>">
                             <div class="schedule-info">
-                                <span><?= deseo_e($isLiveRow ? deseo_t('program.on_air_now') : deseo_t('program.live_set')) ?></span>
+                                <span data-i18n="<?= $isLiveRow ? 'program.on_air_now' : 'program.live_set' ?>"><?= deseo_e($isLiveRow ? deseo_t('program.on_air_now') : deseo_t('program.live_set')) ?></span>
                                 <h3><?= deseo_e($show['dj_name']) ?></h3>
                             </div>
                             <?php if ($isLiveRow): ?><i class="live-ring" aria-hidden="true"></i><?php endif; ?>
@@ -230,8 +230,8 @@ require_once __DIR__ . '/includes/header.php';
                     <article class="empty-state reveal">
                         <span class="empty-icon">24/7</span>
                         <div>
-                            <h3><?= deseo_e(deseo_t('program.empty_title')) ?></h3>
-                            <p><?= deseo_e($dataStatus === 'fallback' ? deseo_t('program.empty_fallback') : deseo_t('program.empty_none')) ?></p>
+                            <h3 data-i18n="program.empty_title"><?= deseo_e(deseo_t('program.empty_title')) ?></h3>
+                            <p data-i18n="<?= $dataStatus === 'fallback' ? 'program.empty_fallback' : 'program.empty_none' ?>"><?= deseo_e($dataStatus === 'fallback' ? deseo_t('program.empty_fallback') : deseo_t('program.empty_none')) ?></p>
                         </div>
                     </article>
                 <?php endif; ?>
@@ -239,7 +239,7 @@ require_once __DIR__ . '/includes/header.php';
 
             <?php if ($next_dj && !$live_dj): ?>
                 <div class="next-show reveal">
-                    <span><?= deseo_e(deseo_t('program.next_live')) ?></span>
+                    <span data-i18n="program.next_live"><?= deseo_e(deseo_t('program.next_live')) ?></span>
                     <strong><?= deseo_e($next_dj['dj_name']) ?></strong>
                     <small><?= deseo_e(deseo_t_day((int)$next_dj['day_of_week'])) ?> · <?= deseo_time($next_dj['start_time']) ?></small>
                 </div>
@@ -251,10 +251,10 @@ require_once __DIR__ . '/includes/header.php';
         <div class="shell">
             <div class="section-heading reveal">
                 <div>
-                    <span class="eyebrow"><?= deseo_e(deseo_t('airplay.eyebrow')) ?></span>
-                    <h2><?= deseo_e(deseo_t('airplay.heading')) ?> <em><?= deseo_e(deseo_t('airplay.heading_em')) ?></em></h2>
+                    <span class="eyebrow" data-i18n="airplay.eyebrow"><?= deseo_e(deseo_t('airplay.eyebrow')) ?></span>
+                    <h2><span data-i18n="airplay.heading"><?= deseo_e(deseo_t('airplay.heading')) ?></span> <em data-i18n="airplay.heading_em"><?= deseo_e(deseo_t('airplay.heading_em')) ?></em></h2>
                 </div>
-                <p><?= deseo_e(deseo_t('airplay.description')) ?></p>
+                <p data-i18n="airplay.description"><?= deseo_e(deseo_t('airplay.description')) ?></p>
             </div>
 
             <div class="airplay-list">
@@ -279,8 +279,8 @@ require_once __DIR__ . '/includes/header.php';
                     <article class="empty-state reveal">
                         <span class="empty-icon">TOP</span>
                         <div>
-                            <h3><?= deseo_e(deseo_t('airplay.empty_title')) ?></h3>
-                            <p><?= deseo_e(deseo_t('airplay.empty_text')) ?></p>
+                            <h3 data-i18n="airplay.empty_title"><?= deseo_e(deseo_t('airplay.empty_title')) ?></h3>
+                            <p data-i18n="airplay.empty_text"><?= deseo_e(deseo_t('airplay.empty_text')) ?></p>
                         </div>
                     </article>
                 <?php endif; ?>
@@ -292,10 +292,10 @@ require_once __DIR__ . '/includes/header.php';
         <div class="shell">
             <div class="section-heading centered reveal">
                 <div>
-                    <span class="eyebrow"><?= deseo_e(deseo_t('partners.eyebrow')) ?></span>
-                    <h2><?= deseo_e(deseo_t('partners.heading')) ?> <em><?= deseo_e(deseo_t('partners.heading_em')) ?></em></h2>
+                    <span class="eyebrow" data-i18n="partners.eyebrow"><?= deseo_e(deseo_t('partners.eyebrow')) ?></span>
+                    <h2><span data-i18n="partners.heading"><?= deseo_e(deseo_t('partners.heading')) ?></span> <em data-i18n="partners.heading_em"><?= deseo_e(deseo_t('partners.heading_em')) ?></em></h2>
                 </div>
-                <p><?= deseo_e(deseo_t('partners.description')) ?></p>
+                <p data-i18n="partners.description"><?= deseo_e(deseo_t('partners.description')) ?></p>
             </div>
 
             <?php
@@ -325,12 +325,12 @@ require_once __DIR__ . '/includes/header.php';
     <section class="advertise">
         <div class="shell advertise-card reveal">
             <div>
-                <span class="eyebrow"><?= deseo_e(deseo_t('advertise.eyebrow')) ?></span>
-                <h2><?= deseo_e(deseo_t('advertise.heading')) ?><br><em><?= deseo_e(deseo_t('advertise.heading_em')) ?></em></h2>
+                <span class="eyebrow" data-i18n="advertise.eyebrow"><?= deseo_e(deseo_t('advertise.eyebrow')) ?></span>
+                <h2><span data-i18n="advertise.heading"><?= deseo_e(deseo_t('advertise.heading')) ?></span><br><em data-i18n="advertise.heading_em"><?= deseo_e(deseo_t('advertise.heading_em')) ?></em></h2>
             </div>
             <div class="advertise-copy">
-                <p><?= deseo_e(deseo_t('advertise.text')) ?></p>
-                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
+                <p data-i18n="advertise.text"><?= deseo_e(deseo_t('advertise.text')) ?></p>
+                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer" data-i18n="advertise.cta"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
             </div>
         </div>
     </section>
