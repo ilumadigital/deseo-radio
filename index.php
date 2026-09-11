@@ -119,76 +119,83 @@ $daysEl = [
 ];
 ?>
 
-<main id="main-content">
-    <section class="hero" id="live">
-        <div class="hero-backdrop" aria-hidden="true">
-            <img src="/assets/img/bg.png" alt="">
-            <div class="hero-vignette"></div>
-            <div class="hero-glow hero-glow-one"></div>
-            <div class="hero-glow hero-glow-two"></div>
-        </div>
+<h1 class="sr-only">Deseo Radio: Το Soundtrack της ζωής σου!</h1>
 
-        <div class="shell hero-grid">
-            <div class="hero-copy reveal">
-                <div class="eyebrow"><span class="pulse-dot"></span> Live from Athens · 24/7</div>
-                <h1>The soundtrack<br><em>of your life.</em></h1>
-                <p class="hero-lead">House, Afro House, Deep House και electronic selections — non-stop, με live DJs και curated weekly airplay.</p>
+<!-- =========================================================================
+     2. MASTER HERO LAYER (Cinematic 3-Column Console)
+========================================================================= -->
+<main id="main-content" class="relative w-full min-h-screen flex flex-col items-center justify-center pt-36 pb-24 overflow-hidden">
+    
+    <!-- Background Gradient Setup -->
+    <div class="absolute inset-0 z-[-1] pointer-events-none select-none">
+        <img src="/assets/img/bg.png" alt="Deseo Radio Deep Sunset Cover" class="w-full h-full object-cover filter brightness-[0.6] contrast-[1.05]">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black"></div>
+    </div>
 
-                <div class="hero-actions">
-                    <a class="button button-primary" href="#player">Play Deseo Radio
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
-                    </a>
-                    <a class="button button-ghost" href="#program">Today's program</a>
-                </div>
-
-                <div class="hero-meta">
-                    <div><strong>24/7</strong><span>Broadcast</span></div>
-                    <div><strong>ATH</strong><span>Greece</span></div>
-                    <div><strong>HOUSE</strong><span>Curated sound</span></div>
-                </div>
+    <!-- 3-Column Pure Grid (Enforced Max Width at 1600px for Cinematic Desktops) -->
+    <section class="w-full max-w-[1600px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 items-start mt-6">
+        
+        <!-- Deck 01: NOW PLAYING (Native Iframe Player) -->
+        <div class="gsap-hero-left w-full flex flex-col items-center">
+            <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00] animate-pulse"></span>
+                # NOW PLAYING
             </div>
-
-            <div class="hero-console reveal reveal-delay">
-                <div class="player-card" id="player">
-                    <div class="card-topline">
-                        <span>Deseo Radio Player</span>
-                        <span class="live-chip"><i></i> LIVE</span>
-                    </div>
-                    <div class="player-frame">
-                        <iframe
-                            src="https://play.iradios.gr/widget/deseo-radio?autoplay=false"
-                            title="Deseo Radio live player"
-                            loading="eager"
-                            allow="autoplay; encrypted-media; clipboard-write"
-                            referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                    </div>
-                    <p class="player-note">Αν το autoplay μπλοκαριστεί από τον browser, πάτησε Play μία φορά.</p>
-                </div>
-
-                <aside class="onair-card <?= $live_dj ? 'is-live' : '' ?>">
-                    <div class="onair-art">
-                        <img
-                            src="<?= deseo_e($live_dj['photo_path'] ?? '/assets/img/bg.png') ?>"
-                            data-fallback="/assets/img/bg.png"
-                            alt="<?= deseo_e($live_dj['dj_name'] ?? 'Deseo Auto DJ') ?>">
-                        <div class="onair-shade"></div>
-                        <span class="onair-status"><?= $live_dj ? 'On air now' : 'Non-stop mix' ?></span>
-                    </div>
-                    <div class="onair-copy">
-                        <span class="mini-label">Now on air</span>
-                        <h2><?= deseo_e($live_dj['dj_name'] ?? 'Deseo Auto DJ') ?></h2>
-                        <?php if ($live_dj): ?>
-                            <p><?= deseo_time($live_dj['start_time']) ?> — <?= deseo_time($live_dj['end_time']) ?> · <?= $daysEl[(int)$live_dj['day_of_week']] ?? 'Today' ?></p>
-                        <?php elseif ($next_dj): ?>
-                            <p>Next: <?= deseo_e($next_dj['dj_name']) ?> · <?= $daysEl[(int)$next_dj['day_of_week']] ?? '' ?> <?= deseo_time($next_dj['start_time']) ?></p>
-                        <?php else: ?>
-                            <p>Continuous Deseo selections, 24/7.</p>
-                        <?php endif; ?>
-                    </div>
-                </aside>
+            
+            <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950">
+                <!-- Native Iframe Player - Always Visible, Zero Hover Interference -->
+                <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" class="w-full h-full object-cover block"></iframe>
             </div>
         </div>
+
+        <!-- Deck 02: NOW ON AIR (Dedicated DJ Module) -->
+        <div class="gsap-hero-left w-full flex flex-col items-center" style="animation-delay: 150ms;">
+            <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
+                <span class="w-1.5 h-1.5 rounded-full <?= $live_dj ? 'bg-[#ccff00] shadow-[0_0_8px_#ccff00]' : 'bg-zinc-600' ?>"></span>
+                # NOW ON AIR
+            </div>
+            
+            <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950 flex flex-col justify-end">
+                <?php if($live_dj): ?>
+                    <!-- Live DJ Photo -->
+                    <img src="<?= htmlspecialchars($live_dj['photo_path']) ?>" alt="<?= htmlspecialchars($live_dj['dj_name']) ?>" class="absolute inset-0 w-full h-full object-cover">
+                    <!-- Elegant Bottom Slate Info -->
+                    <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/70 to-transparent w-full">
+                        <span class="text-[#ccff00] text-[9px] uppercase tracking-[0.3em] font-bold block mb-1">Live Broadcast</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate"><?= htmlspecialchars($live_dj['dj_name']) ?></h2>
+                    </div>
+                <?php else: ?>
+                    <!-- Fallback / Auto Mix Graphics Layout -->
+                    <img src="/assets/img/bg.png" alt="Deseo Radio Auto DJ" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
+                    <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/80 to-transparent w-full">
+                        <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1">Non-Stop Mix</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">DESEO AUTO DJ</h2>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Deck 03: SPONSOR (Bespoke Agency Banner) -->
+        <div class="gsap-hero-right w-full flex flex-col items-center">
+            <div class="mb-5 flex items-center gap-2.5 opacity-40 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
+                # SPONSOR
+            </div>
+            
+            <a href="https://iluma.gr" target="_blank" rel="noopener" class="block w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 transition-all duration-500 hover:scale-[1.015] hover:border-white/10 bg-zinc-950">
+                <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="Iluma Digital Agency - Bespoke Production" class="w-full h-full object-cover">
+            </a>
+        </div>
+
     </section>
+
+    <!-- Invisible Scroll Cue -->
+    <div class="gsap-scroll-indicator absolute bottom-6 left-1/2 -translate-x-1/2 opacity-20 pointer-events-none">
+        <i class="fa-solid fa-chevron-down text-sm animate-bounce text-white"></i>
+    </div>
+</main>
+
+
 
     <section class="section section-dark" id="program">
         <div class="shell">
@@ -328,6 +335,4 @@ $daysEl = [
             </div>
         </div>
     </section>
-</main>
-
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
