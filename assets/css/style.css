@@ -265,3 +265,56 @@ button{cursor:pointer}
 
 /* Global typography — Deseo Radio */
 html,body,body *,button,input,select,textarea,optgroup,option{font-family:"Google Sans"!important;font-style:normal}
+
+
+/* Hero background — preserved original look, reliable stacking */
+#main-content{
+  position:relative;
+  isolation:isolate;
+  background:#000;
+}
+.deseo-hero-background{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+}
+.deseo-hero-background-image{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:brightness(.6) contrast(1.05);
+}
+.deseo-hero-background-dim{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.4);
+}
+.deseo-hero-background-gradient{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,rgba(0,0,0,.8) 0%,rgba(0,0,0,0) 50%,#000 100%);
+}
+.deseo-hero-content,
+.gsap-scroll-indicator{
+  position:relative;
+  z-index:1;
+}
+
+/* Header: full-width bar with a 1600px content ceiling */
+.deseo-header{
+  width:100%;
+}
+.deseo-header-inner{
+  width:calc(100% - 48px)!important;
+  max-width:1600px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+@media(max-width:760px){
+  .deseo-header-inner{
+    width:calc(100% - 28px)!important;
+  }
+}
