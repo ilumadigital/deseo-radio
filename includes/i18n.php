@@ -115,8 +115,7 @@ function deseo_t(string $key): string {
             'advertise.text' => 'Σύνδεσε το brand σου με ένα focused κοινό που αγαπά House και electronic music, μέσα από tailor-made radio campaigns της ILUMA.',
             'advertise.cta' => 'Ξεκίνα καμπάνια ↗',
 
-            'footer.tagline' => 'Το soundtrack της ζωής σου.',
-            'footer.subtagline' => 'House music, ζωντανά από την Αθήνα.',
+            'footer.tagline' => 'Το Soundtrack της ζωής σου',
             'footer.contact' => 'Επικοινωνία',
             'footer.follow' => 'Ακολούθησέ μας',
             'footer.listen' => 'Άκου',
@@ -199,8 +198,7 @@ function deseo_t(string $key): string {
             'advertise.text' => 'Connect your brand with a focused audience that loves House and electronic music through tailor-made radio campaigns by ILUMA.',
             'advertise.cta' => 'Start a campaign ↗',
 
-            'footer.tagline' => 'The soundtrack of your life.',
-            'footer.subtagline' => 'House music, live from Athens.',
+            'footer.tagline' => 'The Soundtrack of your life',
             'footer.contact' => 'Contact',
             'footer.follow' => 'Follow',
             'footer.listen' => 'Listen',
