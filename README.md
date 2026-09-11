@@ -19,7 +19,7 @@ Key functionality:
 - Displays the station's ranked **Airplay Top 10** with artwork and Spotify links.
 - Presents distribution/network partners such as TuneIn, Online Radio Box, Streema, VRadio and iRadios.
 - Includes the station's social links and contact details.
-- Uses GSAP/ScrollTrigger animations for the front-end experience.
+- Uses dependency-light progressive-enhancement animations; content stays visible even when JavaScript or external services are unavailable.
 - Includes SEO metadata and Schema.org structured data for the radio station/business.
 
 ### Live DJ / programme system
@@ -168,13 +168,11 @@ Visitors can:
 
 ### Frontend
 
-- HTML5
-- Tailwind-generated CSS
-- JavaScript
-- GSAP
-- GSAP ScrollTrigger
-- Font Awesome
-- Google Fonts / Plus Jakarta Sans
+- Semantic HTML5
+- Local handcrafted responsive CSS (`assets/css/style.css`)
+- Dependency-light JavaScript with progressive enhancement
+- Local CMS stylesheet (`iluma/admin.css`)
+- Accessible fallbacks for missing images, missing database data and older browsers
 
 ### External integrations
 
@@ -194,8 +192,7 @@ Visitors can:
 ├── .env.example                # Environment configuration template
 ├── assets/
 │   ├── css/
-│   │   ├── input.css           # Tailwind source CSS
-│   │   └── style.css           # Compiled production stylesheet
+│   │   └── style.css           # Public responsive design system
 │   └── img/                    # Branding, partners and visual assets
 ├── includes/
 │   ├── head-meta.php           # Meta tags, SEO, PWA registration
@@ -204,6 +201,8 @@ Visitors can:
 │   └── cookiebanner.php        # Cookie/consent UI
 └── iluma/
     ├── index.php               # CMS login/dashboard
+    ├── admin-ui.php            # Shared responsive CMS shell
+    ├── admin.css               # Local CMS design system
     ├── db.php                  # CMS session/auth + table initialization
     ├── connection.php          # Environment loading + PDO connection
     ├── airplay.php             # Airplay Top 10 administration
@@ -296,21 +295,13 @@ The application does not require Node.js to run in production because the compil
 assets/css/style.css
 ```
 
-## Tailwind CSS
+## Front-end delivery and cache strategy
 
-The original server archive included a standalone Tailwind executable larger than GitHub's standard single-file upload limit.
+The public site no longer depends on Tailwind, GSAP or Font Awesome at runtime. The main stylesheet is committed directly as `assets/css/style.css`.
 
-That binary is **not required at runtime** and is intentionally excluded from this repository. The production-ready compiled stylesheet remains tracked in:
+Dynamic PHP pages are served with revalidation headers, while CSS uses a deployment-aware version query generated from file modification times. The service worker follows a network-first strategy for navigations, CSS and JavaScript, and removes old Deseo caches on activation. This prevents visitors from being stuck on an outdated layout after a Hostinger redeploy.
 
-```text
-assets/css/style.css
-```
-
-Source styles remain available in:
-
-```text
-assets/css/input.css
-```
+If JavaScript, push notifications, the database or a remote image temporarily fails, the site renders an explicit fallback state rather than hiding content.
 
 ## Hostinger deployment
 
@@ -346,18 +337,21 @@ The repository should be treated as source code only; live secrets belong in the
 
 ## Current implementation notes
 
-This repository represents the current Deseo Radio implementation and will be the base for the planned major redesign/refactor.
+The major redesign and stability pass is now integrated into `main`.
 
-Areas expected to evolve during that work include:
+Key production safeguards include:
 
-- CMS authentication hardening
-- schedule/editor UX
-- responsive CMS improvements
-- separation of configuration from presentation
-- deployment automation
-- front-end architecture and performance
-- push-notification and consent-flow cleanup
-- stronger validation/security around uploads and admin mutations
+- responsive public site and responsive CMS
+- correct overnight-show detection and next-show fallback
+- explicit states when programme/Airplay data is unavailable
+- automatic image fallbacks
+- update-first service worker and cache busting
+- offline fallback page
+- CSRF protection and hardened CMS sessions
+- validated Spotify requests and bounded network timeouts
+- MIME/size validation for DJ uploads
+- persistent production `.env` support outside `public_html`
+- GitHub Actions quality checks for PHP/JavaScript syntax and critical files
 
 ## Brand / station information
 
