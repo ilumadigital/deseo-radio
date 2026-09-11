@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/includes/i18n.php';
+
 function deseo_e(?string $value): string {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
@@ -108,18 +110,15 @@ try {
     error_log('Deseo Radio data unavailable: ' . $e->getMessage());
 }
 
-$meta_title = 'Deseo Radio | Live House Music 24/7';
-$meta_desc = 'House, Afro House, Deep House και electronic music 24/7. Άκου live Deseo Radio, δες ποιος DJ είναι on air, το σημερινό πρόγραμμα και το weekly airplay.';
+$meta_title = deseo_t('meta.title');
+$meta_desc = deseo_t('meta.description');
+$meta_keywords = deseo_t('meta.keywords');
 require_once __DIR__ . '/includes/head-meta.php';
 require_once __DIR__ . '/includes/header.php';
 
-$daysEl = [
-    1 => 'Δευτέρα', 2 => 'Τρίτη', 3 => 'Τετάρτη', 4 => 'Πέμπτη',
-    5 => 'Παρασκευή', 6 => 'Σάββατο', 7 => 'Κυριακή'
-];
 ?>
 
-<h1 class="sr-only">Deseo Radio: Το Soundtrack της ζωής σου!</h1>
+<h1 class="sr-only"><?= deseo_e(deseo_t('hero.sr_title')) ?></h1>
 
 <!-- =========================================================================
      2. MASTER HERO LAYER (Cinematic 3-Column Console)
@@ -140,7 +139,7 @@ $daysEl = [
         <div class="gsap-hero-left w-full flex flex-col items-center">
             <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
                 <span class="w-1.5 h-1.5 rounded-full bg-[#ccff00] shadow-[0_0_8px_#ccff00] animate-pulse"></span>
-                # NOW PLAYING
+                # <?= deseo_e(deseo_t('hero.now_playing')) ?>
             </div>
             
             <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950">
@@ -153,7 +152,7 @@ $daysEl = [
         <div class="gsap-hero-left w-full flex flex-col items-center" style="animation-delay: 150ms;">
             <div class="mb-5 flex items-center gap-2.5 opacity-80 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
                 <span class="w-1.5 h-1.5 rounded-full <?= $live_dj ? 'bg-[#ccff00] shadow-[0_0_8px_#ccff00]' : 'bg-zinc-600' ?>"></span>
-                # NOW ON AIR
+                # <?= deseo_e(deseo_t('hero.now_on_air')) ?>
             </div>
             
             <div class="relative w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 bg-zinc-950 flex flex-col justify-end">
@@ -162,15 +161,15 @@ $daysEl = [
                     <img src="<?= htmlspecialchars($live_dj['photo_path']) ?>" alt="<?= htmlspecialchars($live_dj['dj_name']) ?>" class="absolute inset-0 w-full h-full object-cover">
                     <!-- Elegant Bottom Slate Info -->
                     <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/70 to-transparent w-full">
-                        <span class="text-[#ccff00] text-[9px] uppercase tracking-[0.3em] font-bold block mb-1">Live Broadcast</span>
+                        <span class="text-[#ccff00] text-[9px] uppercase tracking-[0.3em] font-bold block mb-1"><?= deseo_e(deseo_t('hero.live_broadcast')) ?></span>
                         <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate"><?= htmlspecialchars($live_dj['dj_name']) ?></h2>
                     </div>
                 <?php else: ?>
                     <!-- Fallback / Auto Mix Graphics Layout -->
-                    <img src="/assets/img/bg.png" alt="Deseo Radio Auto DJ" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
+                    <img src="/assets/img/bg.png" alt="<?= deseo_e(deseo_t('hero.auto_dj_alt')) ?>" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
                     <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/80 to-transparent w-full">
-                        <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1">Non-Stop Mix</span>
-                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">DESEO AUTO DJ</h2>
+                        <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1"><?= deseo_e(deseo_t('hero.non_stop_mix')) ?></span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight"><?= deseo_e(deseo_t('hero.auto_dj')) ?></h2>
                     </div>
                 <?php endif; ?>
             </div>
@@ -179,7 +178,7 @@ $daysEl = [
         <!-- Deck 03: SPONSOR (Bespoke Agency Banner) -->
         <div class="gsap-hero-right w-full flex flex-col items-center">
             <div class="mb-5 flex items-center gap-2.5 opacity-40 tracking-[0.4em] text-[10px] font-bold text-white uppercase self-start">
-                # SPONSOR
+                # <?= deseo_e(deseo_t('hero.sponsor')) ?>
             </div>
             
             <a href="https://iluma.gr" target="_blank" rel="noopener" class="block w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 transition-all duration-500 hover:scale-[1.015] hover:border-white/10 bg-zinc-950">
@@ -201,10 +200,10 @@ $daysEl = [
         <div class="shell">
             <div class="section-heading reveal">
                 <div>
-                    <span class="eyebrow">Today's broadcast</span>
-                    <h2>Το πρόγραμμα <em>σήμερα.</em></h2>
+                    <span class="eyebrow"><?= deseo_e(deseo_t('program.eyebrow')) ?></span>
+                    <h2><?= deseo_e(deseo_t('program.heading')) ?> <em><?= deseo_e(deseo_t('program.heading_em')) ?></em></h2>
                 </div>
-                <p>Όλες οι ώρες εμφανίζονται σε ώρα Ελλάδας. Τα overnight sets υποστηρίζονται αυτόματα.</p>
+                <p><?= deseo_e(deseo_t('program.description')) ?></p>
             </div>
 
             <div class="schedule-grid">
@@ -221,7 +220,7 @@ $daysEl = [
                                  data-fallback="/assets/img/bg.png"
                                  alt="<?= deseo_e($show['dj_name']) ?>">
                             <div class="schedule-info">
-                                <span><?= $isLiveRow ? 'ON AIR NOW' : 'LIVE SET' ?></span>
+                                <span><?= deseo_e($isLiveRow ? deseo_t('program.on_air_now') : deseo_t('program.live_set')) ?></span>
                                 <h3><?= deseo_e($show['dj_name']) ?></h3>
                             </div>
                             <?php if ($isLiveRow): ?><i class="live-ring" aria-hidden="true"></i><?php endif; ?>
@@ -231,8 +230,8 @@ $daysEl = [
                     <article class="empty-state reveal">
                         <span class="empty-icon">24/7</span>
                         <div>
-                            <h3>Non-stop Deseo mix</h3>
-                            <p><?= $dataStatus === 'fallback' ? 'Το live πρόγραμμα ενημερώνεται. Το stream παραμένει διαθέσιμο κανονικά.' : 'Δεν υπάρχει προγραμματισμένο live set σήμερα. Το Deseo συνεχίζει non-stop.' ?></p>
+                            <h3><?= deseo_e(deseo_t('program.empty_title')) ?></h3>
+                            <p><?= deseo_e($dataStatus === 'fallback' ? deseo_t('program.empty_fallback') : deseo_t('program.empty_none')) ?></p>
                         </div>
                     </article>
                 <?php endif; ?>
@@ -240,9 +239,9 @@ $daysEl = [
 
             <?php if ($next_dj && !$live_dj): ?>
                 <div class="next-show reveal">
-                    <span>Next live</span>
+                    <span><?= deseo_e(deseo_t('program.next_live')) ?></span>
                     <strong><?= deseo_e($next_dj['dj_name']) ?></strong>
-                    <small><?= $daysEl[(int)$next_dj['day_of_week']] ?? '' ?> · <?= deseo_time($next_dj['start_time']) ?></small>
+                    <small><?= deseo_e(deseo_t_day((int)$next_dj['day_of_week'])) ?> · <?= deseo_time($next_dj['start_time']) ?></small>
                 </div>
             <?php endif; ?>
         </div>
@@ -252,10 +251,10 @@ $daysEl = [
         <div class="shell">
             <div class="section-heading reveal">
                 <div>
-                    <span class="eyebrow">Weekly rotation</span>
-                    <h2>Deseo <em>Airplay.</em></h2>
+                    <span class="eyebrow"><?= deseo_e(deseo_t('airplay.eyebrow')) ?></span>
+                    <h2><?= deseo_e(deseo_t('airplay.heading')) ?> <em><?= deseo_e(deseo_t('airplay.heading_em')) ?></em></h2>
                 </div>
-                <p>Τα tracks που ξεχωρίζουν αυτή την εβδομάδα στο Deseo Radio.</p>
+                <p><?= deseo_e(deseo_t('airplay.description')) ?></p>
             </div>
 
             <div class="airplay-list">
@@ -271,17 +270,17 @@ $daysEl = [
                                  alt="">
                             <span class="track-main">
                                 <strong><?= deseo_e($track['track_name'] ?: 'Deseo Selection') ?></strong>
-                                <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : 'Deseo Radio Selection') ?></small>
+                                <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : deseo_t('airplay.selection')) ?></small>
                             </span>
-                            <span class="spotify-mark" aria-label="Άνοιγμα στο Spotify">Spotify ↗</span>
+                            <span class="spotify-mark" aria-label="<?= deseo_e(deseo_t('airplay.spotify_aria')) ?>">Spotify ↗</span>
                         </a>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <article class="empty-state reveal">
                         <span class="empty-icon">TOP</span>
                         <div>
-                            <h3>Το νέο chart ετοιμάζεται</h3>
-                            <p>Το stream λειτουργεί κανονικά. Η λίστα Airplay θα εμφανιστεί μόλις ανανεωθεί από το studio.</p>
+                            <h3><?= deseo_e(deseo_t('airplay.empty_title')) ?></h3>
+                            <p><?= deseo_e(deseo_t('airplay.empty_text')) ?></p>
                         </div>
                     </article>
                 <?php endif; ?>
@@ -293,10 +292,10 @@ $daysEl = [
         <div class="shell">
             <div class="section-heading centered reveal">
                 <div>
-                    <span class="eyebrow">Listen everywhere</span>
-                    <h2>Find Deseo <em>everywhere.</em></h2>
+                    <span class="eyebrow"><?= deseo_e(deseo_t('partners.eyebrow')) ?></span>
+                    <h2><?= deseo_e(deseo_t('partners.heading')) ?> <em><?= deseo_e(deseo_t('partners.heading_em')) ?></em></h2>
                 </div>
-                <p>Άκου Deseo από το site ή από τις μεγαλύτερες radio platforms.</p>
+                <p><?= deseo_e(deseo_t('partners.description')) ?></p>
             </div>
 
             <?php
@@ -326,12 +325,12 @@ $daysEl = [
     <section class="advertise">
         <div class="shell advertise-card reveal">
             <div>
-                <span class="eyebrow">Advertise on Deseo</span>
-                <h2>Βάλε το brand σου<br><em>μέσα στον ήχο.</em></h2>
+                <span class="eyebrow"><?= deseo_e(deseo_t('advertise.eyebrow')) ?></span>
+                <h2><?= deseo_e(deseo_t('advertise.heading')) ?><br><em><?= deseo_e(deseo_t('advertise.heading_em')) ?></em></h2>
             </div>
             <div class="advertise-copy">
-                <p>Σύνδεσε το brand σου με ένα focused κοινό που αγαπά House και electronic music, μέσα από tailor-made radio campaigns της ILUMA.</p>
-                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer">Start a campaign ↗</a>
+                <p><?= deseo_e(deseo_t('advertise.text')) ?></p>
+                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
             </div>
         </div>
     </section>
