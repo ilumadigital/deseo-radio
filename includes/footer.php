@@ -1,35 +1,62 @@
-<footer class="site-footer">
-    <div class="shell footer-grid">
-        <div class="footer-brand">
-            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
-            <p><span data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></span><br><span data-i18n="footer.subtagline"><?= deseo_e(deseo_t('footer.subtagline')) ?></span></p>
+<footer class="site-footer deseo-footer">
+    <div class="deseo-footer-glow" aria-hidden="true"></div>
+
+    <div class="footer-shell">
+        <div class="deseo-footer-top">
+            <div class="deseo-footer-brand">
+                <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+                <p data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
+            </div>
+
+            <div class="deseo-footer-actions">
+                <a class="deseo-footer-live" href="#main-content">
+                    <span class="deseo-live-dot"></span>
+                    <span>LIVE</span>
+                </a>
+
+                <a class="deseo-footer-social" href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    Instagram ↗
+                </a>
+                <a class="deseo-footer-social" href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    Facebook ↗
+                </a>
+            </div>
         </div>
 
-        <div>
-            <span class="footer-label" data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
-            <a href="tel:+302103000825">+30 210 300 0825</a>
-            <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
-            <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
+        <div class="deseo-footer-divider"></div>
+
+        <div class="deseo-footer-grid">
+            <div class="deseo-footer-column">
+                <span class="footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
+                <a href="#main-content" data-i18n="footer.live_player"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
+                <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
+                <a href="#airplay" data-i18n="footer.weekly_airplay"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
+            </div>
+
+            <div class="deseo-footer-column">
+                <span class="footer-label" data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
+                <a href="tel:+302103000825">+30 210 300 0825</a>
+                <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
+                <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
+            </div>
+
+            <div class="deseo-footer-column">
+                <span class="footer-label" data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
+                <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+                <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+                <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer">ILUMA Radios ↗</a>
+            </div>
+
+            <div class="deseo-footer-signoff">
+                <span>DESEO RADIO</span>
+                <strong>HOUSE<br>MUSIC<br>24/7</strong>
+            </div>
         </div>
 
-        <div>
-            <span class="footer-label" data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
-            <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
-            <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
-            <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer">ILUMA Radios ↗</a>
+        <div class="deseo-footer-bottom">
+            <span>© <?= date('Y') ?> Deseo Radio</span>
+            <span><span data-i18n="footer.powered"><?= deseo_e(deseo_t('footer.powered')) ?></span> <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA Digital Agency</a></span>
         </div>
-
-        <div>
-            <span class="footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
-            <a href="#main-content" data-i18n="footer.live_player"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
-            <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
-            <a href="#airplay" data-i18n="footer.weekly_airplay"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
-        </div>
-    </div>
-
-    <div class="shell footer-bottom">
-        <span>© <?= date('Y') ?> Deseo Radio</span>
-        <span><span data-i18n="footer.powered"><?= deseo_e(deseo_t('footer.powered')) ?></span> <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA Digital Agency</a></span>
     </div>
 </footer>
 
@@ -41,7 +68,7 @@
 <?php include_once __DIR__ . '/cookiebanner.php'; ?>
 
 <?php
-$clientKeys = ["skip.content","header.home","header.live","header.live_aria","header.instagram","header.facebook","meta.title","meta.description","meta.keywords","hero.sr_title","hero.now_playing","hero.now_on_air","hero.sponsor","hero.live_broadcast","hero.non_stop_mix","hero.auto_dj","program.eyebrow","program.heading","program.heading_em","program.description","program.on_air_now","program.live_set","program.empty_title","program.empty_fallback","program.empty_none","program.next_live","day.1","day.2","day.3","day.4","day.5","day.6","day.7","airplay.eyebrow","airplay.heading","airplay.heading_em","airplay.description","airplay.spotify_aria","airplay.empty_title","airplay.empty_text","partners.eyebrow","partners.heading","partners.heading_em","partners.description","advertise.eyebrow","advertise.heading","advertise.heading_em","advertise.text","advertise.cta","footer.tagline","footer.subtagline","footer.contact","footer.follow","footer.listen","footer.live_player","footer.today_program","footer.weekly_airplay","footer.powered","install.title","install.subtitle","cookie.title","cookie.text","cookie.analytics","cookie.marketing","cookie.accept","cookie.customize","cookie.reject"];
+$clientKeys = ["skip.content","header.home","header.live","header.live_aria","header.instagram","header.facebook","meta.title","meta.description","meta.keywords","hero.sr_title","hero.now_playing","hero.now_on_air","hero.sponsor","hero.live_broadcast","hero.non_stop_mix","hero.auto_dj","program.eyebrow","program.heading","program.heading_em","program.description","program.on_air_now","program.live_set","program.empty_title","program.empty_fallback","program.empty_none","program.next_live","day.1","day.2","day.3","day.4","day.5","day.6","day.7","airplay.eyebrow","airplay.heading","airplay.heading_em","airplay.description","airplay.spotify_aria","airplay.empty_title","airplay.empty_text","partners.eyebrow","partners.heading","partners.heading_em","partners.description","advertise.eyebrow","advertise.heading","advertise.heading_em","advertise.text","advertise.cta","footer.tagline","footer.contact","footer.follow","footer.listen","footer.live_player","footer.today_program","footer.weekly_airplay","footer.powered","install.title","install.subtitle","cookie.title","cookie.text","cookie.analytics","cookie.marketing","cookie.accept","cookie.customize","cookie.reject"];
 $currentLanguage = deseo_lang();
 $clientTranslations = ['el' => [], 'en' => []];
 
