@@ -43,15 +43,16 @@ jobs:
           download "iluma/uploads/dj_6a4fca823cda7.png"
           download "iluma/uploads/dj_6a4fca8ce1ecc.png"
 
-          # This file is referenced by the current fallback UI but was not
-          # present in the supplied server archive. Pull it only if it exists.
+          # Referenced by the fallback UI but absent from the supplied archive.
+          # Keep it only when it exists on production.
           curl --fail --silent --show-error --location             "https://deseoradio.com/assets/img/now-playing-cover.jpg"             --output "assets/img/now-playing-cover.jpg" || rm -f "assets/img/now-playing-cover.jpg"
 
       - name: Build Tailwind production stylesheet
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes @tailwindcss/cli@4.3.2             -i ./assets/css/input.css             -o ./assets/css/style.css             --minify
+          npm install --no-save tailwindcss@4.3.2 @tailwindcss/cli@4.3.2
+          npx tailwindcss             -i ./assets/css/input.css             -o ./assets/css/style.css             --minify
 
       - name: Commit generated and binary assets
         shell: bash
