@@ -27,7 +27,7 @@
     <span class="text-xs uppercase tracking-wider">Εγκατάσταση App</span>
 </div>
 
-<?php include_once 'cookiebanner.php'; ?>
+<?php include_once __DIR__ . '/cookiebanner.php'; ?>
 
 <script>
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -68,18 +68,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
         installPrompt.classList.add('translate-y-40', 'opacity-0');
     });
 });
-</script>
-
-<script>
-(function(w,d,s,i) {
-    if(typeof(w.webpushr)!=='undefined') return;
-    w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
-    var js, fjs = d.getElementsByTagName(s)[0];
-    js = d.createElement(s); js.id = id; js.async=1;
-    js.src = "https://cdn.webpushr.com/app.min.js";
-    fjs.parentNode.insertBefore(js,fjs);
-}(window,document,'script','webpushr-jssdk'));
-webpushr('setup', {'key':'BKgQeRKClX2ZYF6gJkeWih74UwVtgQ0F22w6ARHnINyalkH8KVKUFoGicN0aUEZAIsCc3cghGj3x3Daw85_cw8U' });
 </script>
 
 </body>
