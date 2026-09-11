@@ -114,20 +114,6 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         }
 
         document.documentElement.lang = language;
-        document.title = catalog['meta.title'] || document.title;
-
-        var description = document.querySelector('meta[name="description"]');
-        if (description && catalog['meta.description']) description.setAttribute('content', catalog['meta.description']);
-
-        var keywords = document.querySelector('meta[name="keywords"]');
-        if (keywords && catalog['meta.keywords']) keywords.setAttribute('content', catalog['meta.keywords']);
-
-        var ogTitle = document.querySelector('meta[property="og:title"]');
-        if (ogTitle && catalog['meta.title']) ogTitle.setAttribute('content', catalog['meta.title']);
-
-        var ogDescription = document.querySelector('meta[property="og:description"]');
-        if (ogDescription && catalog['meta.description']) ogDescription.setAttribute('content', catalog['meta.description']);
-
         var options = document.querySelectorAll('[data-lang-switch]');
         for (i = 0; i < options.length; i++) {
             var isActive = options[i].getAttribute('data-lang-switch') === language;
