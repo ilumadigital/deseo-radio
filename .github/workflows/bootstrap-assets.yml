@@ -1,0 +1,68 @@
+name: Bootstrap production assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bootstrap-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download production image assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/img iluma/uploads
+
+          download() {
+            local path="$1"
+            echo "Downloading $path"
+            curl --fail --silent --show-error --location               --retry 3 --retry-delay 2               "https://deseoradio.com/$path"               --output "$path"
+          }
+
+          download "assets/img/bg.png"
+          download "assets/img/deseoradio-logo.png"
+          download "assets/img/favicon.png"
+          download "assets/img/iluma-digital-agency-banner.jpg"
+          download "assets/img/partner-1.png"
+          download "assets/img/partner-2.png"
+          download "assets/img/partner-3.png"
+          download "assets/img/partner-4.png"
+          download "assets/img/partner-5.png"
+          download "assets/img/partner-6.png"
+          download "assets/img/partner-7.png"
+          download "assets/img/partner-8.png"
+          download "iluma/uploads/dj_6a4fca823cda7.png"
+          download "iluma/uploads/dj_6a4fca8ce1ecc.png"
+
+          # This file is referenced by the current fallback UI but was not
+          # present in the supplied server archive. Pull it only if it exists.
+          curl --fail --silent --show-error --location             "https://deseoradio.com/assets/img/now-playing-cover.jpg"             --output "assets/img/now-playing-cover.jpg" || rm -f "assets/img/now-playing-cover.jpg"
+
+      - name: Build Tailwind production stylesheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @tailwindcss/cli@4.3.2             -i ./assets/css/input.css             -o ./assets/css/style.css             --minify
+
+      - name: Commit generated and binary assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/css/style.css assets/img iluma/uploads
+          if git diff --cached --quiet; then
+            echo "No asset changes to commit."
+            exit 0
+          fi
+          git commit -m "Add production assets and compiled CSS"
+          git push
