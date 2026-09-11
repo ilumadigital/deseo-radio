@@ -90,7 +90,7 @@ try {
                     </div>
                 <?php else: ?>
                     <!-- Fallback / Auto Mix Graphics Layout -->
-                    <img src="/assets/img/now-playing-cover.jpg" alt="Deseo Radio Auto DJ" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
+                    <img src="/assets/img/bg.png" alt="Deseo Radio Auto DJ" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
                     <div class="relative z-10 p-7 bg-gradient-to-t from-black via-black/80 to-transparent w-full">
                         <span class="text-zinc-500 text-[9px] uppercase tracking-[0.3em] font-bold block mb-1">Non-Stop Mix</span>
                         <h2 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">DESEO AUTO DJ</h2>
