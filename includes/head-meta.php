@@ -48,6 +48,9 @@ if (!headers_sent()) {
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="canonical" href="https://deseoradio.com/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= $assetVersion ?>">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png?v=<?= $assetVersion ?>">
     <link rel="manifest" href="/manifest.json?v=<?= $assetVersion ?>">
