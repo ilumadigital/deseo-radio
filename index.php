@@ -110,9 +110,6 @@ try {
     error_log('Deseo Radio data unavailable: ' . $e->getMessage());
 }
 
-$meta_title = deseo_t('meta.title');
-$meta_desc = deseo_t('meta.description');
-$meta_keywords = deseo_t('meta.keywords');
 require_once __DIR__ . '/includes/head-meta.php';
 require_once __DIR__ . '/includes/header.php';
 
