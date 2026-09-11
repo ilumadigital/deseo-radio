@@ -12,7 +12,7 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 [hidden]{display:none!important}
 ::selection{background:var(--acid);color:#050505}
-.shell{width:min(calc(100% - 40px),var(--shell));margin:0 auto}
+.shell{width:calc(100% - 40px);max-width:var(--shell);width:min(calc(100% - 40px),var(--shell));margin:0 auto}
 .skip-link{position:fixed;left:14px;top:14px;z-index:99999;padding:10px 14px;background:#fff;color:#000;border-radius:10px;transform:translateY(-160%)}
 .skip-link:focus{transform:none}
 .site-header{position:fixed;inset:0 0 auto;z-index:1000;padding:18px 0;background:linear-gradient(to bottom,rgba(5,5,5,.88),rgba(5,5,5,.42),transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -29,7 +29,7 @@ button{cursor:pointer}
 .pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--acid);box-shadow:0 0 0 0 rgba(202,255,0,.55);animation:pulse 2s infinite}
 .listen-button .pulse-dot{background:#050505;box-shadow:none}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(202,255,0,.5)}70%{box-shadow:0 0 0 9px rgba(202,255,0,0)}100%{box-shadow:0 0 0 0 rgba(202,255,0,0)}}
-.hero{min-height:100svh;position:relative;display:flex;align-items:center;padding:150px 0 100px;overflow:hidden}
+.hero{min-height:100vh;min-height:100svh;position:relative;display:flex;align-items:center;padding:150px 0 100px;overflow:hidden}
 .hero-backdrop{position:absolute;inset:0}
 .hero-backdrop>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) brightness(.34);transform:scale(1.04)}
 .hero-vignette{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,5,5,.98) 0%,rgba(5,5,5,.82) 32%,rgba(5,5,5,.34) 68%,rgba(5,5,5,.74) 100%),linear-gradient(0deg,var(--bg) 0%,transparent 30%,rgba(0,0,0,.25) 100%)}
@@ -38,7 +38,7 @@ button{cursor:pointer}
 .hero-glow-two{width:340px;height:340px;background:#ff7b00;left:34%;bottom:0;opacity:.09}
 .hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,.88fr) minmax(520px,1.12fr);gap:72px;align-items:center}
 .eyebrow{display:inline-flex;align-items:center;gap:11px;color:#d5d5ce;font-size:11px;text-transform:uppercase;letter-spacing:.23em;font-weight:800}
-.hero h1,.section-heading h2,.advertise h2{margin:18px 0 0;font-size:clamp(56px,7vw,106px);line-height:.91;letter-spacing:-.065em;font-weight:850}
+.hero h1,.section-heading h2,.advertise h2{margin:18px 0 0;font-size:72px;font-size:clamp(56px,7vw,106px);line-height:.91;letter-spacing:-.065em;font-weight:850}
 .hero h1 em,.section-heading h2 em,.advertise h2 em{font-family:Georgia,"Times New Roman",serif;font-weight:400;color:var(--acid)}
 .hero-lead{max-width:600px;margin:30px 0 0;color:#b6b6af;font-size:18px;line-height:1.75}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
@@ -75,7 +75,7 @@ button{cursor:pointer}
 .section{position:relative;padding:118px 0}
 .section-dark{background:#0a0a0a;border-top:1px solid rgba(255,255,255,.05)}
 .section-heading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:52px}
-.section-heading h2{font-size:clamp(45px,5vw,72px);line-height:.95}
+.section-heading h2{font-size:56px;font-size:clamp(45px,5vw,72px);line-height:.95}
 .section-heading>p{max-width:420px;margin:0;color:#77776f;font-size:14px;line-height:1.8}
 .section-heading.centered{flex-direction:column;align-items:center;text-align:center}
 .section-heading.centered>p{max-width:580px}
@@ -119,7 +119,7 @@ button{cursor:pointer}
 .advertise{padding:54px 0 120px;background:#0a0a0a}
 .advertise-card{display:grid;grid-template-columns:1fr .72fr;gap:80px;align-items:end;padding:64px;border-radius:34px;background:linear-gradient(135deg,#caff00 0%,#b8f000 55%,#91ce00 100%);color:#090909;box-shadow:0 35px 100px rgba(123,179,0,.18)}
 .advertise .eyebrow{color:#273000}
-.advertise h2{font-size:clamp(48px,5.5vw,78px)}
+.advertise h2{font-size:60px;font-size:clamp(48px,5.5vw,78px)}
 .advertise h2 em{color:#090909}
 .advertise-copy p{font-size:16px;line-height:1.8;margin:0 0 28px;color:#263000}
 .advertise .button-primary{background:#090909;color:#fff}
