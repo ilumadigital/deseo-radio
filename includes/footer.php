@@ -103,7 +103,12 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
             for (var r = 0; r < registrations.length; r++) {
-                registrations[r].unregister();
+                var reg = registrations[r];
+                var worker = reg.active || reg.waiting || reg.installing;
+                var scriptUrl = worker && worker.scriptURL ? worker.scriptURL : '';
+                if (scriptUrl.indexOf('/sw.js') !== -1 && scriptUrl.indexOf('/webpushr-sw.js') === -1) {
+                    reg.unregister();
+                }
             }
         }).catch(function () {});
     }
