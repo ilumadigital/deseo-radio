@@ -267,7 +267,7 @@ button{cursor:pointer}
 html,body,body *,button,input,select,textarea,optgroup,option{font-family:"Google Sans"!important;font-style:normal}
 
 
-/* Hero background — preserved original look, reliable stacking */
+/* Hero background — smoother cinematic blend */
 #main-content{
   position:relative;
   isolation:isolate;
@@ -278,6 +278,7 @@ html,body,body *,button,input,select,textarea,optgroup,option{font-family:"Googl
   inset:0;
   z-index:0;
   overflow:hidden;
+  background:#000;
 }
 .deseo-hero-background-image{
   position:absolute;
@@ -285,17 +286,30 @@ html,body,body *,button,input,select,textarea,optgroup,option{font-family:"Googl
   width:100%;
   height:100%;
   object-fit:cover;
-  filter:brightness(.6) contrast(1.05);
+  object-position:center center;
+  filter:brightness(.78) contrast(1.02) saturate(.92);
+  transform:scale(1.015);
 }
 .deseo-hero-background-dim{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,.4);
+  background:
+    radial-gradient(circle at 50% 42%,rgba(0,0,0,.02) 0%,rgba(0,0,0,.06) 48%,rgba(0,0,0,.22) 100%);
 }
 .deseo-hero-background-gradient{
   position:absolute;
   inset:0;
-  background:linear-gradient(to bottom,rgba(0,0,0,.8) 0%,rgba(0,0,0,0) 50%,#000 100%);
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,.52) 0%,
+      rgba(0,0,0,.28) 16%,
+      rgba(0,0,0,.10) 38%,
+      rgba(0,0,0,.06) 56%,
+      rgba(0,0,0,.18) 73%,
+      rgba(0,0,0,.48) 88%,
+      rgba(0,0,0,.94) 100%
+    );
 }
 .deseo-hero-content,
 .gsap-scroll-indicator{
