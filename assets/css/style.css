@@ -318,3 +318,40 @@ html,body,body *,button,input,select,textarea,optgroup,option{font-family:"Googl
     width:calc(100% - 28px)!important;
   }
 }
+
+
+/* EL / EN language switcher */
+.language-switcher{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:40px;
+  padding:0 12px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:rgba(8,8,8,.42);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  color:rgba(255,255,255,.32);
+  pointer-events:auto;
+}
+.language-option{
+  color:rgba(255,255,255,.48);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  transition:color .2s,opacity .2s;
+}
+.language-option:hover{color:#fff}
+.language-option.active{
+  color:#caff00;
+  opacity:1;
+}
+@media(max-width:760px){
+  .language-switcher{
+    height:36px;
+    padding:0 9px;
+    gap:5px;
+  }
+  .language-option{font-size:9px}
+}
