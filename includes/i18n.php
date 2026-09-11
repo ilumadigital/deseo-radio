@@ -70,8 +70,8 @@ function deseo_t(string $key): string {
 
             'hero.sr_title' => 'Deseo Radio: Το soundtrack της ζωής σου',
             'hero.now_playing' => 'ΤΩΡΑ ΠΑΙΖΕΙ',
-            'hero.now_on_air' => 'ΣΤΟΝ ΑΕΡΑ',
-            'hero.sponsor' => 'ΧΟΡΗΓΟΣ',
+            'hero.now_on_air' => 'NOW ON AIR',
+            'hero.sponsor' => 'SPONSOR',
             'hero.live_broadcast' => 'Ζωντανή εκπομπή',
             'hero.non_stop_mix' => 'Non-stop mix',
             'hero.auto_dj' => 'DESEO AUTO DJ',
