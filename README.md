@@ -375,3 +375,25 @@ The station is distributed through multiple online-radio platforms and is part o
 ---
 
 This repository is the development base for the next major version of the Deseo Radio website and administration system.
+
+## Persistent production credentials on Hostinger
+
+For Hostinger Git deployments, keep the production `.env` **outside the deployment target** so a redeploy of `public_html` cannot overwrite or remove it.
+
+Recommended layout:
+
+```text
+domains/your-domain/
+├── .env                 # production secrets, persistent across Git redeploys
+└── public_html/         # Git deployment target
+    └── ... application files
+```
+
+The application searches for configuration in this order:
+
+1. path specified by `DESEO_ENV_FILE`, when set
+2. `.env` one directory above the project root (recommended for Hostinger)
+3. `public_html/.env` as a legacy fallback
+4. `$HOME/.deseo-radio.env` as an additional fallback
+
+After confirming the parent-level `.env` works, remove the copy inside `public_html`. This keeps production credentials outside the web root and outside the Git deployment directory.
