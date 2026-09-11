@@ -3,11 +3,17 @@ require_once 'includes/head-meta.php';
 require_once 'includes/header.php'; 
 
 // =========================================================================
-// 1. SECURE DATABASE CONNECTION & DATA GRABBING
+// 1. DATABASE CONNECTION & DATA GRABBING
 // =========================================================================
-require_once 'iluma/connection.php';
+// Keep the public radio page available even if production DB configuration
+// has not been added yet during a fresh deployment.
+$airplay_tracks = [];
+$todays_program = [];
+$live_dj = null;
 
 try {
+    require_once 'iluma/connection.php';
+
     // Fetch Airplay Top 10
     $airplay_tracks = $pdo->query("SELECT * FROM airplay ORDER BY position ASC LIMIT 10")->fetchAll();
     
@@ -20,17 +26,14 @@ try {
     $stmt->execute([$current_day]);
     $todays_program = $stmt->fetchAll();
     
-    $live_dj = null;
     foreach($todays_program as $dj) {
         if ($current_time >= $dj['start_time'] && $current_time <= $dj['end_time']) {
             $live_dj = $dj;
             break;
         }
     }
-} catch(Exception $e) {
-    $airplay_tracks = [];
-    $todays_program = [];
-    $live_dj = null;
+} catch (Throwable $e) {
+    error_log('Deseo Radio data unavailable: ' . $e->getMessage());
 }
 ?>
 
