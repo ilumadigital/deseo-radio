@@ -241,7 +241,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="next-show reveal">
                     <span data-i18n="program.next_live"><?= deseo_e(deseo_t('program.next_live')) ?></span>
                     <strong><?= deseo_e($next_dj['dj_name']) ?></strong>
-                    <small><?= deseo_e(deseo_t_day((int)$next_dj['day_of_week'])) ?> · <?= deseo_time($next_dj['start_time']) ?></small>
+                    <small><span data-i18n="day.<?= (int)$next_dj['day_of_week'] ?>"><?= deseo_e(deseo_t_day((int)$next_dj['day_of_week'])) ?></span> · <?= deseo_time($next_dj['start_time']) ?></small>
                 </div>
             <?php endif; ?>
         </div>
@@ -272,7 +272,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <strong><?= deseo_e($track['track_name'] ?: 'Deseo Selection') ?></strong>
                                 <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : deseo_t('airplay.selection')) ?></small>
                             </span>
-                            <span class="spotify-mark" aria-label="<?= deseo_e(deseo_t('airplay.spotify_aria')) ?>">Spotify ↗</span>
+                            <span class="spotify-mark" aria-label="<?= deseo_e(deseo_t('airplay.spotify_aria')) ?>" data-i18n-aria="airplay.spotify_aria">Spotify ↗</span>
                         </a>
                     <?php endforeach; ?>
                 <?php else: ?>
