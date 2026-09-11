@@ -98,24 +98,22 @@
         installButton.hidden = true;
     });
 
+    // Radio playback must never be interrupted by PWA/service-worker lifecycle events.
+    // Remove any previously registered Deseo service worker without reloading the page.
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-            var reloading = false;
-            navigator.serviceWorker.addEventListener('controllerchange', function () {
-                if (reloading) return;
-                reloading = true;
-                window.location.reload();
-            });
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            for (var r = 0; r < registrations.length; r++) {
+                registrations[r].unregister();
+            }
+        }).catch(function () {});
+    }
 
-            navigator.serviceWorker.register('/sw.js?v=<?= $assetVersion ?>', { updateViaCache: 'none' })
-                .then(function (registration) {
-                    registration.update();
-                    window.setInterval(function () { registration.update(); }, 3600000);
-                })
-                .catch(function () {
-                    // The website remains fully functional without PWA support.
-                });
-        });
+    if ('caches' in window) {
+        caches.keys().then(function (keys) {
+            for (var c = 0; c < keys.length; c++) {
+                if (keys[c].indexOf('deseo-') === 0) caches.delete(keys[c]);
+            }
+        }).catch(function () {});
     }
 }());
 </script>
