@@ -75,18 +75,18 @@
 <div class="cookie-banner" id="cookie-banner" role="dialog" aria-modal="false" aria-labelledby="cookie-title" hidden>
     <div class="cookie-icon" aria-hidden="true">◌</div>
     <div class="cookie-content">
-        <h2 id="cookie-title">Your privacy, your choice.</h2>
-        <p>Χρησιμοποιούμε απαραίτητα local storage για τη λειτουργία του site και, μόνο με επιλογή σου, analytics / marketing services.</p>
+        <h2 id="cookie-title" data-i18n="cookie.title"><?= deseo_e(deseo_t('cookie.title')) ?></h2>
+        <p data-i18n="cookie.text"><?= deseo_e(deseo_t('cookie.text')) ?></p>
 
         <div class="cookie-options" id="cookie-options" hidden>
-            <label><span>Analytics & push services</span><input type="checkbox" id="consent-analytics"></label>
-            <label><span>Marketing & personalization</span><input type="checkbox" id="consent-marketing"></label>
+            <label><span data-i18n="cookie.analytics"><?= deseo_e(deseo_t('cookie.analytics')) ?></span><input type="checkbox" id="consent-analytics"></label>
+            <label><span data-i18n="cookie.marketing"><?= deseo_e(deseo_t('cookie.marketing')) ?></span><input type="checkbox" id="consent-marketing"></label>
         </div>
 
         <div class="cookie-actions">
-            <button class="button button-primary" type="button" id="cookie-accept">Accept</button>
-            <button class="button button-ghost" type="button" id="cookie-customize">Customize</button>
-            <button class="text-button" type="button" id="cookie-reject">Reject optional</button>
+            <button class="button button-primary" type="button" id="cookie-accept" data-i18n="cookie.accept"><?= deseo_e(deseo_t('cookie.accept')) ?></button>
+            <button class="button button-ghost" type="button" id="cookie-customize" data-i18n="cookie.customize"><?= deseo_e(deseo_t('cookie.customize')) ?></button>
+            <button class="text-button" type="button" id="cookie-reject" data-i18n="cookie.reject"><?= deseo_e(deseo_t('cookie.reject')) ?></button>
         </div>
     </div>
 </div>
