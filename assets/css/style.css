@@ -1978,3 +1978,10 @@ h2,
   font-weight:700;
   letter-spacing:.12em;
 }
+
+
+/* PWA hidden state must always beat premium display rules. */
+.install-prompt[hidden],
+#pwa-install-prompt[hidden]{
+  display:none!important;
+}
