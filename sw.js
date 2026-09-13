@@ -4,12 +4,11 @@ importScripts('https://cdn.webpushr.com/sw-server.min.js');
    Static-assets-only caching. The live iRadios player is cross-origin and is
    intentionally never intercepted or cached by this service worker. */
 
-var CACHE_NAME = 'deseo-static-v5';
+var CACHE_NAME = 'deseo-static-v6';
 var STATIC_ASSETS = [
   '/offline.html',
   '/assets/img/favicon.png',
-  '/assets/img/deseoradio-logo.png',
-  '/assets/img/bg.png'
+  '/assets/img/deseoradio-logo.png'
 ];
 
 self.addEventListener('install', function (event) {
