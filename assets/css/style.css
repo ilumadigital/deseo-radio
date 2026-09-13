@@ -1225,3 +1225,277 @@ h2,
 @media(max-width:1050px){
   .hero-cms-overlay h2{font-size:21px!important}
 }
+
+
+/* ================================================================
+   DESEO 3-PANEL DASHBOARD — Airplay / Program / Playlists
+   ================================================================ */
+.deseo-dashboard-section{
+  padding:96px 0 110px;
+  background:
+    radial-gradient(circle at 13% 0%,rgba(255,43,54,.045),transparent 26%),
+    #060708;
+}
+.deseo-dashboard-intro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px,520px);
+  align-items:start;
+  gap:46px;
+  margin-bottom:36px;
+}
+.deseo-dashboard-intro .section-title{
+  display:block;
+  margin:13px 0 0;
+  font-size:clamp(54px,6vw,104px);
+  line-height:.9;
+  letter-spacing:-.06em;
+}
+.deseo-dashboard-intro>p{
+  justify-self:end;
+  max-width:520px;
+  margin:12px 0 0;
+  color:#93969c;
+  font-size:15px;
+  line-height:1.75;
+}
+.deseo-dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  align-items:stretch;
+}
+.deseo-panel{
+  min-width:0;
+  height:650px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.085);
+  border-radius:26px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008)),
+    #0a0b0c;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+.deseo-panel-header{
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:0 22px;
+  border-bottom:1px solid rgba(255,255,255,.075);
+  background:linear-gradient(180deg,rgba(255,255,255,.025),transparent);
+}
+.deseo-panel-header h3{
+  margin:0;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+}
+.deseo-panel-header>span{
+  color:#64686f;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+}
+.deseo-panel-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+  padding:10px 18px 18px;
+  scrollbar-width:thin;
+  scrollbar-color:#4f5257 transparent;
+}
+.deseo-panel-body::-webkit-scrollbar{width:4px}
+.deseo-panel-body::-webkit-scrollbar-track{background:transparent}
+.deseo-panel-body::-webkit-scrollbar-thumb{background:#4f5257;border-radius:999px}
+.deseo-panel-row{
+  min-height:96px;
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) 36px;
+  align-items:center;
+  gap:16px;
+  padding:13px 4px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  transition:background .2s ease,padding .2s ease;
+}
+a.deseo-panel-row:hover{
+  padding-left:10px;
+  padding-right:10px;
+  background:rgba(255,255,255,.018);
+}
+.deseo-panel-row:last-child{border-bottom:0}
+.deseo-row-cover{
+  width:64px;
+  height:64px;
+  border-radius:13px;
+  object-fit:cover;
+  background:#111214;
+}
+.deseo-row-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.deseo-row-copy strong{
+  overflow:hidden;
+  color:#f4f4f5;
+  font-size:15px;
+  font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.deseo-row-copy small{
+  overflow:hidden;
+  margin-top:6px;
+  color:#6f737a;
+  font-size:10px;
+  line-height:1.35;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.deseo-row-action{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  justify-self:end;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.09);
+  color:#cfd2d6;
+  font-size:20px;
+  transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+a.deseo-panel-row:hover .deseo-row-action{
+  background:#fff;
+  border-color:#fff;
+  color:#090a0b;
+}
+.deseo-program-row{
+  grid-template-columns:64px minmax(0,1fr) auto;
+}
+.deseo-program-row.is-live{
+  background:linear-gradient(90deg,rgba(255,43,54,.065),transparent 72%);
+}
+.deseo-live-tag{
+  justify-self:end;
+  color:var(--red);
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.15em;
+}
+.deseo-playlist-row{
+  grid-template-columns:28px 64px minmax(0,1fr) 36px;
+}
+.deseo-row-index{
+  color:#555a61;
+  font-size:11px;
+  text-align:center;
+}
+.deseo-next-pill{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:18px 0 4px;
+  padding:0 16px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#474a4f,#d9dbde 50%,#474a4f);
+  color:#090a0b;
+  font-size:10px;
+  font-weight:700;
+  text-align:center;
+}
+.deseo-panel-empty{
+  display:grid;
+  place-items:center;
+  min-height:180px;
+  padding:22px;
+  color:#676b72;
+  font-size:11px;
+  text-align:center;
+}
+
+/* Final title treatment: white, clean, Google Sans. */
+h1,
+h2,
+.metal-title,
+.section-title,
+.brand-cta-card h2,
+.footer-tagline,
+.hero-cms-overlay h2{
+  font-family:"Google Sans"!important;
+  font-weight:700!important;
+  font-style:normal!important;
+  color:#fff!important;
+  background:none!important;
+  background-image:none!important;
+  -webkit-background-clip:border-box!important;
+  background-clip:border-box!important;
+  -webkit-text-fill-color:#fff!important;
+  -webkit-text-stroke:0!important;
+  text-shadow:none!important;
+}
+
+@media(max-width:1180px){
+  .deseo-dashboard-grid{grid-template-columns:1fr}
+  .deseo-panel{height:auto;min-height:0}
+  .deseo-panel-body{overflow:visible}
+}
+
+@media(max-width:900px){
+  .deseo-dashboard-section{padding:82px 0 92px}
+  .deseo-dashboard-intro{
+    grid-template-columns:1fr;
+    gap:17px;
+  }
+  .deseo-dashboard-intro>p{
+    justify-self:start;
+    margin-top:0;
+  }
+}
+
+@media(max-width:640px){
+  .deseo-dashboard-section{padding:70px 0 80px}
+  .deseo-dashboard-intro{margin-bottom:26px}
+  .deseo-dashboard-intro .section-title{font-size:50px}
+  .deseo-panel{border-radius:21px}
+  .deseo-panel-header{
+    min-height:60px;
+    padding:0 16px;
+  }
+  .deseo-panel-body{padding:7px 13px 14px}
+  .deseo-panel-row{
+    min-height:80px;
+    grid-template-columns:50px minmax(0,1fr) 30px;
+    gap:11px;
+    padding:10px 1px;
+  }
+  .deseo-row-cover{
+    width:50px;
+    height:50px;
+    border-radius:11px;
+  }
+  .deseo-row-copy strong{font-size:13px}
+  .deseo-row-copy small{font-size:9px}
+  .deseo-row-action{
+    width:30px;
+    height:30px;
+    font-size:17px;
+  }
+  .deseo-program-row{grid-template-columns:50px minmax(0,1fr) auto}
+  .deseo-playlist-row{grid-template-columns:22px 50px minmax(0,1fr) 30px}
+  .deseo-next-pill{font-size:9px;padding:0 12px}
+}
+
+@media(max-width:390px){
+  .deseo-dashboard-intro .section-title{font-size:44px}
+  .deseo-panel-header>span{display:none}
+}
