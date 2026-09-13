@@ -1,44 +1,39 @@
-<footer class="site-footer deseo-footer">
-    <div class="deseo-footer-inner">
-        <div class="deseo-footer-main">
-            <div class="deseo-footer-identity">
-                <img class="deseo-footer-logo" src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
-                <p class="deseo-footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
-
-                <a class="deseo-footer-live-link" href="#main-content" data-analytics-event="live_radio_click">
-                    <span class="deseo-live-dot" aria-hidden="true"></span>
-                    <span>LIVE RADIO</span>
-                </a>
-            </div>
-
-            <div class="deseo-footer-nav">
-                <div class="deseo-footer-group">
-                    <span class="deseo-footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
-                    <a href="#main-content" data-i18n="footer.live_player" data-analytics-event="live_radio_click"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
-                    <a href="#program" data-i18n="footer.today_program" data-analytics-event="program_click"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
-                    <a href="#airplay" data-i18n="footer.weekly_airplay" data-analytics-event="airplay_click"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
-                </div>
-
-                <div class="deseo-footer-group">
-                    <span class="deseo-footer-label" data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
-                    <a href="tel:+302103000825">+30 210 300 0825</a>
-                    <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
-                    <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
-                </div>
-
-                <div class="deseo-footer-group">
-                    <span class="deseo-footer-label" data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
-                    <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
-                    <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
-                    <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer">ILUMA Radios ↗</a>
-                </div>
-            </div>
+<footer class="site-footer">
+    <div class="wide-shell footer-main">
+        <div class="footer-brand">
+            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+            <p class="metal-title footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
+            <a class="footer-iluma" href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
         </div>
 
-        <div class="deseo-footer-bottom">
-            <span>© <?= date('Y') ?> Deseo Radio</span>
-            <span><span data-i18n="footer.powered"><?= deseo_e(deseo_t('footer.powered')) ?></span> <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA Digital Agency</a></span>
+        <div class="footer-links">
+            <div>
+                <span data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
+                <a href="#player" data-i18n="footer.live_player" data-analytics-event="live_radio_click"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
+                <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
+                <a href="#playlists" data-i18n="footer.playlists"><?= deseo_e(deseo_t('footer.playlists')) ?></a>
+                <a href="#faq" data-i18n="footer.faq"><?= deseo_e(deseo_t('footer.faq')) ?></a>
+            </div>
+
+            <div>
+                <span data-i18n="footer.contact"><?= deseo_e(deseo_t('footer.contact')) ?></span>
+                <a href="tel:+302103000825">+30 210 300 0825</a>
+                <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>
+                <p>1st Moschonision st.<br>Egaleo, 12242 GR</p>
+            </div>
+
+            <div>
+                <span data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
+                <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+                <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+                <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios ↗</a>
+            </div>
         </div>
+    </div>
+
+    <div class="wide-shell footer-bottom">
+        <span>© <?= date('Y') ?> Deseo Radio · Athens</span>
+        <span><span data-i18n="footer.powered"><?= deseo_e(deseo_t('footer.powered')) ?></span> <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA Digital Agency</a></span>
     </div>
 </footer>
 
@@ -50,7 +45,24 @@
 <?php include_once __DIR__ . '/cookiebanner.php'; ?>
 
 <?php
-$clientKeys = ["skip.content","header.home","header.live","header.live_aria","header.instagram","header.facebook","meta.title","meta.description","meta.keywords","hero.sr_title","hero.now_playing","hero.now_on_air","hero.sponsor","hero.live_broadcast","hero.non_stop_mix","hero.auto_dj","program.eyebrow","program.heading","program.heading_em","program.description","program.on_air_now","program.live_set","program.empty_title","program.empty_fallback","program.empty_none","program.next_live","day.1","day.2","day.3","day.4","day.5","day.6","day.7","airplay.eyebrow","airplay.heading","airplay.heading_em","airplay.description","airplay.spotify_aria","airplay.empty_title","airplay.empty_text","partners.eyebrow","partners.heading","partners.heading_em","partners.description","advertise.eyebrow","advertise.heading","advertise.heading_em","advertise.text","advertise.cta","footer.tagline","footer.contact","footer.follow","footer.listen","footer.live_player","footer.today_program","footer.weekly_airplay","footer.powered","install.title","install.subtitle","cookie.title","cookie.text","cookie.analytics","cookie.marketing","cookie.accept","cookie.customize","cookie.reject"];
+$clientKeys = [
+    'skip.content',
+    'header.home','header.live','header.live_aria','header.instagram','header.facebook',
+    'hero.kicker','hero.title','hero.text','hero.listen','hero.network','hero.now_on_air','hero.non_stop','hero.live_broadcast',
+    'airplay.kicker','airplay.title','airplay.text','airplay.empty','airplay.spotify',
+    'program.kicker','program.title','program.text','program.on_air','program.live_set','program.empty','program.next',
+    'playlists.kicker','playlists.title','playlists.text','playlists.open','playlists.empty',
+    'about.kicker','about.title','about.text','about.iluma',
+    'partners.kicker','partners.title','partners.text',
+    'faq.kicker','faq.title','faq.text',
+    'faq.q1','faq.a1','faq.q2','faq.a2','faq.q3','faq.a3','faq.q4','faq.a4','faq.q5','faq.a5',
+    'advertise.kicker','advertise.title','advertise.text','advertise.cta',
+    'footer.tagline','footer.contact','footer.follow','footer.listen','footer.live_player','footer.today_program','footer.playlists','footer.faq','footer.powered',
+    'install.title','install.subtitle',
+    'cookie.title','cookie.text','cookie.analytics','cookie.marketing','cookie.accept','cookie.customize','cookie.reject',
+    'day.1','day.2','day.3','day.4','day.5','day.6','day.7'
+];
+
 $currentLanguage = deseo_lang();
 $clientTranslations = ['el' => [], 'en' => []];
 
@@ -76,6 +88,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     function onReady() {
         var images = document.querySelectorAll('img[data-fallback]');
         var i;
+
         for (i = 0; i < images.length; i++) {
             images[i].addEventListener('error', function () {
                 var fallback = this.getAttribute('data-fallback');
@@ -86,19 +99,21 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         var revealItems = document.querySelectorAll('.reveal');
         if ('IntersectionObserver' in window) {
             var observer = new IntersectionObserver(function (entries) {
-                var j;
-                for (j = 0; j < entries.length; j++) {
+                for (var j = 0; j < entries.length; j++) {
                     if (entries[j].isIntersecting) {
-                        entries[j].target.className += ' is-visible';
-                        observer.unobserve(entries[j].target);
+                        entries[j].classList.add('is-visible');
+                        observer.unobserve(entries[j]);
                     }
                 }
             }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
 
             for (i = 0; i < revealItems.length; i++) observer.observe(revealItems[i]);
         } else {
-            for (i = 0; i < revealItems.length; i++) revealItems[i].className += ' is-visible';
+            for (i = 0; i < revealItems.length; i++) revealItems[i].classList.add('is-visible');
         }
+
+        bindLanguageSwitcher();
+        bindAnalytics();
     }
 
     function applyLanguage(language) {
@@ -107,28 +122,25 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
         var nodes = document.querySelectorAll('[data-i18n]');
         var i;
+
         for (i = 0; i < nodes.length; i++) {
             var key = nodes[i].getAttribute('data-i18n');
-            if (Object.prototype.hasOwnProperty.call(catalog, key)) {
-                nodes[i].textContent = catalog[key];
-            }
+            if (Object.prototype.hasOwnProperty.call(catalog, key)) nodes[i].textContent = catalog[key];
         }
 
         var ariaNodes = document.querySelectorAll('[data-i18n-aria]');
         for (i = 0; i < ariaNodes.length; i++) {
             var ariaKey = ariaNodes[i].getAttribute('data-i18n-aria');
-            if (Object.prototype.hasOwnProperty.call(catalog, ariaKey)) {
-                ariaNodes[i].setAttribute('aria-label', catalog[ariaKey]);
-            }
+            if (Object.prototype.hasOwnProperty.call(catalog, ariaKey)) ariaNodes[i].setAttribute('aria-label', catalog[ariaKey]);
         }
 
         document.documentElement.lang = language;
+
         var options = document.querySelectorAll('[data-lang-switch]');
         for (i = 0; i < options.length; i++) {
-            var isActive = options[i].getAttribute('data-lang-switch') === language;
-            if (isActive) options[i].classList.add('active');
-            else options[i].classList.remove('active');
-            options[i].setAttribute('aria-current', isActive ? 'true' : 'false');
+            var active = options[i].getAttribute('data-lang-switch') === language;
+            options[i].classList.toggle('active', active);
+            options[i].setAttribute('aria-current', active ? 'true' : 'false');
         }
 
         try {
@@ -136,10 +148,9 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         } catch (e) {}
 
         if (window.DESEO_LANGUAGE !== language && window.DeseoAnalytics) {
-            window.DeseoAnalytics.event('language_change', {
-                language: language
-            });
+            window.DeseoAnalytics.event('language_change', { language: language });
         }
+
         window.DESEO_LANGUAGE = language;
     }
 
@@ -153,83 +164,61 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            onReady();
-            bindLanguageSwitcher();
+    function bindAnalytics() {
+        document.addEventListener('click', function (event) {
+            var target = event.target;
+            while (target && target !== document && target.tagName !== 'A') target = target.parentNode;
+            if (!target || target.tagName !== 'A' || !window.DeseoAnalytics) return;
+
+            var eventName = target.getAttribute('data-analytics-event');
+            if (!eventName) return;
+
+            window.DeseoAnalytics.event(eventName, {
+                link_url: target.href || '',
+                link_text: (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100),
+                language: document.documentElement.lang || 'el'
+            });
         });
-    } else {
-        onReady();
-        bindLanguageSwitcher();
+
+        var radioFrame = document.querySelector('iframe[src*="play.iradios.gr/widget/deseo-radio"]');
+        if (radioFrame) {
+            radioFrame.addEventListener('load', function () {
+                if (window.DeseoAnalytics) {
+                    window.DeseoAnalytics.event('radio_player_loaded', { player_provider: 'iradios' });
+                }
+            });
+        }
     }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
+    else onReady();
 
     window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
         installEvent = event;
-        installButton.hidden = false;
+        if (installButton) installButton.hidden = false;
     });
 
-    installButton.addEventListener('click', function () {
-        if (!installEvent) return;
-        installEvent.prompt();
-        installEvent.userChoice.then(function () {
-            installEvent = null;
-            installButton.hidden = true;
+    if (installButton) {
+        installButton.addEventListener('click', function () {
+            if (!installEvent) return;
+            installEvent.prompt();
+            installEvent.userChoice.then(function () {
+                installEvent = null;
+                installButton.hidden = true;
+            });
         });
-    });
+    }
 
     window.addEventListener('appinstalled', function () {
         installEvent = null;
-        installButton.hidden = true;
+        if (installButton) installButton.hidden = true;
     });
-
-    document.addEventListener('click', function (event) {
-        var target = event.target;
-        while (target && target !== document && target.tagName !== 'A') {
-            target = target.parentNode;
-        }
-        if (!target || target.tagName !== 'A' || !window.DeseoAnalytics) return;
-
-        var eventName = target.getAttribute('data-analytics-event');
-        if (!eventName) return;
-
-        window.DeseoAnalytics.event(eventName, {
-            link_url: target.href || '',
-            link_text: (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100),
-            language: document.documentElement.lang || 'el'
-        });
-    });
-
-    var radioFrame = document.querySelector('iframe[src*="play.iradios.gr/widget/deseo-radio"]');
-    if (radioFrame) {
-        radioFrame.addEventListener('load', function () {
-            if (window.DeseoAnalytics) {
-                window.DeseoAnalytics.event('radio_player_loaded', {
-                    player_provider: 'iradios'
-                });
-            }
-        });
-    }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-            for (var r = 0; r < registrations.length; r++) {
-                var reg = registrations[r];
-                var worker = reg.active || reg.waiting || reg.installing;
-                var scriptUrl = worker && worker.scriptURL ? worker.scriptURL : '';
-                if (scriptUrl.indexOf('/sw.js') !== -1 && scriptUrl.indexOf('/webpushr-sw.js') === -1) {
-                    reg.unregister();
-                }
-            }
-        }).catch(function () {});
-    }
-
-    if ('caches' in window) {
-        caches.keys().then(function (keys) {
-            for (var c = 0; c < keys.length; c++) {
-                if (keys[c].indexOf('deseo-') === 0) caches.delete(keys[c]);
-            }
-        }).catch(function () {});
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js?v=' + encodeURIComponent(window.DESEO_ASSET_VERSION || '1')).catch(function () {});
+        });
     }
 }());
 </script>
