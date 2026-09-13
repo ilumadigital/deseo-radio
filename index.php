@@ -178,7 +178,7 @@ require_once __DIR__ . '/includes/header.php';
                 # <span data-i18n="hero.sponsor"><?= deseo_e(deseo_t('hero.sponsor')) ?></span>
             </div>
             
-            <a href="https://iluma.gr" target="_blank" rel="noopener" class="block w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 transition-all duration-500 hover:scale-[1.015] hover:border-white/10 bg-zinc-950">
+            <a href="https://iluma.gr" target="_blank" rel="noopener" data-analytics-event="sponsor_click" class="block w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] border border-white/5 transition-all duration-500 hover:scale-[1.015] hover:border-white/10 bg-zinc-950">
                 <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="Iluma Digital Agency - Bespoke Production" class="w-full h-full object-cover">
             </a>
         </div>
@@ -258,6 +258,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php if ($airplay_tracks): ?>
                     <?php foreach ($airplay_tracks as $track): ?>
                         <a class="track-row reveal"
+                           data-analytics-event="spotify_track_click"
                            href="<?= deseo_e($track['spotify_url']) ?>"
                            target="_blank"
                            rel="noopener noreferrer">
@@ -309,7 +310,7 @@ require_once __DIR__ . '/includes/header.php';
             ?>
             <div class="partner-grid reveal">
                 <?php foreach ($partners as $id => $partner): ?>
-                    <a href="<?= deseo_e($partner['url']) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= deseo_e($partner['name']) ?>">
+                    <a href="<?= deseo_e($partner['url']) ?>" data-analytics-event="radio_partner_click" target="_blank" rel="noopener noreferrer" aria-label="<?= deseo_e($partner['name']) ?>">
                         <img src="/assets/img/partner-<?= $id ?>.png"
                              data-fallback="/assets/img/deseoradio-logo.png"
                              alt="<?= deseo_e($partner['name']) ?>">
@@ -327,7 +328,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
             <div class="advertise-copy">
                 <p data-i18n="advertise.text"><?= deseo_e(deseo_t('advertise.text')) ?></p>
-                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer" data-i18n="advertise.cta"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
+                <a class="button button-primary" href="https://iluma.gr/contact/" target="_blank" rel="noopener noreferrer" data-i18n="advertise.cta" data-analytics-event="advertising_cta_click"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
             </div>
         </div>
     </section>
