@@ -149,9 +149,47 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
     var installEvent = null;
     var installButton = document.getElementById('pwa-install-prompt');
+    var PWA_INSTALLED_KEY = 'deseoPwaInstalled';
+
+    function isStandalonePwa() {
+        var displayStandalone = window.matchMedia
+            && window.matchMedia('(display-mode: standalone)').matches;
+        var iosStandalone = window.navigator.standalone === true;
+        var androidAppReferrer = document.referrer
+            && document.referrer.indexOf('android-app://') === 0;
+
+        return !!(displayStandalone || iosStandalone || androidAppReferrer);
+    }
+
+    function isPwaKnownInstalled() {
+        if (isStandalonePwa()) return true;
+
+        try {
+            return window.localStorage.getItem(PWA_INSTALLED_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function markPwaInstalled() {
+        try {
+            window.localStorage.setItem(PWA_INSTALLED_KEY, '1');
+        } catch (e) {}
+    }
 
     function maybeShowInstallPrompt() {
-        if (!installButton || !installEvent) return;
+        if (!installButton) return;
+
+        if (isPwaKnownInstalled()) {
+            installEvent = null;
+            installButton.hidden = true;
+            return;
+        }
+
+        if (!installEvent) {
+            installButton.hidden = true;
+            return;
+        }
 
         var cookieBanner = document.getElementById('cookie-banner');
         var cookieVisible = cookieBanner
@@ -282,6 +320,13 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
     window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
+
+        if (isPwaKnownInstalled()) {
+            installEvent = null;
+            if (installButton) installButton.hidden = true;
+            return;
+        }
+
         installEvent = event;
         maybeShowInstallPrompt();
     });
@@ -290,7 +335,10 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         installButton.addEventListener('click', function () {
             if (!installEvent) return;
             installEvent.prompt();
-            installEvent.userChoice.then(function () {
+            installEvent.userChoice.then(function (choice) {
+                if (choice && choice.outcome === 'accepted') {
+                    markPwaInstalled();
+                }
                 installEvent = null;
                 installButton.hidden = true;
             });
@@ -298,9 +346,15 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     }
 
     window.addEventListener('appinstalled', function () {
+        markPwaInstalled();
         installEvent = null;
         if (installButton) installButton.hidden = true;
     });
+
+    if (isStandalonePwa()) {
+        markPwaInstalled();
+        if (installButton) installButton.hidden = true;
+    }
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
