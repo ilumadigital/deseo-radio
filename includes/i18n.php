@@ -57,6 +57,16 @@ function deseo_t(string $key): string {
             'hero.non_stop' => 'DESEO AUTO DJ',
             'hero.live_broadcast' => 'Live broadcast',
 
+            'discover.kicker' => 'DESEO MUSIC · ON AIR',
+            'discover.title' => 'Δες τι παίζει.',
+            'discover.text' => 'Hot tracks, σημερινό πρόγραμμα και επιλεγμένες playlists του Deseo Radio.',
+            'program.panel_title' => 'ΣΗΜΕΡΑ',
+
+            'discover.kicker' => 'DESEO MUSIC · ON AIR',
+            'discover.title' => "See what's playing.",
+            'discover.text' => 'Hot tracks, today’s schedule and selected Deseo Radio playlists.',
+            'program.panel_title' => 'TODAY',
+
             'airplay.kicker' => 'HOT TRACKS',
             'airplay.title' => 'Αυτά παίζουν τώρα.',
             'airplay.text' => 'Οι επιλογές που ξεχωρίζουν αυτή την εβδομάδα στο Deseo.',
