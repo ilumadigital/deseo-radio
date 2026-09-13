@@ -1499,3 +1499,69 @@ h2,
   .deseo-dashboard-intro .section-title{font-size:44px}
   .deseo-panel-header>span{display:none}
 }
+
+
+/* ================================================================
+   FINAL SECTION HEADER STACK
+   Kicker first, title directly underneath — everywhere.
+   ================================================================ */
+.section-head > div,
+.deseo-dashboard-intro > div,
+.about-grid > div:first-child,
+.brand-cta-card > div:first-child{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+}
+
+.section-head .kicker,
+.deseo-dashboard-intro .kicker,
+.about-grid .kicker,
+.brand-cta-card .kicker{
+  display:inline-flex!important;
+  width:auto!important;
+  margin:0!important;
+  order:1!important;
+}
+
+.section-head .section-title,
+.deseo-dashboard-intro .section-title,
+.about-grid .section-title,
+.brand-cta-card h2{
+  display:block!important;
+  width:100%!important;
+  margin:14px 0 0!important;
+  order:2!important;
+  color:#fff!important;
+  background:none!important;
+  background-image:none!important;
+  -webkit-background-clip:border-box!important;
+  background-clip:border-box!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Prevent any inherited inline title treatment from putting title beside kicker. */
+.section-head h1,
+.section-head h2,
+.deseo-dashboard-intro h1,
+.deseo-dashboard-intro h2,
+.about-grid h1,
+.about-grid h2,
+.brand-cta-card h1,
+.brand-cta-card h2{
+  display:block!important;
+  clear:both!important;
+}
+
+/* Keep descriptive copy visually separate from the kicker/title stack. */
+.section-head > p,
+.deseo-dashboard-intro > p{
+  align-self:flex-end;
+}
+
+@media(max-width:900px){
+  .section-head > p,
+  .deseo-dashboard-intro > p{
+    align-self:flex-start;
+  }
+}
