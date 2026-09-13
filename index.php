@@ -137,7 +137,7 @@ $partners = [
 <main id="main-content">
     <section class="classic-hero" id="live">
         <div class="classic-hero-bg" aria-hidden="true">
-            <img src="/assets/img/bg.png" alt="">
+            <img src="/assets/img/bg.png?v=<?= $assetVersion ?>" alt="">
             <div class="classic-hero-dim"></div>
             <div class="classic-hero-gradient"></div>
         </div>
@@ -163,7 +163,7 @@ $partners = [
                 <div class="hero-square hero-cms-card">
                     <?php if ($live_dj): ?>
                         <img src="<?= deseo_e($live_dj['photo_path'] ?: '/assets/img/bg.png') ?>"
-                             data-fallback="/assets/img/bg.png"
+                             data-fallback="/assets/img/bg.png?v=<?= $assetVersion ?>"
                              alt="<?= deseo_e($live_dj['dj_name']) ?>">
 
                         <div class="hero-cms-overlay">
@@ -172,7 +172,7 @@ $partners = [
                             <p><?= deseo_time($live_dj['start_time']) ?> — <?= deseo_time($live_dj['end_time']) ?></p>
                         </div>
                     <?php else: ?>
-                        <img src="/assets/img/bg.png" alt="Deseo Radio Auto DJ">
+                        <img src="/assets/img/bg.png?v=<?= $assetVersion ?>" alt="Deseo Radio Auto DJ">
                         <div class="hero-cms-overlay">
                             <span>NON-STOP MIX</span>
                             <h2 data-i18n="hero.non_stop"><?= deseo_e(deseo_t('hero.non_stop')) ?></h2>
