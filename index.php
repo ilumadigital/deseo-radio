@@ -135,47 +135,65 @@ $partners = [
 ?>
 
 <main id="main-content">
-    <section class="hero-v3" id="live">
-        <div class="hero-v3-media" aria-hidden="true">
+    <section class="classic-hero" id="live">
+        <div class="classic-hero-bg" aria-hidden="true">
             <img src="/assets/img/bg.png" alt="">
-            <div class="hero-v3-shade"></div>
-            <div class="hero-v3-edge"></div>
+            <div class="classic-hero-dim"></div>
+            <div class="classic-hero-gradient"></div>
         </div>
 
-        <div class="wide-shell hero-v3-grid">
-            <div class="hero-v3-copy reveal">
-                <span class="kicker" data-i18n="hero.kicker"><?= deseo_e(deseo_t('hero.kicker')) ?></span>
-                <h1 class="metal-title" data-i18n="hero.title"><?= deseo_e(deseo_t('hero.title')) ?></h1>
-                <p data-i18n="hero.text"><?= deseo_e(deseo_t('hero.text')) ?></p>
-
-                <div class="hero-v3-actions">
-                    <a class="button button-red" href="#player" data-i18n="hero.listen" data-analytics-event="live_radio_click"><?= deseo_e(deseo_t('hero.listen')) ?></a>
-                    <a class="button button-glass" href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer" data-i18n="hero.network" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('hero.network')) ?> ↗</a>
+        <div class="wide-shell classic-hero-grid">
+            <div class="hero-deck" id="player">
+                <div class="hero-deck-label">
+                    <span class="live-pulse" aria-hidden="true"></span>
+                    <span>NOW PLAYING</span>
                 </div>
 
-                <div class="hero-v3-status">
-                    <span class="live-pulse" aria-hidden="true"></span>
-                    <div>
-                        <small data-i18n="hero.now_on_air"><?= deseo_e(deseo_t('hero.now_on_air')) ?></small>
-                        <strong><?= deseo_e($live_dj['dj_name'] ?? deseo_t('hero.non_stop')) ?></strong>
-                        <?php if ($live_dj): ?>
-                            <span><?= deseo_time($live_dj['start_time']) ?> — <?= deseo_time($live_dj['end_time']) ?></span>
-                        <?php else: ?>
-                            <span>24/7</span>
-                        <?php endif; ?>
-                    </div>
+                <div class="hero-square hero-player-card">
+                    <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
                 </div>
             </div>
 
-            <div class="radio-stage reveal" id="player">
-                <div class="radio-stage-label">
-                    <span class="live-pulse" aria-hidden="true"></span>
-                    <span>DESEO RADIO · LIVE</span>
+            <div class="hero-deck">
+                <div class="hero-deck-label">
+                    <span class="live-pulse <?= $live_dj ? '' : 'is-muted' ?>" aria-hidden="true"></span>
+                    <span>NOW ON AIR</span>
                 </div>
 
-                <div class="radio-frame">
-                    <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
+                <div class="hero-square hero-cms-card">
+                    <?php if ($live_dj): ?>
+                        <img src="<?= deseo_e($live_dj['photo_path'] ?: '/assets/img/bg.png') ?>"
+                             data-fallback="/assets/img/bg.png"
+                             alt="<?= deseo_e($live_dj['dj_name']) ?>">
+
+                        <div class="hero-cms-overlay">
+                            <span data-i18n="hero.live_broadcast"><?= deseo_e(deseo_t('hero.live_broadcast')) ?></span>
+                            <h2><?= deseo_e($live_dj['dj_name']) ?></h2>
+                            <p><?= deseo_time($live_dj['start_time']) ?> — <?= deseo_time($live_dj['end_time']) ?></p>
+                        </div>
+                    <?php else: ?>
+                        <img src="/assets/img/bg.png" alt="Deseo Radio Auto DJ">
+                        <div class="hero-cms-overlay">
+                            <span>NON-STOP MIX</span>
+                            <h2 data-i18n="hero.non_stop"><?= deseo_e(deseo_t('hero.non_stop')) ?></h2>
+                            <p>24/7</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
+            </div>
+
+            <div class="hero-deck">
+                <div class="hero-deck-label hero-deck-label-muted">
+                    <span>SPONSOR</span>
+                </div>
+
+                <a class="hero-square hero-sponsor-card"
+                   href="https://iluma.gr/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   data-analytics-event="sponsor_click">
+                    <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency">
+                </a>
             </div>
         </div>
     </section>
