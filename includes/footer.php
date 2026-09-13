@@ -37,9 +37,20 @@
     </div>
 </footer>
 
-<button class="install-prompt" id="pwa-install-prompt" type="button" hidden>
-    <span data-i18n="install.title"><?= deseo_e(deseo_t('install.title')) ?></span>
-    <small data-i18n="install.subtitle"><?= deseo_e(deseo_t('install.subtitle')) ?></small>
+<button class="install-prompt" id="pwa-install-prompt" type="button" hidden aria-label="<?= deseo_e(deseo_t('install.title')) ?>">
+    <span class="install-prompt-icon" aria-hidden="true">
+        <img src="/assets/img/favicon.png" alt="">
+    </span>
+
+    <span class="install-prompt-copy">
+        <strong data-i18n="install.title"><?= deseo_e(deseo_t('install.title')) ?></strong>
+        <small data-i18n="install.subtitle"><?= deseo_e(deseo_t('install.subtitle')) ?></small>
+    </span>
+
+    <span class="install-prompt-cta" aria-hidden="true">
+        <span>INSTALL</span>
+        <i>↗</i>
+    </span>
 </button>
 
 <?php include_once __DIR__ . '/cookiebanner.php'; ?>
@@ -85,6 +96,17 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     var installEvent = null;
     var installButton = document.getElementById('pwa-install-prompt');
 
+    function maybeShowInstallPrompt() {
+        if (!installButton || !installEvent) return;
+
+        var cookieBanner = document.getElementById('cookie-banner');
+        var cookieVisible = cookieBanner
+            && !cookieBanner.hidden
+            && cookieBanner.classList.contains('is-visible');
+
+        installButton.hidden = cookieVisible;
+    }
+
     function onReady() {
         var images = document.querySelectorAll('img[data-fallback]');
         var i;
@@ -114,6 +136,17 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
         bindLanguageSwitcher();
         bindAnalytics();
+
+        var cookieBanner = document.getElementById('cookie-banner');
+        if (cookieBanner && 'MutationObserver' in window) {
+            new MutationObserver(function () {
+                maybeShowInstallPrompt();
+            }).observe(cookieBanner, {
+                attributes: true,
+                attributeFilter: ['class', 'hidden']
+            });
+        }
+        maybeShowInstallPrompt();
     }
 
     function applyLanguage(language) {
@@ -196,7 +229,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
         installEvent = event;
-        if (installButton) installButton.hidden = false;
+        maybeShowInstallPrompt();
     });
 
     if (installButton) {
