@@ -10,6 +10,7 @@ foreach ([
     __DIR__ . '/../assets/css/style.css',
     __DIR__ . '/../manifest.json',
     __DIR__ . '/../sw.js',
+    __DIR__ . '/../assets/img/bg.png',
 ] as $assetFile) {
     if (is_file($assetFile)) $assetVersion = max($assetVersion, (int)filemtime($assetFile));
 }
@@ -105,7 +106,7 @@ $schema = [
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Deseo Radio">
 
-    <link rel="preload" href="/assets/img/bg.png" as="image">
+    <link rel="preload" href="/assets/img/bg.png?v=<?= $assetVersion ?>" as="image">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= $assetVersion ?>">
 
     <script>
