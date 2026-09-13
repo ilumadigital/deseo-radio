@@ -8,11 +8,17 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#050505",
   "theme_color": "#080808",
   "orientation": "any",
-  "categories": ["music", "entertainment"],
+  "categories": [
+    "music",
+    "entertainment"
+  ],
   "icons": [
     {
       "src": "/assets/img/favicon.png",
@@ -45,6 +51,14 @@
           "type": "image/png"
         }
       ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://deseoradio.com/manifest.json",
+      "id": "/"
     }
   ]
 }
