@@ -53,6 +53,60 @@
     </span>
 </button>
 
+
+<div class="deseo-context-menu" id="deseo-context-menu" role="menu" aria-label="Deseo Radio quick menu" hidden>
+    <div class="deseo-context-menu-head">
+        <img src="/assets/img/favicon.png" alt="" aria-hidden="true">
+        <div>
+            <strong>DESEO RADIO</strong>
+            <small>Quick access</small>
+        </div>
+    </div>
+
+    <div class="deseo-context-menu-links">
+        <a href="https://iluma.gr/radios/"
+           target="_blank"
+           rel="noopener noreferrer"
+           role="menuitem"
+           data-analytics-event="context_advertising_click">
+            <span>
+                <small>FOR BRANDS</small>
+                <strong>Διαφήμιση</strong>
+            </span>
+            <i aria-hidden="true">↗</i>
+        </a>
+
+        <a href="https://play.iradios.gr/station/deseo-radio"
+           target="_blank"
+           rel="noopener noreferrer"
+           role="menuitem"
+           data-analytics-event="context_iradios_click">
+            <span>
+                <small>LIVE RADIO</small>
+                <strong>Άκου στο iRadios</strong>
+            </span>
+            <i aria-hidden="true">↗</i>
+        </a>
+
+        <a href="https://iluma.gr/contact/"
+           target="_blank"
+           rel="noopener noreferrer"
+           role="menuitem"
+           data-analytics-event="context_contact_click">
+            <span>
+                <small>ILUMA DIGITAL AGENCY</small>
+                <strong>Επικοινωνία</strong>
+            </span>
+            <i aria-hidden="true">↗</i>
+        </a>
+    </div>
+
+    <div class="deseo-context-menu-foot">
+        <span>DESEO · ATHENS</span>
+        <span>24/7</span>
+    </div>
+</div>
+
 <?php include_once __DIR__ . '/cookiebanner.php'; ?>
 
 <?php
@@ -255,5 +309,96 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     }
 }());
 </script>
+
+<script>
+(function () {
+    'use strict';
+
+    var menu = document.getElementById('deseo-context-menu');
+    if (!menu) return;
+
+    var closeTimer = null;
+
+    function openMenu(x, y) {
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
+        }
+
+        menu.hidden = false;
+        menu.classList.remove('is-open');
+
+        var margin = 12;
+        var rect = menu.getBoundingClientRect();
+        var left = Math.min(Math.max(margin, x), Math.max(margin, window.innerWidth - rect.width - margin));
+        var top = Math.min(Math.max(margin, y), Math.max(margin, window.innerHeight - rect.height - margin));
+
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+
+        window.requestAnimationFrame(function () {
+            menu.classList.add('is-open');
+            var first = menu.querySelector('a');
+            if (first) first.focus({ preventScroll: true });
+        });
+    }
+
+    function closeMenu(immediate) {
+        menu.classList.remove('is-open');
+
+        if (closeTimer) window.clearTimeout(closeTimer);
+
+        if (immediate) {
+            menu.hidden = true;
+            return;
+        }
+
+        closeTimer = window.setTimeout(function () {
+            menu.hidden = true;
+            closeTimer = null;
+        }, 140);
+    }
+
+    document.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+        openMenu(event.clientX, event.clientY);
+    }, true);
+
+    document.addEventListener('pointerdown', function (event) {
+        if (!menu.hidden && !menu.contains(event.target)) closeMenu(false);
+    }, true);
+
+    document.addEventListener('keydown', function (event) {
+        var key = String(event.key || '').toLowerCase();
+        var ctrlOrMeta = event.ctrlKey || event.metaKey;
+        var devShortcut =
+            event.key === 'F12' ||
+            (ctrlOrMeta && event.shiftKey && ['i', 'j', 'c', 'k'].indexOf(key) !== -1) ||
+            (ctrlOrMeta && ['u', 's'].indexOf(key) !== -1);
+
+        if (devShortcut) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
+
+        if (event.key === 'Escape' && !menu.hidden) {
+            event.preventDefault();
+            closeMenu(false);
+        }
+    }, true);
+
+    menu.addEventListener('click', function (event) {
+        var target = event.target;
+        while (target && target !== menu && target.tagName !== 'A') target = target.parentNode;
+        if (target && target.tagName === 'A') closeMenu(true);
+    });
+
+    window.addEventListener('blur', function () { closeMenu(true); });
+    window.addEventListener('resize', function () { closeMenu(true); });
+    window.addEventListener('scroll', function () { closeMenu(true); }, { passive: true });
+}());
+</script>
+
 </body>
 </html>
