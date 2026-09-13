@@ -26,7 +26,8 @@
         (document.head || document.documentElement).appendChild(js);
 
         window.webpushr('setup', {
-            key: 'BKgQeRKClX2ZYF6gJkeWih74UwVtgQ0F22w6ARHnINyalkH8KVKUFoGicN0aUEZAIsCc3cghGj3x3Daw85_cw8U'
+            key: 'BKgQeRKClX2ZYF6gJkeWih74UwVtgQ0F22w6ARHnINyalkH8KVKUFoGicN0aUEZAIsCc3cghGj3x3Daw85_cw8U',
+            sw: 'none'
         });
     }
 
