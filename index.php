@@ -198,117 +198,126 @@ $partners = [
         </div>
     </section>
 
-    <section class="content-section" id="airplay">
+    <section class="deseo-dashboard-section" id="discover">
         <div class="wide-shell">
-            <div class="section-head reveal">
+            <div class="deseo-dashboard-intro">
                 <div>
-                    <span class="kicker" data-i18n="airplay.kicker"><?= deseo_e(deseo_t('airplay.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="airplay.title"><?= deseo_e(deseo_t('airplay.title')) ?></h2>
+                    <span class="kicker" data-i18n="discover.kicker"><?= deseo_e(deseo_t('discover.kicker')) ?></span>
+                    <h2 class="section-title" data-i18n="discover.title"><?= deseo_e(deseo_t('discover.title')) ?></h2>
                 </div>
-                <p data-i18n="airplay.text"><?= deseo_e(deseo_t('airplay.text')) ?></p>
+                <p data-i18n="discover.text"><?= deseo_e(deseo_t('discover.text')) ?></p>
             </div>
 
-            <?php if ($airplay_tracks): ?>
-                <div class="track-stack">
-                    <?php foreach (array_slice($airplay_tracks, 0, 6) as $track): ?>
-                        <a class="track-line reveal"
-                           href="<?= deseo_e($track['spotify_url']) ?>"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           data-analytics-event="spotify_track_click">
-                            <span class="track-index"><?= str_pad((string)(int)$track['position'], 2, '0', STR_PAD_LEFT) ?></span>
-                            <img src="<?= deseo_e($track['artwork_url'] ?: '/assets/img/favicon.png') ?>"
-                                 data-fallback="/assets/img/favicon.png"
-                                 alt="">
-                            <span class="track-copy">
-                                <strong><?= deseo_e($track['track_name'] ?: 'Deseo Selection') ?></strong>
-                                <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : 'Deseo Radio Selection') ?></small>
-                            </span>
-                            <span class="track-open" data-i18n="airplay.spotify"><?= deseo_e(deseo_t('airplay.spotify')) ?> ↗</span>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="empty-box" data-i18n="airplay.empty"><?= deseo_e(deseo_t('airplay.empty')) ?></div>
-            <?php endif; ?>
-        </div>
-    </section>
+            <div class="deseo-dashboard-grid">
+                <article class="deseo-panel" id="airplay">
+                    <header class="deseo-panel-header">
+                        <h3>HOT TRACKS</h3>
+                        <span>DESEO RADIO</span>
+                    </header>
 
-    <section class="content-section section-dark" id="program">
-        <div class="wide-shell">
-            <div class="section-head reveal">
-                <div>
-                    <span class="kicker" data-i18n="program.kicker"><?= deseo_e(deseo_t('program.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="program.title"><?= deseo_e(deseo_t('program.title')) ?></h2>
-                </div>
-                <p data-i18n="program.text"><?= deseo_e(deseo_t('program.text')) ?></p>
+                    <div class="deseo-panel-body">
+                        <?php if ($airplay_tracks): ?>
+                            <?php foreach (array_slice($airplay_tracks, 0, 6) as $track): ?>
+                                <a class="deseo-panel-row"
+                                   href="<?= deseo_e($track['spotify_url']) ?>"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   data-analytics-event="spotify_track_click">
+                                    <img class="deseo-row-cover"
+                                         src="<?= deseo_e($track['artwork_url'] ?: '/assets/img/favicon.png') ?>"
+                                         data-fallback="/assets/img/favicon.png"
+                                         alt="">
+
+                                    <span class="deseo-row-copy">
+                                        <strong><?= deseo_e($track['track_name'] ?: 'Deseo Selection') ?></strong>
+                                        <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : 'Deseo Radio Selection') ?></small>
+                                    </span>
+
+                                    <span class="deseo-row-action" aria-hidden="true">↗</span>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="deseo-panel-empty" data-i18n="airplay.empty"><?= deseo_e(deseo_t('airplay.empty')) ?></div>
+                        <?php endif; ?>
+                    </div>
+                </article>
+
+                <article class="deseo-panel" id="program">
+                    <header class="deseo-panel-header">
+                        <h3 data-i18n="program.panel_title"><?= deseo_e(deseo_t('program.panel_title')) ?></h3>
+                        <span>DESEO RADIO</span>
+                    </header>
+
+                    <div class="deseo-panel-body">
+                        <?php if ($todays_program): ?>
+                            <?php foreach ($todays_program as $show):
+                                $isLiveRow = $live_dj && (int)$live_dj['id'] === (int)$show['id'];
+                            ?>
+                                <div class="deseo-panel-row deseo-program-row <?= $isLiveRow ? 'is-live' : '' ?>">
+                                    <img class="deseo-row-cover"
+                                         src="<?= deseo_e($show['photo_path'] ?: '/assets/img/bg.png') ?>"
+                                         data-fallback="/assets/img/bg.png"
+                                         alt="<?= deseo_e($show['dj_name']) ?>">
+
+                                    <span class="deseo-row-copy">
+                                        <small><?= deseo_time($show['start_time']) ?> — <?= deseo_time($show['end_time']) ?></small>
+                                        <strong><?= deseo_e($show['dj_name']) ?></strong>
+                                    </span>
+
+                                    <?php if ($isLiveRow): ?>
+                                        <span class="deseo-live-tag">LIVE</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+
+                            <?php if ($next_dj): ?>
+                                <div class="deseo-next-pill">
+                                    <span data-i18n="program.next"><?= deseo_e(deseo_t('program.next')) ?></span>
+                                    · <?= deseo_e($next_dj['dj_name']) ?>
+                                    · <?= deseo_time($next_dj['start_time']) ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div class="deseo-panel-empty" data-i18n="program.empty"><?= deseo_e(deseo_t('program.empty')) ?></div>
+                        <?php endif; ?>
+                    </div>
+                </article>
+
+                <article class="deseo-panel" id="playlists">
+                    <header class="deseo-panel-header">
+                        <h3>PLAYLISTS</h3>
+                        <span>CMS</span>
+                    </header>
+
+                    <div class="deseo-panel-body">
+                        <?php if ($playlists): ?>
+                            <?php foreach (array_slice($playlists, 0, 6) as $playlist): ?>
+                                <a class="deseo-panel-row deseo-playlist-row"
+                                   href="<?= deseo_e($playlist['spotify_url']) ?>"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   data-analytics-event="playlist_click">
+                                    <span class="deseo-row-index"><?= str_pad((string)(int)$playlist['position'], 2, '0', STR_PAD_LEFT) ?></span>
+
+                                    <img class="deseo-row-cover"
+                                         src="<?= deseo_e($playlist['artwork_url'] ?: '/assets/img/favicon.png') ?>"
+                                         data-fallback="/assets/img/favicon.png"
+                                         alt="<?= deseo_e($playlist['title']) ?>">
+
+                                    <span class="deseo-row-copy">
+                                        <strong><?= deseo_e($playlist['title']) ?></strong>
+                                        <small>Spotify · Deseo Radio Playlist</small>
+                                    </span>
+
+                                    <span class="deseo-row-action" aria-hidden="true">↗</span>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="deseo-panel-empty" data-i18n="playlists.empty"><?= deseo_e(deseo_t('playlists.empty')) ?></div>
+                        <?php endif; ?>
+                    </div>
+                </article>
             </div>
-
-            <?php if ($todays_program): ?>
-                <div class="program-grid">
-                    <?php foreach ($todays_program as $show):
-                        $isLiveRow = $live_dj && (int)$live_dj['id'] === (int)$show['id'];
-                    ?>
-                        <article class="program-card reveal <?= $isLiveRow ? 'is-live' : '' ?>">
-                            <img src="<?= deseo_e($show['photo_path'] ?: '/assets/img/bg.png') ?>"
-                                 data-fallback="/assets/img/bg.png"
-                                 alt="<?= deseo_e($show['dj_name']) ?>">
-                            <div class="program-card-copy">
-                                <span data-i18n="<?= $isLiveRow ? 'program.on_air' : 'program.live_set' ?>"><?= deseo_e($isLiveRow ? deseo_t('program.on_air') : deseo_t('program.live_set')) ?></span>
-                                <h3><?= deseo_e($show['dj_name']) ?></h3>
-                                <p><?= deseo_time($show['start_time']) ?> — <?= deseo_time($show['end_time']) ?></p>
-                            </div>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="empty-box" data-i18n="program.empty"><?= deseo_e(deseo_t('program.empty')) ?></div>
-            <?php endif; ?>
-
-            <?php if ($next_dj && !$live_dj): ?>
-                <div class="next-live reveal">
-                    <span data-i18n="program.next"><?= deseo_e(deseo_t('program.next')) ?></span>
-                    <strong><?= deseo_e($next_dj['dj_name']) ?></strong>
-                    <small><span data-i18n="day.<?= (int)$next_dj['day_of_week'] ?>"><?= deseo_e(deseo_t_day((int)$next_dj['day_of_week'])) ?></span> · <?= deseo_time($next_dj['start_time']) ?></small>
-                </div>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <section class="content-section" id="playlists">
-        <div class="wide-shell">
-            <div class="section-head reveal">
-                <div>
-                    <span class="kicker" data-i18n="playlists.kicker"><?= deseo_e(deseo_t('playlists.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="playlists.title"><?= deseo_e(deseo_t('playlists.title')) ?></h2>
-                </div>
-                <p data-i18n="playlists.text"><?= deseo_e(deseo_t('playlists.text')) ?></p>
-            </div>
-
-            <?php if ($playlists): ?>
-                <div class="playlist-grid">
-                    <?php foreach ($playlists as $playlist): ?>
-                        <a class="playlist-card reveal"
-                           href="<?= deseo_e($playlist['spotify_url']) ?>"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           data-analytics-event="playlist_click">
-                            <div class="playlist-art">
-                                <img src="<?= deseo_e($playlist['artwork_url'] ?: '/assets/img/favicon.png') ?>"
-                                     data-fallback="/assets/img/favicon.png"
-                                     alt="<?= deseo_e($playlist['title']) ?>">
-                                <span><?= str_pad((string)(int)$playlist['position'], 2, '0', STR_PAD_LEFT) ?></span>
-                            </div>
-                            <div class="playlist-copy">
-                                <strong><?= deseo_e($playlist['title']) ?></strong>
-                                <small data-i18n="playlists.open"><?= deseo_e(deseo_t('playlists.open')) ?></small>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="empty-box" data-i18n="playlists.empty"><?= deseo_e(deseo_t('playlists.empty')) ?></div>
-            <?php endif; ?>
         </div>
     </section>
 
