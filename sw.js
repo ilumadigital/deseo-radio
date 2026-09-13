@@ -1,3 +1,5 @@
+importScripts('https://cdn.webpushr.com/sw-server.min.js');
+
 /* Deseo Radio PWA
    Static-assets-only caching. The live iRadios player is cross-origin and is
    intentionally never intercepted or cached by this service worker. */
