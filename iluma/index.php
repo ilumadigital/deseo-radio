@@ -78,7 +78,14 @@ require_once __DIR__ . '/admin-ui.php';
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
-$playlistCount = (int) $pdo->query("SELECT COUNT(*) FROM playlists")->fetchColumn();
+$playlistCount = 0;
+if (!empty($GLOBALS['playlist_storage_ready'])) {
+    try {
+        $playlistCount = (int) $pdo->query("SELECT COUNT(*) FROM playlists")->fetchColumn();
+    } catch (Throwable $playlistCountError) {
+        error_log('Playlist count unavailable: ' . $playlistCountError->getMessage());
+    }
+}
 $today = (int) date('N');
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE day_of_week = ?");
 $stmt->execute([$today]);
