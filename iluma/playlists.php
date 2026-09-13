@@ -6,6 +6,11 @@ require_once __DIR__ . '/admin-ui.php';
 
 $success = null;
 $error = null;
+$playlistStorageReady = !empty($GLOBALS['playlist_storage_ready']);
+
+if (!$playlistStorageReady) {
+    $error = 'Το Playlists storage δεν είναι διαθέσιμο αυτή τη στιγμή. Το υπόλοιπο CMS λειτουργεί κανονικά.';
+}
 
 function playlist_local_file(?string $url): ?string {
     if (!$url || strpos($url, '/iluma/uploads/playlist-') !== 0) return null;
@@ -23,7 +28,7 @@ function playlist_delete_local_if_unused(PDO $pdo, ?string $url): void {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($playlistStorageReady && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_verify_csrf($_POST['csrf_token'] ?? null)) {
         $error = 'Η συνεδρία έληξε. Ανανεώστε τη σελίδα.';
     } else {
@@ -146,7 +151,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$playlists = $pdo->query("SELECT * FROM playlists ORDER BY position ASC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$playlists = [];
+if ($playlistStorageReady) {
+    try {
+        $playlists = $pdo->query("SELECT * FROM playlists ORDER BY position ASC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $playlistListError) {
+        error_log('Playlist list unavailable: ' . $playlistListError->getMessage());
+        $error = 'Δεν ήταν δυνατή η φόρτωση των playlists αυτή τη στιγμή.';
+    }
+}
 
 admin_page_start('Playlists', 'playlists');
 ?>
@@ -163,6 +176,7 @@ admin_page_start('Playlists', 'playlists');
 
 <section class="panel">
     <form method="post" enctype="multipart/form-data">
+        <fieldset <?= $playlistStorageReady ? '' : 'disabled' ?> style="border:0;padding:0;margin:0;min-inline-size:0">
         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
         <input type="hidden" name="action" value="save">
 
@@ -191,6 +205,7 @@ admin_page_start('Playlists', 'playlists');
         </div>
 
         <div class="form-actions"><button class="button button-primary" type="submit">Save playlist</button></div>
+        </fieldset>
     </form>
 </section>
 
