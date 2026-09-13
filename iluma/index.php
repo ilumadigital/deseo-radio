@@ -78,6 +78,7 @@ require_once __DIR__ . '/admin-ui.php';
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
+$playlistCount = (int) $pdo->query("SELECT COUNT(*) FROM playlists")->fetchColumn();
 $today = (int) date('N');
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE day_of_week = ?");
 $stmt->execute([$today]);
@@ -93,10 +94,12 @@ admin_page_start('Overview', 'dashboard');
     <div class="stat"><strong><?= $airplayCount ?></strong><span>Airplay tracks</span></div>
     <div class="stat"><strong><?= $programCount ?></strong><span>Program slots</span></div>
     <div class="stat"><strong><?= $todayCount ?></strong><span>Shows today</span></div>
+    <div class="stat"><strong><?= $playlistCount ?></strong><span>Playlists</span></div>
 </section>
 
 <section class="quick-grid">
     <a class="quick-card" href="airplay.php"><small>Weekly rotation</small><h2>Airplay Top 10</h2><p>Ανανέωσε Spotify tracks, artwork και ranking.</p></a>
     <a class="quick-card" href="program.php"><small>Live schedule</small><h2>Radio Program</h2><p>Διαχειρίσου DJs, ημέρες, ώρες και φωτογραφίες.</p></a>
+    <a class="quick-card" href="playlists.php"><small>Spotify curation</small><h2>Playlists</h2><p>Πρόσθεσε Spotify playlists, covers και σειρά εμφάνισης.</p></a>
 </section>
 <?php admin_page_end(); ?>
