@@ -10,10 +10,6 @@
     function safeSet(value) {
         try { window.localStorage.setItem(STORAGE_KEY, value); } catch (e) {}
     }
-    function gtag() {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push(arguments);
-    }
     function loadWebpushr() {
         if (window.__deseoWebpushrLoaded) return;
         window.__deseoWebpushrLoaded = true;
@@ -47,7 +43,7 @@
         ad_personalization: 'denied'
     };
 
-    gtag('consent', 'default', defaults);
+    if (window.gtag) window.gtag('consent', 'update', defaults);
 
     window.DeseoConsent = {
         current: defaults,
@@ -60,13 +56,17 @@
             };
             this.current = next;
             safeSet(JSON.stringify(next));
-            gtag('consent', 'update', next);
-            if (analytics) loadWebpushr();
+            if (window.gtag) window.gtag('consent', 'update', next);
+            if (analytics) {
+                if (window.DeseoAnalytics) window.DeseoAnalytics.load();
+                loadWebpushr();
+            }
         },
         loadWebpushr: loadWebpushr
     };
 
     if (consent && consent.analytics_storage === 'granted') {
+        if (window.DeseoAnalytics) window.DeseoAnalytics.load();
         loadWebpushr();
     }
 }());
