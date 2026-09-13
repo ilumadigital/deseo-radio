@@ -2,25 +2,49 @@
   "id": "/",
   "name": "Deseo Radio",
   "short_name": "Deseo",
-  "description": "The Soundtrack of your Life — House music live from Athens.",
+  "description": "Το Soundtrack της ζωής σου — House, Afro House και Organic House 24/7.",
+  "lang": "el",
+  "dir": "ltr",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "background_color": "#090909",
-  "theme_color": "#090909",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#050505",
+  "theme_color": "#080808",
   "orientation": "any",
   "categories": ["music", "entertainment"],
   "icons": [
     {
       "src": "/assets/img/favicon.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Listen Live",
+      "short_name": "Live",
+      "url": "/#player",
+      "icons": [
+        {
+          "src": "/assets/img/favicon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
     },
     {
-      "src": "/assets/img/favicon.png",
-      "type": "image/png",
-      "purpose": "maskable"
+      "name": "Playlists",
+      "short_name": "Playlists",
+      "url": "/#playlists",
+      "icons": [
+        {
+          "src": "/assets/img/favicon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
