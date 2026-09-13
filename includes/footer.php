@@ -5,7 +5,7 @@
                 <img class="deseo-footer-logo" src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
                 <p class="deseo-footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
 
-                <a class="deseo-footer-live-link" href="#main-content">
+                <a class="deseo-footer-live-link" href="#main-content" data-analytics-event="live_radio_click">
                     <span class="deseo-live-dot" aria-hidden="true"></span>
                     <span>LIVE RADIO</span>
                 </a>
@@ -14,9 +14,9 @@
             <div class="deseo-footer-nav">
                 <div class="deseo-footer-group">
                     <span class="deseo-footer-label" data-i18n="footer.listen"><?= deseo_e(deseo_t('footer.listen')) ?></span>
-                    <a href="#main-content" data-i18n="footer.live_player"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
-                    <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
-                    <a href="#airplay" data-i18n="footer.weekly_airplay"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
+                    <a href="#main-content" data-i18n="footer.live_player" data-analytics-event="live_radio_click"><?= deseo_e(deseo_t('footer.live_player')) ?></a>
+                    <a href="#program" data-i18n="footer.today_program" data-analytics-event="program_click"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
+                    <a href="#airplay" data-i18n="footer.weekly_airplay" data-analytics-event="airplay_click"><?= deseo_e(deseo_t('footer.weekly_airplay')) ?></a>
                 </div>
 
                 <div class="deseo-footer-group">
@@ -135,13 +135,11 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
             document.cookie = 'deseo_lang=' + language + '; Max-Age=31536000; Path=/; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
         } catch (e) {}
 
-        try {
-            var url = new URL(window.location.href);
-            if (language === 'el') url.searchParams.delete('lang');
-            else url.searchParams.set('lang', 'en');
-            window.history.replaceState({}, '', url.pathname + (url.search || '') + (url.hash || ''));
-        } catch (e) {}
-
+        if (window.DESEO_LANGUAGE !== language && window.DeseoAnalytics) {
+            window.DeseoAnalytics.event('language_change', {
+                language: language
+            });
+        }
         window.DESEO_LANGUAGE = language;
     }
 
@@ -184,6 +182,34 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         installEvent = null;
         installButton.hidden = true;
     });
+
+    document.addEventListener('click', function (event) {
+        var target = event.target;
+        while (target && target !== document && target.tagName !== 'A') {
+            target = target.parentNode;
+        }
+        if (!target || target.tagName !== 'A' || !window.DeseoAnalytics) return;
+
+        var eventName = target.getAttribute('data-analytics-event');
+        if (!eventName) return;
+
+        window.DeseoAnalytics.event(eventName, {
+            link_url: target.href || '',
+            link_text: (target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100),
+            language: document.documentElement.lang || 'el'
+        });
+    });
+
+    var radioFrame = document.querySelector('iframe[src*="play.iradios.gr/widget/deseo-radio"]');
+    if (radioFrame) {
+        radioFrame.addEventListener('load', function () {
+            if (window.DeseoAnalytics) {
+                window.DeseoAnalytics.event('radio_player_loaded', {
+                    player_provider: 'iradios'
+                });
+            }
+        });
+    }
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
