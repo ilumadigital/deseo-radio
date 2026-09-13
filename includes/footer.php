@@ -107,6 +107,28 @@
     </div>
 </div>
 
+
+<div class="pwa-ios-guide" id="pwa-ios-guide" hidden role="dialog" aria-modal="true" aria-labelledby="pwa-ios-guide-title">
+    <div class="pwa-ios-guide-card">
+        <button class="pwa-ios-guide-close" id="pwa-ios-guide-close" type="button" aria-label="Close">×</button>
+
+        <div class="pwa-ios-guide-icon">
+            <img src="/assets/img/favicon.png" alt="">
+        </div>
+
+        <span class="pwa-ios-guide-kicker">DESEO RADIO · iPHONE / iPAD</span>
+        <h2 id="pwa-ios-guide-title">Εγκατάσταση στη συσκευή</h2>
+
+        <ol>
+            <li><span>1</span><p>Πάτησε το <strong>Share</strong> στο Safari.</p></li>
+            <li><span>2</span><p>Επίλεξε <strong>Add to Home Screen</strong>.</p></li>
+            <li><span>3</span><p>Πάτησε <strong>Add</strong> και άνοιξε το Deseo από την αρχική οθόνη.</p></li>
+        </ol>
+
+        <button class="pwa-ios-guide-done" id="pwa-ios-guide-done" type="button">ΤΟ ΕΓΚΑΤΕΣΤΗΣΑ</button>
+    </div>
+</div>
+
 <?php include_once __DIR__ . '/cookiebanner.php'; ?>
 
 <?php
@@ -149,7 +171,14 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
     var installEvent = null;
     var installButton = document.getElementById('pwa-install-prompt');
-    var PWA_INSTALLED_KEY = 'deseoPwaInstalled';
+    var iosGuide = document.getElementById('pwa-ios-guide');
+    var iosGuideClose = document.getElementById('pwa-ios-guide-close');
+    var iosGuideDone = document.getElementById('pwa-ios-guide-done');
+    var PWA_INSTALLED_KEY = 'deseoPwaInstalledV2';
+    var PWA_DISMISS_KEY = 'deseoPwaDismissedAt';
+    var INSTALL_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+    var installMode = 'none';
+    var installCheckComplete = false;
 
     function isStandalonePwa() {
         var displayStandalone = window.matchMedia
@@ -161,42 +190,141 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         return !!(displayStandalone || iosStandalone || androidAppReferrer);
     }
 
-    function isPwaKnownInstalled() {
-        if (isStandalonePwa()) return true;
+    function isIosSafari() {
+        var ua = window.navigator.userAgent || '';
+        var isIos = /iPad|iPhone|iPod/.test(ua)
+            || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+        var isWebkit = /WebKit/.test(ua);
+        var isOtherIosBrowser = /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
 
-        try {
-            return window.localStorage.getItem(PWA_INSTALLED_KEY) === '1';
-        } catch (e) {
-            return false;
-        }
+        return !!(isIos && isWebkit && !isOtherIosBrowser);
+    }
+
+    function safeGet(key) {
+        try { return window.localStorage.getItem(key); } catch (e) { return null; }
+    }
+
+    function safeSet(key, value) {
+        try { window.localStorage.setItem(key, value); } catch (e) {}
+    }
+
+    function safeRemove(key) {
+        try { window.localStorage.removeItem(key); } catch (e) {}
     }
 
     function markPwaInstalled() {
-        try {
-            window.localStorage.setItem(PWA_INSTALLED_KEY, '1');
-        } catch (e) {}
+        safeSet(PWA_INSTALLED_KEY, '1');
+        safeRemove(PWA_DISMISS_KEY);
     }
 
-    function maybeShowInstallPrompt() {
+    function clearStaleInstalledState() {
+        safeRemove(PWA_INSTALLED_KEY);
+    }
+
+    function wasRecentlyDismissed() {
+        var value = parseInt(safeGet(PWA_DISMISS_KEY) || '0', 10);
+        return value > 0 && (Date.now() - value) < INSTALL_DISMISS_MS;
+    }
+
+    function markPromptDismissed() {
+        safeSet(PWA_DISMISS_KEY, String(Date.now()));
+    }
+
+    function queryInstalledApps() {
+        if (!window.navigator.getInstalledRelatedApps) {
+            return Promise.resolve(false);
+        }
+
+        return window.navigator.getInstalledRelatedApps()
+            .then(function (apps) {
+                return Array.isArray(apps) && apps.some(function (app) {
+                    return app.platform === 'webapp'
+                        || app.id === '/'
+                        || (app.url && app.url.indexOf('deseoradio.com') !== -1);
+                });
+            })
+            .catch(function () {
+                return false;
+            });
+    }
+
+    function cookieBannerVisible() {
+        var cookieBanner = document.getElementById('cookie-banner');
+        return !!(cookieBanner
+            && !cookieBanner.hidden
+            && cookieBanner.classList.contains('is-visible'));
+    }
+
+    function hideInstallPrompt() {
+        if (installButton) installButton.hidden = true;
+    }
+
+    function updateInstallPrompt() {
+        if (!installButton || !installCheckComplete) return;
+
+        if (isStandalonePwa() || safeGet(PWA_INSTALLED_KEY) === '1') {
+            hideInstallPrompt();
+            return;
+        }
+
+        if (cookieBannerVisible() || wasRecentlyDismissed()) {
+            hideInstallPrompt();
+            return;
+        }
+
+        if (installMode === 'native' && installEvent) {
+            installButton.hidden = false;
+            return;
+        }
+
+        if (installMode === 'ios') {
+            installButton.hidden = false;
+            return;
+        }
+
+        hideInstallPrompt();
+    }
+
+    function initialiseInstallState() {
         if (!installButton) return;
 
-        if (isPwaKnownInstalled()) {
-            installEvent = null;
-            installButton.hidden = true;
+        hideInstallPrompt();
+
+        if (isStandalonePwa()) {
+            markPwaInstalled();
+            installCheckComplete = true;
             return;
         }
 
-        if (!installEvent) {
-            installButton.hidden = true;
-            return;
-        }
+        queryInstalledApps().then(function (installed) {
+            if (installed) {
+                markPwaInstalled();
+                installMode = 'none';
+            } else {
+                if (isIosSafari()) {
+                    installMode = 'ios';
+                }
+            }
 
-        var cookieBanner = document.getElementById('cookie-banner');
-        var cookieVisible = cookieBanner
-            && !cookieBanner.hidden
-            && cookieBanner.classList.contains('is-visible');
+            installCheckComplete = true;
+            updateInstallPrompt();
+        });
+    }
 
-        installButton.hidden = cookieVisible;
+    function openIosGuide() {
+        if (!iosGuide) return;
+        iosGuide.hidden = false;
+        window.requestAnimationFrame(function () {
+            iosGuide.classList.add('is-open');
+        });
+    }
+
+    function closeIosGuide() {
+        if (!iosGuide) return;
+        iosGuide.classList.remove('is-open');
+        window.setTimeout(function () {
+            iosGuide.hidden = true;
+        }, 180);
     }
 
     function onReady() {
@@ -232,13 +360,14 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         var cookieBanner = document.getElementById('cookie-banner');
         if (cookieBanner && 'MutationObserver' in window) {
             new MutationObserver(function () {
-                maybeShowInstallPrompt();
+                updateInstallPrompt();
             }).observe(cookieBanner, {
                 attributes: true,
                 attributeFilter: ['class', 'hidden']
             });
         }
-        maybeShowInstallPrompt();
+
+        initialiseInstallState();
     }
 
     function applyLanguage(language) {
@@ -321,39 +450,107 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
 
-        if (isPwaKnownInstalled()) {
-            installEvent = null;
-            if (installButton) installButton.hidden = true;
+        if (isStandalonePwa()) {
+            markPwaInstalled();
+            hideInstallPrompt();
             return;
         }
 
+        // If Chromium fires this event, the browser considers the app installable
+        // and not currently installed. Trust the browser and clear stale local state.
+        clearStaleInstalledState();
         installEvent = event;
-        maybeShowInstallPrompt();
+        installMode = 'native';
+        installCheckComplete = true;
+        updateInstallPrompt();
     });
 
     if (installButton) {
         installButton.addEventListener('click', function () {
-            if (!installEvent) return;
-            installEvent.prompt();
-            installEvent.userChoice.then(function (choice) {
+            if (installMode === 'ios') {
+                openIosGuide();
+                return;
+            }
+
+            if (installMode !== 'native' || !installEvent) {
+                hideInstallPrompt();
+                return;
+            }
+
+            var promptEvent = installEvent;
+            installEvent = null;
+            hideInstallPrompt();
+
+            promptEvent.prompt();
+            promptEvent.userChoice.then(function (choice) {
                 if (choice && choice.outcome === 'accepted') {
                     markPwaInstalled();
+                    installMode = 'none';
+                } else {
+                    markPromptDismissed();
+                    installMode = 'none';
                 }
-                installEvent = null;
-                installButton.hidden = true;
+
+                updateInstallPrompt();
+            }).catch(function () {
+                installMode = 'none';
+                updateInstallPrompt();
             });
+        });
+    }
+
+    if (iosGuideClose) {
+        iosGuideClose.addEventListener('click', function () {
+            markPromptDismissed();
+            closeIosGuide();
+            updateInstallPrompt();
+        });
+    }
+
+    if (iosGuideDone) {
+        iosGuideDone.addEventListener('click', function () {
+            markPwaInstalled();
+            installMode = 'none';
+            closeIosGuide();
+            hideInstallPrompt();
+        });
+    }
+
+    if (iosGuide) {
+        iosGuide.addEventListener('click', function (event) {
+            if (event.target === iosGuide) {
+                markPromptDismissed();
+                closeIosGuide();
+                updateInstallPrompt();
+            }
         });
     }
 
     window.addEventListener('appinstalled', function () {
         markPwaInstalled();
         installEvent = null;
-        if (installButton) installButton.hidden = true;
+        installMode = 'none';
+        hideInstallPrompt();
+        closeIosGuide();
     });
 
-    if (isStandalonePwa()) {
-        markPwaInstalled();
-        if (installButton) installButton.hidden = true;
+    if (window.matchMedia) {
+        var standaloneMedia = window.matchMedia('(display-mode: standalone)');
+        var onDisplayModeChange = function (event) {
+            if (event.matches) {
+                markPwaInstalled();
+                installEvent = null;
+                installMode = 'none';
+                hideInstallPrompt();
+                closeIosGuide();
+            }
+        };
+
+        if (standaloneMedia.addEventListener) {
+            standaloneMedia.addEventListener('change', onDisplayModeChange);
+        } else if (standaloneMedia.addListener) {
+            standaloneMedia.addListener(onDisplayModeChange);
+        }
     }
 
     if ('serviceWorker' in navigator) {
