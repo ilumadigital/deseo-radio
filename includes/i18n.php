@@ -32,25 +32,12 @@ function deseo_lang(): string {
 }
 
 function deseo_lang_url(string $language): string {
-    if (!in_array($language, DESEO_LANGUAGES, true)) {
-        $language = 'el';
-    }
-
-    $params = $_GET;
-    $params['lang'] = $language;
-
-    return '/?' . http_build_query($params);
-}
-
-function deseo_canonical_url(?string $language = null): string {
-    $language = $language ?: deseo_lang();
-    return $language === 'en'
-        ? 'https://deseoradio.com/?lang=en'
-        : 'https://deseoradio.com/';
+    if (!in_array($language, DESEO_LANGUAGES, true)) $language = 'el';
+    return '/?lang=' . rawurlencode($language);
 }
 
 function deseo_t(string $key): string {
-    static $translations = [
+    static $t = [
         'el' => [
             'skip.content' => 'Μετάβαση στο κύριο περιεχόμενο',
             'header.home' => 'Αρχική Deseo Radio',
@@ -58,62 +45,65 @@ function deseo_t(string $key): string {
             'header.live_aria' => 'Μετάβαση στο live player',
             'header.instagram' => 'Deseo Radio στο Instagram',
             'header.facebook' => 'Deseo Radio στο Facebook',
-            'lang.el' => 'ΕΛ',
-            'lang.en' => 'EN',
             'lang.switch_to_el' => 'Ελληνικά',
             'lang.switch_to_en' => 'English',
 
-            'meta.title' => 'Deseo Radio | Το Soundtrack της ζωής σου! | House Music',
-            'meta.description' => 'Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.',
-            'meta.keywords' => 'ραδιόφωνο, δεσεο, deseo, radio, house music',
-            'schema.description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
-
-            'hero.sr_title' => 'Deseo Radio: Το soundtrack της ζωής σου',
-            'hero.now_playing' => 'ΤΩΡΑ ΠΑΙΖΕΙ',
+            'hero.kicker' => 'DESEO RADIO · HOUSE MUSIC · ATHENS',
+            'hero.title' => 'Το Soundtrack της ζωής σου.',
+            'hero.text' => 'House, Afro House, Organic House και επιλεγμένη electronic μουσική σε συνεχή 24/7 ροή.',
+            'hero.listen' => 'Άκου live',
+            'hero.network' => 'ILUMA Radios',
             'hero.now_on_air' => 'NOW ON AIR',
-            'hero.sponsor' => 'SPONSOR',
-            'hero.live_broadcast' => 'Ζωντανή εκπομπή',
-            'hero.non_stop_mix' => 'Non-stop mix',
-            'hero.auto_dj' => 'DESEO AUTO DJ',
-            'hero.auto_dj_alt' => 'Deseo Radio Auto DJ',
+            'hero.non_stop' => 'DESEO AUTO DJ',
+            'hero.live_broadcast' => 'Live broadcast',
 
-            'program.eyebrow' => 'ΣΗΜΕΡΙΝΟ ΠΡΟΓΡΑΜΜΑ',
-            'program.heading' => 'Το πρόγραμμα',
-            'program.heading_em' => 'σήμερα.',
-            'program.description' => 'Όλες οι ώρες εμφανίζονται σε ώρα Ελλάδας. Τα sets που περνούν τα μεσάνυχτα υποστηρίζονται αυτόματα.',
-            'program.on_air_now' => 'ΣΤΟΝ ΑΕΡΑ ΤΩΡΑ',
+            'airplay.kicker' => 'HOT TRACKS',
+            'airplay.title' => 'Αυτά παίζουν τώρα.',
+            'airplay.text' => 'Οι επιλογές που ξεχωρίζουν αυτή την εβδομάδα στο Deseo.',
+            'airplay.empty' => 'Το νέο airplay chart ετοιμάζεται.',
+            'airplay.spotify' => 'Άνοιγμα στο Spotify',
+
+            'program.kicker' => 'ΣΗΜΕΡΑ · DESEO RADIO',
+            'program.title' => 'Στον αέρα σήμερα.',
+            'program.text' => 'Το σημερινό πρόγραμμα σε ώρα Ελλάδας.',
+            'program.on_air' => 'ON AIR NOW',
             'program.live_set' => 'LIVE SET',
-            'program.empty_title' => 'Non-stop Deseo mix',
-            'program.empty_fallback' => 'Το live πρόγραμμα ενημερώνεται. Το stream παραμένει διαθέσιμο κανονικά.',
-            'program.empty_none' => 'Δεν υπάρχει προγραμματισμένο live set σήμερα. Το Deseo συνεχίζει non-stop.',
-            'program.next_live' => 'Επόμενο live',
-            'day.1' => 'Δευτέρα',
-            'day.2' => 'Τρίτη',
-            'day.3' => 'Τετάρτη',
-            'day.4' => 'Πέμπτη',
-            'day.5' => 'Παρασκευή',
-            'day.6' => 'Σάββατο',
-            'day.7' => 'Κυριακή',
+            'program.empty' => 'Σήμερα το Deseo συνεχίζει με non-stop μουσική.',
+            'program.next' => 'Επόμενο live',
 
-            'airplay.eyebrow' => 'WEEKLY ROTATION',
-            'airplay.heading' => 'Deseo',
-            'airplay.heading_em' => 'Airplay.',
-            'airplay.description' => 'Τα tracks που ξεχωρίζουν αυτή την εβδομάδα στο Deseo Radio.',
-            'airplay.selection' => 'Deseo Radio Selection',
-            'airplay.spotify_aria' => 'Άνοιγμα στο Spotify',
-            'airplay.empty_title' => 'Το νέο chart ετοιμάζεται',
-            'airplay.empty_text' => 'Το stream λειτουργεί κανονικά. Η λίστα Airplay θα εμφανιστεί μόλις ανανεωθεί από το studio.',
+            'playlists.kicker' => 'PLAYLISTS · DESEO CURATION',
+            'playlists.title' => 'Selections για κάθε στιγμή.',
+            'playlists.text' => 'Επιλεγμένες Spotify playlists από το Deseo Radio.',
+            'playlists.open' => 'Άνοιγμα στο Spotify ↗',
+            'playlists.empty' => 'Οι playlists ετοιμάζονται.',
 
-            'partners.eyebrow' => 'ΑΚΟΥ ΠΑΝΤΟΥ',
-            'partners.heading' => 'Βρες το Deseo',
-            'partners.heading_em' => 'παντού.',
-            'partners.description' => 'Άκου Deseo από το site ή από τις μεγαλύτερες radio platforms.',
+            'about.kicker' => 'ABOUT DESEO',
+            'about.title' => 'House music. Χωρίς περιττό θόρυβο.',
+            'about.text' => 'Το Deseo Radio είναι digital radio brand της ILUMA Digital Agency και μέρος του ILUMA Radios network. Παίζει House, Afro House, Organic House και επιλεγμένη electronic μουσική 24/7.',
+            'about.iluma' => 'Δες το Deseo στο ILUMA Radios ↗',
 
-            'advertise.eyebrow' => 'ΔΙΑΦΗΜΙΣΟΥ ΣΤΟ DESEO',
-            'advertise.heading' => 'Βάλε το brand σου',
-            'advertise.heading_em' => 'μέσα στον ήχο.',
-            'advertise.text' => 'Σύνδεσε το brand σου με ένα focused κοινό που αγαπά House και electronic music, μέσα από tailor-made radio campaigns της ILUMA.',
-            'advertise.cta' => 'Ξεκίνα καμπάνια ↗',
+            'partners.kicker' => 'LISTEN EVERYWHERE',
+            'partners.title' => 'Άκου Deseo παντού.',
+            'partners.text' => 'Στο site, στο iRadios και σε επιλεγμένες radio platforms.',
+
+            'faq.kicker' => 'DESEO RADIO · FAQ',
+            'faq.title' => 'Ό,τι αξίζει να ξέρεις.',
+            'faq.text' => 'Σύντομα και καθαρά: τι είναι το Deseo, τι παίζει και πού το ακούς.',
+            'faq.q1' => 'Τι είναι το Deseo Radio;',
+            'faq.a1' => 'Το Deseo Radio είναι ένα 24/7 digital radio με έδρα την Αθήνα και μουσική ταυτότητα προσανατολισμένη στη σύγχρονη House σκηνή.',
+            'faq.q2' => 'Τι μουσική παίζει το Deseo Radio;',
+            'faq.a2' => 'Παίζει House, Afro House, Organic House και επιλεγμένη electronic μουσική, με συνεχή radio ροή.',
+            'faq.q3' => 'Παίζει το Deseo Radio όλο το 24ωρο;',
+            'faq.a3' => 'Ναι. Το Deseo Radio μεταδίδει live streaming 24/7.',
+            'faq.q4' => 'Πού μπορώ να ακούσω Deseo Radio;',
+            'faq.a4' => 'Μπορείς να ακούσεις από το deseoradio.com, μέσω iRadios και από επιλεγμένες διεθνείς radio platforms.',
+            'faq.q5' => 'Σε ποιον ανήκει το Deseo Radio;',
+            'faq.a5' => 'Το Deseo Radio είναι ιδιόκτητο digital radio brand της ILUMA Digital Agency και αποτελεί μέρος του ILUMA Radios network.',
+
+            'advertise.kicker' => 'FOR BRANDS',
+            'advertise.title' => 'Το brand σου. Στον σωστό ήχο.',
+            'advertise.text' => 'Radio advertising, sponsorships και branded audio με δημιουργική επιμέλεια από την ILUMA.',
+            'advertise.cta' => 'Επικοινωνία για διαφήμιση ↗',
 
             'footer.tagline' => 'Το Soundtrack της ζωής σου',
             'footer.contact' => 'Επικοινωνία',
@@ -121,18 +111,27 @@ function deseo_t(string $key): string {
             'footer.listen' => 'Άκου',
             'footer.live_player' => 'Live player',
             'footer.today_program' => 'Σημερινό πρόγραμμα',
-            'footer.weekly_airplay' => 'Weekly airplay',
-            'footer.powered' => 'Powered by',
-            'install.title' => 'Εγκατάσταση Deseo App',
-            'install.subtitle' => 'Γρήγορη πρόσβαση · Αρχική οθόνη',
+            'footer.playlists' => 'Playlists',
+            'footer.faq' => 'FAQ',
+            'footer.powered' => 'Handcrafted by',
 
+            'install.title' => 'Deseo Radio App',
+            'install.subtitle' => 'Εγκατάσταση στη συσκευή',
             'cookie.title' => 'Το απόρρητό σου, η επιλογή σου.',
-            'cookie.text' => 'Χρησιμοποιούμε απαραίτητο local storage για τη λειτουργία του site και, μόνο με τη συγκατάθεσή σου, analytics, push και marketing υπηρεσίες.',
+            'cookie.text' => 'Χρησιμοποιούμε απαραίτητο local storage και, μόνο με τη συγκατάθεσή σου, analytics, push και marketing υπηρεσίες.',
             'cookie.analytics' => 'Analytics & push υπηρεσίες',
             'cookie.marketing' => 'Marketing & εξατομίκευση',
             'cookie.accept' => 'Αποδοχή',
             'cookie.customize' => 'Ρυθμίσεις',
             'cookie.reject' => 'Απόρριψη προαιρετικών',
+
+            'day.1' => 'Δευτέρα',
+            'day.2' => 'Τρίτη',
+            'day.3' => 'Τετάρτη',
+            'day.4' => 'Πέμπτη',
+            'day.5' => 'Παρασκευή',
+            'day.6' => 'Σάββατο',
+            'day.7' => 'Κυριακή',
         ],
         'en' => [
             'skip.content' => 'Skip to main content',
@@ -141,62 +140,65 @@ function deseo_t(string $key): string {
             'header.live_aria' => 'Go to the live player',
             'header.instagram' => 'Deseo Radio on Instagram',
             'header.facebook' => 'Deseo Radio on Facebook',
-            'lang.el' => 'EL',
-            'lang.en' => 'EN',
             'lang.switch_to_el' => 'Greek',
             'lang.switch_to_en' => 'English',
 
-            'meta.title' => 'Deseo Radio | Το Soundtrack της ζωής σου! | House Music',
-            'meta.description' => 'Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.',
-            'meta.keywords' => 'ραδιόφωνο, δεσεο, deseo, radio, house music',
-            'schema.description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
-
-            'hero.sr_title' => 'Deseo Radio: The soundtrack of your life',
-            'hero.now_playing' => 'NOW PLAYING',
+            'hero.kicker' => 'DESEO RADIO · HOUSE MUSIC · ATHENS',
+            'hero.title' => 'The Soundtrack of your life.',
+            'hero.text' => 'House, Afro House, Organic House and selected electronic music in a continuous 24/7 flow.',
+            'hero.listen' => 'Listen live',
+            'hero.network' => 'ILUMA Radios',
             'hero.now_on_air' => 'NOW ON AIR',
-            'hero.sponsor' => 'SPONSOR',
+            'hero.non_stop' => 'DESEO AUTO DJ',
             'hero.live_broadcast' => 'Live broadcast',
-            'hero.non_stop_mix' => 'Non-stop mix',
-            'hero.auto_dj' => 'DESEO AUTO DJ',
-            'hero.auto_dj_alt' => 'Deseo Radio Auto DJ',
 
-            'program.eyebrow' => 'TODAY’S BROADCAST',
-            'program.heading' => 'Today’s',
-            'program.heading_em' => 'program.',
-            'program.description' => 'All times are shown in Greece time. Overnight sets are handled automatically.',
-            'program.on_air_now' => 'ON AIR NOW',
+            'airplay.kicker' => 'HOT TRACKS',
+            'airplay.title' => 'What is playing now.',
+            'airplay.text' => 'The selections standing out this week on Deseo.',
+            'airplay.empty' => 'The new airplay chart is on the way.',
+            'airplay.spotify' => 'Open on Spotify',
+
+            'program.kicker' => 'TODAY · DESEO RADIO',
+            'program.title' => 'On air today.',
+            'program.text' => 'Today’s schedule in Greece time.',
+            'program.on_air' => 'ON AIR NOW',
             'program.live_set' => 'LIVE SET',
-            'program.empty_title' => 'Non-stop Deseo mix',
-            'program.empty_fallback' => 'The live schedule is being updated. The stream remains available as normal.',
-            'program.empty_none' => 'There is no scheduled live set today. Deseo continues non-stop.',
-            'program.next_live' => 'Next live',
-            'day.1' => 'Monday',
-            'day.2' => 'Tuesday',
-            'day.3' => 'Wednesday',
-            'day.4' => 'Thursday',
-            'day.5' => 'Friday',
-            'day.6' => 'Saturday',
-            'day.7' => 'Sunday',
+            'program.empty' => 'Deseo continues today with non-stop music.',
+            'program.next' => 'Next live',
 
-            'airplay.eyebrow' => 'WEEKLY ROTATION',
-            'airplay.heading' => 'Deseo',
-            'airplay.heading_em' => 'Airplay.',
-            'airplay.description' => 'The tracks standing out this week on Deseo Radio.',
-            'airplay.selection' => 'Deseo Radio Selection',
-            'airplay.spotify_aria' => 'Open on Spotify',
-            'airplay.empty_title' => 'The new chart is on the way',
-            'airplay.empty_text' => 'The stream is running normally. The Airplay chart will appear as soon as the studio updates it.',
+            'playlists.kicker' => 'PLAYLISTS · DESEO CURATION',
+            'playlists.title' => 'Selections for every moment.',
+            'playlists.text' => 'Selected Spotify playlists from Deseo Radio.',
+            'playlists.open' => 'Open on Spotify ↗',
+            'playlists.empty' => 'Playlists are on the way.',
 
-            'partners.eyebrow' => 'LISTEN EVERYWHERE',
-            'partners.heading' => 'Find Deseo',
-            'partners.heading_em' => 'everywhere.',
-            'partners.description' => 'Listen to Deseo on our website or through leading radio platforms.',
+            'about.kicker' => 'ABOUT DESEO',
+            'about.title' => 'House music. No unnecessary noise.',
+            'about.text' => 'Deseo Radio is a digital radio brand owned by ILUMA Digital Agency and part of the ILUMA Radios network. It plays House, Afro House, Organic House and selected electronic music 24/7.',
+            'about.iluma' => 'View Deseo on ILUMA Radios ↗',
 
-            'advertise.eyebrow' => 'ADVERTISE ON DESEO',
-            'advertise.heading' => 'Put your brand',
-            'advertise.heading_em' => 'inside the sound.',
-            'advertise.text' => 'Connect your brand with a focused audience that loves House and electronic music through tailor-made radio campaigns by ILUMA.',
-            'advertise.cta' => 'Start a campaign ↗',
+            'partners.kicker' => 'LISTEN EVERYWHERE',
+            'partners.title' => 'Listen to Deseo everywhere.',
+            'partners.text' => 'On this website, iRadios and selected radio platforms.',
+
+            'faq.kicker' => 'DESEO RADIO · FAQ',
+            'faq.title' => 'Everything worth knowing.',
+            'faq.text' => 'Short and clear: what Deseo is, what it plays and where to listen.',
+            'faq.q1' => 'What is Deseo Radio?',
+            'faq.a1' => 'Deseo Radio is a 24/7 digital radio based in Athens with a music identity focused on the contemporary House scene.',
+            'faq.q2' => 'What music does Deseo Radio play?',
+            'faq.a2' => 'It plays House, Afro House, Organic House and selected electronic music in a continuous radio flow.',
+            'faq.q3' => 'Does Deseo Radio broadcast 24/7?',
+            'faq.a3' => 'Yes. Deseo Radio provides live streaming 24/7.',
+            'faq.q4' => 'Where can I listen to Deseo Radio?',
+            'faq.a4' => 'Listen on deseoradio.com, through iRadios and selected international radio platforms.',
+            'faq.q5' => 'Who owns Deseo Radio?',
+            'faq.a5' => 'Deseo Radio is an owned digital radio brand of ILUMA Digital Agency and part of the ILUMA Radios network.',
+
+            'advertise.kicker' => 'FOR BRANDS',
+            'advertise.title' => 'Your brand. In the right sound.',
+            'advertise.text' => 'Radio advertising, sponsorships and branded audio with creative direction by ILUMA.',
+            'advertise.cta' => 'Advertising enquiries ↗',
 
             'footer.tagline' => 'The Soundtrack of your life',
             'footer.contact' => 'Contact',
@@ -204,25 +206,32 @@ function deseo_t(string $key): string {
             'footer.listen' => 'Listen',
             'footer.live_player' => 'Live player',
             'footer.today_program' => 'Today’s program',
-            'footer.weekly_airplay' => 'Weekly airplay',
-            'footer.powered' => 'Powered by',
-            'install.title' => 'Install Deseo App',
-            'install.subtitle' => 'Faster access · Home screen',
+            'footer.playlists' => 'Playlists',
+            'footer.faq' => 'FAQ',
+            'footer.powered' => 'Handcrafted by',
 
+            'install.title' => 'Deseo Radio App',
+            'install.subtitle' => 'Install on your device',
             'cookie.title' => 'Your privacy, your choice.',
-            'cookie.text' => 'We use essential local storage to operate the site and, only with your consent, analytics, push and marketing services.',
+            'cookie.text' => 'We use essential local storage and, only with your consent, analytics, push and marketing services.',
             'cookie.analytics' => 'Analytics & push services',
             'cookie.marketing' => 'Marketing & personalization',
             'cookie.accept' => 'Accept',
             'cookie.customize' => 'Customize',
             'cookie.reject' => 'Reject optional',
+
+            'day.1' => 'Monday',
+            'day.2' => 'Tuesday',
+            'day.3' => 'Wednesday',
+            'day.4' => 'Thursday',
+            'day.5' => 'Friday',
+            'day.6' => 'Saturday',
+            'day.7' => 'Sunday',
         ],
     ];
 
     $language = deseo_lang();
-    return $translations[$language][$key]
-        ?? $translations['el'][$key]
-        ?? $key;
+    return $t[$language][$key] ?? $t['el'][$key] ?? $key;
 }
 
 function deseo_t_day(int $day): string {
