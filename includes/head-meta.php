@@ -40,6 +40,68 @@ if (!headers_sent()) {
 
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= $assetVersion ?>">
 
+    <!-- Google Analytics 4 — consent-aware -->
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+    window.DESEO_GA_MEASUREMENT_ID = 'G-5TYWQ2E64K';
+    window.DESEO_GA_STREAM_ID = '13665767557';
+
+    window.gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+    });
+
+    window.DeseoAnalytics = {
+        loaded: false,
+        pageviewSent: false,
+
+        load: function () {
+            if (this.loaded) {
+                this.sendPageView();
+                return;
+            }
+
+            this.loaded = true;
+
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(window.DESEO_GA_MEASUREMENT_ID);
+            script.onerror = function () {
+                window.DeseoAnalytics.loaded = false;
+            };
+            document.head.appendChild(script);
+
+            window.gtag('js', new Date());
+            window.gtag('config', window.DESEO_GA_MEASUREMENT_ID, {
+                send_page_view: false
+            });
+
+            this.sendPageView();
+        },
+
+        sendPageView: function () {
+            if (!this.loaded || this.pageviewSent) return;
+
+            window.gtag('event', 'page_view', {
+                page_title: document.title,
+                page_location: window.location.href,
+                language: document.documentElement.lang || 'el'
+            });
+
+            this.pageviewSent = true;
+        },
+
+        event: function (name, params) {
+            if (!this.loaded || !name) return;
+            window.gtag('event', name, params || {});
+        }
+    };
+    </script>
+
     <script type="application/ld+json">
     [
         {
