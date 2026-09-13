@@ -817,12 +817,14 @@ button{cursor:pointer}
 .text-button{border:0;background:transparent;color:#77777d;font-size:9px;padding:8px}
 
 /* Reveal */
-.js .reveal{
-  opacity:0;
-  transform:translateY(18px);
-  transition:opacity .62s ease,transform .62s ease;
+.reveal{
+  opacity:1;
+  transform:none;
 }
-.js .reveal.is-visible{opacity:1;transform:none}
+.js .reveal{
+  opacity:1;
+  transform:none;
+}
 
 /* Responsive */
 @media(max-width:1180px){
@@ -921,5 +923,5 @@ button{cursor:pointer}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*:before,*:after{animation:none!important;transition:none!important}
-  .js .reveal{opacity:1!important;transform:none!important}
+  .reveal{opacity:1!important;transform:none!important}
 }
