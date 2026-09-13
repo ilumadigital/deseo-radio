@@ -70,26 +70,29 @@ button{cursor:pointer}
 
 .metal-title{
   margin:0;
-  color:#d8d8dc;
-  -webkit-text-stroke:.55px rgba(0,0,0,.72);
+  color:#cfd1d4;
+  font-family:"Google Sans"!important;
+  font-weight:700;
+  font-style:normal;
+  letter-spacing:-.055em;
+  -webkit-text-stroke:0;
   text-shadow:
-    0 1px 0 #000,
-    0 2px 2px rgba(0,0,0,.92),
-    0 5px 16px rgba(0,0,0,.65),
-    0 18px 44px rgba(0,0,0,.42);
+    0 1px 1px rgba(0,0,0,.95),
+    0 3px 7px rgba(0,0,0,.62),
+    0 12px 30px rgba(0,0,0,.36);
 }
 
 @supports (-webkit-background-clip:text) {
   .metal-title{
     background:linear-gradient(
-      180deg,
-      #f7f7f8 0%,
-      #cfcfd2 18%,
-      #8d8d92 39%,
-      #e5e5e7 57%,
-      #9b9ba0 72%,
-      #4c4c51 88%,
-      #1a1a1d 100%
+      90deg,
+      #676a6f 0%,
+      #92959a 14%,
+      #c8cace 31%,
+      #f1f2f3 51%,
+      #d7d9dc 65%,
+      #a4a7ac 81%,
+      #6b6e73 100%
     );
     -webkit-background-clip:text;
     background-clip:text;
@@ -1135,4 +1138,11 @@ button{cursor:pointer}
   .classic-hero{padding-top:102px}
   .hero-square{border-radius:24px}
   .hero-cms-overlay{padding:18px}
+}
+
+
+/* Global font lock — Google Sans only */
+html,body,body *,button,input,select,textarea,optgroup,option{
+  font-family:"Google Sans"!important;
+  font-style:normal;
 }
