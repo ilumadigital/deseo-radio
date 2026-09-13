@@ -1130,6 +1130,12 @@ button{cursor:pointer}
     gap:34px;
     max-width:620px;
   }
+
+  /* Mobile order: player -> sponsor -> now on air/program */
+  .classic-hero-grid > .hero-deck:nth-child(1){order:1}
+  .classic-hero-grid > .hero-deck:nth-child(3){order:2}
+  .classic-hero-grid > .hero-deck:nth-child(2){order:3}
+
   .hero-deck-label{margin-bottom:11px}
   .hero-square{border-radius:30px}
 }
