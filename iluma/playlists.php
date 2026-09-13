@@ -6,9 +6,21 @@ require_once __DIR__ . '/admin-ui.php';
 
 $success = null;
 $error = null;
-$playlistStorageReady = !empty($GLOBALS['playlist_storage_ready']);
+$playlistStorageReady = true;
 
-if (!$playlistStorageReady) {
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS playlists (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        spotify_url VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        artwork_url TEXT,
+        position INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_playlists_position (position)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+} catch (Throwable $playlistStorageError) {
+    $playlistStorageReady = false;
+    error_log('Playlist storage unavailable: ' . $playlistStorageError->getMessage());
     $error = 'Το Playlists storage δεν είναι διαθέσιμο αυτή τη στιγμή. Το υπόλοιπο CMS λειτουργεί κανονικά.';
 }
 
