@@ -41,15 +41,26 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS program (
     end_time TIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS playlists (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    spotify_url VARCHAR(255) NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    artwork_url TEXT,
-    position INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_playlists_position (position)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+$playlistStorageReady = true;
+try {
+    $pdo->query("SELECT 1 FROM playlists LIMIT 1");
+} catch (Throwable $playlistCheckError) {
+    try {
+        $pdo->exec("CREATE TABLE playlists (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            spotify_url VARCHAR(255) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            artwork_url TEXT,
+            position INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_playlists_position (position)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Throwable $playlistCreateError) {
+        $playlistStorageReady = false;
+        error_log('Playlist storage unavailable: ' . $playlistCreateError->getMessage());
+    }
+}
+$GLOBALS['playlist_storage_ready'] = $playlistStorageReady;
 
 function admin_is_logged_in(): bool {
     return !empty($_SESSION['iluma_admin']);
