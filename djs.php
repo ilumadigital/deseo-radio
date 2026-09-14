@@ -25,6 +25,7 @@ require_once __DIR__ . '/includes/i18n.php';
 require_once __DIR__ . '/iluma/connection.php';
 require_once __DIR__ . '/includes/dj-season.php';
 require_once __DIR__ . '/includes/turnstile.php';
+require_once __DIR__ . '/includes/mailer.php';
 
 function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -54,6 +55,7 @@ $turnstileConfigured = deseo_turnstile_configured();
 
 $errors = [];
 $success = isset($_GET['submitted']);
+$confirmationMailFailed = $success && (string)($_GET['mail'] ?? '') === '0';
 $old = [
     'full_name' => '',
     'artist_name' => '',
@@ -254,10 +256,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $bookingToken,
             ]);
 
+            $bookingId = (int)$pdo->lastInsertId();
             $pdo->commit();
+
+            $mailSent = true;
+            try {
+                $mailStmt = $pdo->prepare(
+                    "SELECT b.*, s.day_of_week, s.start_time, s.end_time
+                     FROM dj_season_bookings b
+                     INNER JOIN dj_season_slots s ON s.id = b.slot_id
+                     WHERE b.id = ? AND b.season = ?
+                     LIMIT 1"
+                );
+                $mailStmt->execute([$bookingId, DESEO_DJ_SEASON]);
+                $submittedBooking = $mailStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($submittedBooking) {
+                    $mail = deseo_dj_submission_email($submittedBooking);
+                    deseo_send_smtp_mail(
+                        (string)$submittedBooking['email'],
+                        (string)$submittedBooking['artist_name'],
+                        (string)$mail['subject'],
+                        (string)$mail['html'],
+                        (string)$mail['text']
+                    );
+                }
+            } catch (Throwable $mailError) {
+                $mailSent = false;
+                error_log('Season 6 submission confirmation email failed: ' . $mailError->getMessage());
+            }
+
             $_SESSION['dj_last_submission'] = time();
             $_SESSION['dj_form_csrf'] = bin2hex(random_bytes(32));
-            header('Location: /djs?submitted=1');
+            header('Location: /djs?submitted=1&mail=' . ($mailSent ? '1' : '0'));
             exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
@@ -362,7 +393,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?php if ($success): ?>
                     <div class="dj-alert dj-alert-success">
                         <strong>Το inquiry σου καταχωρήθηκε.</strong>
-                        <p>Λάβαμε την αίτησή σου και την προτίμηση slot για τη Season 6. Η υποβολή δεν αποτελεί έγκριση ή ένταξη στο πρόγραμμα. Αν επιλεγείς, η ομάδα ILUMA / Deseo θα επικοινωνήσει μαζί σου στο email που δήλωσες.</p>
+                        <p>Λάβαμε την αίτησή σου για τη Season 6. <?= $confirmationMailFailed ? 'Η αίτηση αποθηκεύτηκε κανονικά, αλλά δεν μπορέσαμε να στείλουμε το confirmation email αυτή τη στιγμή.' : 'Σου στείλαμε confirmation email με τα βασικά στοιχεία της αίτησης.' ?> Θα ενημερωθείς για την τελική επιλογή μέσω email έως τις <?= deseo_e(DESEO_DJ_DECISION_DEADLINE) ?>.</p>
                     </div>
                 <?php endif; ?>
 
