@@ -162,18 +162,9 @@ linear-gradient(180deg,#090909,#050505)}
 .dj-season-brand-lockup{
     display:flex;
     align-items:center;
-    gap:18px;
-    margin-bottom:30px;
-}
-.dj-season-brand-lockup img{
-    display:block;
-    width:clamp(150px,18vw,220px);
-    height:auto;
-    filter:drop-shadow(0 12px 34px rgba(0,0,0,.32));
+    margin-bottom:24px;
 }
 .dj-season-brand-lockup span{
-    padding-left:18px;
-    border-left:1px solid rgba(255,255,255,.18);
     color:#ff3943;
     font-size:10px;
     font-weight:800;
@@ -316,8 +307,8 @@ linear-gradient(180deg,#090909,#050505)}
 @media(max-width:720px){
     .dj-season-page:before{background-position:60% top}
     .dj-season-hero{padding:72px 0 44px}
-    .dj-season-brand-lockup{gap:12px;margin-bottom:24px}
-    .dj-season-brand-lockup span{padding-left:12px;font-size:8px}
+    .dj-season-brand-lockup{margin-bottom:20px}
+    .dj-season-brand-lockup span{font-size:8px}
     .dj-season-hero h1{font-size:clamp(50px,14vw,76px)}
     .dj-season-lead{font-size:16px}
     .dj-season-info{padding:20px;border-radius:22px}
