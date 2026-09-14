@@ -5,6 +5,33 @@ const DESEO_DJ_SEASON = 6;
 const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-14-v1';
 const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v1';
 
+function dj_season_strict_slot_definitions(): array {
+    $definitions = [];
+
+    $dayStarts = [
+        4 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        5 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        6 => ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        7 => ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+    ];
+
+    foreach ($dayStarts as $day => $starts) {
+        foreach ($starts as $start) {
+            $end = $start === '23:00:00'
+                ? '23:59:59'
+                : DateTimeImmutable::createFromFormat('!H:i:s', $start)->modify('+1 hour')->format('H:i:s');
+
+            $definitions[] = [
+                'day_of_week' => $day,
+                'start_time' => $start,
+                'end_time' => $end,
+            ];
+        }
+    }
+
+    return $definitions;
+}
+
 function dj_season_bootstrap(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_season_slots (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,24 +76,47 @@ function dj_season_bootstrap(PDO $pdo): void {
             ON UPDATE CASCADE ON DELETE RESTRICT
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM dj_season_slots WHERE season = ?");
-    $stmt->execute([DESEO_DJ_SEASON]);
-    if ((int)$stmt->fetchColumn() > 0) {
-        return;
-    }
+    $definitions = dj_season_strict_slot_definitions();
+    $desired = [];
 
-    $insert = $pdo->prepare(
-        "INSERT IGNORE INTO dj_season_slots (season, day_of_week, start_time, end_time, is_active)
-         VALUES (?, ?, ?, ?, 1)"
+    $upsert = $pdo->prepare(
+        "INSERT INTO dj_season_slots (season, day_of_week, start_time, end_time, is_active)
+         VALUES (?, ?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE end_time = VALUES(end_time), is_active = 1"
     );
 
-    $starts = ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'];
-    foreach (range(1, 7) as $day) {
-        foreach ($starts as $start) {
-            $startDt = DateTimeImmutable::createFromFormat('H:i:s', $start);
-            if (!$startDt) continue;
-            $end = $startDt->modify('+1 hour')->format('H:i:s');
-            $insert->execute([DESEO_DJ_SEASON, $day, $start, $end]);
+    foreach ($definitions as $definition) {
+        $day = (int)$definition['day_of_week'];
+        $start = (string)$definition['start_time'];
+        $desired[$day . '|' . $start] = true;
+
+        $upsert->execute([
+            DESEO_DJ_SEASON,
+            $day,
+            $start,
+            (string)$definition['end_time'],
+        ]);
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT s.id, s.day_of_week, s.start_time,
+                EXISTS(SELECT 1 FROM dj_season_bookings b WHERE b.slot_id = s.id) AS has_booking
+         FROM dj_season_slots s
+         WHERE s.season = ?"
+    );
+    $stmt->execute([DESEO_DJ_SEASON]);
+
+    $delete = $pdo->prepare("DELETE FROM dj_season_slots WHERE id = ?");
+    $deactivate = $pdo->prepare("UPDATE dj_season_slots SET is_active = 0 WHERE id = ?");
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $slot) {
+        $key = (int)$slot['day_of_week'] . '|' . (string)$slot['start_time'];
+        if (isset($desired[$key])) continue;
+
+        if (!empty($slot['has_booking'])) {
+            $deactivate->execute([(int)$slot['id']]);
+        } else {
+            $delete->execute([(int)$slot['id']]);
         }
     }
 }
@@ -125,11 +175,10 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
     $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($slots as &$slot) {
-        $slot['program_conflict'] = dj_season_slot_conflicts_with_program($pdo, $slot);
+        $slot['program_conflict'] = false;
         $slot['available'] =
             (int)$slot['is_active'] === 1
-            && empty($slot['booking_id'])
-            && !$slot['program_conflict'];
+            && empty($slot['booking_id']);
     }
     unset($slot);
 
