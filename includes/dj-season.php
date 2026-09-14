@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 const DESEO_DJ_SEASON = 6;
-const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-14-v1';
-const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v1';
+const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-14-v2';
+const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v2';
 
 function dj_season_strict_slot_definitions(): array {
     $definitions = [];
@@ -125,44 +125,6 @@ function dj_season_bootstrap(PDO $pdo): void {
             $delete->execute([(int)$slot['id']]);
         }
     }
-}
-
-function dj_season_time_minutes(string $time): int {
-    $parts = array_map('intval', explode(':', $time));
-    return (($parts[0] ?? 0) * 60) + ($parts[1] ?? 0);
-}
-
-function dj_season_ranges_overlap(string $startA, string $endA, string $startB, string $endB): bool {
-    $a1 = dj_season_time_minutes($startA);
-    $a2 = dj_season_time_minutes($endA);
-    $b1 = dj_season_time_minutes($startB);
-    $b2 = dj_season_time_minutes($endB);
-
-    if ($a2 <= $a1) $a2 += 1440;
-    if ($b2 <= $b1) $b2 += 1440;
-
-    return $a1 < $b2 && $b1 < $a2;
-}
-
-function dj_season_slot_conflicts_with_program(PDO $pdo, array $slot): bool {
-    $day = (int)($slot['day_of_week'] ?? 0);
-    $stmt = $pdo->prepare(
-        "SELECT start_time, end_time FROM program WHERE day_of_week = ?"
-    );
-    $stmt->execute([$day]);
-
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $show) {
-        if (dj_season_ranges_overlap(
-            (string)$slot['start_time'],
-            (string)$slot['end_time'],
-            (string)$show['start_time'],
-            (string)$show['end_time']
-        )) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
