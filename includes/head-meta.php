@@ -60,7 +60,7 @@ $schema = [
             'genre' => ['House', 'Afro House', 'Organic House', 'Electronic music'],
             'areaServed' => 'Worldwide',
             'sameAs' => [
-                'https://iluma.gr/radios/deseo',
+                'https://iluma.gr/radios',
                 'https://www.instagram.com/deseoradio/',
                 'https://www.facebook.com/deseoradiogr/',
                 'https://play.iradios.gr/station/deseo-radio',
