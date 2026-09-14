@@ -75,6 +75,8 @@ exit;
 endif;
 
 require_once __DIR__ . '/admin-ui.php';
+require_once __DIR__ . '/../includes/dj-season.php';
+dj_season_bootstrap($pdo);
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
@@ -87,6 +89,15 @@ try {
 } catch (Throwable $playlistCountError) {
     error_log('Playlist count unavailable: ' . $playlistCountError->getMessage());
 }
+$djApplicationCount = 0;
+try {
+    $djStmt = $pdo->prepare("SELECT COUNT(*) FROM dj_season_bookings WHERE season = ?");
+    $djStmt->execute([DESEO_DJ_SEASON]);
+    $djApplicationCount = (int)$djStmt->fetchColumn();
+} catch (Throwable $djCountError) {
+    error_log('DJ application count unavailable: ' . $djCountError->getMessage());
+}
+
 $today = (int) date('N');
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE day_of_week = ?");
 $stmt->execute([$today]);
@@ -103,11 +114,13 @@ admin_page_start('Overview', 'dashboard');
     <div class="stat"><strong><?= $programCount ?></strong><span>Program slots</span></div>
     <div class="stat"><strong><?= $todayCount ?></strong><span>Shows today</span></div>
     <div class="stat"><strong><?= $playlistCount ?></strong><span>Playlists</span></div>
+    <div class="stat"><strong><?= $djApplicationCount ?></strong><span>Season 6 DJs</span></div>
 </section>
 
 <section class="quick-grid">
     <a class="quick-card" href="airplay.php"><small>Weekly rotation</small><h2>Airplay Top 10</h2><p>Ανανέωσε Spotify tracks, artwork και ranking.</p></a>
     <a class="quick-card" href="program.php"><small>Live schedule</small><h2>Radio Program</h2><p>Διαχειρίσου DJs, ημέρες, ώρες και φωτογραφίες.</p></a>
+    <a class="quick-card" href="dj-season.php"><small>Season 6 onboarding</small><h2>DJ Applications</h2><p>Δες submissions, slots, φωτογραφίες, bios και acceptance records.</p></a>
     <a class="quick-card" href="playlists.php"><small>Spotify curation</small><h2>Playlists</h2><p>Πρόσθεσε Spotify playlists, covers και σειρά εμφάνισης.</p></a>
 </section>
 <?php admin_page_end(); ?>
