@@ -24,6 +24,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 require_once __DIR__ . '/includes/i18n.php';
 require_once __DIR__ . '/iluma/connection.php';
 require_once __DIR__ . '/includes/dj-season.php';
+require_once __DIR__ . '/includes/turnstile.php';
 
 function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -47,6 +48,9 @@ function dj_form_length(string $value): int {
 }
 
 dj_season_bootstrap($pdo);
+
+$turnstileSiteKey = deseo_turnstile_site_key();
+$turnstileConfigured = deseo_turnstile_configured();
 
 $errors = [];
 $success = isset($_GET['submitted']);
@@ -78,6 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lastSubmission = (int)($_SESSION['dj_last_submission'] ?? 0);
     if ($lastSubmission > 0 && (time() - $lastSubmission) < 60) {
         $errors[] = 'Έχει ήδη γίνει πρόσφατη υποβολή από αυτή τη συσκευή. Περίμενε λίγο πριν ξαναδοκιμάσεις.';
+    }
+
+    if (!$turnstileConfigured) {
+        $errors[] = 'Η προστασία της φόρμας δεν είναι ακόμη ρυθμισμένη. Δοκίμασε ξανά αργότερα.';
+        error_log('Season 6 Turnstile is not configured. Set TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.');
+    } else {
+        $turnstileToken = trim((string)($_POST['cf-turnstile-response'] ?? ''));
+        $remoteIp = trim((string)($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''));
+        $turnstileResult = deseo_turnstile_validate($turnstileToken, $remoteIp, 'dj_inquiry');
+
+        if (empty($turnstileResult['success'])) {
+            $errors[] = 'Η επαλήθευση ασφαλείας απέτυχε. Ολοκλήρωσε ξανά το Cloudflare check και δοκίμασε πάλι.';
+            $codes = $turnstileResult['error-codes'] ?? [];
+            error_log('Season 6 Turnstile rejected submission: ' . json_encode($codes));
+        }
     }
 
     if ($old['full_name'] === '' || dj_form_length($old['full_name']) > 180) {
@@ -460,9 +479,21 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                     </fieldset>
 
+                    <div class="dj-turnstile-wrap">
+                        <?php if ($turnstileConfigured): ?>
+                            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                            <div class="cf-turnstile"
+                                 data-sitekey="<?= deseo_e($turnstileSiteKey) ?>"
+                                 data-theme="dark"
+                                 data-action="dj_inquiry"></div>
+                        <?php else: ?>
+                            <div class="dj-turnstile-missing">Η φόρμα είναι προσωρινά κλειστή μέχρι να ολοκληρωθεί η ρύθμιση ασφαλείας.</div>
+                        <?php endif; ?>
+                    </div>
+
                     <div class="dj-submit-row">
                         <p>Η αίτηση αξιολογείται χειροκίνητα από Deseo / ILUMA. Αν επιλεγείς, θα λάβεις email με το approved slot και τα επόμενα βήματα.</p>
-                        <button type="submit" class="button button-red">SEND INQUIRY · SEASON 6</button>
+                        <button type="submit" class="button button-red" <?= $turnstileConfigured ? '' : 'disabled' ?>>SEND INQUIRY · SEASON 6</button>
                     </div>
                 </form>
             </div>
