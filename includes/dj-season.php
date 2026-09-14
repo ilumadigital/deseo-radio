@@ -60,6 +60,9 @@ function dj_season_bootstrap(PDO $pdo): void {
         set_type VARCHAR(40) NOT NULL,
         work_sample_url VARCHAR(500) NOT NULL DEFAULT '',
         tracklist TEXT,
+        final_day_of_week TINYINT NULL,
+        final_start_time TIME NULL,
+        final_end_time TIME NULL,
         status VARCHAR(24) NOT NULL DEFAULT 'pending',
         rights_confirmed TINYINT(1) NOT NULL DEFAULT 1,
         ai_confirmed TINYINT(1) NOT NULL DEFAULT 1,
@@ -83,6 +86,14 @@ function dj_season_bootstrap(PDO $pdo): void {
     $sampleColumnStmt = $pdo->query("SHOW COLUMNS FROM dj_season_bookings LIKE 'work_sample_url'");
     if (!$sampleColumnStmt || !$sampleColumnStmt->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE dj_season_bookings ADD COLUMN work_sample_url VARCHAR(500) NOT NULL DEFAULT '' AFTER set_type");
+    }
+
+    $finalDayStmt = $pdo->query("SHOW COLUMNS FROM dj_season_bookings LIKE 'final_day_of_week'");
+    if (!$finalDayStmt || !$finalDayStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE dj_season_bookings
+            ADD COLUMN final_day_of_week TINYINT NULL AFTER tracklist,
+            ADD COLUMN final_start_time TIME NULL AFTER final_day_of_week,
+            ADD COLUMN final_end_time TIME NULL AFTER final_start_time");
     }
 
     $slotIndexStmt = $pdo->query("SHOW INDEX FROM dj_season_bookings WHERE Key_name = 'idx_booking_slot'");
@@ -145,8 +156,11 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
                    (
                        SELECT b.id
                        FROM dj_season_bookings b
-                       WHERE b.slot_id = s.id
-                         AND b.status = 'approved'
+                       INNER JOIN dj_season_slots requested_slot ON requested_slot.id = b.slot_id
+                       WHERE b.status = 'approved'
+                         AND COALESCE(b.final_day_of_week, requested_slot.day_of_week) = s.day_of_week
+                         AND s.start_time < COALESCE(b.final_end_time, requested_slot.end_time)
+                         AND s.end_time > COALESCE(b.final_start_time, requested_slot.start_time)
                        ORDER BY b.id ASC
                        LIMIT 1
                    ) AS approved_booking_id
