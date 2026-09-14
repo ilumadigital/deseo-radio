@@ -178,10 +178,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Το συγκεκριμένο slot μόλις δεσμεύτηκε. Επίλεξε άλλο διαθέσιμο slot.');
             }
 
-            if (dj_season_slot_conflicts_with_program($pdo, $slot)) {
-                throw new RuntimeException('Το συγκεκριμένο slot δεν είναι πλέον διαθέσιμο λόγω αλλαγής στο πρόγραμμα.');
-            }
-
             $uploadDir = __DIR__ . '/iluma/uploads/djs';
             if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
                 throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.');
@@ -406,10 +402,10 @@ require_once __DIR__ . '/includes/header.php';
 
                     <fieldset class="dj-slot-fieldset">
                         <legend>03 · DAY & TIME</legend>
-                        <p class="dj-field-note">Επίλεξε ένα slot. Όσα έχουν ήδη δεσμευτεί ή συγκρούονται με το πρόγραμμα εμφανίζονται απλώς ως μη διαθέσιμα.</p>
+                        <p class="dj-field-note">Επίλεξε ένα διαθέσιμο slot. Τα slots της Season 6 είναι σταθερά: Πέμπτη & Παρασκευή 20:00–23:59, Σάββατο & Κυριακή 18:00–23:59. Κάθε slot είναι μίας ώρας και γίνεται μη διαθέσιμο μόνο όταν έχει ήδη δεσμευτεί.</p>
 
                         <div class="dj-slot-days">
-                            <?php foreach (range(1, 7) as $day): ?>
+                            <?php foreach ([4, 5, 6, 7] as $day): ?>
                                 <section class="dj-slot-day">
                                     <h3><?= deseo_e(dj_season_day_label($day)) ?></h3>
                                     <div class="dj-slot-grid">
