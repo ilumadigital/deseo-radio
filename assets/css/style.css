@@ -15,6 +15,10 @@
   --shell:1600px;
   --radius:28px;
   --shadow:0 28px 90px rgba(0,0,0,.42);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
 }
 
 *{box-sizing:border-box}
@@ -41,6 +45,8 @@ button{cursor:pointer}
   width:calc(100% - 48px);
   max-width:var(--shell);
   margin:0 auto;
+  padding-left:var(--safe-left);
+  padding-right:var(--safe-right);
 }
 
 .sr-only{
@@ -168,7 +174,7 @@ button{cursor:pointer}
   position:fixed;
   inset:0 0 auto 0;
   z-index:1000;
-  padding:15px 0;
+  padding:calc(15px + var(--safe-top)) 0 15px;
   background:linear-gradient(180deg,rgba(0,0,0,.82),rgba(0,0,0,.34) 62%,transparent);
   pointer-events:none;
 }
@@ -243,7 +249,7 @@ button{cursor:pointer}
   display:flex;
   align-items:center;
   overflow:hidden;
-  padding:132px 0 88px;
+  padding:calc(132px + var(--safe-top)) 0 88px;
   background:#030303;
 }
 .hero-v3-media{position:absolute;inset:0;z-index:0}
@@ -856,7 +862,7 @@ button{cursor:pointer}
 }
 
 @media(max-width:900px){
-  .hero-v3{align-items:flex-start;padding-top:125px}
+  .hero-v3{align-items:flex-start;padding-top:calc(125px + var(--safe-top))}
   .hero-v3-grid{grid-template-columns:1fr;gap:42px}
   .hero-v3-copy{max-width:760px}
   .radio-stage{justify-self:start;max-width:620px}
@@ -869,14 +875,14 @@ button{cursor:pointer}
 
 @media(max-width:700px){
   .wide-shell{width:calc(100% - 28px)}
-  .site-header{padding:11px 0}
+  .site-header{padding:calc(11px + var(--safe-top)) 0 11px}
   .header-logo img{width:126px}
   .header-social{display:none}
   .language-switcher,.header-live{height:36px}
   .language-switcher{padding:0 9px}
   .header-live{padding:0 11px}
 
-  .hero-v3{min-height:auto;padding:116px 0 62px}
+  .hero-v3{min-height:auto;padding:calc(116px + var(--safe-top)) 0 62px}
   .hero-v3-shade{
     background:
       linear-gradient(180deg,rgba(0,0,0,.68) 0%,rgba(0,0,0,.30) 38%,rgba(0,0,0,.56) 72%,#050505 100%),
@@ -956,7 +962,7 @@ button{cursor:pointer}
   display:flex;
   align-items:center;
   overflow:hidden;
-  padding:130px 0 92px;
+  padding:calc(130px + var(--safe-top)) 0 92px;
   background:#000;
 }
 .classic-hero-bg{
@@ -1123,7 +1129,7 @@ button{cursor:pointer}
   .classic-hero{
     min-height:auto;
     align-items:flex-start;
-    padding:112px 0 72px;
+    padding:calc(112px + var(--safe-top)) 0 72px;
   }
   .classic-hero-grid{
     grid-template-columns:1fr;
@@ -1141,7 +1147,7 @@ button{cursor:pointer}
 }
 
 @media(max-width:430px){
-  .classic-hero{padding-top:102px}
+  .classic-hero{padding-top:calc(102px + var(--safe-top))}
   .hero-square{border-radius:24px}
   .hero-cms-overlay{padding:18px}
 }
