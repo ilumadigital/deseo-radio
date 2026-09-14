@@ -153,7 +153,7 @@ function deseo_dj_approval_email(array $booking): array {
     $instagram = trim((string)($booking['instagram'] ?? ''));
     $website = trim((string)($booking['website'] ?? ''));
     $bio = trim((string)($booking['bio'] ?? ''));
-    $tracklist = trim((string)($booking['tracklist'] ?? ''));
+    $workSampleUrl = trim((string)($booking['work_sample_url'] ?? ''));
     $photoPath = trim((string)($booking['photo_path'] ?? ''));
     $photoUrl = str_starts_with($photoPath, '/') ? 'https://deseoradio.com' . $photoPath : '';
     $setTypeMap = [
@@ -195,8 +195,8 @@ function deseo_dj_approval_email(array $booking): array {
         $row('Social', $instagram) .
         $row('Website', $website) .
         $row('Τύπος set', $setType) .
+        $row('Work sample', $workSampleUrl) .
         $row('Bio', $bio) .
-        $row('Tracklist', $tracklist !== '' ? $tracklist : 'Δεν υποβλήθηκε ακόμη') .
         $row('Terms', (string)($booking['terms_version'] ?? '')) .
         $row('Privacy', (string)($booking['privacy_version'] ?? '')) .
         '</table>' .
@@ -216,8 +216,8 @@ function deseo_dj_approval_email(array $booking): array {
         "Social: {$instagram}\n" .
         "Website: {$website}\n" .
         "Τύπος set: {$setType}\n" .
+        "Work sample: {$workSampleUrl}\n" .
         "Bio: {$bio}\n" .
-        "Tracklist: " . ($tracklist !== '' ? $tracklist : 'Δεν υποβλήθηκε ακόμη') . "\n" .
         "Photo: {$photoUrl}\n" .
         "Terms: " . (string)($booking['terms_version'] ?? '') . "\n" .
         "Privacy: " . (string)($booking['privacy_version'] ?? '') . "\n\n" .
