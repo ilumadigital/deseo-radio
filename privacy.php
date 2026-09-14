@@ -143,11 +143,17 @@ require_once __DIR__ . '/includes/header.php';
             </section>
 
             <section class="dj-legal-section">
-                <h2>9. Cookies, analytics και τοπική αποθήκευση</h2>
+                <h2>9. Cookies, analytics και μέτρηση επισκεψιμότητας</h2>
                 <p>
                     Το site χρησιμοποιεί απαραίτητη τοπική αποθήκευση / cookies για βασικές λειτουργίες.
-                    Προαιρετικά analytics, push ή marketing εργαλεία ενεργοποιούνται σύμφωνα με τις επιλογές
-                    που παρέχονται στο cookie / privacy interface του site.
+                    Για συγκεντρωτική μέτρηση επισκεψιμότητας και τεχνικής απόδοσης χρησιμοποιείται Cloudflare
+                    Web Analytics. Η υπηρεσία λειτουργεί ως privacy-first web analytics και χρησιμοποιείται για
+                    στοιχεία όπως page views, visits και performance metrics, χωρίς να χρησιμοποιείται από το
+                    Deseo Radio για δημιουργία διαφημιστικού προφίλ επισκεπτών.
+                </p>
+                <p>
+                    Τυχόν πρόσθετα analytics, push ή marketing εργαλεία υπόκεινται στις επιλογές που παρέχονται
+                    στο cookie / privacy interface του site, όπου αυτό απαιτείται.
                 </p>
             </section>
 
