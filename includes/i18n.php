@@ -33,7 +33,10 @@ function deseo_lang(): string {
 
 function deseo_lang_url(string $language): string {
     if (!in_array($language, DESEO_LANGUAGES, true)) $language = 'el';
-    return '/?lang=' . rawurlencode($language);
+    $requestUri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+    $path = parse_url($requestUri, PHP_URL_PATH);
+    if (!is_string($path) || $path === '') $path = '/';
+    return $path . '?lang=' . rawurlencode($language);
 }
 
 function deseo_t(string $key): string {
