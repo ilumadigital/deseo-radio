@@ -344,7 +344,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="dj-season-pills" aria-label="Season 6 highlights">
                     <span>Weekly DJ Sets</span>
                     <span>Selected by Deseo</span>
-                    <span>Human-made music only</span>
+                    <span>Season 6 · Athens</span>
                 </div>
             </div>
 
@@ -374,11 +374,6 @@ require_once __DIR__ . '/includes/header.php';
                     και θα σου στείλουμε ξεχωριστά τις τεχνικές οδηγίες για το τελικό set.
                 </p>
 
-                <div class="dj-season-rule">
-                    <span>AI POLICY</span>
-                    <strong>Human-made music only.</strong>
-                    <p>AI-assisted mastering/noise reduction δεν θεωρείται από μόνο του AI-generated track. Η απαγόρευση αφορά τη δημιουργία της μουσικής, των vocals, των στίχων ή του βασικού recording μέσω generative AI.</p>
-                </div>
             </div>
 
             <div class="dj-season-form-card" id="apply">
@@ -504,7 +499,7 @@ require_once __DIR__ . '/includes/header.php';
                         <div class="dj-checks">
                             <label><input type="checkbox" name="age_confirmed" value="1" required><span>Δηλώνω ότι είμαι 18 ετών ή άνω και ότι τα στοιχεία που υποβάλλω είναι ακριβή.</span></label>
                             <label><input type="checkbox" name="rights_confirmed" value="1" required><span>Δηλώνω ότι έχω το δικαίωμα να παραδώσω το DJ set και ότι δεν θα συμπεριλάβω εν γνώσει μου παράνομο, leaked ή μη εξουσιοδοτημένο υλικό.</span></label>
-                            <label><input type="checkbox" name="ai_confirmed" value="1" required><span>Επιβεβαιώνω ότι το set δεν θα περιλαμβάνει μουσικά έργα ή recordings δημιουργημένα εξ ολοκλήρου ή εν μέρει με generative AI.</span></label>
+                            <label><input type="checkbox" name="ai_confirmed" value="1" required><span>Έχω λάβει γνώση ότι στη Season 6 δεν γίνονται δεκτά AI-generated μουσικά έργα ή recordings.</span></label>
                             <label><input type="checkbox" name="terms_accepted" value="1" required><span>Έχω διαβάσει και αποδέχομαι τους <a href="/djterms" target="_blank" rel="noopener">Όρους Συμμετοχής & Συνεργασίας Season 6 ↗</a>.</span></label>
                             <label><input type="checkbox" name="privacy_acknowledged" value="1" required><span>Έχω λάβει γνώση της <a href="/privacy" target="_blank" rel="noopener">Πολιτικής Απορρήτου ↗</a> και της επεξεργασίας των στοιχείων μου για τη συμμετοχή.</span></label>
                         </div>
