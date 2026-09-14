@@ -74,20 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!dj_form_verify_csrf($_POST['csrf_token'] ?? null)) {
-        $errors[] = 'Η συνεδρία της φόρμας έληξε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.';
+        $errors[] = deseo_t('dj.error.session');
     }
 
     if (trim((string)($_POST['company'] ?? '')) !== '') {
-        $errors[] = 'Δεν ήταν δυνατή η υποβολή της φόρμας.';
+        $errors[] = deseo_t('dj.error.submit');
     }
 
     $lastSubmission = (int)($_SESSION['dj_last_submission'] ?? 0);
     if ($lastSubmission > 0 && (time() - $lastSubmission) < 60) {
-        $errors[] = 'Έχει ήδη γίνει πρόσφατη υποβολή από αυτή τη συσκευή. Περίμενε λίγο πριν ξαναδοκιμάσεις.';
+        $errors[] = deseo_t('dj.error.rate_limit');
     }
 
     if (!$turnstileConfigured) {
-        $errors[] = 'Η προστασία της φόρμας δεν είναι ακόμη ρυθμισμένη. Δοκίμασε ξανά αργότερα.';
+        $errors[] = deseo_t('dj.error.security_unconfigured');
         error_log('Season 6 Turnstile is not configured. Set TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.');
     } else {
         $turnstileToken = trim((string)($_POST['cf-turnstile-response'] ?? ''));
@@ -95,59 +95,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $turnstileResult = deseo_turnstile_validate($turnstileToken, $remoteIp, 'dj_inquiry');
 
         if (empty($turnstileResult['success'])) {
-            $errors[] = 'Η επαλήθευση ασφαλείας απέτυχε. Ολοκλήρωσε ξανά το Cloudflare check και δοκίμασε πάλι.';
+            $errors[] = deseo_t('dj.error.security_failed');
             $codes = $turnstileResult['error-codes'] ?? [];
             error_log('Season 6 Turnstile rejected submission: ' . json_encode($codes));
         }
     }
 
     if ($old['full_name'] === '' || dj_form_length($old['full_name']) > 180) {
-        $errors[] = 'Συμπλήρωσε σωστά το ονοματεπώνυμό σου.';
+        $errors[] = deseo_t('dj.error.full_name');
     }
 
     if ($old['artist_name'] === '' || dj_form_length($old['artist_name']) > 180) {
-        $errors[] = 'Συμπλήρωσε το DJ / Artist Name.';
+        $errors[] = deseo_t('dj.error.artist_name');
     }
 
     if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL) || dj_form_length($old['email']) > 254) {
-        $errors[] = 'Συμπλήρωσε ένα έγκυρο email.';
+        $errors[] = deseo_t('dj.error.email');
     }
 
     if ($old['bio'] === '' || dj_form_length($old['bio']) > 1000) {
-        $errors[] = 'Το bio είναι υποχρεωτικό και πρέπει να είναι έως 1.000 χαρακτήρες.';
+        $errors[] = deseo_t('dj.error.bio');
     }
 
     $allowedSetTypes = ['new', 'previous', 'exclusive'];
     if (!in_array($old['set_type'], $allowedSetTypes, true)) {
-        $errors[] = 'Επίλεξε έγκυρο τύπο DJ set.';
+        $errors[] = deseo_t('dj.error.set_type');
     }
 
     $instagram = dj_season_clean_url($old['instagram']);
     $website = dj_season_clean_url($old['website']);
     $workSampleUrl = dj_season_clean_url($old['work_sample_url']);
     if ($old['instagram'] !== '' && $instagram === '') {
-        $errors[] = 'Το Instagram / social link δεν είναι έγκυρο.';
+        $errors[] = deseo_t('dj.error.instagram');
     }
     if ($old['website'] !== '' && $website === '') {
-        $errors[] = 'Το website / portfolio link δεν είναι έγκυρο.';
+        $errors[] = deseo_t('dj.error.website');
     }
     if ($old['work_sample_url'] === '' || $workSampleUrl === '') {
-        $errors[] = 'Πρόσθεσε ένα έγκυρο link με δείγμα δουλειάς σου (DJ set, mix ή radio show).';
+        $errors[] = deseo_t('dj.error.sample_required');
     } elseif (dj_form_length($workSampleUrl) > 500) {
-        $errors[] = 'Το link δείγματος δουλειάς είναι πολύ μεγάλο.';
+        $errors[] = deseo_t('dj.error.sample_too_long');
     }
 
     $slotId = filter_var($old['slot_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if (!$slotId) {
-        $errors[] = 'Επίλεξε ένα διαθέσιμο slot.';
+        $errors[] = deseo_t('dj.error.slot_required');
     }
 
     foreach ([
-        'age_confirmed' => 'Πρέπει να επιβεβαιώσεις ότι είσαι 18 ετών ή άνω.',
-        'rights_confirmed' => 'Πρέπει να επιβεβαιώσεις τα δικαιώματα και την ευθύνη για το περιεχόμενο του set.',
-        'ai_confirmed' => 'Πρέπει να αποδεχτείς την πολιτική απαγόρευσης AI-generated μουσικής.',
-        'terms_accepted' => 'Πρέπει να αποδεχτείς τους Όρους Συμμετοχής.',
-        'privacy_acknowledged' => 'Πρέπει να επιβεβαιώσεις ότι έλαβες γνώση της Πολιτικής Απορρήτου.',
+        'age_confirmed' => deseo_t('dj.error.age'),
+        'rights_confirmed' => deseo_t('dj.error.rights'),
+        'ai_confirmed' => deseo_t('dj.error.ai'),
+        'terms_accepted' => deseo_t('dj.error.terms'),
+        'privacy_acknowledged' => deseo_t('dj.error.privacy'),
     ] as $field => $message) {
         if (empty($_POST[$field])) {
             $errors[] = $message;
@@ -158,13 +158,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $photoMime = '';
     $photoExt = '';
     if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-        $errors[] = 'Η φωτογραφία είναι υποχρεωτική.';
+        $errors[] = deseo_t('dj.error.photo_required');
     } elseif (($upload['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-        $errors[] = 'Παρουσιάστηκε πρόβλημα κατά τη μεταφόρτωση της φωτογραφίας.';
+        $errors[] = deseo_t('dj.error.photo_upload');
     } elseif ((int)($upload['size'] ?? 0) > 5 * 1024 * 1024) {
-        $errors[] = 'Η φωτογραφία δεν μπορεί να ξεπερνά τα 5 MB.';
+        $errors[] = deseo_t('dj.error.photo_size');
     } elseif (!is_uploaded_file((string)($upload['tmp_name'] ?? ''))) {
-        $errors[] = 'Η φωτογραφία δεν αναγνωρίστηκε ως έγκυρο upload.';
+        $errors[] = deseo_t('dj.error.photo_invalid');
     } else {
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $photoMime = (string)$finfo->file((string)$upload['tmp_name']);
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'image/webp' => 'webp',
         ];
         if (!isset($allowedImages[$photoMime])) {
-            $errors[] = 'Επιτρέπονται μόνο JPG, PNG ή WEBP φωτογραφίες.';
+            $errors[] = deseo_t('dj.error.photo_format');
         } else {
             $photoExt = $allowedImages[$photoMime];
         }
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $slot = $slotStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$slot || (int)$slot['is_active'] !== 1) {
-                throw new RuntimeException('Το συγκεκριμένο slot δεν είναι πλέον διαθέσιμο.');
+                throw new RuntimeException(deseo_t('dj.error.slot_unavailable'));
             }
 
             $approvedStmt = $pdo->prepare(
@@ -207,12 +207,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             $approvedStmt->execute([$slotId]);
             if ($approvedStmt->fetchColumn()) {
-                throw new RuntimeException('Το συγκεκριμένο slot έχει ήδη εγκριθεί για άλλο DJ. Επίλεξε άλλο διαθέσιμο slot.');
+                throw new RuntimeException(deseo_t('dj.error.slot_taken'));
             }
 
             $uploadDir = __DIR__ . '/iluma/uploads/djs';
             if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
-                throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.');
+                throw new RuntimeException(deseo_t('dj.error.photo_save'));
             }
 
             $filename = 'season6-' . bin2hex(random_bytes(16)) . '.' . $photoExt;
@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $_SESSION['dj_last_submission'] = time();
             $_SESSION['dj_form_csrf'] = bin2hex(random_bytes(32));
-            header('Location: /dj?submitted=1&mail=' . ($mailSent ? '1' : '0'));
+            header('Location: /dj?submitted=1&mail=' . ($mailSent ? '1' : '0') . '&lang=' . rawurlencode(deseo_lang()));
             exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
@@ -302,10 +302,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e instanceof RuntimeException) {
                 $errors[] = $e->getMessage();
             } elseif ($e instanceof PDOException && (string)$e->getCode() === '23000') {
-                $errors[] = 'Η αίτηση δεν ολοκληρώθηκε λόγω σύγκρουσης στη βάση. Δοκίμασε ξανά.';
+                $errors[] = deseo_t('dj.error.db_conflict');
             } else {
                 error_log('Season 6 DJ booking failed: ' . $e->getMessage());
-                $errors[] = 'Η υποβολή δεν ολοκληρώθηκε. Δοκίμασε ξανά ή επικοινώνησε στο radio@iluma.gr.';
+                $errors[] = deseo_t('dj.error.generic');
             }
         }
     }
@@ -317,8 +317,8 @@ foreach ($slots as $slot) {
     $slotsByDay[(int)$slot['day_of_week']][] = $slot;
 }
 
-$meta_title = 'Deseo Radio Season 6 | DJ Sets';
-$meta_desc = 'Join Deseo Radio Season 6. DJs and producers can select an available weekly slot and submit their profile for the new DJ Sets programme.';
+$meta_title = deseo_t('dj.meta.title');
+$meta_desc = deseo_t('dj.meta.desc');
 $meta_canonical = 'https://deseoradio.com/dj';
 $meta_robots = 'noindex,nofollow,noarchive,nosnippet,noimageindex';
 $private_page = true;
@@ -337,10 +337,7 @@ require_once __DIR__ . '/includes/header.php';
                     <span>SEASON 6 · DJ CALL</span>
                 </div>
                 <h1 class="metal-title">Bring your sound.<br>Join Season 6.</h1>
-                <p class="dj-season-lead">
-                    Στείλε το profile σου, ένα δυνατό δείγμα δουλειάς και το slot που προτιμάς.
-                    Η ομάδα του Deseo επιλέγει χειροκίνητα τους DJs που ταιριάζουν στο sound της νέας σεζόν.
-                </p>
+                <p class="dj-season-lead" data-i18n="dj.hero.lead"><?= deseo_e(deseo_t('dj.hero.lead')) ?></p>
                 <div class="dj-season-pills" aria-label="Season 6 highlights">
                     <span>Weekly DJ Sets</span>
                     <span>Selected by Deseo</span>
@@ -351,11 +348,11 @@ require_once __DIR__ . '/includes/header.php';
             <aside class="dj-season-intro-card">
                 <span>WHAT WE NEED</span>
                 <ol>
-                    <li><strong>01</strong><p>Artist profile, bio και μία καθαρή φωτογραφία.</p></li>
-                    <li><strong>02</strong><p>Ένα link από DJ set, mix ή radio show που σε αντιπροσωπεύει.</p></li>
-                    <li><strong>03</strong><p>Την ημέρα και ώρα που προτιμάς για τη Season 6.</p></li>
+                    <li><strong>01</strong><p data-i18n="dj.need.1"><?= deseo_e(deseo_t('dj.need.1')) ?></p></li>
+                    <li><strong>02</strong><p data-i18n="dj.need.2"><?= deseo_e(deseo_t('dj.need.2')) ?></p></li>
+                    <li><strong>03</strong><p data-i18n="dj.need.3"><?= deseo_e(deseo_t('dj.need.3')) ?></p></li>
                 </ol>
-                <p class="dj-season-small">Το inquiry δεν είναι αυτόματη αποδοχή. Αν επιλεγείς, θα λάβεις confirmation email από το radio@iluma.gr.</p>
+                <p class="dj-season-small" data-i18n="dj.need.note"><?= deseo_e(deseo_t('dj.need.note')) ?></p>
             </aside>
         </div>
     </section>
@@ -364,15 +361,9 @@ require_once __DIR__ . '/includes/header.php';
         <div class="wide-shell dj-season-layout">
             <div class="dj-season-info">
                 <span class="kicker">DESEO RADIO · SEASON 6</span>
-                <h2>Το sound πρώτα.</h2>
-                <p>
-                    Μας ενδιαφέρει να ακούσουμε το ύφος σου πριν από οτιδήποτε άλλο. Στείλε ένα αντιπροσωπευτικό
-                    DJ set, mix ή radio show και διάλεξε το slot που σε βολεύει.
-                </p>
-                <p>
-                    Αν επιλεγείς, η ILUMA Digital Agency θα ετοιμάσει τα branded promotional assets για τη συμμετοχή σου
-                    και θα σου στείλουμε ξεχωριστά τις τεχνικές οδηγίες για το τελικό set.
-                </p>
+                <h2 data-i18n="dj.info.title"><?= deseo_e(deseo_t('dj.info.title')) ?></h2>
+                <p data-i18n="dj.info.p1"><?= deseo_e(deseo_t('dj.info.p1')) ?></p>
+                <p data-i18n="dj.info.p2"><?= deseo_e(deseo_t('dj.info.p2')) ?></p>
 
             </div>
 
@@ -387,14 +378,14 @@ require_once __DIR__ . '/includes/header.php';
 
                 <?php if ($success): ?>
                     <div class="dj-alert dj-alert-success">
-                        <strong>Το inquiry σου καταχωρήθηκε.</strong>
-                        <p>Λάβαμε την αίτησή σου για τη Season 6. <?= $confirmationMailFailed ? 'Η αίτηση αποθηκεύτηκε κανονικά, αλλά δεν μπορέσαμε να στείλουμε το confirmation email αυτή τη στιγμή.' : 'Σου στείλαμε confirmation email με τα βασικά στοιχεία της αίτησης.' ?> Θα ενημερωθείς για την τελική επιλογή μέσω email έως τις <?= deseo_e(DESEO_DJ_DECISION_DEADLINE) ?>.</p>
+                        <strong><?= deseo_e(deseo_t('dj.success.title')) ?></strong>
+                        <p><?= deseo_e(deseo_t('dj.success.received')) ?> <?= deseo_e($confirmationMailFailed ? deseo_t('dj.success.mail_failed') : deseo_t('dj.success.mail_sent')) ?> <?= deseo_e(sprintf(deseo_t('dj.success.deadline'), DESEO_DJ_DECISION_DEADLINE)) ?></p>
                     </div>
                 <?php endif; ?>
 
                 <?php if ($errors): ?>
                     <div class="dj-alert dj-alert-error" role="alert">
-                        <strong>Χρειάζεται μια διόρθωση.</strong>
+                        <strong><?= deseo_e(deseo_t('dj.error.heading')) ?></strong>
                         <ul>
                             <?php foreach ($errors as $error): ?><li><?= deseo_e($error) ?></li><?php endforeach; ?>
                         </ul>
@@ -411,7 +402,7 @@ require_once __DIR__ . '/includes/header.php';
                         <legend>01 · DJ PROFILE</legend>
                         <div class="dj-form-grid">
                             <label>
-                                <span>Ονοματεπώνυμο *</span>
+                                <span data-i18n="dj.field.full_name"><?= deseo_e(deseo_t('dj.field.full_name')) ?></span>
                                 <input type="text" name="full_name" maxlength="180" value="<?= deseo_e($old['full_name']) ?>" autocomplete="name" required>
                             </label>
                             <label>
@@ -435,7 +426,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <textarea name="bio" id="dj-bio" maxlength="1000" rows="6" required><?= deseo_e($old['bio']) ?></textarea>
                             </label>
                             <label class="dj-field-full dj-file-field">
-                                <span>Φωτογραφία * <small>JPG / PNG / WEBP · έως 5 MB</small></span>
+                                <span><span data-i18n="dj.field.photo"><?= deseo_e(deseo_t('dj.field.photo')) ?></span> <small data-i18n="dj.field.photo_note"><?= deseo_e(deseo_t('dj.field.photo_note')) ?></small></span>
                                 <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
                             </label>
                         </div>
@@ -445,11 +436,11 @@ require_once __DIR__ . '/includes/header.php';
                         <legend>02 · YOUR SOUND</legend>
                         <div class="dj-form-grid">
                             <label>
-                                <span>Τύπος set *</span>
+                                <span data-i18n="dj.field.set_type"><?= deseo_e(deseo_t('dj.field.set_type')) ?></span>
                                 <select name="set_type" required>
-                                    <option value="new" <?= $old['set_type'] === 'new' ? 'selected' : '' ?>>Νέο DJ set</option>
-                                    <option value="previous" <?= $old['set_type'] === 'previous' ? 'selected' : '' ?>>Παλαιότερο / ήδη ηχογραφημένο set</option>
-                                    <option value="exclusive" <?= $old['set_type'] === 'exclusive' ? 'selected' : '' ?>>Set ειδικά για το Deseo Radio</option>
+                                    <option value="new" data-i18n="dj.set.new" <?= $old['set_type'] === 'new' ? 'selected' : '' ?>><?= deseo_e(deseo_t('dj.set.new')) ?></option>
+                                    <option value="previous" data-i18n="dj.set.previous" <?= $old['set_type'] === 'previous' ? 'selected' : '' ?>><?= deseo_e(deseo_t('dj.set.previous')) ?></option>
+                                    <option value="exclusive" data-i18n="dj.set.exclusive" <?= $old['set_type'] === 'exclusive' ? 'selected' : '' ?>><?= deseo_e(deseo_t('dj.set.exclusive')) ?></option>
                                 </select>
                             </label>
                             <label>
@@ -457,20 +448,20 @@ require_once __DIR__ . '/includes/header.php';
                                 <input type="url" name="work_sample_url" maxlength="500" value="<?= deseo_e($old['work_sample_url']) ?>" placeholder="https://..." required>
                             </label>
                             <div class="dj-work-sample-note dj-field-full">
-                                <strong>Στείλε κάτι που σε αντιπροσωπεύει.</strong>
-                                <span>DJ set, radio show ή mix. Το link πρέπει να είναι προσβάσιμο χωρίς να ζητάει login.</span>
+                                <strong data-i18n="dj.sample.title"><?= deseo_e(deseo_t('dj.sample.title')) ?></strong>
+                                <span data-i18n="dj.sample.note"><?= deseo_e(deseo_t('dj.sample.note')) ?></span>
                             </div>
                         </div>
                     </fieldset>
 
                     <fieldset class="dj-slot-fieldset">
                         <legend>03 · DAY & TIME</legend>
-                        <p class="dj-field-note">Διάλεξε την ώρα που προτιμάς. Πέμπτη & Παρασκευή 20:00–23:59 · Σάββατο & Κυριακή 18:00–23:59. Πολλοί DJs μπορούν να ζητήσουν το ίδιο slot μέχρι να γίνει τελική επιλογή.</p>
+                        <p class="dj-field-note" data-i18n="dj.slot.note"><?= deseo_e(deseo_t('dj.slot.note')) ?></p>
 
                         <div class="dj-slot-days">
                             <?php foreach ([4, 5, 6, 7] as $day): ?>
                                 <section class="dj-slot-day">
-                                    <h3><?= deseo_e(dj_season_day_label($day)) ?></h3>
+                                    <h3 data-i18n="day.<?= (int)$day ?>"><?= deseo_e(deseo_t_day($day)) ?></h3>
                                     <div class="dj-slot-grid">
                                         <?php foreach ($slotsByDay[$day] ?? [] as $slot): ?>
                                             <?php $available = !empty($slot['available']); ?>
@@ -484,7 +475,7 @@ require_once __DIR__ . '/includes/header.php';
                                                     required>
                                                 <span>
                                                     <strong><?= deseo_e(dj_season_format_time($slot['start_time'])) ?></strong>
-                                                    <small><?= $available ? 'Available for inquiry' : 'Closed' ?></small>
+                                                    <small data-i18n="<?= $available ? 'dj.slot.available' : 'dj.slot.closed' ?>"><?= deseo_e($available ? deseo_t('dj.slot.available') : deseo_t('dj.slot.closed')) ?></small>
                                                 </span>
                                             </label>
                                         <?php endforeach; ?>
@@ -497,11 +488,11 @@ require_once __DIR__ . '/includes/header.php';
                     <fieldset class="dj-terms-fieldset" id="dj-terms-fieldset" disabled>
                         <legend>04 · CONFIRMATION</legend>
                         <div class="dj-checks">
-                            <label><input type="checkbox" name="age_confirmed" value="1" required><span>Δηλώνω ότι είμαι 18 ετών ή άνω και ότι τα στοιχεία που υποβάλλω είναι ακριβή.</span></label>
-                            <label><input type="checkbox" name="rights_confirmed" value="1" required><span>Δηλώνω ότι έχω το δικαίωμα να παραδώσω το DJ set και ότι δεν θα συμπεριλάβω εν γνώσει μου παράνομο, leaked ή μη εξουσιοδοτημένο υλικό.</span></label>
-                            <label><input type="checkbox" name="ai_confirmed" value="1" required><span>Έχω λάβει γνώση ότι στη Season 6 δεν γίνονται δεκτά AI-generated μουσικά έργα ή recordings.</span></label>
-                            <label><input type="checkbox" name="terms_accepted" value="1" required><span>Έχω διαβάσει και αποδέχομαι τους <a href="/djterms" target="_blank" rel="noopener">Όρους Συμμετοχής & Συνεργασίας Season 6 ↗</a>.</span></label>
-                            <label><input type="checkbox" name="privacy_acknowledged" value="1" required><span>Έχω λάβει γνώση της <a href="/privacy" target="_blank" rel="noopener">Πολιτικής Απορρήτου ↗</a> και της επεξεργασίας των στοιχείων μου για τη συμμετοχή.</span></label>
+                            <label><input type="checkbox" name="age_confirmed" value="1" required><span data-i18n="dj.confirm.age"><?= deseo_e(deseo_t('dj.confirm.age')) ?></span></label>
+                            <label><input type="checkbox" name="rights_confirmed" value="1" required><span data-i18n="dj.confirm.rights"><?= deseo_e(deseo_t('dj.confirm.rights')) ?></span></label>
+                            <label><input type="checkbox" name="ai_confirmed" value="1" required><span data-i18n="dj.confirm.ai"><?= deseo_e(deseo_t('dj.confirm.ai')) ?></span></label>
+                            <label><input type="checkbox" name="terms_accepted" value="1" required><span><span data-i18n="dj.confirm.terms_prefix"><?= deseo_e(deseo_t('dj.confirm.terms_prefix')) ?></span> <a href="/djterms" target="_blank" rel="noopener" data-i18n="dj.confirm.terms_link"><?= deseo_e(deseo_t('dj.confirm.terms_link')) ?></a>.</span></label>
+                            <label><input type="checkbox" name="privacy_acknowledged" value="1" required><span><span data-i18n="dj.confirm.privacy_prefix"><?= deseo_e(deseo_t('dj.confirm.privacy_prefix')) ?></span> <a href="/privacy" target="_blank" rel="noopener" data-i18n="dj.confirm.privacy_link"><?= deseo_e(deseo_t('dj.confirm.privacy_link')) ?></a> <span data-i18n="dj.confirm.privacy_suffix"><?= deseo_e(deseo_t('dj.confirm.privacy_suffix')) ?></span></span></label>
                         </div>
                     </fieldset>
 
@@ -511,14 +502,15 @@ require_once __DIR__ . '/includes/header.php';
                             <div class="cf-turnstile"
                                  data-sitekey="<?= deseo_e($turnstileSiteKey) ?>"
                                  data-theme="dark"
+                                 data-language="<?= deseo_e(deseo_lang()) ?>"
                                  data-action="dj_inquiry"></div>
                         <?php else: ?>
-                            <div class="dj-turnstile-missing">Η φόρμα είναι προσωρινά κλειστή μέχρι να ολοκληρωθεί η ρύθμιση ασφαλείας.</div>
+                            <div class="dj-turnstile-missing" data-i18n="dj.security.closed"><?= deseo_e(deseo_t('dj.security.closed')) ?></div>
                         <?php endif; ?>
                     </div>
 
                     <div class="dj-submit-row">
-                        <p>Η αίτηση αξιολογείται χειροκίνητα από Deseo / ILUMA. Αν επιλεγείς, θα λάβεις email με το approved slot και τα επόμενα βήματα.</p>
+                        <p data-i18n="dj.submit.note"><?= deseo_e(deseo_t('dj.submit.note')) ?></p>
                         <button type="submit" class="button button-red" <?= $turnstileConfigured ? '' : 'disabled' ?>>SEND INQUIRY · SEASON 6</button>
                     </div>
                 </form>
