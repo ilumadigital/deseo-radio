@@ -172,10 +172,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Το συγκεκριμένο slot δεν είναι πλέον διαθέσιμο.');
             }
 
-            $bookedStmt = $pdo->prepare("SELECT id FROM dj_season_bookings WHERE slot_id = ? LIMIT 1");
-            $bookedStmt->execute([$slotId]);
-            if ($bookedStmt->fetchColumn()) {
-                throw new RuntimeException('Το συγκεκριμένο slot μόλις δεσμεύτηκε. Επίλεξε άλλο διαθέσιμο slot.');
+            $approvedStmt = $pdo->prepare(
+                "SELECT id
+                 FROM dj_season_bookings
+                 WHERE slot_id = ? AND status = 'approved'
+                 LIMIT 1"
+            );
+            $approvedStmt->execute([$slotId]);
+            if ($approvedStmt->fetchColumn()) {
+                throw new RuntimeException('Το συγκεκριμένο slot έχει ήδη εγκριθεί για άλλο DJ. Επίλεξε άλλο διαθέσιμο slot.');
             }
 
             $uploadDir = __DIR__ . '/iluma/uploads/djs';
@@ -241,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e instanceof RuntimeException) {
                 $errors[] = $e->getMessage();
             } elseif ($e instanceof PDOException && (string)$e->getCode() === '23000') {
-                $errors[] = 'Το συγκεκριμένο slot μόλις δεσμεύτηκε. Επίλεξε άλλο διαθέσιμο slot.';
+                $errors[] = 'Η αίτηση δεν ολοκληρώθηκε λόγω σύγκρουσης στη βάση. Δοκίμασε ξανά.';
             } else {
                 error_log('Season 6 DJ booking failed: ' . $e->getMessage());
                 $errors[] = 'Η υποβολή δεν ολοκληρώθηκε. Δοκίμασε ξανά ή επικοινώνησε στο radio@iluma.gr.';
@@ -270,10 +275,10 @@ require_once __DIR__ . '/includes/header.php';
         <div class="wide-shell dj-season-hero-grid">
             <div>
                 <span class="kicker">DESEO RADIO · SEASON 6</span>
-                <h1 class="metal-title">DJ Sets.<br>Choose your slot.</h1>
+                <h1 class="metal-title">DJ Sets.<br>Send your inquiry.</h1>
                 <p class="dj-season-lead">
                     Η νέα σεζόν του Deseo Radio ανοίγει το εβδομαδιαίο πρόγραμμα σε επιλεγμένους DJs & producers.
-                    Διάλεξε ένα πραγματικά διαθέσιμο slot, στείλε τα στοιχεία σου και γίνε μέρος της Season 6.
+                    Δήλωσε το slot που προτιμάς και στείλε τα στοιχεία σου. Η ομάδα του Deseo Radio αξιολογεί τα inquiries και επιλέγει χειροκίνητα τους DJs της Season 6.
                 </p>
                 <div class="dj-season-pills" aria-label="Season 6 highlights">
                     <span>No fee / no payment</span>
@@ -286,10 +291,10 @@ require_once __DIR__ . '/includes/header.php';
                 <span>HOW IT WORKS</span>
                 <ol>
                     <li><strong>01</strong><p>Συμπλήρωσε DJ profile, φωτογραφία και bio.</p></li>
-                    <li><strong>02</strong><p>Επίλεξε ημέρα & ώρα μόνο από τα διαθέσιμα slots.</p></li>
-                    <li><strong>03</strong><p>Αποδέξου τους όρους και κατοχύρωσε τη θέση σου.</p></li>
+                    <li><strong>02</strong><p>Δήλωσε το διαθέσιμο slot που προτιμάς.</p></li>
+                    <li><strong>03</strong><p>Στείλε το inquiry σου. Η τελική επιλογή γίνεται από την ομάδα Deseo / ILUMA.</p></li>
                 </ol>
-                <p class="dj-season-small">Κατειλημμένα slots εμφανίζονται μόνο ως μη διαθέσιμα. Δεν δημοσιοποιούμε ποιος τα έχει κλείσει.</p>
+                <p class="dj-season-small">Η υποβολή δεν αποτελεί επιβεβαίωση συμμετοχής ούτε σε βάζει αυτόματα στο πρόγραμμα. Ένα slot κλείνει μόνο όταν εγκρίνουμε χειροκίνητα έναν DJ για αυτό.</p>
             </aside>
         </div>
     </section>
@@ -328,8 +333,8 @@ require_once __DIR__ . '/includes/header.php';
 
                 <?php if ($success): ?>
                     <div class="dj-alert dj-alert-success">
-                        <strong>Το slot σου καταχωρήθηκε.</strong>
-                        <p>Λάβαμε τη συμμετοχή σου για τη Season 6. Η ομάδα ILUMA / Deseo θα χρησιμοποιήσει το email που δήλωσες για τα επόμενα βήματα και τις οδηγίες παράδοσης.</p>
+                        <strong>Το inquiry σου καταχωρήθηκε.</strong>
+                        <p>Λάβαμε την αίτησή σου και την προτίμηση slot για τη Season 6. Η υποβολή δεν αποτελεί έγκριση ή ένταξη στο πρόγραμμα. Αν επιλεγείς, η ομάδα ILUMA / Deseo θα επικοινωνήσει μαζί σου στο email που δήλωσες.</p>
                     </div>
                 <?php endif; ?>
 
@@ -402,7 +407,7 @@ require_once __DIR__ . '/includes/header.php';
 
                     <fieldset class="dj-slot-fieldset">
                         <legend>03 · DAY & TIME</legend>
-                        <p class="dj-field-note">Επίλεξε ένα διαθέσιμο slot. Τα slots της Season 6 είναι σταθερά: Πέμπτη & Παρασκευή 20:00–23:59, Σάββατο & Κυριακή 18:00–23:59. Κάθε slot είναι μίας ώρας και γίνεται μη διαθέσιμο μόνο όταν έχει ήδη δεσμευτεί.</p>
+                        <p class="dj-field-note">Δήλωσε το slot που προτιμάς. Τα slots της Season 6 είναι σταθερά: Πέμπτη & Παρασκευή 20:00–23:59, Σάββατο & Κυριακή 18:00–23:59. Κάθε slot είναι μίας ώρας. Πολλά inquiries μπορούν να ζητήσουν το ίδιο slot μέχρι να εγκρίνουμε έναν DJ.</p>
 
                         <div class="dj-slot-days">
                             <?php foreach ([4, 5, 6, 7] as $day): ?>
@@ -421,7 +426,7 @@ require_once __DIR__ . '/includes/header.php';
                                                     required>
                                                 <span>
                                                     <strong><?= deseo_e(dj_season_format_time($slot['start_time'])) ?></strong>
-                                                    <small><?= $available ? 'Διαθέσιμο' : 'Μη διαθέσιμο' ?></small>
+                                                    <small><?= $available ? 'Available for inquiry' : 'Closed' ?></small>
                                                 </span>
                                             </label>
                                         <?php endforeach; ?>
@@ -443,8 +448,8 @@ require_once __DIR__ . '/includes/header.php';
                     </fieldset>
 
                     <div class="dj-submit-row">
-                        <p>Με την υποβολή δεσμεύεται το συγκεκριμένο slot. Δεν δημοσιεύεται το email ή το ονοματεπώνυμό σου.</p>
-                        <button type="submit" class="button button-red">SUBMIT · SEASON 6</button>
+                        <p>Η υποβολή είναι inquiry και δεν αποτελεί αποδοχή, κράτηση ή ένταξη στο πρόγραμμα. Θα αξιολογηθεί χειροκίνητα από την ομάδα Deseo / ILUMA.</p>
+                        <button type="submit" class="button button-red">SEND INQUIRY · SEASON 6</button>
                     </div>
                 </form>
             </div>
