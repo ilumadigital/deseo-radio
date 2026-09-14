@@ -11,6 +11,15 @@ dj_season_bootstrap($pdo);
 $notice = null;
 $error = null;
 
+function season6_admin_time(string $value, string $fieldLabel): string {
+    $value = trim($value);
+    $time = DateTimeImmutable::createFromFormat('!H:i', $value);
+    if (!$time || $time->format('H:i') !== $value) {
+        throw new RuntimeException('Μη έγκυρη ώρα στο πεδίο ' . $fieldLabel . '.');
+    }
+    return $time->format('H:i:s');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_verify_csrf($_POST['csrf_token'] ?? null)) {
         $error = 'Η συνεδρία έληξε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.';
@@ -25,10 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new RuntimeException('Μη έγκυρο status.');
                 }
 
+                $finalDay = (int)($_POST['final_day_of_week'] ?? 0);
+                if (!in_array($finalDay, [4, 5, 6, 7], true)) {
+                    throw new RuntimeException('Επίλεξε τελική ημέρα από Πέμπτη έως Κυριακή.');
+                }
+
+                $finalStart = season6_admin_time((string)($_POST['final_start_time'] ?? ''), 'Start');
+                $finalEnd = season6_admin_time((string)($_POST['final_end_time'] ?? ''), 'End');
+                if ($finalEnd <= $finalStart) {
+                    throw new RuntimeException('Η τελική ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
+                }
+
                 $pdo->beginTransaction();
 
                 $stmt = $pdo->prepare(
-                    "SELECT id, slot_id, status
+                    "SELECT id, slot_id, status, final_day_of_week, final_start_time, final_end_time
                      FROM dj_season_bookings
                      WHERE id = ? AND season = ?
                      FOR UPDATE"
@@ -41,38 +61,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $slotStmt = $pdo->prepare(
-                    "SELECT id
+                    "SELECT id, day_of_week, start_time, end_time
                      FROM dj_season_slots
                      WHERE id = ? AND season = ?
                      FOR UPDATE"
                 );
                 $slotStmt->execute([(int)$current['slot_id'], DESEO_DJ_SEASON]);
-                if (!$slotStmt->fetchColumn()) {
+                $requestedSlot = $slotStmt->fetch(PDO::FETCH_ASSOC);
+                if (!$requestedSlot) {
                     throw new RuntimeException('Το slot της αίτησης δεν βρέθηκε.');
                 }
 
                 if ($status === 'approved') {
                     $check = $pdo->prepare(
-                        "SELECT id
-                         FROM dj_season_bookings
-                         WHERE slot_id = ?
-                           AND status = 'approved'
-                           AND id <> ?
+                        "SELECT b.id
+                         FROM dj_season_bookings b
+                         INNER JOIN dj_season_slots requested_slot ON requested_slot.id = b.slot_id
+                         WHERE b.season = ?
+                           AND b.status = 'approved'
+                           AND b.id <> ?
+                           AND COALESCE(b.final_day_of_week, requested_slot.day_of_week) = ?
+                           AND ? < COALESCE(b.final_end_time, requested_slot.end_time)
+                           AND ? > COALESCE(b.final_start_time, requested_slot.start_time)
                          LIMIT 1
                          FOR UPDATE"
                     );
-                    $check->execute([(int)$current['slot_id'], $bookingId]);
+                    $check->execute([
+                        DESEO_DJ_SEASON,
+                        $bookingId,
+                        $finalDay,
+                        $finalStart,
+                        $finalEnd,
+                    ]);
                     if ($check->fetchColumn()) {
-                        throw new RuntimeException('Υπάρχει ήδη εγκεκριμένος DJ για αυτό το slot.');
+                        throw new RuntimeException('Υπάρχει ήδη εγκεκριμένος DJ σε ώρα που επικαλύπτεται με αυτό το final slot.');
                     }
                 }
 
                 $update = $pdo->prepare(
                     "UPDATE dj_season_bookings
-                     SET status = ?
+                     SET status = ?, final_day_of_week = ?, final_start_time = ?, final_end_time = ?
                      WHERE id = ? AND season = ?"
                 );
-                $update->execute([$status, $bookingId, DESEO_DJ_SEASON]);
+                $update->execute([$status, $finalDay, $finalStart, $finalEnd, $bookingId, DESEO_DJ_SEASON]);
                 $previousStatus = (string)$current['status'];
                 $pdo->commit();
 
@@ -252,9 +283,15 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             <div style="display:flex;justify-content:space-between;gap:14px;align-items:start;flex-wrap:wrap">
                                 <div>
                                     <span style="color:#ff3038;font-size:10px;font-weight:800;letter-spacing:.12em">
-                                        <?= admin_e(dj_season_day_label((int)$booking['day_of_week'])) ?> ·
+                                        REQUESTED · <?= admin_e(dj_season_day_label((int)$booking['day_of_week'])) ?> ·
                                         <?= admin_e(dj_season_format_time($booking['start_time'])) ?>–<?= admin_e(dj_season_format_time($booking['end_time'])) ?>
                                     </span>
+                                    <?php if (!empty($booking['final_day_of_week']) && !empty($booking['final_start_time']) && !empty($booking['final_end_time'])): ?>
+                                        <span style="display:block;margin-top:5px;color:#aaa;font-size:10px;font-weight:700;letter-spacing:.08em">
+                                            FINAL · <?= admin_e(dj_season_day_label((int)$booking['final_day_of_week'])) ?> ·
+                                            <?= admin_e(dj_season_format_time($booking['final_start_time'])) ?>–<?= admin_e(dj_season_format_time($booking['final_end_time'])) ?>
+                                        </span>
+                                    <?php endif; ?>
                                     <h2 style="margin:5px 0 3px;font-size:22px"><?= admin_e($booking['artist_name']) ?></h2>
                                     <p style="margin:0;color:#777;font-size:12px"><?= admin_e($booking['full_name']) ?> · <a href="mailto:<?= admin_e($booking['email']) ?>"><?= admin_e($booking['email']) ?></a></p>
                                 </div>
@@ -272,16 +309,51 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             </div>
 
                             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
-                                <form method="post" style="display:flex;gap:8px;align-items:center">
+                                <form method="post" style="display:grid;grid-template-columns:repeat(4,minmax(120px,auto));gap:8px;align-items:end;width:100%">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="set_status">
                                     <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
-                                    <select name="status" style="min-height:42px;border-radius:999px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 12px">
-                                        <?php foreach (['pending', 'approved', 'guest', 'rejected'] as $status): ?>
-                                            <option value="<?= $status ?>" <?= $booking['status'] === $status ? 'selected' : '' ?>><?= strtoupper($status) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button class="button button-primary" type="submit">Save status</button>
+
+                                    <?php
+                                    $effectiveDay = !empty($booking['final_day_of_week']) ? (int)$booking['final_day_of_week'] : (int)$booking['day_of_week'];
+                                    $effectiveStart = !empty($booking['final_start_time']) ? dj_season_format_time($booking['final_start_time']) : dj_season_format_time($booking['start_time']);
+                                    $effectiveEnd = !empty($booking['final_end_time']) ? dj_season_format_time($booking['final_end_time']) : dj_season_format_time($booking['end_time']);
+                                    ?>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        FINAL DAY
+                                        <select name="final_day_of_week" style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                            <?php foreach ([4,5,6,7] as $day): ?>
+                                                <option value="<?= $day ?>" <?= $effectiveDay === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        START
+                                        <input type="time" name="final_start_time" value="<?= admin_e($effectiveStart) ?>" required
+                                               style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        END
+                                        <input type="time" name="final_end_time" value="<?= admin_e($effectiveEnd) ?>" required
+                                               style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        STATUS
+                                        <select name="status" style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                            <?php foreach (['pending', 'approved', 'guest', 'rejected'] as $status): ?>
+                                                <option value="<?= $status ?>" <?= $booking['status'] === $status ? 'selected' : '' ?>><?= strtoupper($status) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </label>
+
+                                    <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                                        <span style="margin-right:auto;color:#555;font-size:10px">Το final slot χρησιμοποιείται στο Approved email και στο availability check.</span>
+                                        <button class="button button-primary" type="submit">Save schedule / status</button>
+                                    </div>
                                 </form>
 
                                 <form method="post" onsubmit="return confirm('Να διαγραφεί οριστικά αυτό το inquiry;');">
