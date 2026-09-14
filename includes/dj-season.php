@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 const DESEO_DJ_SEASON = 6;
 const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-14-v3';
-const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v3';
+const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v4';
 
 function dj_season_strict_slot_definitions(): array {
     $definitions = [];
