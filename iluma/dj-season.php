@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'set_status') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
                 $status = (string)($_POST['status'] ?? 'pending');
-                if (!in_array($status, ['pending', 'approved', 'cancelled'], true)) {
+                if (!in_array($status, ['pending', 'approved', 'guest', 'rejected', 'cancelled'], true)) {
                     throw new RuntimeException('Μη έγκυρο status.');
                 }
 
@@ -76,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $previousStatus = (string)$current['status'];
                 $pdo->commit();
 
-                if ($status === 'approved' && $previousStatus !== 'approved') {
+                $mailStatuses = ['approved', 'guest', 'rejected'];
+                if (in_array($status, $mailStatuses, true) && $previousStatus !== $status) {
                     $mailStmt = $pdo->prepare(
                         "SELECT b.*, s.day_of_week, s.start_time, s.end_time
                          FROM dj_season_bookings b
@@ -85,29 +86,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          LIMIT 1"
                     );
                     $mailStmt->execute([$bookingId, DESEO_DJ_SEASON]);
-                    $approvedBooking = $mailStmt->fetch(PDO::FETCH_ASSOC);
+                    $selectedBooking = $mailStmt->fetch(PDO::FETCH_ASSOC);
 
-                    if ($approvedBooking) {
+                    if ($selectedBooking) {
                         try {
-                            $mail = deseo_dj_approval_email($approvedBooking);
+                            if ($status === 'approved') {
+                                $mail = deseo_dj_approval_email($selectedBooking);
+                            } elseif ($status === 'guest') {
+                                $mail = deseo_dj_guest_email($selectedBooking);
+                            } else {
+                                $mail = deseo_dj_rejected_email($selectedBooking);
+                            }
+
                             deseo_send_smtp_mail(
-                                (string)$approvedBooking['email'],
-                                (string)$approvedBooking['artist_name'],
+                                (string)$selectedBooking['email'],
+                                (string)$selectedBooking['artist_name'],
                                 (string)$mail['subject'],
                                 (string)$mail['html'],
                                 (string)$mail['text']
                             );
-                            $notice = 'Η αίτηση εγκρίθηκε, το slot έκλεισε για νέα inquiries και στάλθηκε branded confirmation email στον DJ. Δεν έγινε καμία αλλαγή στο Radio Program.';
+
+                            if ($status === 'approved') {
+                                $notice = 'Ο DJ εγκρίθηκε για σταθερό slot, το slot έκλεισε για νέα inquiries και στάλθηκε welcome email με ημέρα/ώρα.';
+                            } elseif ($status === 'guest') {
+                                $notice = 'Ο DJ επιλέχθηκε ως Guest και στάλθηκε welcome email. Το προτιμώμενο weekly slot παραμένει διαθέσιμο.';
+                            } else {
+                                $notice = 'Η αίτηση απορρίφθηκε και στάλθηκε ενημερωτικό email για πιθανή μελλοντική Guest εμφάνιση.';
+                            }
                         } catch (Throwable $mailError) {
-                            error_log('Season 6 approval email failed: ' . $mailError->getMessage());
-                            $notice = 'Η αίτηση εγκρίθηκε και το slot έκλεισε για νέα inquiries. Δεν έγινε καμία αλλαγή στο Radio Program.';
-                            $error = 'Το approval αποθηκεύτηκε, αλλά το email δεν στάλθηκε. Έλεγξε τα SMTP_* στοιχεία στο .env.';
+                            error_log('Season 6 status email failed (' . $status . '): ' . $mailError->getMessage());
+                            $notice = 'Το status ενημερώθηκε σε ' . strtoupper($status) . '.';
+                            $error = 'Το status αποθηκεύτηκε, αλλά το email δεν στάλθηκε. Έλεγξε τα SMTP_* στοιχεία στο .env.';
                         }
                     }
                 } else {
-                    $notice = $status === 'approved'
-                        ? 'Η αίτηση παραμένει Approved. Δεν στάλθηκε δεύτερο email.'
-                        : 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
+                    if ($previousStatus === $status && in_array($status, $mailStatuses, true)) {
+                        $notice = 'Η αίτηση παραμένει ' . strtoupper($status) . '. Δεν στάλθηκε δεύτερο email.';
+                    } else {
+                        $notice = 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
+                    }
                 }
             } elseif ($action === 'release_booking') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
@@ -219,7 +236,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
         <div>
             <span>Inquiries</span>
             <h1 style="font-size:26px">Season 6 inquiries</h1>
-            <p>Μπορεί να υπάρχουν πολλά pending inquiries για το ίδιο slot. Μόνο ένα μπορεί να γίνει Approved. Η έγκριση δεν προσθέτει τον DJ στο Radio Program.</p>
+            <p>Μπορεί να υπάρχουν πολλά pending inquiries για το ίδιο slot. Approved κλείνει το weekly slot. Guest και Rejected δεν κλείνουν slot. Καμία επιλογή δεν γράφει αυτόματα στο Radio Program.</p>
         </div>
     </div>
 
@@ -260,7 +277,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                     <input type="hidden" name="action" value="set_status">
                                     <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
                                     <select name="status" style="min-height:42px;border-radius:999px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 12px">
-                                        <?php foreach (['pending', 'approved', 'cancelled'] as $status): ?>
+                                        <?php foreach (['pending', 'approved', 'guest', 'rejected'] as $status): ?>
                                             <option value="<?= $status ?>" <?= $booking['status'] === $status ? 'selected' : '' ?>><?= strtoupper($status) ?></option>
                                         <?php endforeach; ?>
                                     </select>
