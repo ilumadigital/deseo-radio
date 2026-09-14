@@ -1,6 +1,13 @@
 Options -Indexes
 Options -MultiViews
 
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^djs/?$ djs.php [L,QSA]
+    RewriteRule ^djterms/?$ djterms.php [L,QSA]
+    RewriteRule ^privacy/?$ privacy.php [L,QSA]
+</IfModule>
+
 <FilesMatch "^\.env">
     Require all denied
 </FilesMatch>
