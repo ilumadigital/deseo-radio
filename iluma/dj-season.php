@@ -309,7 +309,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             </div>
 
                             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
-                                <form method="post" style="display:grid;grid-template-columns:repeat(4,minmax(120px,auto));gap:8px;align-items:end;width:100%">
+                                <form method="post" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end;width:100%">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="set_status">
                                     <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
