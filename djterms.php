@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+if (!headers_sent()) {
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex', true);
+}
+
 require_once __DIR__ . '/includes/i18n.php';
 require_once __DIR__ . '/includes/dj-season.php';
 
@@ -11,6 +15,8 @@ function deseo_e(?string $value): string {
 $meta_title = 'Όροι Συμμετοχής DJ · Deseo Radio Season 6';
 $meta_desc = 'Όροι συμμετοχής και συνεργασίας για DJs και producers στη Season 6 του Deseo Radio.';
 $meta_canonical = 'https://deseoradio.com/djterms';
+$meta_robots = 'noindex,nofollow,noarchive,nosnippet,noimageindex';
+$private_page = true;
 $extra_styles = ['/assets/css/djs.css'];
 
 require_once __DIR__ . '/includes/head-meta.php';
@@ -141,11 +147,15 @@ require_once __DIR__ . '/includes/header.php';
             </section>
 
             <section class="dj-legal-section">
-                <h2>8. Tracklist και πληροφορίες set</h2>
+                <h2>8. Δείγμα δουλειάς και πληροφορίες set</h2>
                 <p>
-                    Ο DJ οφείλει να παρέχει ακριβή tracklist πριν από τη μετάδοση, εφόσον ζητηθεί ή δεν έχει ήδη
-                    υποβληθεί. Η tracklist μπορεί να χρησιμοποιηθεί εσωτερικά για προγραμματισμό, rights reporting,
-                    editorial review, έλεγχο της πολιτικής AI και διαχείριση πιθανών claims.
+                    Κατά την υποβολή του inquiry ο DJ παρέχει υποχρεωτικά ένα λειτουργικό link σε αντιπροσωπευτικό
+                    DJ set, mix ή radio show. Το link χρησιμοποιείται αποκλειστικά για την αξιολόγηση του inquiry
+                    από την ομάδα Deseo / ILUMA και πρέπει να παραμένει προσβάσιμο χωρίς να απαιτείται μη δηλωμένο login.
+                </p>
+                <p>
+                    Tracklist ή πρόσθετες πληροφορίες του τελικού set μπορούν να ζητηθούν αργότερα από την ομάδα
+                    Deseo / ILUMA, μετά την επιλογή του DJ και πριν από τη μετάδοση.
                 </p>
             </section>
 
