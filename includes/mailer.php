@@ -141,16 +141,30 @@ function deseo_send_smtp_mail(string $toEmail, string $toName, string $subject, 
     }
 }
 
-function deseo_dj_mail_context(array $booking): array {
+function deseo_dj_mail_context(array $booking, bool $preferFinalSchedule = true): array {
     $setTypeMap = [
         'new' => 'Νέο DJ set',
         'previous' => 'Παλαιότερο / ήδη ηχογραφημένο set',
         'exclusive' => 'Set ειδικά για το Deseo Radio',
     ];
 
-    $day = dj_season_day_label((int)($booking['day_of_week'] ?? 0));
-    $start = dj_season_format_time((string)($booking['start_time'] ?? ''));
-    $end = dj_season_format_time((string)($booking['end_time'] ?? ''));
+    $requestedDay = (int)($booking['day_of_week'] ?? 0);
+    $requestedStart = (string)($booking['start_time'] ?? '');
+    $requestedEnd = (string)($booking['end_time'] ?? '');
+
+    $dayValue = $requestedDay;
+    $startValue = $requestedStart;
+    $endValue = $requestedEnd;
+
+    if ($preferFinalSchedule && !empty($booking['final_day_of_week']) && !empty($booking['final_start_time']) && !empty($booking['final_end_time'])) {
+        $dayValue = (int)$booking['final_day_of_week'];
+        $startValue = (string)$booking['final_start_time'];
+        $endValue = (string)$booking['final_end_time'];
+    }
+
+    $day = dj_season_day_label($dayValue);
+    $start = dj_season_format_time($startValue);
+    $end = dj_season_format_time($endValue);
 
     return [
         'artist' => trim((string)($booking['artist_name'] ?? 'DJ')),
@@ -226,7 +240,7 @@ function deseo_dj_email_frame(
 }
 
 function deseo_dj_submission_email(array $booking): array {
-    $c = deseo_dj_mail_context($booking);
+    $c = deseo_dj_mail_context($booking, false);
     $subject = 'Deseo Radio Season 6 · Λάβαμε την αίτησή σου · ' . $c['artist'];
 
     $html = deseo_dj_email_frame(
