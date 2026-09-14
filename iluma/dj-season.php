@@ -250,15 +250,9 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                 <a class="button button-primary" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Download photo ↓</a>
                                 <?php if (!empty($booking['instagram'])): ?><a class="button button-secondary" href="<?= admin_e($booking['instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
                                 <?php if (!empty($booking['website'])): ?><a class="button button-secondary" href="<?= admin_e($booking['website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
+                                <?php if (!empty($booking['work_sample_url'])): ?><a class="button button-primary" href="<?= admin_e($booking['work_sample_url']) ?>" target="_blank" rel="noopener noreferrer">Listen / view sample ↗</a><?php endif; ?>
                                 <span class="button button-secondary" style="display:inline-flex;align-items:center"><?= admin_e($booking['set_type']) ?></span>
                             </div>
-
-                            <?php if (!empty($booking['tracklist'])): ?>
-                                <details style="margin-top:14px">
-                                    <summary style="cursor:pointer;color:#aaa;font-size:11px">Tracklist</summary>
-                                    <pre style="white-space:pre-wrap;color:#888;font:11px/1.6 monospace"><?= admin_e($booking['tracklist']) ?></pre>
-                                </details>
-                            <?php endif; ?>
 
                             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
                                 <form method="post" style="display:flex;gap:8px;align-items:center">
