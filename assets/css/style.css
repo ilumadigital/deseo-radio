@@ -1991,3 +1991,132 @@ h2,
 #pwa-install-prompt[hidden]{
   display:none!important;
 }
+
+
+/* ================================================================
+   MOBILE FOOTER — centered premium layout
+   ================================================================ */
+@media(max-width:700px){
+  .site-footer{
+    padding:58px 0 calc(28px + var(--safe-bottom));
+  }
+
+  .footer-main{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:40px;
+    text-align:center;
+  }
+
+  .footer-brand{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .footer-brand img{
+    width:150px;
+    margin:0 auto;
+  }
+
+  .footer-tagline{
+    width:100%!important;
+    max-width:none!important;
+    margin:18px auto 0!important;
+    padding:0!important;
+    font-size:clamp(19px,5.6vw,25px)!important;
+    line-height:1.08!important;
+    letter-spacing:-.045em!important;
+    white-space:nowrap;
+    text-align:center;
+  }
+
+  .footer-iluma{
+    min-height:42px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:20px;
+    padding:0 18px;
+    border:1px solid rgba(255,43,54,.28);
+    border-radius:999px;
+    background:rgba(255,43,54,.07);
+    color:var(--red);
+    font-size:9px;
+    letter-spacing:.12em;
+  }
+
+  .footer-links{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:30px;
+  }
+
+  .footer-links>div,
+  .footer-links>div:last-child{
+    width:100%;
+    display:flex;
+    grid-column:auto;
+    flex-direction:column;
+    align-items:center;
+    gap:9px;
+  }
+
+  .footer-links>div>span{
+    margin:0 0 5px;
+    text-align:center;
+  }
+
+  .footer-links a{
+    width:min(280px,100%);
+    min-height:42px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 17px;
+    border:1px solid rgba(255,255,255,.085);
+    border-radius:999px;
+    background:rgba(255,255,255,.025);
+    color:#b9b9be;
+    font-size:11px;
+    text-align:center;
+  }
+
+  .footer-links a:active{
+    background:rgba(255,255,255,.07);
+    border-color:rgba(255,255,255,.14);
+    color:#fff;
+  }
+
+  .footer-links p{
+    margin:7px 0 0;
+    color:#606066;
+    font-size:10px;
+    line-height:1.65;
+    text-align:center;
+  }
+
+  .footer-bottom{
+    align-items:center;
+    justify-content:center;
+    margin-top:42px;
+    padding-top:20px;
+    text-align:center;
+  }
+
+  .footer-bottom span{
+    width:100%;
+    text-align:center;
+  }
+}
+
+@media(max-width:370px){
+  .footer-tagline{
+    font-size:18px!important;
+    letter-spacing:-.05em!important;
+  }
+}
