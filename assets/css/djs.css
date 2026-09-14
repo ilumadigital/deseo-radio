@@ -327,3 +327,29 @@ linear-gradient(180deg,#090909,#050505)}
     .dj-season-form-head h2{font-size:28px}
     .dj-submit-row{margin:0 -22px -22px;padding:20px 22px 22px}
 }
+
+.dj-turnstile-wrap{
+    display:flex;
+    justify-content:flex-end;
+    margin:4px 0 26px;
+    padding:18px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    background:rgba(4,4,6,.58);
+}
+.dj-turnstile-wrap .cf-turnstile{max-width:100%}
+.dj-turnstile-missing{
+    width:100%;
+    color:#ff9b9b;
+    font-size:12px;
+    line-height:1.6;
+}
+.dj-submit-row .button:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    box-shadow:none;
+}
+
+@media(max-width:720px){
+    .dj-turnstile-wrap{justify-content:center;padding:14px}
+}
