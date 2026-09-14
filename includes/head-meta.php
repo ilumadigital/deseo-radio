@@ -114,8 +114,11 @@ $schema = [
     <link rel="apple-touch-icon" href="/assets/img/favicon.png">
 
     <?php if ($cloudflareAnalyticsToken !== ''): ?>
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+    <!-- Cloudflare Web Analytics -->
+    <script type="module"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
             data-cf-beacon='<?= htmlspecialchars(json_encode(['token' => $cloudflareAnalyticsToken], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'></script>
+    <!-- End Cloudflare Web Analytics -->
     <?php endif; ?>
 
     <?php if (!$private_page): ?>
