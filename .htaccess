@@ -3,7 +3,10 @@ Options -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^djs/?$ djs.php [L,QSA]
+    # DJ application form: canonical slug is /dj
+    RewriteCond %{THE_REQUEST} \s/+djs(?:\.php)?[?\s] [NC]
+    RewriteRule ^djs(?:\.php)?$ /dj [R=301,L]
+    RewriteRule ^dj/?$ djs.php [L,QSA]
     RewriteRule ^djterms/?$ djterms.php [L,QSA]
     RewriteRule ^privacy/?$ privacy.php [L,QSA]
 </IfModule>
