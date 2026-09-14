@@ -154,6 +154,8 @@ function deseo_dj_approval_email(array $booking): array {
     $website = trim((string)($booking['website'] ?? ''));
     $bio = trim((string)($booking['bio'] ?? ''));
     $tracklist = trim((string)($booking['tracklist'] ?? ''));
+    $photoPath = trim((string)($booking['photo_path'] ?? ''));
+    $photoUrl = str_starts_with($photoPath, '/') ? 'https://deseoradio.com' . $photoPath : '';
     $setTypeMap = [
         'new' => 'Νέο DJ set',
         'previous' => 'Παλαιότερο / ήδη ηχογραφημένο set',
@@ -185,6 +187,7 @@ function deseo_dj_approval_email(array $booking): array {
         '<div style="margin-top:5px;font:800 25px Arial,sans-serif;">' . $e($day) . ' · ' . $e($start) . '–' . $e($end) . '</div>' .
         '</div>' .
         '<p style="margin:0 0 18px;color:#8f8f94;font:400 13px/1.65 Arial,sans-serif;">Παρακάτω είναι τα στοιχεία που υπέβαλες στο Season 6 inquiry. Η έγκριση αυτή δεν αποτελεί αυτόματη δημοσίευση στο online πρόγραμμα· η ομάδα του Deseo ολοκληρώνει χειροκίνητα τον προγραμματισμό.</p>' .
+        ($photoUrl !== '' ? '<img src="' . $e($photoUrl) . '" alt="' . $e($artist) . '" width="160" style="display:block;width:160px;height:160px;object-fit:cover;border-radius:18px;margin:0 0 22px;border:1px solid #252529;">' : '') .
         '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">' .
         $row('Artist name', $artist) .
         $row('Ονοματεπώνυμο', $fullName) .
@@ -194,6 +197,8 @@ function deseo_dj_approval_email(array $booking): array {
         $row('Τύπος set', $setType) .
         $row('Bio', $bio) .
         $row('Tracklist', $tracklist !== '' ? $tracklist : 'Δεν υποβλήθηκε ακόμη') .
+        $row('Terms', (string)($booking['terms_version'] ?? '')) .
+        $row('Privacy', (string)($booking['privacy_version'] ?? '')) .
         '</table>' .
         '<div style="margin-top:26px;padding:18px;border:1px solid #252529;border-radius:16px;background:#09090b;">' .
         '<div style="color:#fff;font:700 14px Arial,sans-serif;">Next step</div>' .
@@ -212,7 +217,10 @@ function deseo_dj_approval_email(array $booking): array {
         "Website: {$website}\n" .
         "Τύπος set: {$setType}\n" .
         "Bio: {$bio}\n" .
-        "Tracklist: " . ($tracklist !== '' ? $tracklist : 'Δεν υποβλήθηκε ακόμη') . "\n\n" .
+        "Tracklist: " . ($tracklist !== '' ? $tracklist : 'Δεν υποβλήθηκε ακόμη') . "\n" .
+        "Photo: {$photoUrl}\n" .
+        "Terms: " . (string)($booking['terms_version'] ?? '') . "\n" .
+        "Privacy: " . (string)($booking['privacy_version'] ?? '') . "\n\n" .
         "Η ομάδα Deseo / ILUMA θα επικοινωνήσει μαζί σου για τα επόμενα βήματα.\n\n" .
         "Deseo Radio · radio@iluma.gr";
 
