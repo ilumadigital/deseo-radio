@@ -3,7 +3,10 @@
         <div class="footer-brand">
             <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
             <p class="metal-title footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
-            <a class="footer-iluma" href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
+            <div class="footer-brand-actions">
+                <a class="footer-iluma" href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
+                <a class="footer-dj-call" href="/dj" data-analytics-event="dj_call_footer_click">The DJs Call ↗</a>
+            </div>
         </div>
 
         <div class="footer-links">
