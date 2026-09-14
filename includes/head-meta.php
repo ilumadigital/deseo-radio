@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/i18n.php';
 
 $meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου! | House Music";
@@ -8,6 +9,7 @@ $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
 $meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
 $private_page = !empty($private_page);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
+$cloudflareAnalyticsToken = trim((string)(getenv('CLOUDFLARE_WEB_ANALYTICS_TOKEN') ?: ''));
 
 $assetVersion = 1;
 foreach ([
@@ -110,6 +112,11 @@ $schema = [
 
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png">
+
+    <?php if ($cloudflareAnalyticsToken !== ''): ?>
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='<?= htmlspecialchars(json_encode(['token' => $cloudflareAnalyticsToken], JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'></script>
+    <?php endif; ?>
 
     <?php if (!$private_page): ?>
         <link rel="preconnect" href="https://fonts.googleapis.com">
