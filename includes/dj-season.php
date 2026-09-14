@@ -57,6 +57,7 @@ function dj_season_bootstrap(PDO $pdo): void {
         bio VARCHAR(1000) NOT NULL,
         photo_path VARCHAR(255) NOT NULL,
         set_type VARCHAR(40) NOT NULL,
+        work_sample_url VARCHAR(500) NOT NULL DEFAULT '',
         tracklist TEXT,
         status VARCHAR(24) NOT NULL DEFAULT 'pending',
         rights_confirmed TINYINT(1) NOT NULL DEFAULT 1,
@@ -78,6 +79,11 @@ function dj_season_bootstrap(PDO $pdo): void {
 
     // Season 6 submissions are inquiries, not first-come bookings.
     // Existing installations may still have the old unique slot index.
+    $sampleColumnStmt = $pdo->query("SHOW COLUMNS FROM dj_season_bookings LIKE 'work_sample_url'");
+    if (!$sampleColumnStmt || !$sampleColumnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE dj_season_bookings ADD COLUMN work_sample_url VARCHAR(500) NOT NULL DEFAULT '' AFTER set_type");
+    }
+
     $slotIndexStmt = $pdo->query("SHOW INDEX FROM dj_season_bookings WHERE Key_name = 'idx_booking_slot'");
     if (!$slotIndexStmt || !$slotIndexStmt->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE dj_season_bookings ADD INDEX idx_booking_slot (slot_id)");
