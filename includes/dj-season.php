@@ -174,6 +174,16 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
     $stmt->execute([DESEO_DJ_SEASON]);
     $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    $strictKeys = [];
+    foreach (dj_season_strict_slot_definitions() as $definition) {
+        $strictKeys[(int)$definition['day_of_week'] . '|' . (string)$definition['start_time']] = true;
+    }
+
+    $slots = array_values(array_filter($slots, static function (array $slot) use ($strictKeys): bool {
+        $key = (int)$slot['day_of_week'] . '|' . (string)$slot['start_time'];
+        return isset($strictKeys[$key]);
+    }));
+
     foreach ($slots as &$slot) {
         $slot['program_conflict'] = false;
         $slot['available'] =
