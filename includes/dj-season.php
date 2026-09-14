@@ -69,6 +69,7 @@ function dj_season_bootstrap(PDO $pdo): void {
         booking_token CHAR(64) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_booking_token (booking_token),
+        KEY idx_booking_slot (slot_id),
         KEY idx_booking_season_status (season, status),
         KEY idx_booking_email (email),
         CONSTRAINT fk_dj_booking_slot FOREIGN KEY (slot_id) REFERENCES dj_season_slots(id)
@@ -77,6 +78,11 @@ function dj_season_bootstrap(PDO $pdo): void {
 
     // Season 6 submissions are inquiries, not first-come bookings.
     // Existing installations may still have the old unique slot index.
+    $slotIndexStmt = $pdo->query("SHOW INDEX FROM dj_season_bookings WHERE Key_name = 'idx_booking_slot'");
+    if (!$slotIndexStmt || !$slotIndexStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE dj_season_bookings ADD INDEX idx_booking_slot (slot_id)");
+    }
+
     $indexStmt = $pdo->query("SHOW INDEX FROM dj_season_bookings WHERE Key_name = 'uniq_slot_booking'");
     if ($indexStmt && $indexStmt->fetch(PDO::FETCH_ASSOC)) {
         $pdo->exec("ALTER TABLE dj_season_bookings DROP INDEX uniq_slot_booking");
