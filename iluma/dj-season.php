@@ -17,50 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string)($_POST['action'] ?? '');
 
         try {
-            if ($action === 'add_slot') {
-                $day = (int)($_POST['day_of_week'] ?? 0);
-                $start = trim((string)($_POST['start_time'] ?? ''));
-                $end = trim((string)($_POST['end_time'] ?? ''));
-
-                $startDt = DateTimeImmutable::createFromFormat('!H:i', $start);
-                $endDt = DateTimeImmutable::createFromFormat('!H:i', $end);
-                if ($day < 1 || $day > 7 || !$startDt || !$endDt || $start === $end) {
-                    throw new RuntimeException('Συμπλήρωσε έγκυρη ημέρα και διαφορετικές ώρες έναρξης / λήξης.');
-                }
-
-                $stmt = $pdo->prepare(
-                    "INSERT INTO dj_season_slots (season, day_of_week, start_time, end_time, is_active)
-                     VALUES (?, ?, ?, ?, 1)"
-                );
-                $stmt->execute([
-                    DESEO_DJ_SEASON,
-                    $day,
-                    $startDt->format('H:i:s'),
-                    $endDt->format('H:i:s'),
-                ]);
-                $notice = 'Το νέο slot προστέθηκε.';
-            } elseif ($action === 'toggle_slot') {
-                $slotId = (int)($_POST['slot_id'] ?? 0);
-                $stmt = $pdo->prepare(
-                    "UPDATE dj_season_slots
-                     SET is_active = IF(is_active = 1, 0, 1)
-                     WHERE id = ? AND season = ?"
-                );
-                $stmt->execute([$slotId, DESEO_DJ_SEASON]);
-                $notice = 'Το slot ενημερώθηκε.';
-            } elseif ($action === 'delete_slot') {
-                $slotId = (int)($_POST['slot_id'] ?? 0);
-
-                $check = $pdo->prepare("SELECT COUNT(*) FROM dj_season_bookings WHERE slot_id = ?");
-                $check->execute([$slotId]);
-                if ((int)$check->fetchColumn() > 0) {
-                    throw new RuntimeException('Δεν μπορείς να διαγράψεις slot που έχει booking. Διέγραψε πρώτα την αίτηση.');
-                }
-
-                $stmt = $pdo->prepare("DELETE FROM dj_season_slots WHERE id = ? AND season = ?");
-                $stmt->execute([$slotId, DESEO_DJ_SEASON]);
-                $notice = 'Το slot διαγράφηκε.';
-            } elseif ($action === 'set_status') {
+            if ($action === 'set_status') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
                 $status = (string)($_POST['status'] ?? 'pending');
                 if (!in_array($status, ['pending', 'approved', 'cancelled'], true)) {
@@ -152,35 +109,11 @@ admin_page_start('Season 6 DJs', 'dj-season');
 <section class="panel">
     <div class="page-heading" style="margin-bottom:20px">
         <div>
-            <span>Slot control</span>
-            <h1 style="font-size:26px">Weekly availability</h1>
-            <p>Active slots μπορεί να εμφανίζονται unavailable όταν υπάρχει ήδη πρόγραμμα ή booking.</p>
+            <span>Fixed Season 6 schedule</span>
+            <h1 style="font-size:26px">Weekly DJ slots</h1>
+            <p>Τα slots είναι κλειδωμένα στο format της Season 6 και δεν επηρεάζονται από το τρέχον radio program.</p>
         </div>
     </div>
-
-    <form method="post" class="panel" style="margin:0 0 18px;background:#0a0a0a">
-        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-        <input type="hidden" name="action" value="add_slot">
-        <div class="form-grid three">
-            <div class="field">
-                <label for="season-day">Ημέρα</label>
-                <select id="season-day" name="day_of_week" required>
-                    <?php foreach (range(1, 7) as $day): ?>
-                        <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="field">
-                <label for="season-start">Έναρξη</label>
-                <input id="season-start" type="time" name="start_time" value="20:00" required>
-            </div>
-            <div class="field">
-                <label for="season-end">Λήξη</label>
-                <input id="season-end" type="time" name="end_time" value="21:00" required>
-            </div>
-        </div>
-        <div class="form-actions"><button class="button button-primary" type="submit">Add slot</button></div>
-    </form>
 
     <div class="program-list">
         <?php foreach ($slots as $slot): ?>
@@ -190,33 +123,14 @@ admin_page_start('Season 6 DJs', 'dj-season');
                     <p>
                         <?php if (!empty($slot['booking_id'])): ?>
                             <span class="day">BOOKED</span>
-                        <?php elseif (!empty($slot['program_conflict'])): ?>
-                            <span class="day">PROGRAM CONFLICT</span>
-                        <?php elseif ((int)$slot['is_active'] !== 1): ?>
-                            INACTIVE
                         <?php else: ?>
                             AVAILABLE
                         <?php endif; ?>
                     </p>
                 </div>
-                <div style="display:flex;gap:6px;align-items:center">
-                    <form method="post">
-                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                        <input type="hidden" name="action" value="toggle_slot">
-                        <input type="hidden" name="slot_id" value="<?= (int)$slot['id'] ?>">
-                        <button class="button button-secondary" type="submit">
-                            <?= (int)$slot['is_active'] === 1 ? 'Disable' : 'Enable' ?>
-                        </button>
-                    </form>
-                    <?php if (empty($slot['booking_id'])): ?>
-                        <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το slot;');">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="delete_slot">
-                            <input type="hidden" name="slot_id" value="<?= (int)$slot['id'] ?>">
-                            <button class="button button-danger" type="submit">Delete</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
+                <span class="button button-secondary" style="display:inline-flex;align-items:center">
+                    <?= !empty($slot['booking_id']) ? 'Reserved' : 'Open' ?>
+                </span>
             </div>
         <?php endforeach; ?>
     </div>
@@ -255,6 +169,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             <p style="margin:14px 0 0;color:#aaa;font-size:12px;line-height:1.65;white-space:pre-wrap"><?= admin_e($booking['bio']) ?></p>
 
                             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
+                                <a class="button button-primary" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Download photo ↓</a>
                                 <?php if (!empty($booking['instagram'])): ?><a class="button button-secondary" href="<?= admin_e($booking['instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
                                 <?php if (!empty($booking['website'])): ?><a class="button button-secondary" href="<?= admin_e($booking['website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
                                 <span class="button button-secondary" style="display:inline-flex;align-items:center"><?= admin_e($booking['set_type']) ?></span>
