@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 date_default_timezone_set('Europe/Athens');
 
+if (!headers_sent()) {
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex', true);
+}
+
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 
@@ -54,7 +58,7 @@ $old = [
     'website' => '',
     'bio' => '',
     'set_type' => 'new',
-    'tracklist' => '',
+    'work_sample_url' => '',
     'slot_id' => '',
 ];
 
@@ -92,10 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Το bio είναι υποχρεωτικό και πρέπει να είναι έως 1.000 χαρακτήρες.';
     }
 
-    if ($old['tracklist'] !== '' && dj_form_length($old['tracklist']) > 6000) {
-        $errors[] = 'Η tracklist είναι πολύ μεγάλη για τη φόρμα.';
-    }
-
     $allowedSetTypes = ['new', 'previous', 'exclusive'];
     if (!in_array($old['set_type'], $allowedSetTypes, true)) {
         $errors[] = 'Επίλεξε έγκυρο τύπο DJ set.';
@@ -103,11 +103,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $instagram = dj_season_clean_url($old['instagram']);
     $website = dj_season_clean_url($old['website']);
+    $workSampleUrl = dj_season_clean_url($old['work_sample_url']);
     if ($old['instagram'] !== '' && $instagram === '') {
         $errors[] = 'Το Instagram / social link δεν είναι έγκυρο.';
     }
     if ($old['website'] !== '' && $website === '') {
         $errors[] = 'Το website / portfolio link δεν είναι έγκυρο.';
+    }
+    if ($old['work_sample_url'] === '' || $workSampleUrl === '') {
+        $errors[] = 'Πρόσθεσε ένα έγκυρο link με δείγμα δουλειάς σου (DJ set, mix ή radio show).';
+    } elseif (dj_form_length($workSampleUrl) > 500) {
+        $errors[] = 'Το link δείγματος δουλειάς είναι πολύ μεγάλο.';
     }
 
     $slotId = filter_var($old['slot_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -201,12 +207,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $insert = $pdo->prepare(
                 "INSERT INTO dj_season_bookings (
                     season, slot_id, full_name, artist_name, email, instagram, website,
-                    bio, photo_path, set_type, tracklist, status,
+                    bio, photo_path, set_type, work_sample_url, tracklist, status,
                     rights_confirmed, ai_confirmed, age_confirmed,
                     terms_version, terms_accepted_at,
                     privacy_version, privacy_acknowledged_at, booking_token
                  ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending',
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'pending',
                     1, 1, 1, ?, ?, ?, ?, ?
                  )"
             );
@@ -221,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $old['bio'],
                 $storedPhoto,
                 $old['set_type'],
-                $old['tracklist'],
+                $workSampleUrl,
                 DESEO_DJ_TERMS_VERSION,
                 $now,
                 DESEO_DJ_PRIVACY_VERSION,
@@ -264,6 +270,8 @@ foreach ($slots as $slot) {
 $meta_title = 'Deseo Radio Season 6 | DJ Sets';
 $meta_desc = 'Join Deseo Radio Season 6. DJs and producers can select an available weekly slot and submit their profile for the new DJ Sets programme.';
 $meta_canonical = 'https://deseoradio.com/djs';
+$meta_robots = 'noindex,nofollow,noarchive,nosnippet,noimageindex';
+$private_page = true;
 $extra_styles = ['/assets/css/djs.css'];
 
 require_once __DIR__ . '/includes/head-meta.php';
@@ -274,27 +282,30 @@ require_once __DIR__ . '/includes/header.php';
     <section class="dj-season-hero">
         <div class="wide-shell dj-season-hero-grid">
             <div>
-                <span class="kicker">DESEO RADIO · SEASON 6</span>
-                <h1 class="metal-title">DJ Sets.<br>Send your inquiry.</h1>
+                <div class="dj-season-brand-lockup">
+                    <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+                    <span>SEASON 6 · DJ CALL</span>
+                </div>
+                <h1 class="metal-title">Bring your sound.<br>Join Season 6.</h1>
                 <p class="dj-season-lead">
-                    Η νέα σεζόν του Deseo Radio ανοίγει το εβδομαδιαίο πρόγραμμα σε επιλεγμένους DJs & producers.
-                    Δήλωσε το slot που προτιμάς και στείλε τα στοιχεία σου. Η ομάδα του Deseo Radio αξιολογεί τα inquiries και επιλέγει χειροκίνητα τους DJs της Season 6.
+                    Στείλε το profile σου, ένα δυνατό δείγμα δουλειάς και το slot που προτιμάς.
+                    Η ομάδα του Deseo επιλέγει χειροκίνητα τους DJs που ταιριάζουν στο sound της νέας σεζόν.
                 </p>
                 <div class="dj-season-pills" aria-label="Season 6 highlights">
-                    <span>No fee / no payment</span>
                     <span>Weekly DJ Sets</span>
-                    <span>No AI-generated music</span>
+                    <span>Selected by Deseo</span>
+                    <span>Human-made music only</span>
                 </div>
             </div>
 
             <aside class="dj-season-intro-card">
-                <span>HOW IT WORKS</span>
+                <span>WHAT WE NEED</span>
                 <ol>
-                    <li><strong>01</strong><p>Συμπλήρωσε DJ profile, φωτογραφία και bio.</p></li>
-                    <li><strong>02</strong><p>Δήλωσε το διαθέσιμο slot που προτιμάς.</p></li>
-                    <li><strong>03</strong><p>Στείλε το inquiry σου. Η τελική επιλογή γίνεται από την ομάδα Deseo / ILUMA.</p></li>
+                    <li><strong>01</strong><p>Artist profile, bio και μία καθαρή φωτογραφία.</p></li>
+                    <li><strong>02</strong><p>Ένα link από DJ set, mix ή radio show που σε αντιπροσωπεύει.</p></li>
+                    <li><strong>03</strong><p>Την ημέρα και ώρα που προτιμάς για τη Season 6.</p></li>
                 </ol>
-                <p class="dj-season-small">Η υποβολή δεν αποτελεί επιβεβαίωση συμμετοχής ούτε σε βάζει αυτόματα στο πρόγραμμα. Ένα slot κλείνει μόνο όταν εγκρίνουμε χειροκίνητα έναν DJ για αυτό.</p>
+                <p class="dj-season-small">Το inquiry δεν είναι αυτόματη αποδοχή. Αν επιλεγείς, θα λάβεις confirmation email από το radio@iluma.gr.</p>
             </aside>
         </div>
     </section>
@@ -302,17 +313,15 @@ require_once __DIR__ . '/includes/header.php';
     <section class="dj-season-content">
         <div class="wide-shell dj-season-layout">
             <div class="dj-season-info">
-                <span class="kicker">THE FORMAT</span>
-                <h2>Τι μπορείς να στείλεις</h2>
+                <span class="kicker">DESEO RADIO · SEASON 6</span>
+                <h2>Το sound πρώτα.</h2>
                 <p>
-                    Το set μπορεί να είναι νέο, παλαιότερο ή ειδικά δημιουργημένο για το Deseo Radio.
-                    Δεν υπάρχει οικονομική αμοιβή. Η ILUMA Digital Agency θα δημιουργεί τα promotional assets
-                    του DJ με ημέρα και ώρα μετάδοσης για social sharing και repost.
+                    Μας ενδιαφέρει να ακούσουμε το ύφος σου πριν από οτιδήποτε άλλο. Στείλε ένα αντιπροσωπευτικό
+                    DJ set, mix ή radio show και διάλεξε το slot που σε βολεύει.
                 </p>
                 <p>
-                    Θα χρειαστούμε τελικό DJ set και tracklist σύμφωνα με τις τεχνικές οδηγίες που θα σταλούν
-                    μετά την επιβεβαίωση. Δεν επιτρέπονται τραγούδια ή recordings που έχουν δημιουργηθεί
-                    εξ ολοκλήρου ή εν μέρει με generative AI.
+                    Αν επιλεγείς, η ILUMA Digital Agency θα ετοιμάσει τα branded promotional assets για τη συμμετοχή σου
+                    και θα σου στείλουμε ξεχωριστά τις τεχνικές οδηγίες για το τελικό set.
                 </p>
 
                 <div class="dj-season-rule">
@@ -325,8 +334,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="dj-season-form-card" id="apply">
                 <div class="dj-season-form-head">
                     <div>
-                        <span>SEASON 6 APPLICATION</span>
-                        <h2>Κλείσε το slot σου</h2>
+                        <span>SEASON 6 · DJ INQUIRY</span>
+                        <h2>Send your profile</h2>
                     </div>
                     <strong>S6</strong>
                 </div>
@@ -388,9 +397,9 @@ require_once __DIR__ . '/includes/header.php';
                     </fieldset>
 
                     <fieldset>
-                        <legend>02 · DJ SET</legend>
+                        <legend>02 · YOUR SOUND</legend>
                         <div class="dj-form-grid">
-                            <label class="dj-field-full">
+                            <label>
                                 <span>Τύπος set *</span>
                                 <select name="set_type" required>
                                     <option value="new" <?= $old['set_type'] === 'new' ? 'selected' : '' ?>>Νέο DJ set</option>
@@ -398,16 +407,20 @@ require_once __DIR__ . '/includes/header.php';
                                     <option value="exclusive" <?= $old['set_type'] === 'exclusive' ? 'selected' : '' ?>>Set ειδικά για το Deseo Radio</option>
                                 </select>
                             </label>
-                            <label class="dj-field-full">
-                                <span>Tracklist <small>προαιρετικά τώρα · απαιτείται πριν τη μετάδοση</small></span>
-                                <textarea name="tracklist" maxlength="6000" rows="5" placeholder="Artist — Track"><?= deseo_e($old['tracklist']) ?></textarea>
+                            <label>
+                                <span>Work sample link * <small>SoundCloud / Mixcloud / YouTube / Drive</small></span>
+                                <input type="url" name="work_sample_url" maxlength="500" value="<?= deseo_e($old['work_sample_url']) ?>" placeholder="https://..." required>
                             </label>
+                            <div class="dj-work-sample-note dj-field-full">
+                                <strong>Στείλε κάτι που σε αντιπροσωπεύει.</strong>
+                                <span>DJ set, radio show ή mix. Το link πρέπει να είναι προσβάσιμο χωρίς να ζητάει login.</span>
+                            </div>
                         </div>
                     </fieldset>
 
                     <fieldset class="dj-slot-fieldset">
                         <legend>03 · DAY & TIME</legend>
-                        <p class="dj-field-note">Δήλωσε το slot που προτιμάς. Τα slots της Season 6 είναι σταθερά: Πέμπτη & Παρασκευή 20:00–23:59, Σάββατο & Κυριακή 18:00–23:59. Κάθε slot είναι μίας ώρας. Πολλά inquiries μπορούν να ζητήσουν το ίδιο slot μέχρι να εγκρίνουμε έναν DJ.</p>
+                        <p class="dj-field-note">Διάλεξε την ώρα που προτιμάς. Πέμπτη & Παρασκευή 20:00–23:59 · Σάββατο & Κυριακή 18:00–23:59. Πολλοί DJs μπορούν να ζητήσουν το ίδιο slot μέχρι να γίνει τελική επιλογή.</p>
 
                         <div class="dj-slot-days">
                             <?php foreach ([4, 5, 6, 7] as $day): ?>
@@ -448,7 +461,7 @@ require_once __DIR__ . '/includes/header.php';
                     </fieldset>
 
                     <div class="dj-submit-row">
-                        <p>Η υποβολή είναι inquiry και δεν αποτελεί αποδοχή, κράτηση ή ένταξη στο πρόγραμμα. Θα αξιολογηθεί χειροκίνητα από την ομάδα Deseo / ILUMA.</p>
+                        <p>Η αίτηση αξιολογείται χειροκίνητα από Deseo / ILUMA. Αν επιλεγείς, θα λάβεις email με το approved slot και τα επόμενα βήματα.</p>
                         <button type="submit" class="button button-red">SEND INQUIRY · SEASON 6</button>
                     </div>
                 </form>
