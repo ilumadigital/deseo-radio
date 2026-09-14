@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $_SESSION['dj_last_submission'] = time();
             $_SESSION['dj_form_csrf'] = bin2hex(random_bytes(32));
-            header('Location: /djs?submitted=1&mail=' . ($mailSent ? '1' : '0'));
+            header('Location: /dj?submitted=1&mail=' . ($mailSent ? '1' : '0'));
             exit;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
@@ -319,7 +319,7 @@ foreach ($slots as $slot) {
 
 $meta_title = 'Deseo Radio Season 6 | DJ Sets';
 $meta_desc = 'Join Deseo Radio Season 6. DJs and producers can select an available weekly slot and submit their profile for the new DJ Sets programme.';
-$meta_canonical = 'https://deseoradio.com/djs';
+$meta_canonical = 'https://deseoradio.com/dj';
 $meta_robots = 'noindex,nofollow,noarchive,nosnippet,noimageindex';
 $private_page = true;
 $extra_styles = ['/assets/css/djs.css'];
