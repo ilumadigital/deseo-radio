@@ -5,6 +5,8 @@ $meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σο
 $meta_desc = $meta_desc ?? "Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.";
 $meta_keywords = $meta_keywords ?? "ραδιόφωνο, δεσεο, deseo, radio, house music";
 $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
+$meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
+$private_page = !empty($private_page);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 
 $assetVersion = 1;
@@ -26,6 +28,9 @@ if (!headers_sent()) {
     header('Pragma: no-cache');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
+    if ($private_page) {
+        header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex', true);
+    }
 }
 
 $faqSchema = [];
@@ -92,7 +97,11 @@ $schema = [
     <title><?= deseo_e($meta_title) ?></title>
     <meta name="description" content="<?= deseo_e($meta_desc) ?>">
     <meta name="keywords" content="<?= deseo_e($meta_keywords) ?>">
-    <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="robots" content="<?= deseo_e($meta_robots) ?>">
+    <?php if ($private_page): ?>
+        <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+        <meta name="googlebot-news" content="noindex,nofollow,noarchive,nosnippet">
+    <?php endif; ?>
 
     <link rel="canonical" href="<?= deseo_e($meta_canonical) ?>">
     <link rel="alternate" hreflang="el" href="<?= deseo_e($meta_canonical) ?>">
@@ -102,10 +111,12 @@ $schema = [
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://play.iradios.gr">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap">
+    <?php if (!$private_page): ?>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://play.iradios.gr">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap">
+    <?php endif; ?>
 
     <link rel="manifest" href="/manifest.json?v=<?= $assetVersion ?>">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -123,6 +134,7 @@ $schema = [
     window.DESEO_ASSET_VERSION = <?= json_encode((string)$assetVersion) ?>;
     </script>
 
+    <?php if (!$private_page): ?>
     <!-- Google Analytics 4 — consent-aware -->
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -175,6 +187,11 @@ $schema = [
     </script>
 
     <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?></script>
+    <?php else: ?>
+    <script>
+    window.DeseoAnalytics = { loaded: false, pageviewSent: false, load: function(){}, sendPageView: function(){}, event: function(){} };
+    </script>
+    <?php endif; ?>
 </head>
 <body>
 <a class="skip-link" href="#main-content" data-i18n="skip.content"><?= deseo_e(deseo_t('skip.content')) ?></a>
