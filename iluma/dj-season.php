@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (is_file($absolute)) @unlink($absolute);
                 }
 
-                $notice = 'Η αίτηση διαγράφηκε και το slot ελευθερώθηκε.';
+                $notice = 'Το inquiry διαγράφηκε. Δεν έγινε καμία αλλαγή στο Radio Program.';
             }
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
