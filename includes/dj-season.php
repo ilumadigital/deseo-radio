@@ -68,13 +68,19 @@ function dj_season_bootstrap(PDO $pdo): void {
         privacy_acknowledged_at DATETIME NOT NULL,
         booking_token CHAR(64) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY uniq_slot_booking (slot_id),
         UNIQUE KEY uniq_booking_token (booking_token),
         KEY idx_booking_season_status (season, status),
         KEY idx_booking_email (email),
         CONSTRAINT fk_dj_booking_slot FOREIGN KEY (slot_id) REFERENCES dj_season_slots(id)
             ON UPDATE CASCADE ON DELETE RESTRICT
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Season 6 submissions are inquiries, not first-come bookings.
+    // Existing installations may still have the old unique slot index.
+    $indexStmt = $pdo->query("SHOW INDEX FROM dj_season_bookings WHERE Key_name = 'uniq_slot_booking'");
+    if ($indexStmt && $indexStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE dj_season_bookings DROP INDEX uniq_slot_booking");
+    }
 
     $definitions = dj_season_strict_slot_definitions();
     $desired = [];
@@ -161,9 +167,15 @@ function dj_season_slot_conflicts_with_program(PDO $pdo, array $slot): bool {
 
 function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
     $sql = "SELECT s.id, s.season, s.day_of_week, s.start_time, s.end_time, s.is_active,
-                   b.id AS booking_id
+                   (
+                       SELECT b.id
+                       FROM dj_season_bookings b
+                       WHERE b.slot_id = s.id
+                         AND b.status = 'approved'
+                       ORDER BY b.id ASC
+                       LIMIT 1
+                   ) AS approved_booking_id
             FROM dj_season_slots s
-            LEFT JOIN dj_season_bookings b ON b.slot_id = s.id
             WHERE s.season = ?";
     if (!$includeInactive) {
         $sql .= " AND s.is_active = 1";
@@ -188,7 +200,7 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
         $slot['program_conflict'] = false;
         $slot['available'] =
             (int)$slot['is_active'] === 1
-            && empty($slot['booking_id']);
+            && empty($slot['approved_booking_id']);
     }
     unset($slot);
 
