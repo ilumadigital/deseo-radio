@@ -24,13 +24,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new RuntimeException('Μη έγκυρο status.');
                 }
 
+                $pdo->beginTransaction();
+
                 $stmt = $pdo->prepare(
+                    "SELECT id, slot_id, status
+                     FROM dj_season_bookings
+                     WHERE id = ? AND season = ?
+                     FOR UPDATE"
+                );
+                $stmt->execute([$bookingId, DESEO_DJ_SEASON]);
+                $current = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$current) {
+                    throw new RuntimeException('Η αίτηση δεν βρέθηκε.');
+                }
+
+                $slotStmt = $pdo->prepare(
+                    "SELECT id
+                     FROM dj_season_slots
+                     WHERE id = ? AND season = ?
+                     FOR UPDATE"
+                );
+                $slotStmt->execute([(int)$current['slot_id'], DESEO_DJ_SEASON]);
+                if (!$slotStmt->fetchColumn()) {
+                    throw new RuntimeException('Το slot της αίτησης δεν βρέθηκε.');
+                }
+
+                if ($status === 'approved') {
+                    $check = $pdo->prepare(
+                        "SELECT id
+                         FROM dj_season_bookings
+                         WHERE slot_id = ?
+                           AND status = 'approved'
+                           AND id <> ?
+                         LIMIT 1
+                         FOR UPDATE"
+                    );
+                    $check->execute([(int)$current['slot_id'], $bookingId]);
+                    if ($check->fetchColumn()) {
+                        throw new RuntimeException('Υπάρχει ήδη εγκεκριμένος DJ για αυτό το slot.');
+                    }
+                }
+
+                $update = $pdo->prepare(
                     "UPDATE dj_season_bookings
                      SET status = ?
                      WHERE id = ? AND season = ?"
                 );
-                $stmt->execute([$status, $bookingId, DESEO_DJ_SEASON]);
-                $notice = 'Το status της αίτησης ενημερώθηκε.';
+                $update->execute([$status, $bookingId, DESEO_DJ_SEASON]);
+                $pdo->commit();
+
+                $notice = $status === 'approved'
+                    ? 'Η αίτηση εγκρίθηκε. Το slot έκλεισε για νέα inquiries. Δεν έγινε καμία αλλαγή στο Radio Program.'
+                    : 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
             } elseif ($action === 'release_booking') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
 
@@ -91,7 +137,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
     <div>
         <span>Deseo Season 6</span>
         <h1>DJ applications</h1>
-        <p>Διαχείριση κρατήσεων, διαθέσιμων slots και στοιχείων των DJs που έχουν υποβάλει συμμετοχή.</p>
+        <p>Διαχείριση inquiries, προτιμήσεων slot και επιλογής DJs για τη Season 6. Καμία ενέργεια εδώ δεν γράφει στο Radio Program.</p>
     </div>
     <a class="button button-secondary" href="/djs" target="_blank" rel="noopener">Open public form ↗</a>
 </div>
@@ -109,9 +155,9 @@ admin_page_start('Season 6 DJs', 'dj-season');
 <section class="panel">
     <div class="page-heading" style="margin-bottom:20px">
         <div>
-            <span>Fixed Season 6 schedule</span>
-            <h1 style="font-size:26px">Weekly DJ slots</h1>
-            <p>Τα slots είναι κλειδωμένα στο format της Season 6 και δεν επηρεάζονται από το τρέχον radio program.</p>
+            <span>Inquiry availability</span>
+            <h1 style="font-size:26px">Requested DJ slots</h1>
+            <p>Τα slots είναι μόνο επιλογές προτίμησης για inquiries. Το Radio Program είναι ξεχωριστό και ενημερώνεται μόνο χειροκίνητα από εσένα.</p>
         </div>
     </div>
 
@@ -121,15 +167,15 @@ admin_page_start('Season 6 DJs', 'dj-season');
                 <div>
                     <h3><?= admin_e(dj_season_day_label((int)$slot['day_of_week'])) ?> · <?= admin_e(dj_season_format_time($slot['start_time'])) ?>–<?= admin_e(dj_season_format_time($slot['end_time'])) ?></h3>
                     <p>
-                        <?php if (!empty($slot['booking_id'])): ?>
-                            <span class="day">BOOKED</span>
+                        <?php if (!empty($slot['approved_booking_id'])): ?>
+                            <span class="day">APPROVED / CLOSED</span>
                         <?php else: ?>
-                            AVAILABLE
+                            OPEN FOR INQUIRIES
                         <?php endif; ?>
                     </p>
                 </div>
                 <span class="button button-secondary" style="display:inline-flex;align-items:center">
-                    <?= !empty($slot['booking_id']) ? 'Reserved' : 'Open' ?>
+                    <?= !empty($slot['approved_booking_id']) ? 'Closed' : 'Open' ?>
                 </span>
             </div>
         <?php endforeach; ?>
@@ -139,14 +185,14 @@ admin_page_start('Season 6 DJs', 'dj-season');
 <section class="panel">
     <div class="page-heading" style="margin-bottom:20px">
         <div>
-            <span>Submissions</span>
-            <h1 style="font-size:26px">Season 6 bookings</h1>
-            <p>Τα προσωπικά στοιχεία παραμένουν στο προστατευμένο CMS και δεν εμφανίζονται στο public slot picker.</p>
+            <span>Inquiries</span>
+            <h1 style="font-size:26px">Season 6 inquiries</h1>
+            <p>Μπορεί να υπάρχουν πολλά pending inquiries για το ίδιο slot. Μόνο ένα μπορεί να γίνει Approved. Η έγκριση δεν προσθέτει τον DJ στο Radio Program.</p>
         </div>
     </div>
 
     <?php if (!$bookings): ?>
-        <div class="empty-admin">Δεν υπάρχουν ακόμη Season 6 submissions.</div>
+        <div class="empty-admin">Δεν υπάρχουν ακόμη Season 6 inquiries.</div>
     <?php else: ?>
         <div style="display:grid;gap:14px">
             <?php foreach ($bookings as $booking): ?>
@@ -195,11 +241,11 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                     <button class="button button-primary" type="submit">Save status</button>
                                 </form>
 
-                                <form method="post" onsubmit="return confirm('Να διαγραφεί η αίτηση και να ελευθερωθεί το slot;');">
+                                <form method="post" onsubmit="return confirm('Να διαγραφεί οριστικά αυτό το inquiry;');">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="release_booking">
                                     <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
-                                    <button class="button button-danger" type="submit">Delete & release</button>
+                                    <button class="button button-danger" type="submit">Delete inquiry</button>
                                 </form>
                             </div>
 
