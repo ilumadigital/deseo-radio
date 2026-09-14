@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-season.php';
+require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/admin-ui.php';
 
 dj_season_bootstrap($pdo);
@@ -72,11 +73,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      WHERE id = ? AND season = ?"
                 );
                 $update->execute([$status, $bookingId, DESEO_DJ_SEASON]);
+                $previousStatus = (string)$current['status'];
                 $pdo->commit();
 
-                $notice = $status === 'approved'
-                    ? 'Η αίτηση εγκρίθηκε. Το slot έκλεισε για νέα inquiries. Δεν έγινε καμία αλλαγή στο Radio Program.'
-                    : 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
+                if ($status === 'approved' && $previousStatus !== 'approved') {
+                    $mailStmt = $pdo->prepare(
+                        "SELECT b.*, s.day_of_week, s.start_time, s.end_time
+                         FROM dj_season_bookings b
+                         INNER JOIN dj_season_slots s ON s.id = b.slot_id
+                         WHERE b.id = ? AND b.season = ?
+                         LIMIT 1"
+                    );
+                    $mailStmt->execute([$bookingId, DESEO_DJ_SEASON]);
+                    $approvedBooking = $mailStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($approvedBooking) {
+                        try {
+                            $mail = deseo_dj_approval_email($approvedBooking);
+                            deseo_send_smtp_mail(
+                                (string)$approvedBooking['email'],
+                                (string)$approvedBooking['artist_name'],
+                                (string)$mail['subject'],
+                                (string)$mail['html'],
+                                (string)$mail['text']
+                            );
+                            $notice = 'Η αίτηση εγκρίθηκε, το slot έκλεισε για νέα inquiries και στάλθηκε branded confirmation email στον DJ. Δεν έγινε καμία αλλαγή στο Radio Program.';
+                        } catch (Throwable $mailError) {
+                            error_log('Season 6 approval email failed: ' . $mailError->getMessage());
+                            $notice = 'Η αίτηση εγκρίθηκε και το slot έκλεισε για νέα inquiries. Δεν έγινε καμία αλλαγή στο Radio Program.';
+                            $error = 'Το approval αποθηκεύτηκε, αλλά το email δεν στάλθηκε. Έλεγξε τα SMTP_* στοιχεία στο .env.';
+                        }
+                    }
+                } else {
+                    $notice = $status === 'approved'
+                        ? 'Η αίτηση παραμένει Approved. Δεν στάλθηκε δεύτερο email.'
+                        : 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
+                }
             } elseif ($action === 'release_booking') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
 
