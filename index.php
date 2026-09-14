@@ -130,7 +130,7 @@ $partners = [
     3 => ['url' => 'https://www.getmeradio.com/stations/deseoradiogr-4835/', 'name' => 'Get Me Radio'],
     5 => ['url' => 'https://tunein.com/radio/Deseo-Radio-s258242/', 'name' => 'TuneIn'],
     6 => ['url' => 'https://vradio.app/play?id=20739', 'name' => 'VRadio'],
-    8 => ['url' => 'https://iluma.gr/radios/deseo', 'name' => 'ILUMA Radios'],
+    8 => ['url' => 'https://iluma.gr/radios', 'name' => 'ILUMA Radios'],
 ];
 ?>
 
@@ -329,7 +329,7 @@ $partners = [
             </div>
             <div class="about-copy reveal">
                 <p data-i18n="about.text"><?= deseo_e(deseo_t('about.text')) ?></p>
-                <a href="https://iluma.gr/radios/deseo" target="_blank" rel="noopener noreferrer" data-i18n="about.iluma" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('about.iluma')) ?></a>
+                <a href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-i18n="about.iluma" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('about.iluma')) ?></a>
             </div>
         </div>
     </section>
