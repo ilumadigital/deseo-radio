@@ -117,3 +117,213 @@ linear-gradient(180deg,#090909,#050505)}
 .dj-season-pills{gap:6px}
 .dj-season-pills span{font-size:9px}
 }
+
+/* Season 6 premium inquiry refresh */
+.dj-season-page{
+    position:relative;
+    isolation:isolate;
+    background:#050505;
+}
+.dj-season-page:before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:
+        linear-gradient(180deg,rgba(3,3,4,.46),rgba(3,3,4,.94) 54%,#050505 82%),
+        radial-gradient(circle at 68% 16%,rgba(255,38,49,.24),transparent 30%),
+        url('/assets/img/bg.png') center top/cover no-repeat;
+    filter:saturate(.78) contrast(1.04);
+}
+.dj-season-page:after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.12) 54%,rgba(0,0,0,.44));
+}
+.dj-season-hero{
+    min-height:72vh;
+    display:flex;
+    align-items:flex-end;
+    padding:118px 0 76px;
+    background:linear-gradient(180deg,rgba(4,4,5,.12),rgba(4,4,5,.72));
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+.dj-season-hero:before{
+    background:
+        linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+    background-size:56px 56px;
+    opacity:.6;
+}
+.dj-season-hero-grid{align-items:end;gap:72px}
+.dj-season-brand-lockup{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:30px;
+}
+.dj-season-brand-lockup img{
+    display:block;
+    width:clamp(150px,18vw,220px);
+    height:auto;
+    filter:drop-shadow(0 12px 34px rgba(0,0,0,.32));
+}
+.dj-season-brand-lockup span{
+    padding-left:18px;
+    border-left:1px solid rgba(255,255,255,.18);
+    color:#ff3943;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.19em;
+}
+.dj-season-hero h1{
+    max-width:980px;
+    margin:0 0 24px;
+    font-size:clamp(58px,7.4vw,118px);
+    line-height:.86;
+    text-shadow:0 18px 64px rgba(0,0,0,.45);
+}
+.dj-season-lead{
+    max-width:730px;
+    color:#d0d0d4;
+    font-size:clamp(17px,1.35vw,21px);
+    line-height:1.55;
+}
+.dj-season-pills span{
+    border-color:rgba(255,255,255,.14);
+    background:rgba(8,8,10,.56);
+    backdrop-filter:blur(14px);
+    color:#d5d5d9;
+}
+.dj-season-intro-card{
+    border:1px solid rgba(255,255,255,.13);
+    background:linear-gradient(155deg,rgba(15,15,18,.84),rgba(7,7,9,.94));
+    backdrop-filter:blur(26px);
+    box-shadow:0 34px 90px rgba(0,0,0,.44);
+}
+.dj-season-intro-card li strong{
+    background:#ff2b36;
+    color:#070707;
+    box-shadow:0 10px 28px rgba(255,43,54,.18);
+}
+.dj-season-content{padding:82px 0 120px}
+.dj-season-layout{gap:46px}
+.dj-season-info{
+    top:128px;
+    padding:28px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:28px;
+    background:rgba(8,8,10,.72);
+    backdrop-filter:blur(20px);
+}
+.dj-season-info h2{font-size:42px}
+.dj-season-info>p{color:#aaaab0}
+.dj-season-rule{
+    border-color:rgba(255,43,54,.26);
+    background:linear-gradient(145deg,rgba(255,43,54,.13),rgba(255,43,54,.045));
+}
+.dj-season-form-card{
+    position:relative;
+    border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg,rgba(16,16,19,.97),rgba(7,7,9,.985));
+    box-shadow:0 48px 120px rgba(0,0,0,.48);
+}
+.dj-season-form-card:before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:32px;
+    right:32px;
+    height:2px;
+    background:linear-gradient(90deg,transparent,#ff2b36,transparent);
+    opacity:.82;
+}
+.dj-season-form-head{
+    padding:32px 34px 28px;
+    background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);
+}
+.dj-season-form-head h2{font-size:34px}
+.dj-season-form-head>strong{color:#ff2b36;opacity:.34}
+.dj-application-form{padding:34px}
+.dj-application-form fieldset{margin-bottom:38px}
+.dj-application-form legend{
+    padding-bottom:15px;
+    color:#8a8a91;
+}
+.dj-form-grid input,.dj-form-grid select,.dj-form-grid textarea{
+    border-color:rgba(255,255,255,.1);
+    background:rgba(3,3,4,.72);
+}
+.dj-form-grid input:hover,.dj-form-grid select:hover,.dj-form-grid textarea:hover{
+    border-color:rgba(255,255,255,.18);
+}
+.dj-work-sample-note{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    padding:15px 16px;
+    border:1px solid rgba(255,43,54,.17);
+    border-radius:16px;
+    background:rgba(255,43,54,.055);
+}
+.dj-work-sample-note strong{
+    color:#fff;
+    font-size:12px;
+}
+.dj-work-sample-note span{
+    color:#8f8f95;
+    font-size:11px;
+    line-height:1.5;
+}
+.dj-slot-day{
+    border-color:rgba(255,255,255,.09);
+    background:rgba(5,5,7,.66);
+}
+.dj-slot span{
+    min-height:58px;
+    justify-content:center;
+    border-color:rgba(255,255,255,.09);
+    background:#101013;
+}
+.dj-slot input:checked+span{
+    background:linear-gradient(135deg,#ff3b45,#df101c);
+    border-color:#ff5961;
+    box-shadow:0 14px 34px rgba(255,43,54,.24);
+}
+.dj-terms-fieldset{
+    background:rgba(4,4,6,.7);
+}
+.dj-submit-row{
+    margin:0 -34px -34px;
+    padding:24px 34px 28px;
+    border-top:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.018);
+}
+.dj-submit-row .button-red{
+    min-width:230px;
+    min-height:52px;
+    box-shadow:0 14px 36px rgba(255,43,54,.18);
+}
+
+@media(max-width:1120px){
+    .dj-season-hero{min-height:auto;padding-top:92px}
+    .dj-season-hero-grid{gap:34px}
+    .dj-season-info{padding:24px}
+}
+@media(max-width:720px){
+    .dj-season-page:before{background-position:60% top}
+    .dj-season-hero{padding:72px 0 44px}
+    .dj-season-brand-lockup{gap:12px;margin-bottom:24px}
+    .dj-season-brand-lockup span{padding-left:12px;font-size:8px}
+    .dj-season-hero h1{font-size:clamp(50px,14vw,76px)}
+    .dj-season-lead{font-size:16px}
+    .dj-season-info{padding:20px;border-radius:22px}
+    .dj-season-info h2{font-size:34px}
+    .dj-season-form-card{border-radius:24px}
+    .dj-season-form-head,.dj-application-form{padding:22px}
+    .dj-season-form-head h2{font-size:28px}
+    .dj-submit-row{margin:0 -22px -22px;padding:20px 22px 22px}
+}
