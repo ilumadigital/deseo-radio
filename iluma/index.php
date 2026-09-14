@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/turnstile.php';
+
+$turnstileSiteKey = deseo_turnstile_site_key();
+$turnstileConfigured = deseo_turnstile_configured();
 
 $error = null;
 
@@ -15,25 +19,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: index.php');
         exit;
     } elseif ($action === 'login' && !admin_is_logged_in()) {
-        $now = time();
-        $attempts = (int) ($_SESSION['login_attempts'] ?? 0);
-        $lastAttempt = (int) ($_SESSION['login_last_attempt'] ?? 0);
-
-        if ($attempts >= 5 && ($now - $lastAttempt) < 300) {
-            $error = 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε λίγα λεπτά.';
+        if (!$turnstileConfigured) {
+            $error = 'Η επαλήθευση ασφαλείας δεν είναι διαθέσιμη αυτή τη στιγμή.';
+            error_log('CMS login Turnstile is not configured.');
         } else {
-            $password = (string) ($_POST['password'] ?? '');
-            if (hash_equals(ADMIN_PASSWORD, $password)) {
-                session_regenerate_id(true);
-                $_SESSION['iluma_admin'] = true;
-                $_SESSION['login_attempts'] = 0;
-                header('Location: index.php');
-                exit;
-            }
+            $turnstileToken = trim((string)($_POST['cf-turnstile-response'] ?? ''));
+            $remoteIp = trim((string)($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''));
+            $turnstileResult = deseo_turnstile_validate($turnstileToken, $remoteIp, 'cms_login');
 
-            $_SESSION['login_attempts'] = $attempts + 1;
-            $_SESSION['login_last_attempt'] = $now;
-            $error = 'Λάθος κωδικός.';
+            if (empty($turnstileResult['success'])) {
+                $error = 'Η επαλήθευση ασφαλείας απέτυχε. Ολοκληρώστε ξανά το Cloudflare check.';
+                error_log('CMS login Turnstile rejected request: ' . json_encode($turnstileResult['error-codes'] ?? []));
+            } else {
+                $now = time();
+                $attempts = (int) ($_SESSION['login_attempts'] ?? 0);
+                $lastAttempt = (int) ($_SESSION['login_last_attempt'] ?? 0);
+
+                if ($attempts >= 5 && ($now - $lastAttempt) < 300) {
+                    $error = 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε λίγα λεπτά.';
+                } else {
+                    $password = (string) ($_POST['password'] ?? '');
+                    if (hash_equals(ADMIN_PASSWORD, $password)) {
+                        session_regenerate_id(true);
+                        $_SESSION['iluma_admin'] = true;
+                        $_SESSION['login_attempts'] = 0;
+                        $_SESSION['login_last_attempt'] = 0;
+                        header('Location: index.php');
+                        exit;
+                    }
+
+                    $_SESSION['login_attempts'] = $attempts + 1;
+                    $_SESSION['login_last_attempt'] = $now;
+                    $error = 'Λάθος κωδικός.';
+                }
+            }
         }
     }
 }
@@ -48,6 +67,9 @@ if (!admin_is_logged_in()):
     <meta name="theme-color" content="#090909">
     <title>Deseo CMS Login</title>
     <link rel="stylesheet" href="/iluma/admin.css?v=<?= @filemtime(__DIR__ . '/admin.css') ?: 1 ?>">
+    <?php if ($turnstileConfigured): ?>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <?php endif; ?>
 </head>
 <body>
 <div class="login-wrap">
@@ -63,7 +85,20 @@ if (!admin_is_logged_in()):
                 <label for="password">Master password</label>
                 <input id="password" type="password" name="password" autocomplete="current-password" required autofocus>
             </div>
-            <button class="button button-primary" type="submit">Enter CMS</button>
+
+            <?php if ($turnstileConfigured): ?>
+                <div class="login-turnstile">
+                    <div class="cf-turnstile"
+                         data-sitekey="<?= admin_e($turnstileSiteKey) ?>"
+                         data-theme="dark"
+                         data-size="flexible"
+                         data-action="cms_login"></div>
+                </div>
+            <?php else: ?>
+                <div class="notice notice-error">Η επαλήθευση Cloudflare δεν είναι ρυθμισμένη. Η είσοδος παραμένει κλειδωμένη.</div>
+            <?php endif; ?>
+
+            <button class="button button-primary" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>Enter CMS</button>
         </form>
         <div class="login-meta">Private management area · Deseo Radio / ILUMA</div>
     </section>
