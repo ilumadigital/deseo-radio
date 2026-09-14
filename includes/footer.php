@@ -27,8 +27,6 @@
                 <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
                 <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
                 <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios ↗</a>
-                <a href="/djs">DJ Season 6</a>
-                <a href="/djterms">DJ Terms</a>
                 <a href="/privacy">Privacy</a>
             </div>
         </div>
