@@ -1,0 +1,119 @@
+.dj-season-page{background:#050505}
+.dj-season-hero{position:relative;overflow:hidden;padding:88px 0 58px;border-bottom:1px solid var(--line);background:
+radial-gradient(circle at 78% 10%,rgba(255,43,54,.12),transparent 34%),
+linear-gradient(180deg,#090909,#050505)}
+.dj-season-hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent)}
+.dj-season-hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:54px;align-items:end}
+.dj-season-hero h1{max-width:900px;margin:18px 0 24px;font-size:clamp(56px,7vw,112px);line-height:.88}
+.dj-season-lead{max-width:790px;margin:0;color:#b2b2b7;font-size:clamp(17px,1.5vw,23px);line-height:1.55}
+.dj-season-pills{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px}
+.dj-season-pills span{padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);color:#9f9fa4;font-size:11px;font-weight:700;letter-spacing:.03em}
+.dj-season-intro-card{padding:28px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,rgba(21,21,24,.94),rgba(10,10,11,.94));box-shadow:var(--shadow)}
+.dj-season-intro-card>span,.dj-season-form-head span,.dj-season-rule>span{display:block;color:var(--red);font-size:10px;font-weight:700;letter-spacing:.16em}
+.dj-season-intro-card ol{list-style:none;margin:24px 0;padding:0;display:grid;gap:18px}
+.dj-season-intro-card li{display:grid;grid-template-columns:42px 1fr;gap:13px;align-items:start;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.dj-season-intro-card li:last-child{padding-bottom:0;border-bottom:0}
+.dj-season-intro-card li strong{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--red-soft);color:var(--red);font-size:11px}
+.dj-season-intro-card li p{margin:6px 0 0;color:#c2c2c7;font-size:14px;line-height:1.55}
+.dj-season-small{margin:24px 0 0;padding-top:20px;border-top:1px solid var(--line);color:#75757b;font-size:11px;line-height:1.6}
+.dj-season-content{padding:72px 0 110px}
+.dj-season-layout{display:grid;grid-template-columns:minmax(270px,.55fr) minmax(0,1.45fr);gap:36px;align-items:start}
+.dj-season-info{position:sticky;top:110px}
+.dj-season-info h2{margin:10px 0 16px;font-size:38px;letter-spacing:-.045em}
+.dj-season-info>p{color:#8f8f94;font-size:14px;line-height:1.75}
+.dj-season-rule{margin-top:26px;padding:22px;border:1px solid rgba(255,43,54,.18);border-radius:22px;background:var(--red-soft)}
+.dj-season-rule strong{display:block;margin:8px 0 7px;font-size:22px}
+.dj-season-rule p{margin:0;color:#b9a7a9;font-size:12px;line-height:1.65}
+.dj-season-form-card{overflow:hidden;border:1px solid var(--line);border-radius:30px;background:linear-gradient(180deg,#101012,#0b0b0c);box-shadow:0 32px 100px rgba(0,0,0,.28)}
+.dj-season-form-head{display:flex;justify-content:space-between;align-items:center;padding:27px 30px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.018)}
+.dj-season-form-head h2{margin:5px 0 0;font-size:29px;letter-spacing:-.04em}
+.dj-season-form-head>strong{font-size:28px;color:#36363b;letter-spacing:-.06em}
+.dj-application-form{padding:30px}
+.dj-application-form fieldset{margin:0 0 34px;padding:0;border:0}
+.dj-application-form legend{width:100%;padding:0 0 14px;margin-bottom:18px;border-bottom:1px solid var(--line);color:#73737a;font-size:10px;font-weight:700;letter-spacing:.16em}
+.dj-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.dj-form-grid label{display:flex;flex-direction:column;gap:8px}
+.dj-form-grid label>span{display:flex;justify-content:space-between;gap:12px;color:#a2a2a8;font-size:11px;font-weight:700}
+.dj-form-grid label>span small{color:#65656b;font-weight:500}
+.dj-field-full{grid-column:1/-1}
+.dj-form-grid input,.dj-form-grid select,.dj-form-grid textarea{width:100%;border:1px solid var(--line);border-radius:15px;background:#070708;color:#fff;outline:none;transition:border-color .18s,box-shadow .18s}
+.dj-form-grid input,.dj-form-grid select{min-height:50px;padding:0 14px}
+.dj-form-grid textarea{padding:13px 14px;resize:vertical;line-height:1.55}
+.dj-form-grid input:focus,.dj-form-grid select:focus,.dj-form-grid textarea:focus{border-color:rgba(255,43,54,.55);box-shadow:0 0 0 3px rgba(255,43,54,.07)}
+.dj-file-field input{padding:10px 12px;height:auto}
+.dj-file-field input::file-selector-button{margin-right:12px;border:0;border-radius:999px;padding:9px 12px;background:#1a1a1d;color:#e5e5e8;font-size:10px;font-weight:700}
+.dj-field-note{margin:-4px 0 18px;color:#77777d;font-size:12px}
+.dj-slot-days{display:grid;gap:13px}
+.dj-slot-day{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:18px;background:#0b0b0d}
+.dj-slot-day h3{margin:0;font-size:13px}
+.dj-slot-grid{display:grid;grid-template-columns:repeat(6,minmax(76px,1fr));gap:8px}
+.dj-slot{position:relative;cursor:pointer}
+.dj-slot input{position:absolute;opacity:0;pointer-events:none}
+.dj-slot span{display:flex;flex-direction:column;gap:1px;padding:10px 9px;border:1px solid var(--line);border-radius:13px;background:#111114;text-align:center;transition:.18s}
+.dj-slot strong{font-size:13px}
+.dj-slot small{color:#74747a;font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+.dj-slot input:checked+span{border-color:var(--red);background:var(--red);color:#060606;box-shadow:0 10px 28px rgba(255,43,54,.17)}
+.dj-slot input:checked+span small{color:#310005}
+.dj-slot:not(.is-unavailable):hover span{border-color:rgba(255,43,54,.35)}
+.dj-slot.is-unavailable{cursor:not-allowed}
+.dj-slot.is-unavailable span{opacity:.34;background:#09090a}
+.dj-terms-fieldset{padding:20px!important;border:1px solid var(--line)!important;border-radius:20px!important;background:#09090b;opacity:.38;transition:.2s}
+.dj-terms-fieldset.is-ready{opacity:1;border-color:rgba(255,43,54,.16)!important}
+.dj-terms-fieldset legend{padding:0 8px!important;margin:0 0 10px!important;width:auto!important;border:0!important;background:#09090b}
+.dj-checks{display:grid;gap:12px}
+.dj-checks label{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start}
+.dj-checks input{width:18px;height:18px;margin-top:2px;accent-color:var(--red)}
+.dj-checks span{color:#a4a4a9;font-size:12px;line-height:1.55}
+.dj-checks a{color:#fff;text-decoration:underline;text-decoration-color:rgba(255,43,54,.55);text-underline-offset:3px}
+.dj-submit-row{display:flex;justify-content:space-between;gap:24px;align-items:center;padding-top:6px}
+.dj-submit-row p{max-width:480px;margin:0;color:#64646a;font-size:11px;line-height:1.55}
+.dj-submit-row .button{white-space:nowrap}
+.dj-alert{margin:24px 30px 0;padding:16px 18px;border-radius:16px}
+.dj-alert strong{display:block;margin-bottom:5px}
+.dj-alert p,.dj-alert ul{margin:0;font-size:12px;line-height:1.6}
+.dj-alert ul{padding-left:18px}
+.dj-alert-success{border:1px solid rgba(66,211,123,.2);background:rgba(66,211,123,.09);color:#a8ebc1}
+.dj-alert-error{border:1px solid rgba(255,93,93,.2);background:rgba(255,93,93,.09);color:#ff9b9b}
+.dj-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+.dj-legal-page{padding:76px 0 110px;background:linear-gradient(180deg,#090909,#050505 28%)}
+.dj-legal-shell{width:min(100% - 48px,980px);margin:0 auto}
+.dj-legal-head{padding-bottom:30px;margin-bottom:32px;border-bottom:1px solid var(--line)}
+.dj-legal-head h1{margin:13px 0 17px;font-size:clamp(44px,6vw,82px);line-height:.95}
+.dj-legal-head p{max-width:760px;margin:0;color:#939399;font-size:15px;line-height:1.7}
+.dj-legal-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.dj-legal-meta span{padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:#717178;font-size:10px}
+.dj-legal-content{display:grid;gap:14px}
+.dj-legal-section{padding:24px;border:1px solid var(--line);border-radius:20px;background:#0d0d0f}
+.dj-legal-section h2{margin:0 0 10px;font-size:20px;letter-spacing:-.02em}
+.dj-legal-section p,.dj-legal-section li{color:#9999a0;font-size:13px;line-height:1.72}
+.dj-legal-section p:last-child{margin-bottom:0}
+.dj-legal-section ul{margin:10px 0 0;padding-left:20px}
+.dj-legal-section a{color:#fff;text-decoration:underline;text-decoration-color:rgba(255,43,54,.5);text-underline-offset:3px}
+.dj-legal-callout{border-color:rgba(255,43,54,.2);background:rgba(255,43,54,.06)}
+@media(max-width:1120px){
+.dj-season-hero-grid,.dj-season-layout{grid-template-columns:1fr}
+.dj-season-info{position:static}
+.dj-slot-grid{grid-template-columns:repeat(3,minmax(90px,1fr))}
+}
+@media(max-width:720px){
+.dj-season-hero{padding:58px 0 38px}
+.dj-season-hero-grid{gap:28px}
+.dj-season-hero h1{font-size:clamp(48px,15vw,76px)}
+.dj-season-content{padding:42px 0 78px}
+.dj-season-form-head,.dj-application-form{padding:20px}
+.dj-alert{margin:18px 20px 0}
+.dj-form-grid{grid-template-columns:1fr}
+.dj-field-full{grid-column:auto}
+.dj-slot-day{grid-template-columns:1fr}
+.dj-slot-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dj-submit-row{align-items:stretch;flex-direction:column}
+.dj-submit-row .button{width:100%}
+.dj-legal-page{padding:48px 0 80px}
+.dj-legal-shell{width:min(100% - 28px,980px)}
+.dj-legal-section{padding:19px}
+}
+@media(max-width:430px){
+.dj-slot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dj-season-pills{gap:6px}
+.dj-season-pills span{font-size:9px}
+}
