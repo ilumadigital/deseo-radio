@@ -4,6 +4,8 @@ require_once __DIR__ . '/i18n.php';
 $meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου! | House Music";
 $meta_desc = $meta_desc ?? "Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.";
 $meta_keywords = $meta_keywords ?? "ραδιόφωνο, δεσεο, deseo, radio, house music";
+$meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
+$extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 
 $assetVersion = 1;
 foreach ([
@@ -13,6 +15,10 @@ foreach ([
     __DIR__ . '/../assets/img/bg.png',
 ] as $assetFile) {
     if (is_file($assetFile)) $assetVersion = max($assetVersion, (int)filemtime($assetFile));
+}
+foreach ($extra_styles as $extraStyle) {
+    $extraPath = __DIR__ . '/..' . '/' . ltrim((string)$extraStyle, '/');
+    if (is_file($extraPath)) $assetVersion = max($assetVersion, (int)filemtime($extraPath));
 }
 
 if (!headers_sent()) {
@@ -88,10 +94,10 @@ $schema = [
     <meta name="keywords" content="<?= deseo_e($meta_keywords) ?>">
     <meta name="robots" content="index,follow,max-image-preview:large">
 
-    <link rel="canonical" href="https://deseoradio.com/">
-    <link rel="alternate" hreflang="el" href="https://deseoradio.com/">
-    <link rel="alternate" hreflang="en" href="https://deseoradio.com/?lang=en">
-    <link rel="alternate" hreflang="x-default" href="https://deseoradio.com/">
+    <link rel="canonical" href="<?= deseo_e($meta_canonical) ?>">
+    <link rel="alternate" hreflang="el" href="<?= deseo_e($meta_canonical) ?>">
+    <link rel="alternate" hreflang="en" href="<?= deseo_e($meta_canonical . (str_contains($meta_canonical, '?') ? '&' : '?') . 'lang=en') ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= deseo_e($meta_canonical) ?>">
 
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png">
@@ -108,6 +114,9 @@ $schema = [
 
     <link rel="preload" href="/assets/img/bg.png?v=<?= $assetVersion ?>" as="image">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= $assetVersion ?>">
+    <?php foreach ($extra_styles as $extraStyle): ?>
+        <link rel="stylesheet" href="<?= deseo_e((string)$extraStyle) ?>?v=<?= $assetVersion ?>">
+    <?php endforeach; ?>
 
     <script>
     document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
