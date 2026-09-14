@@ -53,7 +53,7 @@ require_once __DIR__ . '/includes/header.php';
                     <li>ονοματεπώνυμο, DJ / artist name και email,</li>
                     <li>Instagram / social link και προαιρετικό website, SoundCloud ή Mixcloud,</li>
                     <li>φωτογραφία και σύντομο βιογραφικό έως 1.000 χαρακτήρες,</li>
-                    <li>επιλεγμένο slot, τύπος DJ set και προαιρετική / τελική tracklist,</li>
+                    <li>επιλεγμένο slot, τύπος DJ set και υποχρεωτικό link σε δείγμα δουλειάς (DJ set, mix ή radio show),</li>
                     <li>καταγραφή της έκδοσης και του χρόνου αποδοχής των όρων και της παρούσας ενημέρωσης.</li>
                 </ul>
                 <p>
@@ -69,7 +69,7 @@ require_once __DIR__ . '/includes/header.php';
                     <li>διαχείριση του inquiry και της προτίμησης Season 6 slot,</li>
                     <li>επικοινωνία για παράδοση set, τεχνικές οδηγίες, αλλαγές προγράμματος ή ζητήματα συμμόρφωσης,</li>
                     <li>δημιουργία και δημοσίευση profile / promotional assets της συμμετοχής,</li>
-                    <li>διαχείριση tracklists, rights reporting και πιθανών claims,</li>
+                    <li>αξιολόγηση του δείγματος δουλειάς, rights reporting και διαχείριση πιθανών claims,</li>
                     <li>ασφάλεια, καταγραφή της χειροκίνητης επιλογής / έγκρισης και απόδειξη της αποδοχής των όρων.</li>
                 </ul>
             </section>
