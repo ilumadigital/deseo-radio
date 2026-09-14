@@ -17,7 +17,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string)($_POST['action'] ?? '');
 
         try {
-            if ($action === 'toggle_slot') {
+            if ($action === 'add_slot') {
+                $day = (int)($_POST['day_of_week'] ?? 0);
+                $start = trim((string)($_POST['start_time'] ?? ''));
+                $end = trim((string)($_POST['end_time'] ?? ''));
+
+                $startDt = DateTimeImmutable::createFromFormat('!H:i', $start);
+                $endDt = DateTimeImmutable::createFromFormat('!H:i', $end);
+                if ($day < 1 || $day > 7 || !$startDt || !$endDt || $start === $end) {
+                    throw new RuntimeException('Συμπλήρωσε έγκυρη ημέρα και διαφορετικές ώρες έναρξης / λήξης.');
+                }
+
+                $stmt = $pdo->prepare(
+                    "INSERT INTO dj_season_slots (season, day_of_week, start_time, end_time, is_active)
+                     VALUES (?, ?, ?, ?, 1)"
+                );
+                $stmt->execute([
+                    DESEO_DJ_SEASON,
+                    $day,
+                    $startDt->format('H:i:s'),
+                    $endDt->format('H:i:s'),
+                ]);
+                $notice = 'Το νέο slot προστέθηκε.';
+            } elseif ($action === 'toggle_slot') {
                 $slotId = (int)($_POST['slot_id'] ?? 0);
                 $stmt = $pdo->prepare(
                     "UPDATE dj_season_slots
@@ -26,6 +48,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $stmt->execute([$slotId, DESEO_DJ_SEASON]);
                 $notice = 'Το slot ενημερώθηκε.';
+            } elseif ($action === 'delete_slot') {
+                $slotId = (int)($_POST['slot_id'] ?? 0);
+
+                $check = $pdo->prepare("SELECT COUNT(*) FROM dj_season_bookings WHERE slot_id = ?");
+                $check->execute([$slotId]);
+                if ((int)$check->fetchColumn() > 0) {
+                    throw new RuntimeException('Δεν μπορείς να διαγράψεις slot που έχει booking. Διέγραψε πρώτα την αίτηση.');
+                }
+
+                $stmt = $pdo->prepare("DELETE FROM dj_season_slots WHERE id = ? AND season = ?");
+                $stmt->execute([$slotId, DESEO_DJ_SEASON]);
+                $notice = 'Το slot διαγράφηκε.';
             } elseif ($action === 'set_status') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
                 $status = (string)($_POST['status'] ?? 'pending');
@@ -124,6 +158,30 @@ admin_page_start('Season 6 DJs', 'dj-season');
         </div>
     </div>
 
+    <form method="post" class="panel" style="margin:0 0 18px;background:#0a0a0a">
+        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+        <input type="hidden" name="action" value="add_slot">
+        <div class="form-grid three">
+            <div class="field">
+                <label for="season-day">Ημέρα</label>
+                <select id="season-day" name="day_of_week" required>
+                    <?php foreach (range(1, 7) as $day): ?>
+                        <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="field">
+                <label for="season-start">Έναρξη</label>
+                <input id="season-start" type="time" name="start_time" value="20:00" required>
+            </div>
+            <div class="field">
+                <label for="season-end">Λήξη</label>
+                <input id="season-end" type="time" name="end_time" value="21:00" required>
+            </div>
+        </div>
+        <div class="form-actions"><button class="button button-primary" type="submit">Add slot</button></div>
+    </form>
+
     <div class="program-list">
         <?php foreach ($slots as $slot): ?>
             <div class="program-row" style="grid-template-columns:minmax(0,1fr) auto">
@@ -141,14 +199,24 @@ admin_page_start('Season 6 DJs', 'dj-season');
                         <?php endif; ?>
                     </p>
                 </div>
-                <form method="post">
-                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                    <input type="hidden" name="action" value="toggle_slot">
-                    <input type="hidden" name="slot_id" value="<?= (int)$slot['id'] ?>">
-                    <button class="button button-secondary" type="submit">
-                        <?= (int)$slot['is_active'] === 1 ? 'Disable' : 'Enable' ?>
-                    </button>
-                </form>
+                <div style="display:flex;gap:6px;align-items:center">
+                    <form method="post">
+                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                        <input type="hidden" name="action" value="toggle_slot">
+                        <input type="hidden" name="slot_id" value="<?= (int)$slot['id'] ?>">
+                        <button class="button button-secondary" type="submit">
+                            <?= (int)$slot['is_active'] === 1 ? 'Disable' : 'Enable' ?>
+                        </button>
+                    </form>
+                    <?php if (empty($slot['booking_id'])): ?>
+                        <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το slot;');">
+                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="delete_slot">
+                            <input type="hidden" name="slot_id" value="<?= (int)$slot['id'] ?>">
+                            <button class="button button-danger" type="submit">Delete</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>
