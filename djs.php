@@ -333,7 +333,6 @@ require_once __DIR__ . '/includes/header.php';
         <div class="wide-shell dj-season-hero-grid">
             <div>
                 <div class="dj-season-brand-lockup">
-                    <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
                     <span>SEASON 6 · DJ CALL</span>
                 </div>
                 <h1 class="metal-title">Bring your sound.<br>Join Season 6.</h1>
