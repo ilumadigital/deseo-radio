@@ -14,3 +14,22 @@ html,body,body *,button,input,select,textarea,optgroup,option{
   font-style:normal!important;
 }
 fieldset:disabled{opacity:.55}
+
+
+/* CMS LOGIN TURNSTILE */
+.login-turnstile{
+  width:100%;
+  margin-top:16px;
+}
+.login-turnstile .cf-turnstile{
+  width:100%;
+  min-height:65px;
+}
+.login-card .notice-error + form,
+.login-card form .notice-error{
+  margin-top:14px;
+}
+.login-card .button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
