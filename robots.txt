@@ -1,0 +1,114 @@
+# Public site crawl policy
+User-agent: *
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+# Search engines
+User-agent: Googlebot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: Bingbot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+# AI / model crawlers
+User-agent: GPTBot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: OAI-SearchBot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: ChatGPT-User
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: ClaudeBot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: anthropic-ai
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: Google-Extended
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: PerplexityBot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: CCBot
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: Bytespider
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: meta-externalagent
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
+
+User-agent: Applebot-Extended
+Disallow: /djs
+Disallow: /djs/
+Disallow: /djs.php
+Disallow: /djterms
+Disallow: /djterms/
+Disallow: /djterms.php
