@@ -6,6 +6,7 @@ function admin_page_start(string $title, string $active = 'dashboard'): void {
         'dashboard' => ['index.php', 'Overview'],
         'airplay' => ['airplay.php', 'Airplay Top 10'],
         'program' => ['program.php', 'Radio Program'],
+        'dj-season' => ['dj-season.php', 'Season 6 DJs'],
         'playlists' => ['playlists.php', 'Playlists'],
     ];
     ?>
