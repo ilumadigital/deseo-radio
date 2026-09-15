@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const DESEO_DJ_SEASON = 6;
-const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-14-v3';
+const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-15-v4';
 const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v4';
 const DESEO_DJ_DECISION_DEADLINE = '10/10/2026';
 
