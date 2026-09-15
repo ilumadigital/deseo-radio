@@ -344,3 +344,48 @@ linear-gradient(180deg,#090909,#050505)}
 @media(max-width:720px){
     .dj-turnstile-wrap{justify-content:center;padding:14px}
 }
+
+
+/* Consistent red eyebrow -> title hierarchy across DJ pages */
+.dj-season-brand-lockup,
+.dj-season-form-head > div{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.dj-season-brand-lockup span,
+.dj-season-info > .kicker,
+.dj-season-form-head span,
+.dj-legal-head > .kicker,
+.dj-season-rule > span{
+    position:relative;
+    z-index:1;
+    display:inline-flex;
+    width:auto;
+    margin:0;
+    order:1;
+}
+
+.dj-season-brand-lockup + h1,
+.dj-season-info > .kicker + h2,
+.dj-season-form-head span + h2,
+.dj-legal-head > .kicker + h1,
+.dj-season-rule > span + strong{
+    display:block;
+    width:100%;
+    clear:both;
+    order:2;
+}
+
+.dj-season-brand-lockup + h1{margin-top:0}
+.dj-season-info > .kicker + h2{margin-top:10px}
+.dj-season-form-head span + h2{margin-top:7px}
+.dj-legal-head > .kicker + h1{margin-top:13px}
+.dj-season-rule > span + strong{margin-top:8px}
+
+@media(max-width:720px){
+    .dj-season-info > .kicker + h2{margin-top:9px}
+    .dj-season-form-head span + h2{margin-top:6px}
+    .dj-legal-head > .kicker + h1{margin-top:11px}
+}
