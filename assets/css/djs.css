@@ -389,3 +389,35 @@ linear-gradient(180deg,#090909,#050505)}
     .dj-season-form-head span + h2{margin-top:6px}
     .dj-legal-head > .kicker + h1{margin-top:11px}
 }
+
+
+/* Legal pages: force eyebrow above title on Privacy + DJ Terms */
+.dj-legal-head{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+}
+
+.dj-legal-head > .kicker{
+    order:1!important;
+    display:inline-flex!important;
+    margin:0!important;
+}
+
+.dj-legal-head > h1{
+    order:2!important;
+    display:block!important;
+    width:100%!important;
+    margin:13px 0 17px!important;
+    clear:both!important;
+}
+
+.dj-legal-head > p{
+    order:3!important;
+    width:100%;
+}
+
+.dj-legal-head > .dj-legal-meta{
+    order:4!important;
+    width:100%;
+}
