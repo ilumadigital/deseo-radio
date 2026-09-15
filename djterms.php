@@ -191,6 +191,7 @@ require_once __DIR__ . '/includes/header.php';
                 <ul>
                     <li>προγραμματισμένη ραδιοφωνική μετάδοση του DJ set και έκθεση στο υφιστάμενο ακροατήριο / κοινό του Deseo Radio,</li>
                     <li>προβολή της συμμετοχής μέσα από τα επίσημα ψηφιακά κανάλια, social media και λοιπά owned media του Deseo Radio / ILUMA Radios,</li>
+                    <li>προβολή μέσω newsletter της ILUMA Digital Agency, όπου αυτό εντάσσεται στο εκάστοτε editorial και promotional πλάνο,</li>
                     <li>χορηγούμενες προωθήσεις (sponsored / paid promotion) επιλεγμένων posts, stories ή λοιπών promotional ενεργειών, στο πλαίσιο της εκάστοτε καμπάνιας και του διαθέσιμου media plan,</li>
                     <li>γραφιστικές και δημιουργικές υπηρεσίες από την ILUMA για posters, stories, social posts, covers και λοιπά promotional assets που αφορούν τη συγκεκριμένη συμμετοχή,</li>
                     <li>editorial και promotional υποστήριξη για την παρουσίαση του DJ, του artist name και του προγραμματισμένου slot.</li>
