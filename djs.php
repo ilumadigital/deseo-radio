@@ -286,6 +286,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log('Season 6 submission confirmation email failed: ' . $mailError->getMessage());
             }
 
+            if (!empty($submittedBooking)) {
+                try {
+                    $adminMail = deseo_dj_admin_submission_email($submittedBooking);
+                    deseo_send_smtp_mail(
+                        'greg@iluma.gr',
+                        'Greg · ILUMA',
+                        (string)$adminMail['subject'],
+                        (string)$adminMail['html'],
+                        (string)$adminMail['text']
+                    );
+                } catch (Throwable $adminMailError) {
+                    error_log('Season 6 admin application notification failed: ' . $adminMailError->getMessage());
+                }
+            }
+
             $_SESSION['dj_last_submission'] = time();
             $_SESSION['dj_form_csrf'] = bin2hex(random_bytes(32));
             header('Location: /dj?submitted=1&mail=' . ($mailSent ? '1' : '0') . '&lang=' . rawurlencode(deseo_lang()));
