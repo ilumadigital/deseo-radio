@@ -36,7 +36,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="dj-legal-meta">
                 <span>Season 6</span>
                 <span>Έκδοση <?= deseo_e(DESEO_DJ_TERMS_VERSION) ?></span>
-                <span>14 Σεπτεμβρίου 2026</span>
+                <span>15 Σεπτεμβρίου 2026</span>
             </div>
         </header>
 
@@ -57,6 +57,12 @@ require_once __DIR__ . '/includes/header.php';
                     Η συμμετοχή είναι εθελοντική και δεν προβλέπει αμοιβή, μισθό, fee, royalties από το Deseo Radio,
                     κάλυψη εξόδων ή άλλη οικονομική παροχή προς τον DJ, εκτός αν συμφωνηθεί διαφορετικά εγγράφως
                     για συγκεκριμένη περίπτωση.
+                </p>
+                <p>
+                    Η απουσία χρηματικής αμοιβής δεν σημαίνει ότι δεν παρέχονται υπηρεσίες και οφέλη προς τους DJs.
+                    Οι μη χρηματικές παροχές του Deseo Radio / ILUMA περιγράφονται αναλυτικά στο Άρθρο 10 και
+                    περιλαμβάνουν, μεταξύ άλλων, έκθεση στο ακροατήριο του Deseo Radio, promotional υποστήριξη,
+                    χορηγούμενες προωθήσεις και γραφιστικές / δημιουργικές υπηρεσίες για τη συγκεκριμένη συμμετοχή.
                 </p>
                 <p>
                     Η συμμετοχή δεν δημιουργεί από μόνη της σχέση εξαρτημένης εργασίας, εταιρική σχέση, σχέση
@@ -176,15 +182,32 @@ require_once __DIR__ . '/includes/header.php';
             </section>
 
             <section class="dj-legal-section">
-                <h2>10. Φωτογραφία, bio, artist name και promotional assets</h2>
+                <h2>10. Παροχές προς τους DJs, προώθηση και promotional assets</h2>
                 <p>
-                    Ο DJ παρέχει στο Deseo Radio και στην ILUMA Digital Agency μη αποκλειστική, χωρίς πρόσθετη αμοιβή
-                    άδεια να χρησιμοποιούν το artist name, τη φωτογραφία, το bio και τα στοιχεία του slot για:
+                    Στο πλαίσιο της Season 6, το Deseo Radio και η ILUMA Digital Agency παρέχουν στους επιλεγμένους DJs
+                    μη χρηματικές υπηρεσίες και promotional υποστήριξη που συνδέονται άμεσα με τη συμμετοχή τους στο πρόγραμμα.
+                    Οι παροχές αυτές μπορεί να περιλαμβάνουν:
+                </p>
+                <ul>
+                    <li>προγραμματισμένη ραδιοφωνική μετάδοση του DJ set και έκθεση στο υφιστάμενο ακροατήριο / κοινό του Deseo Radio,</li>
+                    <li>προβολή της συμμετοχής μέσα από τα επίσημα ψηφιακά κανάλια, social media και λοιπά owned media του Deseo Radio / ILUMA Radios,</li>
+                    <li>χορηγούμενες προωθήσεις (sponsored / paid promotion) επιλεγμένων posts, stories ή λοιπών promotional ενεργειών, στο πλαίσιο της εκάστοτε καμπάνιας και του διαθέσιμου media plan,</li>
+                    <li>γραφιστικές και δημιουργικές υπηρεσίες από την ILUMA για posters, stories, social posts, covers και λοιπά promotional assets που αφορούν τη συγκεκριμένη συμμετοχή,</li>
+                    <li>editorial και promotional υποστήριξη για την παρουσίαση του DJ, του artist name και του προγραμματισμένου slot.</li>
+                </ul>
+                <p>
+                    Οι παραπάνω παροχές αποτελούν μέρος της συνολικής υποστήριξης της συμμετοχής και δεν συνιστούν
+                    εγγύηση συγκεκριμένου αριθμού ακροατών, impressions, clicks, followers ή άλλου μετρήσιμου αποτελέσματος.
+                </p>
+                <p>
+                    Για να είναι δυνατή η παραπάνω προβολή, ο DJ παρέχει στο Deseo Radio και στην ILUMA Digital Agency
+                    μη αποκλειστική, χωρίς πρόσθετη αμοιβή άδεια να χρησιμοποιούν το artist name, τη φωτογραφία, το bio
+                    και τα στοιχεία του slot για:
                 </p>
                 <ul>
                     <li>παρουσίαση της συμμετοχής στο deseoradio.com,</li>
-                    <li>δημιουργία Season 6 posters, stories, posts και λοιπών promotional assets,</li>
-                    <li>δημοσίευση και repost στα επίσημα social media του Deseo Radio / ILUMA Radios,</li>
+                    <li>δημιουργία και διανομή Season 6 posters, stories, posts και λοιπών promotional assets,</li>
+                    <li>δημοσίευση, repost και χορηγούμενη προώθηση στα επίσημα social media του Deseo Radio / ILUMA Radios,</li>
                     <li>αρχειακή παρουσίαση της συγκεκριμένης Season 6 συμμετοχής.</li>
                 </ul>
                 <p>
