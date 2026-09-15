@@ -274,6 +274,48 @@ function deseo_dj_submission_email(array $booking): array {
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
 }
 
+
+function deseo_dj_admin_submission_email(array $booking): array {
+    $c = deseo_dj_mail_context($booking, false);
+    $subject = 'NEW DJ APPLICATION · Season 6 · ' . $c['artist'];
+
+    $html = deseo_dj_email_frame(
+        'Season 6 · New DJ application',
+        'Νέα αίτηση DJ.',
+        'Μόλις καταχωρήθηκε νέα αίτηση για τη Season 6 του Deseo Radio.',
+        'Requested slot',
+        $c['slot'],
+        [
+            'Artist name' => $c['artist'],
+            'Ονοματεπώνυμο' => $c['full_name'],
+            'Email' => $c['email'],
+            'Instagram / Social' => $c['instagram'],
+            'Website / SoundCloud / Mixcloud' => $c['website'],
+            'Τύπος set' => $c['set_type'],
+            'Work sample' => $c['work_sample'],
+            'Bio' => $c['bio'],
+        ],
+        'CMS',
+        'Άνοιξε το DJ Season CMS για να αξιολογήσεις την αίτηση: https://deseoradio.com/iluma/dj-season.php'
+    );
+
+    $text = "DESEO RADIO · SEASON 6\n\n" .
+        "Νέα αίτηση DJ.\n\n" .
+        "Artist name: {$c['artist']}\n" .
+        "Ονοματεπώνυμο: {$c['full_name']}\n" .
+        "Email: {$c['email']}\n" .
+        "Requested slot: {$c['slot']}\n" .
+        "Τύπος set: {$c['set_type']}\n" .
+        "Work sample: {$c['work_sample']}\n" .
+        "Instagram / Social: {$c['instagram']}\n" .
+        "Website: {$c['website']}\n\n" .
+        "Bio:\n{$c['bio']}\n\n" .
+        "CMS: https://deseoradio.com/iluma/dj-season.php\n\n" .
+        "Deseo Radio · radio@iluma.gr";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
 function deseo_dj_approval_email(array $booking): array {
     $c = deseo_dj_mail_context($booking);
     $subject = 'Deseo Radio Season 6 · Welcome · ' . $c['artist'] . ' · ' . $c['day'] . ' ' . $c['start'];
