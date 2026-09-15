@@ -290,8 +290,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     $adminMail = deseo_dj_admin_submission_email($submittedBooking);
                     deseo_send_smtp_mail(
-                        'radio@iluma.gr',
-                        'Deseo Radio',
+                        'greg@iluma.gr',
+                        'Greg · ILUMA',
                         (string)$adminMail['subject'],
                         (string)$adminMail['html'],
                         (string)$adminMail['text']
