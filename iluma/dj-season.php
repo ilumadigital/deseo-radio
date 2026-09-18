@@ -5,6 +5,7 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-season.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/admin-ui.php';
+require_once __DIR__ . '/../includes/uploads.php';
 
 dj_season_bootstrap($pdo);
 
@@ -179,10 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
 
                 $photoPath = (string)($booking['photo_path'] ?? '');
-                if (str_starts_with($photoPath, '/iluma/uploads/djs/')) {
-                    $absolute = dirname(__DIR__) . $photoPath;
-                    if (is_file($absolute)) @unlink($absolute);
-                }
+                deseo_upload_delete_stored($photoPath);
 
                 $notice = 'Το inquiry διαγράφηκε. Δεν έγινε καμία αλλαγή στο Radio Program.';
             }
@@ -278,7 +276,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
             <?php foreach ($bookings as $booking): ?>
                 <article class="panel" style="margin:0;background:#0c0c0c">
                     <div style="display:grid;grid-template-columns:92px minmax(0,1fr);gap:18px;align-items:start">
-                        <img src="<?= admin_e($booking['photo_path']) ?>" alt="" style="width:92px;height:92px;object-fit:cover;border-radius:18px;background:#070707">
+                        <img src="<?= admin_e(deseo_upload_url_from_stored((string)$booking['photo_path'])) ?>" alt="" style="width:92px;height:92px;object-fit:cover;border-radius:18px;background:#070707">
                         <div>
                             <div style="display:flex;justify-content:space-between;gap:14px;align-items:start;flex-wrap:wrap">
                                 <div>
