@@ -26,6 +26,7 @@ require_once __DIR__ . '/iluma/connection.php';
 require_once __DIR__ . '/includes/dj-season.php';
 require_once __DIR__ . '/includes/turnstile.php';
 require_once __DIR__ . '/includes/mailer.php';
+require_once __DIR__ . '/includes/uploads.php';
 
 function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -210,8 +211,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException(deseo_t('dj.error.slot_taken'));
             }
 
-            $uploadDir = __DIR__ . '/iluma/uploads/djs';
-            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+            try {
+                $uploadDir = deseo_upload_ensure_scope('djs');
+            } catch (Throwable $uploadError) {
+                error_log('Persistent DJ upload directory failed: ' . $uploadError->getMessage());
                 throw new RuntimeException(deseo_t('dj.error.photo_save'));
             }
 
@@ -220,8 +223,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!move_uploaded_file((string)$upload['tmp_name'], $absolutePhoto)) {
                 throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.');
             }
+            @chmod($absolutePhoto, 0664);
 
-            $storedPhoto = '/iluma/uploads/djs/' . $filename;
+            $storedPhoto = deseo_upload_public_url('djs', $filename);
             $now = (new DateTimeImmutable('now', new DateTimeZone('Europe/Athens')))->format('Y-m-d H:i:s');
             $bookingToken = hash('sha256', random_bytes(32));
 
@@ -310,8 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->rollBack();
             }
             if ($storedPhoto) {
-                $absolute = __DIR__ . $storedPhoto;
-                if (is_file($absolute)) @unlink($absolute);
+                deseo_upload_delete_stored($storedPhoto);
             }
 
             if ($e instanceof RuntimeException) {
