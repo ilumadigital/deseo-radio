@@ -340,6 +340,210 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         }, 180);
     }
 
+    var programRefreshTimer = null;
+    var programRefreshInFlight = false;
+    var programRefreshHour = Math.floor(Date.now() / 3600000);
+
+    function programTranslation(key, fallback) {
+        var language = window.DESEO_LANGUAGE || document.documentElement.lang || 'el';
+        var catalog = window.DESEO_TRANSLATIONS && window.DESEO_TRANSLATIONS[language];
+        return catalog && Object.prototype.hasOwnProperty.call(catalog, key) ? catalog[key] : fallback;
+    }
+
+    function programTime(value) {
+        if (!value || typeof value !== 'string') return '--:--';
+        return value.slice(0, 5);
+    }
+
+    function createProgramImage(src, alt, className, fallback) {
+        var image = document.createElement('img');
+        image.className = className;
+        image.src = src || fallback;
+        image.alt = alt || '';
+        image.setAttribute('data-fallback', fallback);
+        image.addEventListener('error', function () {
+            if (this.src.indexOf(fallback) === -1) this.src = fallback;
+        });
+        return image;
+    }
+
+    function renderLiveProgram(live) {
+        var deck = document.getElementById('live-program-deck');
+        if (!deck) return;
+
+        var pulse = deck.querySelector('.live-pulse');
+        if (pulse) pulse.classList.toggle('is-muted', !live);
+
+        var card = deck.querySelector('.hero-cms-card');
+        if (!card) return;
+        card.textContent = '';
+
+        var image;
+        var overlay = document.createElement('div');
+        overlay.className = 'hero-cms-overlay';
+
+        if (live) {
+            image = createProgramImage(live.photo_path, live.dj_name, '', '/assets/img/bg.png');
+
+            var liveLabel = document.createElement('span');
+            liveLabel.setAttribute('data-i18n', 'hero.live_broadcast');
+            liveLabel.textContent = programTranslation('hero.live_broadcast', 'LIVE BROADCAST');
+
+            var title = document.createElement('h2');
+            title.textContent = live.dj_name || 'Deseo Radio';
+
+            var time = document.createElement('p');
+            time.textContent = programTime(live.start_time) + ' — ' + programTime(live.end_time);
+
+            overlay.appendChild(liveLabel);
+            overlay.appendChild(title);
+            overlay.appendChild(time);
+        } else {
+            image = createProgramImage('/assets/img/bg.png', 'Deseo Radio Auto DJ', '', '/assets/img/bg.png');
+
+            var nonStopLabel = document.createElement('span');
+            nonStopLabel.textContent = 'NON-STOP MIX';
+
+            var nonStopTitle = document.createElement('h2');
+            nonStopTitle.setAttribute('data-i18n', 'hero.non_stop');
+            nonStopTitle.textContent = programTranslation('hero.non_stop', 'NON-STOP');
+
+            var allDay = document.createElement('p');
+            allDay.textContent = '24/7';
+
+            overlay.appendChild(nonStopLabel);
+            overlay.appendChild(nonStopTitle);
+            overlay.appendChild(allDay);
+        }
+
+        card.appendChild(image);
+        card.appendChild(overlay);
+    }
+
+    function renderTodayProgram(today, nextShow) {
+        var body = document.getElementById('program-panel-body');
+        if (!body) return;
+        body.textContent = '';
+
+        if (!Array.isArray(today) || !today.length) {
+            var empty = document.createElement('div');
+            empty.className = 'deseo-panel-empty';
+            empty.setAttribute('data-i18n', 'program.empty');
+            empty.textContent = programTranslation('program.empty', 'No scheduled shows today.');
+            body.appendChild(empty);
+            return;
+        }
+
+        today.forEach(function (show) {
+            var row = document.createElement('div');
+            row.className = 'deseo-panel-row deseo-program-row' + (show.is_live ? ' is-live' : '');
+
+            row.appendChild(createProgramImage(show.photo_path, show.dj_name, 'deseo-row-cover', '/assets/img/bg.png'));
+
+            var copy = document.createElement('span');
+            copy.className = 'deseo-row-copy';
+
+            var time = document.createElement('small');
+            time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
+
+            var name = document.createElement('strong');
+            name.textContent = show.dj_name || 'Deseo Radio';
+
+            copy.appendChild(time);
+            copy.appendChild(name);
+            row.appendChild(copy);
+
+            if (show.is_live) {
+                var liveTag = document.createElement('span');
+                liveTag.className = 'deseo-live-tag';
+                liveTag.textContent = 'LIVE';
+                row.appendChild(liveTag);
+            }
+
+            body.appendChild(row);
+        });
+
+        if (nextShow) {
+            var nextPill = document.createElement('div');
+            nextPill.className = 'deseo-next-pill';
+
+            var nextLabel = document.createElement('span');
+            nextLabel.setAttribute('data-i18n', 'program.next');
+            nextLabel.textContent = programTranslation('program.next', 'Next:');
+
+            var nextName = document.createElement('strong');
+            nextName.textContent = nextShow.dj_name || 'Deseo Radio';
+
+            var nextTime = document.createElement('small');
+            nextTime.textContent = '· ' + programTime(nextShow.start_time);
+
+            nextPill.appendChild(nextLabel);
+            nextPill.appendChild(nextName);
+            nextPill.appendChild(nextTime);
+            body.appendChild(nextPill);
+        }
+    }
+
+    function refreshProgramComponent() {
+        if (programRefreshInFlight || !document.getElementById('program')) return Promise.resolve();
+
+        programRefreshInFlight = true;
+
+        return fetch('/?program_feed=1&_=' + Date.now(), {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Program feed request failed');
+                return response.json();
+            })
+            .then(function (payload) {
+                if (!payload || !Array.isArray(payload.today)) return;
+                renderLiveProgram(payload.live || null);
+                renderTodayProgram(payload.today, payload.next || null);
+                programRefreshHour = Math.floor(Date.now() / 3600000);
+            })
+            .catch(function () {
+                // Keep the currently rendered schedule if the network is temporarily unavailable.
+            })
+            .finally(function () {
+                programRefreshInFlight = false;
+            });
+    }
+
+    function scheduleNextProgramRefresh() {
+        if (programRefreshTimer) window.clearTimeout(programRefreshTimer);
+
+        var hour = 60 * 60 * 1000;
+        var delay = hour - (Date.now() % hour) + 1200;
+
+        programRefreshTimer = window.setTimeout(function () {
+            refreshProgramComponent().finally(scheduleNextProgramRefresh);
+        }, delay);
+    }
+
+    function initProgramAutoRefresh() {
+        if (!document.getElementById('program')) return;
+
+        scheduleNextProgramRefresh();
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState !== 'visible') return;
+
+            var currentHour = Math.floor(Date.now() / 3600000);
+            if (currentHour !== programRefreshHour) {
+                refreshProgramComponent().finally(scheduleNextProgramRefresh);
+            }
+        });
+
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                refreshProgramComponent().finally(scheduleNextProgramRefresh);
+            }
+        });
+    }
+
     function onReady() {
         var images = document.querySelectorAll('img[data-fallback]');
         var i;
@@ -369,6 +573,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 
         bindLanguageSwitcher();
         bindAnalytics();
+        initProgramAutoRefresh();
 
         var cookieBanner = document.getElementById('cookie-banner');
         if (cookieBanner && 'MutationObserver' in window) {
