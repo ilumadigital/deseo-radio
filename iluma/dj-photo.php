@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-season.php';
+require_once __DIR__ . '/../includes/uploads.php';
 
 $bookingId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1],
@@ -28,25 +29,11 @@ if (!$booking) {
 }
 
 $photoPath = (string)($booking['photo_path'] ?? '');
-$allowedPrefix = '/iluma/uploads/djs/';
+$absolute = deseo_upload_absolute_from_stored($photoPath);
 
-if (!str_starts_with($photoPath, $allowedPrefix)) {
+if ($absolute === null || !is_file($absolute)) {
     http_response_code(404);
     exit('Photo not found.');
-}
-
-$uploadRoot = realpath(__DIR__ . '/uploads/djs');
-$absolute = realpath(dirname(__DIR__) . $photoPath);
-
-if ($uploadRoot === false || $absolute === false || !is_file($absolute)) {
-    http_response_code(404);
-    exit('Photo not found.');
-}
-
-$uploadRootPrefix = rtrim($uploadRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-if (!str_starts_with($absolute, $uploadRootPrefix)) {
-    http_response_code(403);
-    exit('Invalid photo path.');
 }
 
 $finfo = new finfo(FILEINFO_MIME_TYPE);
