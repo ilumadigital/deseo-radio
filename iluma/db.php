@@ -41,8 +41,24 @@ try {
         photo_path VARCHAR(255) DEFAULT '',
         day_of_week TINYINT NOT NULL,
         start_time TIME NOT NULL,
-        end_time TIME NOT NULL
+        end_time TIME NOT NULL,
+        UNIQUE KEY uniq_program_day_start (day_of_week, start_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Keep one row per day/start slot and enforce it at database level as well.
+    // The CMS also removes any time-overlapping rows before save.
+    $pdo->exec(
+        "DELETE older FROM program older
+         INNER JOIN program newer
+           ON older.day_of_week = newer.day_of_week
+          AND older.start_time = newer.start_time
+          AND older.id < newer.id"
+    );
+
+    $indexStmt = $pdo->query("SHOW INDEX FROM program WHERE Key_name = 'uniq_program_day_start'");
+    if (!$indexStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE program ADD UNIQUE KEY uniq_program_day_start (day_of_week, start_time)");
+    }
 } catch (Throwable $schemaError) {
     error_log('Core CMS schema check failed: ' . $schemaError->getMessage());
 }
