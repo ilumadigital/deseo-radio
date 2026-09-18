@@ -147,6 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $endTime = $allDay ? '23:59' : trim((string)($_POST['end_time'] ?? ''));
             $editIdRaw = trim((string)($_POST['edit_id'] ?? ''));
             $editId = $editIdRaw === '' ? null : filter_var($editIdRaw, FILTER_VALIDATE_INT);
+            $postedDays = array_values(array_unique(array_filter(
+                array_map('intval', (array)($_POST['days'] ?? [])),
+                static fn(int $day): bool => $day >= 1 && $day <= 7
+            )));
+            sort($postedDays);
+            $targetDays = $editId ? [$selectedDay] : $postedDays;
             $editRow = null;
             $uploadedFile = null;
             $photoPath = '';
@@ -160,6 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Η ώρα έναρξης και λήξης δεν μπορεί να είναι ίδια.';
             } elseif ($editIdRaw !== '' && !$editId) {
                 $error = 'Η εγγραφή προς επεξεργασία δεν είναι έγκυρη.';
+            } elseif (!$editId && !$targetDays) {
+                $error = 'Επιλέξτε τουλάχιστον μία ημέρα για τη νέα εκπομπή.';
             }
 
             if ($error === null && $editId) {
@@ -211,29 +219,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($error === null) {
-                $stmt = $pdo->prepare(
+                $existingStmt = $pdo->prepare(
                     "SELECT id, photo_path, start_time, end_time
                      FROM program
                      WHERE day_of_week = ?
                      ORDER BY start_time ASC, id ASC"
                 );
-                $stmt->execute([$selectedDay]);
-                $existingRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 $conflictIds = [];
                 $conflictPhotos = [];
 
-                foreach ($existingRows as $row) {
-                    if ($editId && (int)$row['id'] === (int)$editId) continue;
+                foreach ($targetDays as $targetDay) {
+                    $existingStmt->execute([$targetDay]);
+                    $existingRows = $existingStmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    if (program_intervals_overlap(
-                        $startTime,
-                        $endTime,
-                        (string)$row['start_time'],
-                        (string)$row['end_time']
-                    )) {
-                        $conflictIds[] = (int)$row['id'];
-                        $conflictPhotos[] = (string)$row['photo_path'];
+                    foreach ($existingRows as $row) {
+                        if ($editId && $targetDay === $selectedDay && (int)$row['id'] === (int)$editId) continue;
+
+                        if (program_intervals_overlap(
+                            $startTime,
+                            $endTime,
+                            (string)$row['start_time'],
+                            (string)$row['end_time']
+                        )) {
+                            $conflictIds[] = (int)$row['id'];
+                            $conflictPhotos[] = (string)$row['photo_path'];
+                        }
                     }
                 }
 
@@ -260,13 +271,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             "INSERT INTO program (dj_name, photo_path, day_of_week, start_time, end_time)
                              VALUES (?, ?, ?, ?, ?)"
                         );
-                        $stmt->execute([
-                            $djName,
-                            $photoPath,
-                            $selectedDay,
-                            $startTime . ':00',
-                            $endTime . ':00'
-                        ]);
+                        foreach ($targetDays as $targetDay) {
+                            $stmt->execute([
+                                $djName,
+                                $photoPath,
+                                $targetDay,
+                                $startTime . ':00',
+                                $endTime . ':00'
+                            ]);
+                        }
                     }
 
                     $pdo->commit();
@@ -277,13 +290,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     program_cleanup_photos($pdo, $photosToClean);
 
-                    $replaced = count($conflictIds);
+                    $replaced = count(array_unique($conflictIds));
                     if ($editRow) {
                         $success = 'Η εκπομπή ενημερώθηκε στην ' . $days[$selectedDay] . '.';
-                    } elseif ($replaced > 0) {
-                        $success = 'Η εκπομπή αποθηκεύτηκε και αντικατέστησε ' . $replaced . ' υπάρχουσ' . ($replaced === 1 ? 'α εγγραφή.' : 'ες εγγραφές.');
                     } else {
-                        $success = 'Η εκπομπή προστέθηκε στην ' . $days[$selectedDay] . '.';
+                        $dayCount = count($targetDays);
+                        $success = 'Η εκπομπή προστέθηκε σε ' . $dayCount . ' ημέρ' . ($dayCount === 1 ? 'α.' : 'ες.');
+                        if ($replaced > 0) {
+                            $success .= ' Αντικαταστάθηκαν ' . $replaced . ' υπάρχουσ' . ($replaced === 1 ? 'α εγγραφή.' : 'ες εγγραφές.');
+                        }
                     }
                 } catch (Throwable $e) {
                     if ($pdo->inTransaction()) $pdo->rollBack();
@@ -345,12 +360,19 @@ $formEnd = $editRecord ? substr((string)$editRecord['end_time'], 0, 5) : '';
 $formAllDay = $editRecord
     && $formStart === '00:00'
     && in_array($formEnd, ['23:59', '23:59:59'], true);
+$formDays = $editRecord ? [$selectedDay] : [$selectedDay];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save' && $error !== null) {
     $formName = trim((string)($_POST['dj_name'] ?? ''));
     $formAllDay = !empty($_POST['all_day']);
     $formStart = trim((string)($_POST['start_time'] ?? ''));
     $formEnd = trim((string)($_POST['end_time'] ?? ''));
+    if (!$editRecord) {
+        $formDays = array_values(array_unique(array_filter(
+            array_map('intval', (array)($_POST['days'] ?? [])),
+            static fn(int $day): bool => $day >= 1 && $day <= 7
+        )));
+    }
 }
 
 admin_page_start('Radio Program', 'program');
@@ -394,7 +416,7 @@ admin_page_start('Radio Program', 'program');
             <div>
                 <span class="schedule-eyebrow"><?= admin_e($days[$selectedDay]) ?></span>
                 <h2><?= $editRecord ? 'Edit show' : 'Add show' ?></h2>
-                <p><?= $editRecord ? 'Άλλαξε στοιχεία ή ώρες. Η υπάρχουσα φωτογραφία μένει αν δεν ανεβάσεις νέα.' : 'Η νέα εκπομπή θα προστεθεί μόνο στην επιλεγμένη ημέρα.' ?></p>
+                <p><?= $editRecord ? 'Άλλαξε στοιχεία ή ώρες. Η υπάρχουσα φωτογραφία μένει αν δεν ανεβάσεις νέα.' : 'Επίλεξε μία ή περισσότερες ημέρες για να περάσεις την εκπομπή με μία κίνηση.' ?></p>
             </div>
             <?php if ($editRecord): ?>
                 <a class="schedule-cancel-edit" href="program.php?day=<?= $selectedDay ?>">Cancel edit</a>
@@ -424,6 +446,23 @@ admin_page_start('Radio Program', 'program');
                            value="<?= admin_e($formName) ?>"
                            required>
                 </div>
+
+                <?php if (!$editRecord): ?>
+                    <div class="field full">
+                        <span class="field-label">Broadcast days</span>
+                        <div class="day-picker schedule-form-days">
+                            <?php foreach ($days as $value => $label): ?>
+                                <label class="day-option">
+                                    <input type="checkbox"
+                                           name="days[]"
+                                           value="<?= $value ?>"
+                                           <?= in_array($value, $formDays, true) ? 'checked' : '' ?>>
+                                    <span><?= admin_e($label) ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="field full">
                     <label for="photo">Cover photo · max 5MB<?= $editRecord ? ' · optional when editing' : '' ?></label>
@@ -472,7 +511,7 @@ admin_page_start('Radio Program', 'program');
                     <a class="button button-secondary" href="program.php?day=<?= $selectedDay ?>">Cancel</a>
                 <?php endif; ?>
                 <button class="button button-primary" type="submit">
-                    <?= $editRecord ? 'Save changes' : 'Add to ' . admin_e($dayShort[$selectedDay]) ?>
+                    <?= $editRecord ? 'Save changes' : 'Add to selected days' ?>
                 </button>
             </div>
         </form>
