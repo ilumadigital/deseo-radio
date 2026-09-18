@@ -324,7 +324,12 @@ $stmt->execute([$selectedDay]);
 $program = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $editRecord = null;
-$editRequest = filter_var($_GET['edit'] ?? null, FILTER_VALIDATE_INT);
+$editSource = $_GET['edit'] ?? (
+    ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save')
+        ? ($_POST['edit_id'] ?? null)
+        : null
+);
+$editRequest = filter_var($editSource, FILTER_VALIDATE_INT);
 if ($editRequest) {
     foreach ($program as $item) {
         if ((int)$item['id'] === (int)$editRequest) {
