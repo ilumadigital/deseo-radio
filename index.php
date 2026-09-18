@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/i18n.php';
-require_once __DIR__ . '/includes/uploads.php';
 
 function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -163,7 +162,7 @@ $partners = [
 
                 <div class="hero-square hero-cms-card">
                     <?php if ($live_dj): ?>
-                        <img src="<?= deseo_e($live_dj['photo_path'] ? deseo_upload_url_from_stored((string)$live_dj['photo_path']) : '/assets/img/bg.png') ?>"
+                        <img src="<?= deseo_e($live_dj['photo_path'] ?: '/assets/img/bg.png') ?>"
                              data-fallback="/assets/img/bg.png?v=<?= $assetVersion ?>"
                              alt="<?= deseo_e($live_dj['dj_name']) ?>">
 
@@ -256,7 +255,7 @@ $partners = [
                             ?>
                                 <div class="deseo-panel-row deseo-program-row <?= $isLiveRow ? 'is-live' : '' ?>">
                                     <img class="deseo-row-cover"
-                                         src="<?= deseo_e($show['photo_path'] ? deseo_upload_url_from_stored((string)$show['photo_path']) : '/assets/img/bg.png') ?>"
+                                         src="<?= deseo_e($show['photo_path'] ?: '/assets/img/bg.png') ?>"
                                          data-fallback="/assets/img/bg.png"
                                          alt="<?= deseo_e($show['dj_name']) ?>">
 
