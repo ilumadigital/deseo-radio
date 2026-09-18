@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/admin-ui.php';
+require_once __DIR__ . '/../includes/uploads.php';
 
 $days = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',6=>'Σάββατο',7=>'Κυριακή'];
 $dayShort = [1=>'ΔΕΥ',2=>'ΤΡΙ',3=>'ΤΕΤ',4=>'ΠΕΜ',5=>'ΠΑΡ',6=>'ΣΑΒ',7=>'ΚΥΡ'];
@@ -68,14 +69,11 @@ function program_delete_ids(PDO $pdo, array $ids): void {
 
 function program_cleanup_photos(PDO $pdo, array $paths): void {
     foreach (array_values(array_unique(array_filter($paths))) as $path) {
-        if (strpos((string)$path, '/iluma/uploads/') !== 0) continue;
-
         $check = $pdo->prepare("SELECT COUNT(*) FROM program WHERE photo_path = ?");
         $check->execute([$path]);
         if ((int)$check->fetchColumn() !== 0) continue;
 
-        $file = __DIR__ . '/uploads/' . basename((string)$path);
-        if (is_file($file)) @unlink($file);
+        deseo_upload_delete_stored((string)$path);
     }
 }
 
@@ -199,18 +197,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!isset($allowed[$mime]) || @getimagesize($_FILES['photo']['tmp_name']) === false) {
                         $error = 'Επιτρέπονται μόνο πραγματικές JPG, PNG ή WEBP εικόνες.';
                     } else {
-                        $uploadDir = __DIR__ . '/uploads';
-                        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-                            $error = 'Δεν ήταν δυνατή η δημιουργία του uploads folder.';
-                        } else {
+                        try {
+                            $uploadDir = deseo_upload_ensure_scope('program');
                             $filename = 'dj_' . bin2hex(random_bytes(10)) . '.' . $allowed[$mime];
                             $uploadedFile = $uploadDir . '/' . $filename;
 
                             if (!move_uploaded_file($_FILES['photo']['tmp_name'], $uploadedFile)) {
-                                $error = 'Η φωτογραφία δεν αποθηκεύτηκε. Ελέγξτε τα permissions του uploads folder.';
+                                $error = 'Η φωτογραφία δεν αποθηκεύτηκε στο persistent storage.';
                             } else {
-                                $photoPath = '/iluma/uploads/' . $filename;
+                                @chmod($uploadedFile, 0664);
+                                $photoPath = deseo_upload_public_url('program', $filename);
                             }
+                        } catch (Throwable $uploadError) {
+                            error_log('Persistent program upload failed: ' . $uploadError->getMessage());
+                            $error = 'Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας.';
                         }
                     }
                 }
@@ -474,7 +474,7 @@ admin_page_start('Radio Program', 'program');
                            <?= $editRecord ? '' : 'required' ?>>
                     <?php if ($editRecord && !empty($editRecord['photo_path'])): ?>
                         <div class="schedule-current-photo">
-                            <img src="<?= admin_e((string)$editRecord['photo_path']) ?>" alt="">
+                            <img src="<?= admin_e(deseo_upload_url_from_stored((string)$editRecord['photo_path'])) ?>" alt="">
                             <span>Current cover — ανέβασε νέα μόνο αν θέλεις αλλαγή.</span>
                         </div>
                     <?php endif; ?>
@@ -541,7 +541,7 @@ admin_page_start('Radio Program', 'program');
             <div class="program-list program-day-list">
                 <?php foreach ($program as $item): ?>
                     <article class="program-row <?= $editRecord && (int)$editRecord['id'] === (int)$item['id'] ? 'is-editing' : '' ?>">
-                        <img src="<?= admin_e($item['photo_path'] ?: '/assets/img/bg.png') ?>" alt="">
+                        <img src="<?= admin_e($item['photo_path'] ? deseo_upload_url_from_stored((string)$item['photo_path']) : '/assets/img/bg.png') ?>" alt="">
                         <div class="program-row-copy">
                             <span class="program-time"><?= substr((string)$item['start_time'],0,5) ?> — <?= substr((string)$item['end_time'],0,5) ?></span>
                             <h3><?= admin_e($item['dj_name']) ?></h3>
