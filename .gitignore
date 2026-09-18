@@ -10,3 +10,8 @@
 
 # Local Tailwind standalone binary (runtime uses assets/css/style.css)
 tailwindcss
+
+# CMS uploads are runtime data stored only on the hosting server.
+# Never push/pull uploaded media through Git.
+/iluma/uploads/*
+!/iluma/uploads/.gitignore
