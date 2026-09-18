@@ -121,6 +121,42 @@ try {
     error_log('Deseo Radio data unavailable: ' . $e->getMessage());
 }
 
+if (isset($_GET['program_feed']) && $_GET['program_feed'] === '1') {
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+
+    $serializeShow = static function (?array $show): ?array {
+        if (!$show) return null;
+
+        return [
+            'id' => (int)($show['id'] ?? 0),
+            'dj_name' => (string)($show['dj_name'] ?? ''),
+            'photo_path' => (string)($show['photo_path'] ?? ''),
+            'start_time' => (string)($show['start_time'] ?? ''),
+            'end_time' => (string)($show['end_time'] ?? ''),
+        ];
+    };
+
+    $todayFeed = array_map(
+        static function (array $show) use ($serializeShow, $live_dj): array {
+            $row = $serializeShow($show) ?? [];
+            $row['is_live'] = $live_dj && (int)$live_dj['id'] === (int)($show['id'] ?? 0);
+            return $row;
+        },
+        $todays_program
+    );
+
+    echo json_encode([
+        'ok' => $dataStatus === 'live',
+        'generated_at' => $now->format(DATE_ATOM),
+        'live' => $serializeShow($live_dj),
+        'next' => $serializeShow($next_dj),
+        'today' => $todayFeed,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 require_once __DIR__ . '/includes/head-meta.php';
 require_once __DIR__ . '/includes/header.php';
 
@@ -154,7 +190,7 @@ $partners = [
                 </div>
             </div>
 
-            <div class="hero-deck">
+            <div class="hero-deck" id="live-program-deck" aria-live="polite">
                 <div class="hero-deck-label">
                     <span class="live-pulse <?= $live_dj ? '' : 'is-muted' ?>" aria-hidden="true"></span>
                     <span>NOW ON AIR</span>
@@ -248,7 +284,7 @@ $partners = [
                         <span>DESEO RADIO</span>
                     </header>
 
-                    <div class="deseo-panel-body">
+                    <div class="deseo-panel-body" id="program-panel-body" aria-live="polite">
                         <?php if ($todays_program): ?>
                             <?php foreach ($todays_program as $show):
                                 $isLiveRow = $live_dj && (int)$live_dj['id'] === (int)$show['id'];
