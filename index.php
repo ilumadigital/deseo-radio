@@ -273,8 +273,8 @@ $partners = [
                             <?php if ($next_dj): ?>
                                 <div class="deseo-next-pill">
                                     <span data-i18n="program.next"><?= deseo_e(deseo_t('program.next')) ?></span>
-                                    · <?= deseo_e($next_dj['dj_name']) ?>
-                                    · <?= deseo_time($next_dj['start_time']) ?>
+                                    <strong><?= deseo_e($next_dj['dj_name']) ?></strong>
+                                    <small>· <?= deseo_time($next_dj['start_time']) ?></small>
                                 </div>
                             <?php endif; ?>
                         <?php else: ?>
