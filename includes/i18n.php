@@ -82,7 +82,7 @@ function deseo_t(string $key): string {
             'program.on_air' => 'ON AIR NOW',
             'program.live_set' => 'LIVE SET',
             'program.empty' => 'Σήμερα το Deseo συνεχίζει με non-stop μουσική.',
-            'program.next' => 'Επόμενο live',
+            'program.next' => 'Επόμενο:',
 
             'playlists.kicker' => 'PLAYLISTS · DESEO CURATION',
             'playlists.title' => 'Selections για κάθε στιγμή.',
@@ -246,7 +246,7 @@ function deseo_t(string $key): string {
             'program.on_air' => 'ON AIR NOW',
             'program.live_set' => 'LIVE SET',
             'program.empty' => 'Deseo continues today with non-stop music.',
-            'program.next' => 'Next live',
+            'program.next' => 'Next:',
 
             'playlists.kicker' => 'PLAYLISTS · DESEO CURATION',
             'playlists.title' => 'Selections for every moment.',
