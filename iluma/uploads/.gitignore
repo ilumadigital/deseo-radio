@@ -1,0 +1,1 @@
+# CMS uploads are runtime data and must stay on the hosting server.\n# Keep this file tracked, ignore every uploaded file/folder below it.\n*\n!.gitignore\n
