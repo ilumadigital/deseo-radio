@@ -1,0 +1,179 @@
+<?php
+declare(strict_types=1);
+
+function deseo_audience_bootstrap(PDO $pdo): void {
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS deseo_audience_settings (
+            id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+            monthly_listeners BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
+    $pdo->exec(
+        "INSERT IGNORE INTO deseo_audience_settings (id, monthly_listeners)
+         VALUES (1, 0)"
+    );
+}
+
+function deseo_audience_monthly_listeners(PDO $pdo): int {
+    deseo_audience_bootstrap($pdo);
+    $value = $pdo->query(
+        "SELECT monthly_listeners FROM deseo_audience_settings WHERE id = 1 LIMIT 1"
+    )->fetchColumn();
+
+    return max(0, (int)$value);
+}
+
+function deseo_audience_updated_at(PDO $pdo): ?string {
+    deseo_audience_bootstrap($pdo);
+    $value = $pdo->query(
+        "SELECT updated_at FROM deseo_audience_settings WHERE id = 1 LIMIT 1"
+    )->fetchColumn();
+
+    return $value ? (string)$value : null;
+}
+
+function deseo_audience_hour_share(int $hour): float {
+    return match ($hour) {
+        18 => 0.075,
+        19 => 0.105,
+        20 => 0.155,
+        21 => 0.165,
+        22 => 0.120,
+        23 => 0.085,
+        default => 0.055,
+    };
+}
+
+function deseo_audience_day_modifier(?int $dayOfWeek): float {
+    return match ($dayOfWeek) {
+        4 => 0.98, // Thursday
+        5 => 1.04, // Friday
+        6 => 1.07, // Saturday
+        7 => 1.01, // Sunday
+        default => 1.00,
+    };
+}
+
+function deseo_audience_time_to_minutes(?string $time): int {
+    if (!$time) return 0;
+    $parts = explode(':', $time);
+    $hour = isset($parts[0]) ? (int)$parts[0] : 0;
+    $minute = isset($parts[1]) ? (int)$parts[1] : 0;
+    return max(0, min(1440, ($hour * 60) + $minute));
+}
+
+function deseo_audience_slot_share(?string $startTime, ?string $endTime): float {
+    $start = deseo_audience_time_to_minutes($startTime);
+    $end = deseo_audience_time_to_minutes($endTime);
+
+    if ($end <= $start) {
+        $end = min(1440, $start + 60);
+    }
+
+    $weighted = 0.0;
+    $duration = max(1, $end - $start);
+
+    for ($minute = $start; $minute < $end; $minute++) {
+        $hour = intdiv($minute, 60);
+        $weighted += deseo_audience_hour_share($hour);
+    }
+
+    return $weighted / $duration;
+}
+
+function deseo_audience_seeded_variation(
+    int $accountId,
+    ?int $dayOfWeek,
+    ?string $startTime,
+    ?string $endTime,
+    ?string $monthKey = null
+): float {
+    $monthKey = $monthKey ?: date('Y-m');
+    $seed = implode('|', [
+        'deseo-audience-v1',
+        $accountId,
+        $dayOfWeek ?? 0,
+        $startTime ?? '',
+        $endTime ?? '',
+        $monthKey,
+    ]);
+
+    $hash = sprintf('%u', crc32($seed));
+    $normalized = ((int)$hash % 10001) / 10000;
+
+    // Stable monthly variation: -6% to +6%.
+    return 0.94 + ($normalized * 0.12);
+}
+
+function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
+    $monthly = deseo_audience_monthly_listeners($pdo);
+    if ($monthly <= 0) return 0;
+
+    $day = isset($account['day_of_week']) ? (int)$account['day_of_week'] : null;
+    $start = (string)($account['start_time'] ?? '');
+    $end = (string)($account['end_time'] ?? '');
+
+    $dailyAudience = $monthly / 30.4375;
+    $slotShare = deseo_audience_slot_share($start, $end);
+    $dayModifier = deseo_audience_day_modifier($day);
+
+    $startMinutes = deseo_audience_time_to_minutes($start);
+    $endMinutes = deseo_audience_time_to_minutes($end);
+    if ($endMinutes <= $startMinutes) $endMinutes = $startMinutes + 60;
+
+    $durationHours = max(0.5, ($endMinutes - $startMinutes) / 60);
+    // Longer shows reach more unique listeners, but with overlap between hours.
+    $durationModifier = pow($durationHours, 0.62);
+
+    $variation = deseo_audience_seeded_variation(
+        (int)($account['id'] ?? 0),
+        $day,
+        $start,
+        $end
+    );
+
+    $estimate = $dailyAudience
+        * $slotShare
+        * $dayModifier
+        * $durationModifier
+        * $variation;
+
+    return max(0, (int)round($estimate));
+}
+
+function deseo_audience_preview(
+    int $monthlyListeners,
+    int $dayOfWeek,
+    string $startTime,
+    string $endTime,
+    int $seedId = 1
+): int {
+    if ($monthlyListeners <= 0) return 0;
+
+    $dailyAudience = $monthlyListeners / 30.4375;
+    $slotShare = deseo_audience_slot_share($startTime, $endTime);
+    $dayModifier = deseo_audience_day_modifier($dayOfWeek);
+
+    $startMinutes = deseo_audience_time_to_minutes($startTime);
+    $endMinutes = deseo_audience_time_to_minutes($endTime);
+    if ($endMinutes <= $startMinutes) $endMinutes = $startMinutes + 60;
+
+    $durationHours = max(0.5, ($endMinutes - $startMinutes) / 60);
+    $durationModifier = pow($durationHours, 0.62);
+    $variation = deseo_audience_seeded_variation(
+        $seedId,
+        $dayOfWeek,
+        $startTime,
+        $endTime
+    );
+
+    return max(0, (int)round(
+        $dailyAudience * $slotShare * $dayModifier * $durationModifier * $variation
+    ));
+}
+
+function deseo_audience_format(int $value): string {
+    return number_format(max(0, $value), 0, ',', '.');
+}
