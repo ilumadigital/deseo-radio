@@ -147,12 +147,26 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         mime_type VARCHAR(100) NOT NULL DEFAULT '',
         status VARCHAR(32) NOT NULL DEFAULT 'received',
         admin_note VARCHAR(500) NOT NULL DEFAULT '',
+        broadcasted_at DATETIME NULL,
+        delete_after DATETIME NULL,
+        file_deleted_at DATETIME NULL,
         uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_portal_episode (account_id, episode_no),
         KEY idx_portal_sets_account (account_id, uploaded_at),
         CONSTRAINT fk_portal_sets_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $setColumns = [
+        'broadcasted_at' => "DATETIME NULL AFTER admin_note",
+        'delete_after' => "DATETIME NULL AFTER broadcasted_at",
+        'file_deleted_at' => "DATETIME NULL AFTER delete_after"
+    ];
+    foreach ($setColumns as $name => $definition) {
+        if (!deseo_mylive_column_exists($pdo, 'dj_portal_sets', $name)) {
+            $pdo->exec("ALTER TABLE dj_portal_sets ADD COLUMN " . $name . " " . $definition);
+        }
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_assets (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -191,6 +205,12 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         CONSTRAINT fk_public_profile_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    try {
+        deseo_mylive_cleanup_broadcasted_sets($pdo);
+    } catch (Throwable $retentionError) {
+        error_log('MyLive set retention fallback cleanup failed: ' . $retentionError->getMessage());
+    }
 }
 
 function deseo_mylive_session_start(): void {
@@ -266,13 +286,159 @@ function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
 
 function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
-        "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note, uploaded_at
+        "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
+                broadcasted_at, delete_after, file_deleted_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
          ORDER BY episode_no DESC"
     );
     $stmt->execute([$accountId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function deseo_mylive_set_statuses(): array {
+    return ['received', 'checked', 'scheduled', 'needs_changes', 'broadcasted'];
+}
+
+function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = ''): array {
+    if (!in_array($status, deseo_mylive_set_statuses(), true)) {
+        throw new RuntimeException('Μη έγκυρο status.');
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT id, status, broadcasted_at, delete_after, file_deleted_at
+         FROM dj_portal_sets
+         WHERE id = ?
+         LIMIT 1"
+    );
+    $stmt->execute([$setId]);
+    $set = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$set) {
+        throw new RuntimeException('Το DJ Set δεν βρέθηκε.');
+    }
+
+    $previous = (string)$set['status'];
+    $timezone = new DateTimeZone('Europe/Athens');
+
+    if ($status === 'broadcasted') {
+        if ($previous !== 'broadcasted' || empty($set['broadcasted_at']) || empty($set['delete_after'])) {
+            $broadcastedAt = new DateTimeImmutable('now', $timezone);
+            $deleteAfter = $broadcastedAt->modify('+15 days');
+
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET status = ?,
+                     admin_note = ?,
+                     broadcasted_at = ?,
+                     delete_after = ?
+                 WHERE id = ?"
+            )->execute([
+                $status,
+                $note,
+                $broadcastedAt->format('Y-m-d H:i:s'),
+                $deleteAfter->format('Y-m-d H:i:s'),
+                $setId
+            ]);
+        } else {
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET status = ?, admin_note = ?
+                 WHERE id = ?"
+            )->execute([$status, $note, $setId]);
+        }
+    } else {
+        if (empty($set['file_deleted_at'])) {
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET status = ?,
+                     admin_note = ?,
+                     broadcasted_at = NULL,
+                     delete_after = NULL
+                 WHERE id = ?"
+            )->execute([$status, $note, $setId]);
+        } else {
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET status = ?, admin_note = ?
+                 WHERE id = ?"
+            )->execute([$status, $note, $setId]);
+        }
+    }
+
+    $refresh = $pdo->prepare(
+        "SELECT id, status, broadcasted_at, delete_after, file_deleted_at
+         FROM dj_portal_sets
+         WHERE id = ?
+         LIMIT 1"
+    );
+    $refresh->execute([$setId]);
+    return $refresh->fetch(PDO::FETCH_ASSOC) ?: [];
+}
+
+function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
+    $timezone = new DateTimeZone('Europe/Athens');
+    $now = new DateTimeImmutable('now', $timezone);
+    $nowSql = $now->format('Y-m-d H:i:s');
+
+    $stmt = $pdo->prepare(
+        "SELECT id, file_path
+         FROM dj_portal_sets
+         WHERE status = 'broadcasted'
+           AND delete_after IS NOT NULL
+           AND delete_after <= ?
+           AND file_deleted_at IS NULL
+         ORDER BY delete_after ASC, id ASC"
+    );
+    $stmt->execute([$nowSql]);
+    $sets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $storageRoot = realpath(dirname(__DIR__) . '/mylive/storage');
+    $deleted = 0;
+    $missing = 0;
+    $failed = 0;
+
+    foreach ($sets as $set) {
+        $setId = (int)$set['id'];
+        $relative = ltrim((string)$set['file_path'], '/');
+        $candidate = dirname(__DIR__) . '/mylive/' . $relative;
+        $realFile = realpath($candidate);
+
+        if ($realFile === false || !is_file($realFile)) {
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET file_deleted_at = ?
+                 WHERE id = ? AND file_deleted_at IS NULL"
+            )->execute([$nowSql, $setId]);
+            $missing++;
+            continue;
+        }
+
+        if (!$storageRoot || !str_starts_with($realFile, $storageRoot . DIRECTORY_SEPARATOR)) {
+            error_log('MyLive retention refused unsafe path for set ' . $setId . ': ' . $candidate);
+            $failed++;
+            continue;
+        }
+
+        if (@unlink($realFile)) {
+            $pdo->prepare(
+                "UPDATE dj_portal_sets
+                 SET file_deleted_at = ?
+                 WHERE id = ? AND file_deleted_at IS NULL"
+            )->execute([$nowSql, $setId]);
+            $deleted++;
+        } else {
+            error_log('MyLive retention could not delete file for set ' . $setId . ': ' . $realFile);
+            $failed++;
+        }
+    }
+
+    return [
+        'checked' => count($sets),
+        'deleted' => $deleted,
+        'already_missing' => $missing,
+        'failed' => $failed,
+        'at' => $nowSql,
+    ];
 }
 
 function deseo_mylive_assets(PDO $pdo, int $accountId): array {
