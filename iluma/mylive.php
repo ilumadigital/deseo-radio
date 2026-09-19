@@ -102,8 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $temporaryPassword = mylive_admin_temp_password();
                 $insert = $pdo->prepare(
                     "INSERT INTO dj_portal_accounts
-                     (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time, password_hash, must_change_password, is_active, account_status)
-                     VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1, 'active')"
+                     (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time, password_hash, must_change_password, is_active, account_status, show_audience_stats)
+                     VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1, 'active', 0)"
                 );
                 $insert->execute([
                     $artistName,
@@ -160,7 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      SET password_hash = ?,
                          must_change_password = 1,
                          is_active = 1,
-                         account_status = 'active'
+                         account_status = 'active',
+                         show_audience_stats = 0
                      WHERE id = ? AND account_status = 'pending'"
                 )->execute([$passwordHash, $accountId]);
 
