@@ -415,334 +415,460 @@ foreach ($accounts as $account) {
     $setsByAccount[$accountId] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+$activeAccountCount = count(array_filter(
+    $managedAccounts,
+    static fn(array $account): bool => (string)($account['account_status'] ?? '') === 'active' && !empty($account['is_active'])
+));
+$disabledAccountCount = count($managedAccounts) - $activeAccountCount;
+$totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
+$totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
+
 admin_page_start('MyLive', 'mylive');
 ?>
-<div class="page-heading mylive-admin-heading">
-    <div>
-        <span>Deseo Radio · DJ Delivery</span>
-        <h1>MyLive accounts</h1>
-        <p>Δημιούργησε DJ access, στείλε αυτόματα ένα πλήρες branded onboarding email και διαχειρίσου sets, artwork και imaging από ένα σημείο.</p>
-    </div>
-    <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
-</div>
-
-<?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
-<?php if ($error): ?><div class="notice notice-error"><?= admin_e($error) ?></div><?php endif; ?>
-
-<?php if ($generatedCredentials): ?>
-    <section class="mylive-credentials-admin">
-        <span>TEMPORARY ACCESS · COPY NOW</span>
-        <strong><?= admin_e($generatedCredentials['artist']) ?></strong>
-        <div><b>Email</b><code><?= admin_e($generatedCredentials['email']) ?></code></div>
-        <div><b>Temporary password</b><code><?= admin_e($generatedCredentials['password']) ?></code></div>
-        <small>Ο DJ θα υποχρεωθεί να δημιουργήσει προσωπικό password στην πρώτη είσοδο.</small>
-    </section>
-<?php endif; ?>
-
-<?php if ($pendingAccounts): ?>
-<section class="panel mylive-pending-panel">
-    <div class="mylive-panel-head">
+<div class="mylive-hub">
+    <div class="page-heading mylive-admin-heading mylive-hub-heading">
         <div>
-            <span>APPROVED / GUEST APPLICATIONS · PENDING ACCESS</span>
-            <h2>Ready for MyLive</h2>
-            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί ως Approved ή Guest από τις Season 6 αιτήσεις. Η Season 6 ενημέρωση γίνεται ξεχωριστά. Εδώ δεν έχουν ακόμη MyLive login ή password και δεν έχει σταλεί το MyLive onboarding email.</p>
+            <span>Deseo Radio · DJ Workspace</span>
+            <h1>MyLive management</h1>
+            <p>Ένα καθαρό σημείο για access, DJ Sets και προσωπικά assets. Τα βασικά φαίνονται άμεσα και οι λεπτομέρειες ανοίγουν μόνο όταν τις χρειάζεσαι.</p>
         </div>
-        <strong><?= count($pendingAccounts) ?></strong>
+        <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
     </div>
 
-    <div class="mylive-pending-list">
-        <?php foreach ($pendingAccounts as $pending): ?>
-            <article class="mylive-pending-card">
-                <div class="mylive-pending-main">
-                    <?php if (!empty($pending['application_photo'])): ?>
-                        <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
-                    <?php else: ?>
-                        <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
-                    <?php endif; ?>
+    <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="notice notice-error"><?= admin_e($error) ?></div><?php endif; ?>
 
-                    <div class="mylive-pending-copy">
-                        <span><?= admin_e(strtoupper((string)($pending['application_status'] ?? 'approved'))) ?> · PENDING ACCESS · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
-                        <h3><?= admin_e($pending['artist_name']) ?></h3>
-                        <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
+    <?php if ($generatedCredentials): ?>
+        <section class="mylive-credentials-admin mylive-v3-credentials">
+            <span>TEMPORARY ACCESS · COPY NOW</span>
+            <strong><?= admin_e($generatedCredentials['artist']) ?></strong>
+            <div><b>Email</b><code><?= admin_e($generatedCredentials['email']) ?></code></div>
+            <div><b>Temporary password</b><code><?= admin_e($generatedCredentials['password']) ?></code></div>
+            <small>Το onboarding email έχει σταλεί. Στην πρώτη είσοδο ο DJ θα δημιουργήσει προσωπικό password.</small>
+        </section>
+    <?php endif; ?>
 
-                        <div class="mylive-pending-tags">
-                            <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
-                            <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
-                            <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
-                            <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
-                            <?php if (!empty($pending['booking_id'])): ?><a href="dj-photo.php?id=<?= (int)$pending['booking_id'] ?>">Photo ↓</a><?php endif; ?>
+    <section class="mylive-hub-stats" aria-label="MyLive overview">
+        <div class="mylive-hub-stat <?= count($pendingAccounts) > 0 ? 'is-attention' : '' ?>">
+            <span>PENDING ACCESS</span>
+            <strong><?= count($pendingAccounts) ?></strong>
+            <small><?= count($pendingAccounts) > 0 ? 'χρειάζονται ενέργεια' : 'κανένα pending' ?></small>
+        </div>
+        <div class="mylive-hub-stat">
+            <span>ACTIVE DJS</span>
+            <strong><?= $activeAccountCount ?></strong>
+            <small>ενεργά MyLive accounts</small>
+        </div>
+        <div class="mylive-hub-stat">
+            <span>DJ SETS</span>
+            <strong><?= $totalSetCount ?></strong>
+            <small>συνολικά episodes</small>
+        </div>
+        <div class="mylive-hub-stat">
+            <span>ASSETS</span>
+            <strong><?= $totalAssetCount ?></strong>
+            <small>artwork & imaging</small>
+        </div>
+        <div class="mylive-hub-stat">
+            <span>DISABLED</span>
+            <strong><?= $disabledAccountCount ?></strong>
+            <small>ανενεργά accounts</small>
+        </div>
+    </section>
+
+    <?php if ($pendingAccounts): ?>
+        <section class="panel mylive-pending-panel mylive-v3-pending">
+            <div class="mylive-panel-head">
+                <div>
+                    <span>NEEDS YOUR ATTENTION</span>
+                    <h2>Pending MyLive access</h2>
+                    <p>Έχουν ήδη εγκριθεί στη Season 6 αλλά δεν έχουν ακόμη MyLive credentials. Ένα click δημιουργεί temporary password και στέλνει το onboarding email.</p>
+                </div>
+                <strong><?= count($pendingAccounts) ?></strong>
+            </div>
+
+            <div class="mylive-pending-list">
+                <?php foreach ($pendingAccounts as $pending): ?>
+                    <article class="mylive-pending-card mylive-v3-pending-card">
+                        <div class="mylive-pending-main">
+                            <?php if (!empty($pending['application_photo'])): ?>
+                                <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
+                            <?php else: ?>
+                                <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
+                            <?php endif; ?>
+
+                            <div class="mylive-pending-copy">
+                                <span><?= admin_e(strtoupper((string)($pending['application_status'] ?? 'approved'))) ?> · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
+                                <h3><?= admin_e($pending['artist_name']) ?></h3>
+                                <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
+
+                                <div class="mylive-pending-tags">
+                                    <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
+                                    <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
+                                </div>
+                            </div>
                         </div>
 
-                        <?php if (!empty($pending['application_bio'])): ?>
-                            <p class="mylive-pending-bio"><?= admin_e($pending['application_bio']) ?></p>
+                        <form method="post" class="mylive-pending-approve" onsubmit="return confirm('Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email;');">
+                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="approve_pending">
+                            <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
+                            <button class="button button-primary" type="submit">Create MyLive Access</button>
+                        </form>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <details class="panel mylive-create-panel mylive-create-drawer">
+        <summary>
+            <div>
+                <span>MANUAL ACCOUNT</span>
+                <strong>Create standalone MyLive access</strong>
+                <small>Μόνο για DJ που δεν προέρχεται από Season 6 application.</small>
+            </div>
+            <b>+</b>
+        </summary>
+        <div class="mylive-create-drawer-body">
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                <input type="hidden" name="action" value="create_account">
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Artist / DJ Name</label>
+                        <input type="text" name="artist_name" required placeholder="Non Grata">
+                    </div>
+                    <div class="field">
+                        <label>Full name</label>
+                        <input type="text" name="full_name" placeholder="Optional">
+                    </div>
+                    <div class="field full">
+                        <label>Email</label>
+                        <input type="email" name="email" required placeholder="dj@example.com">
+                    </div>
+                </div>
+
+                <div class="mylive-slot-editor">
+                    <div class="field">
+                        <label>Day</label>
+                        <select name="day_of_week" required>
+                            <option value="">Select day</option>
+                            <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
+                                <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Start</label>
+                        <input type="time" name="start_time" required>
+                    </div>
+                    <div class="field">
+                        <label>End</label>
+                        <input type="time" name="end_time" required>
+                    </div>
+                </div>
+
+                <div class="mylive-email-preview-strip">
+                    <div><span>WHAT HAPPENS NEXT</span><strong>Creates access · generates temporary password · sends onboarding email</strong></div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="button button-primary" type="submit">Create & Send Onboarding</button>
+                </div>
+            </form>
+        </div>
+    </details>
+
+    <section class="mylive-directory">
+        <div class="mylive-directory-head">
+            <div>
+                <span>DJ DIRECTORY</span>
+                <h2>Manage accounts</h2>
+                <p>Βρες τον DJ και άνοιξε μόνο το κομμάτι που θέλεις να διαχειριστείς.</p>
+            </div>
+            <strong><?= count($managedAccounts) ?></strong>
+        </div>
+
+        <div class="mylive-toolbar">
+            <label class="mylive-search">
+                <span>SEARCH</span>
+                <input id="myliveAccountSearch" type="search" placeholder="Artist, email ή slot…" autocomplete="off">
+            </label>
+            <div class="mylive-filters" role="group" aria-label="Filter MyLive accounts">
+                <button type="button" class="is-active" data-mylive-filter="all">All <b><?= count($managedAccounts) ?></b></button>
+                <button type="button" data-mylive-filter="active">Active <b><?= $activeAccountCount ?></b></button>
+                <button type="button" data-mylive-filter="disabled">Disabled <b><?= $disabledAccountCount ?></b></button>
+            </div>
+        </div>
+
+        <div class="mylive-admin-list" id="myliveAccountList">
+        <?php if (!$managedAccounts): ?>
+            <div class="empty-admin">Δεν υπάρχουν ακόμη MyLive accounts.</div>
+        <?php else: ?>
+            <?php foreach ($managedAccounts as $account): ?>
+                <?php
+                $accountId = (int)$account['id'];
+                $slot = deseo_mylive_slot($account);
+                $accountStatus = (string)($account['account_status'] ?? (!empty($account['is_active']) ? 'active' : 'disabled'));
+                $accountSearch = strtolower(trim(
+                    (string)$account['artist_name'] . ' ' .
+                    (string)$account['full_name'] . ' ' .
+                    (string)$account['email'] . ' ' .
+                    $slot
+                ));
+                ?>
+                <article
+                    class="panel mylive-account-card mylive-v3-account"
+                    data-account-status="<?= admin_e($accountStatus) ?>"
+                    data-account-search="<?= admin_e($accountSearch) ?>"
+                >
+                    <div class="mylive-account-top">
+                        <div class="mylive-account-identity">
+                            <?php if (!empty($account['application_photo'])): ?>
+                                <img class="mylive-account-photo" src="<?= admin_e((string)$account['application_photo']) ?>" alt="">
+                            <?php else: ?>
+                                <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></div>
+                            <?php endif; ?>
+                            <div>
+                                <div class="mylive-account-statusline">
+                                    <span class="mylive-status-badge <?= $accountStatus === 'active' ? 'is-active' : 'is-disabled' ?>"><?= admin_e(strtoupper($accountStatus)) ?></span>
+                                    <span><?= admin_e($slot) ?></span>
+                                </div>
+                                <h2><?= admin_e($account['artist_name']) ?></h2>
+                                <p><?= admin_e($account['email']) ?></p>
+                            </div>
+                        </div>
+
+                        <div class="mylive-account-stats">
+                            <div><strong><?= (int)$account['set_count'] ?></strong><span>Episodes</span></div>
+                            <div><strong><?= (int)$account['asset_count'] ?></strong><span>Assets</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mylive-v3-health">
+                        <span class="<?= !empty($account['must_change_password']) ? 'is-warning' : 'is-good' ?>">
+                            <?= !empty($account['must_change_password']) ? 'Temporary password' : 'Password set' ?>
+                        </span>
+                        <span class="<?= $account['onboarding_email_sent_at'] ? 'is-good' : 'is-warning' ?>">
+                            <?= $account['onboarding_email_sent_at'] ? 'Onboarding sent' : 'Onboarding not sent' ?>
+                        </span>
+                        <span>Last login: <?= $account['last_login_at'] ? admin_e(date('d.m.Y H:i', strtotime((string)$account['last_login_at']))) : 'Never' ?></span>
+                        <?php if (admin_is_administrator()): ?>
+                            <span>Stats: <?= !empty($account['show_audience_stats']) ? 'Visible' : 'Hidden' ?></span>
                         <?php endif; ?>
                     </div>
-                </div>
 
-                <div class="mylive-pending-action">
-                    <div>
-                        <span>NO LOGIN YET</span>
-                        <p>Με το approve δημιουργείται temporary password, ενεργοποιείται το MyLive και τότε στέλνεται το ξεχωριστό MyLive onboarding email με credentials και οδηγίες.</p>
-                    </div>
-                    <form method="post" onsubmit="return confirm('Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email με temporary credentials;');">
-                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                        <input type="hidden" name="action" value="approve_pending">
-                        <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
-                        <button class="button button-primary" type="submit">Approve & Create Access</button>
-                    </form>
-                </div>
-            </article>
-        <?php endforeach; ?>
-    </div>
-</section>
-<?php endif; ?>
-
-<section class="panel mylive-create-panel">
-    <div class="mylive-panel-head">
-        <div>
-            <span>MANUAL / STANDALONE ACCOUNT</span>
-            <h2>Create access manually</h2>
-            <p>Χρησιμοποίησέ το μόνο για DJ που δεν προέρχεται από τις Season 6 αιτήσεις. Για Approved ή Guest applications χρησιμοποίησε το Pending Access queue παραπάνω.</p>
-        </div>
-        <strong>01</strong>
-    </div>
-
-    <form method="post">
-        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-        <input type="hidden" name="action" value="create_account">
-
-        <div class="form-grid">
-            <div class="field">
-                <label>Artist / DJ Name</label>
-                <input type="text" name="artist_name" required placeholder="Non Grata">
-            </div>
-            <div class="field">
-                <label>Full name</label>
-                <input type="text" name="full_name" placeholder="Optional">
-            </div>
-            <div class="field full">
-                <label>Email</label>
-                <input type="email" name="email" required placeholder="dj@example.com">
-            </div>
-        </div>
-
-        <div class="mylive-slot-editor">
-            <div class="field">
-                <label>Day</label>
-                <select name="day_of_week" required>
-                    <option value="">Select day</option>
-                    <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
-                        <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="field">
-                <label>Start</label>
-                <input type="time" name="start_time" required>
-            </div>
-            <div class="field">
-                <label>End</label>
-                <input type="time" name="end_time" required>
-            </div>
-        </div>
-
-        <div class="mylive-email-preview-strip">
-            <div><span>ONBOARDING EMAIL</span><strong>Season 6 Instructions · MyLive · Credentials</strong></div>
-        </div>
-
-        <div class="form-actions">
-            <button class="button button-primary" type="submit">Create account & send onboarding</button>
-        </div>
-    </form>
-</section>
-
-<section class="mylive-admin-list">
-<?php if (!$managedAccounts): ?>
-    <div class="empty-admin">Δεν υπάρχουν ακόμη ενεργά ή απενεργοποιημένα MyLive accounts.</div>
-<?php else: ?>
-    <?php foreach ($managedAccounts as $account): ?>
-        <?php
-        $accountId = (int)$account['id'];
-        $slot = deseo_mylive_slot($account);
-        ?>
-        <article class="panel mylive-account-card">
-            <div class="mylive-account-top">
-                <div class="mylive-account-identity">
-                    <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></div>
-                    <div>
-                        <span><?= admin_e(strtoupper((string)($account['account_status'] ?? (!empty($account['is_active']) ? 'active' : 'disabled')))) ?> · <?= admin_e($slot) ?></span>
-                        <h2><?= admin_e($account['artist_name']) ?></h2>
-                        <p><?= admin_e($account['email']) ?></p>
-                    </div>
-                </div>
-                <div class="mylive-account-stats">
-                    <div><strong><?= (int)$account['set_count'] ?></strong><span>Sets</span></div>
-                    <div><strong><?= (int)$account['asset_count'] ?></strong><span>Assets</span></div>
-                </div>
-            </div>
-
-            <div class="mylive-account-meta">
-                <span>Onboarding: <?= $account['onboarding_email_sent_at'] ? admin_e((string)$account['onboarding_email_sent_at']) : 'Not sent' ?></span>
-                <span>Password: <?= !empty($account['must_change_password']) ? 'Temporary / change required' : 'Personal password set' ?></span>
-                <span>Last login: <?= $account['last_login_at'] ? admin_e((string)$account['last_login_at']) : 'Never' ?></span>
-            </div>
-
-            <details class="mylive-admin-details">
-                <summary>Edit account & access</summary>
-                <div class="mylive-details-body">
-                    <form method="post">
-                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                        <input type="hidden" name="action" value="update_account">
-                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
-
-                        <div class="form-grid">
-                            <div class="field">
-                                <label>Artist / DJ Name</label>
-                                <input type="text" name="artist_name" value="<?= admin_e($account['artist_name']) ?>" required>
-                            </div>
-                            <div class="field">
-                                <label>Full name</label>
-                                <input type="text" name="full_name" value="<?= admin_e($account['full_name']) ?>">
-                            </div>
-                            <div class="field full">
-                                <label>Email</label>
-                                <input type="email" name="email" value="<?= admin_e($account['email']) ?>" required>
-                            </div>
-                        </div>
-
-                        <div class="mylive-slot-editor">
-                            <div class="field">
-                                <label>Day</label>
-                                <select name="day_of_week" required>
-                                    <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
-                                        <option value="<?= $day ?>" <?= (int)$account['day_of_week'] === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Start</label>
-                                <input type="time" name="start_time" value="<?= admin_e(deseo_mylive_format_time((string)$account['start_time'])) ?>" required>
-                            </div>
-                            <div class="field">
-                                <label>End</label>
-                                <input type="time" name="end_time" value="<?= admin_e(deseo_mylive_format_time((string)$account['end_time'])) ?>" required>
-                            </div>
-                        </div>
-                        <div class="form-actions"><button class="button button-secondary" type="submit">Save account</button></div>
-                    </form>
-
-                    <div class="mylive-admin-actions">
-                        <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το πλήρες onboarding email;');">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="reset_access">
-                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
-                            <button class="button button-secondary" type="submit">Reset password & resend onboarding</button>
-                        </form>
-                        <form method="post">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="toggle_account">
-                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
-                            <input type="hidden" name="active" value="<?= !empty($account['is_active']) ? '0' : '1' ?>">
-                            <button class="button <?= !empty($account['is_active']) ? 'button-danger' : 'button-primary' ?>" type="submit">
-                                <?= !empty($account['is_active']) ? 'Disable account' : 'Enable account' ?>
-                            </button>
-                        </form>
-                        <form method="post" onsubmit="return confirm('ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ: Θα διαγραφούν το MyLive account, όλα τα DJ Sets και όλα τα προσωπικά assets αυτού του DJ. Η αίτηση DJ και το Radio Program δεν θα επηρεαστούν. Συνέχεια;');">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="delete_account">
-                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
-                            <button class="button button-danger" type="submit">Delete MyLive user</button>
-                        </form>
-                    </div>
-                </div>
-            </details>
-
-            <div class="mylive-admin-columns">
-                <section class="mylive-subpanel">
-                    <div class="mylive-subpanel-head">
-                        <div><span>DJ DELIVERY</span><h3>Uploaded Sets</h3></div>
-                        <strong><?= count($setsByAccount[$accountId]) ?></strong>
-                    </div>
-
-                    <?php if (empty($setsByAccount[$accountId])): ?>
-                        <div class="mylive-mini-empty">No DJ Sets yet.</div>
-                    <?php else: ?>
-                        <div class="mylive-set-admin-list">
-                        <?php foreach ($setsByAccount[$accountId] as $set): ?>
-                            <form method="post" class="mylive-set-admin-row">
-                                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="update_set">
-                                <input type="hidden" name="set_id" value="<?= (int)$set['id'] ?>">
-                                <div class="mylive-set-copy">
-                                    <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
-                                    <strong><?= admin_e($set['stored_name']) ?></strong>
-                                    <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
-                                </div>
-                                <select name="status">
-                                    <?php foreach (['received','checked','scheduled','needs_changes'] as $status): ?>
-                                        <option value="<?= $status ?>" <?= $set['status'] === $status ? 'selected' : '' ?>><?= strtoupper(str_replace('_',' ', $status)) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
-                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
-                                <button class="button button-secondary" type="submit">Save</button>
-                            </form>
-                        <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </section>
-
-                <section class="mylive-subpanel">
-                    <div class="mylive-subpanel-head">
-                        <div><span>FROM DESEO / ILUMA Digital Agency</span><h3>DJ Assets</h3></div>
-                        <strong><?= count($assetsByAccount[$accountId]) ?></strong>
-                    </div>
-
-                    <form method="post" enctype="multipart/form-data" class="mylive-asset-upload">
-                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                        <input type="hidden" name="action" value="upload_asset">
-                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
-
-                        <select name="asset_type">
-                            <option value="artwork">Promotional Artwork</option>
-                            <option value="dj_spot">Personal DJ Imaging</option>
-                            <option value="dj_spot_30">30' Imaging</option>
-                            <option value="other">Additional Asset</option>
-                        </select>
-                        <input type="text" name="title" placeholder="Optional custom title">
-                        <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav" required>
-                        <button class="button button-primary" type="submit">Add to MyLive</button>
-                    </form>
-
-                    <?php if (empty($assetsByAccount[$accountId])): ?>
-                        <div class="mylive-mini-empty">No assets uploaded yet.</div>
-                    <?php else: ?>
-                        <div class="mylive-assets-admin-list">
-                        <?php foreach ($assetsByAccount[$accountId] as $asset): ?>
-                            <div class="mylive-asset-admin-row">
-                                <div>
-                                    <span><?= admin_e(deseo_mylive_asset_label((string)$asset['asset_type'])) ?></span>
-                                    <strong><?= admin_e($asset['title']) ?></strong>
-                                    <small><?= admin_e($asset['original_name']) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?></small>
-                                </div>
-                                <div class="mylive-asset-actions">
-                                    <a class="button button-secondary" href="mylive-download.php?type=asset&id=<?= (int)$asset['id'] ?>">Download</a>
-                                <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το asset από το MyLive;');">
+                    <div class="mylive-v3-sections">
+                        <details class="mylive-v3-detail">
+                            <summary>
+                                <div><span>ACCOUNT</span><strong>Profile & access</strong></div>
+                                <small>Edit details, password, status</small>
+                                <b>+</b>
+                            </summary>
+                            <div class="mylive-v3-detail-body">
+                                <form method="post">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                                    <input type="hidden" name="action" value="delete_asset">
-                                    <input type="hidden" name="asset_id" value="<?= (int)$asset['id'] ?>">
-                                    <button class="danger-link" type="submit">Delete</button>
+                                    <input type="hidden" name="action" value="update_account">
+                                    <input type="hidden" name="account_id" value="<?= $accountId ?>">
+
+                                    <div class="form-grid">
+                                        <div class="field">
+                                            <label>Artist / DJ Name</label>
+                                            <input type="text" name="artist_name" value="<?= admin_e($account['artist_name']) ?>" required>
+                                        </div>
+                                        <div class="field">
+                                            <label>Full name</label>
+                                            <input type="text" name="full_name" value="<?= admin_e($account['full_name']) ?>">
+                                        </div>
+                                        <div class="field full">
+                                            <label>Email</label>
+                                            <input type="email" name="email" value="<?= admin_e($account['email']) ?>" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mylive-slot-editor">
+                                        <div class="field">
+                                            <label>Day</label>
+                                            <select name="day_of_week" required>
+                                                <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
+                                                    <option value="<?= $day ?>" <?= (int)$account['day_of_week'] === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label>Start</label>
+                                            <input type="time" name="start_time" value="<?= admin_e(deseo_mylive_format_time((string)$account['start_time'])) ?>" required>
+                                        </div>
+                                        <div class="field">
+                                            <label>End</label>
+                                            <input type="time" name="end_time" value="<?= admin_e(deseo_mylive_format_time((string)$account['end_time'])) ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions"><button class="button button-primary" type="submit">Save changes</button></div>
                                 </form>
+
+                                <div class="mylive-admin-actions">
+                                    <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το onboarding email;');">
+                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="reset_access">
+                                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                        <button class="button button-secondary" type="submit">Reset Access & Resend</button>
+                                    </form>
+                                    <form method="post">
+                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="toggle_account">
+                                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                        <input type="hidden" name="active" value="<?= !empty($account['is_active']) ? '0' : '1' ?>">
+                                        <button class="button <?= !empty($account['is_active']) ? 'button-danger' : 'button-primary' ?>" type="submit">
+                                            <?= !empty($account['is_active']) ? 'Disable Account' : 'Enable Account' ?>
+                                        </button>
+                                    </form>
+                                    <form method="post" onsubmit="return confirm('ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ: Θα διαγραφούν το MyLive account, όλα τα DJ Sets και όλα τα προσωπικά assets. Συνέχεια;');">
+                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="delete_account">
+                                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                        <button class="button button-danger" type="submit">Delete User</button>
+                                    </form>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </section>
-            </div>
-        </article>
-    <?php endforeach; ?>
-<?php endif; ?>
-</section>
+                        </details>
 
+                        <details class="mylive-v3-detail">
+                            <summary>
+                                <div><span>DJ DELIVERY</span><strong>Episodes</strong></div>
+                                <small><?= count($setsByAccount[$accountId]) ?> uploaded</small>
+                                <b>+</b>
+                            </summary>
+                            <div class="mylive-v3-detail-body">
+                                <?php if (empty($setsByAccount[$accountId])): ?>
+                                    <div class="mylive-mini-empty">Δεν έχει ανέβει ακόμη DJ Set.</div>
+                                <?php else: ?>
+                                    <div class="mylive-set-admin-list">
+                                    <?php foreach ($setsByAccount[$accountId] as $set): ?>
+                                        <form method="post" class="mylive-set-admin-row">
+                                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="update_set">
+                                            <input type="hidden" name="set_id" value="<?= (int)$set['id'] ?>">
+                                            <div class="mylive-set-copy">
+                                                <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
+                                                <strong><?= admin_e($set['stored_name']) ?></strong>
+                                                <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                            </div>
+                                            <select name="status">
+                                                <?php foreach (['received','checked','scheduled','needs_changes'] as $status): ?>
+                                                    <option value="<?= $status ?>" <?= $set['status'] === $status ? 'selected' : '' ?>><?= strtoupper(str_replace('_',' ', $status)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
+                                            <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
+                                            <button class="button button-secondary" type="submit">Save</button>
+                                        </form>
+                                    <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </details>
+
+                        <details class="mylive-v3-detail">
+                            <summary>
+                                <div><span>DESEO / ILUMA</span><strong>Assets</strong></div>
+                                <small><?= count($assetsByAccount[$accountId]) ?> available</small>
+                                <b>+</b>
+                            </summary>
+                            <div class="mylive-v3-detail-body">
+                                <form method="post" enctype="multipart/form-data" class="mylive-asset-upload mylive-v3-asset-upload">
+                                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="upload_asset">
+                                    <input type="hidden" name="account_id" value="<?= $accountId ?>">
+
+                                    <select name="asset_type">
+                                        <option value="artwork">Promotional Artwork</option>
+                                        <option value="dj_spot">Personal DJ Imaging</option>
+                                        <option value="dj_spot_30">30' Imaging</option>
+                                        <option value="other">Additional Asset</option>
+                                    </select>
+                                    <input type="text" name="title" placeholder="Optional custom title">
+                                    <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav" required>
+                                    <button class="button button-primary" type="submit">Upload Asset</button>
+                                </form>
+
+                                <?php if (empty($assetsByAccount[$accountId])): ?>
+                                    <div class="mylive-mini-empty">Δεν υπάρχουν ακόμη assets.</div>
+                                <?php else: ?>
+                                    <div class="mylive-assets-admin-list">
+                                    <?php foreach ($assetsByAccount[$accountId] as $asset): ?>
+                                        <div class="mylive-asset-admin-row">
+                                            <div>
+                                                <span><?= admin_e(deseo_mylive_asset_label((string)$asset['asset_type'])) ?></span>
+                                                <strong><?= admin_e($asset['title']) ?></strong>
+                                                <small><?= admin_e($asset['original_name']) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?></small>
+                                            </div>
+                                            <div class="mylive-asset-actions">
+                                                <a class="button button-secondary" href="mylive-download.php?type=asset&id=<?= (int)$asset['id'] ?>">Download</a>
+                                                <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το asset από το MyLive;');">
+                                                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                                    <input type="hidden" name="action" value="delete_asset">
+                                                    <input type="hidden" name="asset_id" value="<?= (int)$asset['id'] ?>">
+                                                    <button class="danger-link" type="submit">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </details>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </div>
+
+        <div class="mylive-no-results" id="myliveNoResults" hidden>Δεν βρέθηκε account με αυτά τα φίλτρα.</div>
+    </section>
+</div>
+
+<script>
+(function(){
+    var search=document.getElementById('myliveAccountSearch');
+    var list=document.getElementById('myliveAccountList');
+    var empty=document.getElementById('myliveNoResults');
+    var buttons=document.querySelectorAll('[data-mylive-filter]');
+    if(!list)return;
+
+    var filter='all';
+    var cards=Array.prototype.slice.call(list.querySelectorAll('[data-account-status]'));
+
+    function apply(){
+        var q=search ? search.value.trim().toLowerCase() : '';
+        var visible=0;
+
+        cards.forEach(function(card){
+            var status=(card.getAttribute('data-account-status')||'').toLowerCase();
+            var haystack=(card.getAttribute('data-account-search')||'').toLowerCase();
+            var statusMatch=filter==='all'||status===filter;
+            var searchMatch=!q||haystack.indexOf(q)!==-1;
+            var show=statusMatch&&searchMatch;
+            card.hidden=!show;
+            if(show)visible++;
+        });
+
+        if(empty)empty.hidden=visible!==0;
+    }
+
+    buttons.forEach(function(button){
+        button.addEventListener('click',function(){
+            filter=button.getAttribute('data-mylive-filter')||'all';
+            buttons.forEach(function(item){item.classList.toggle('is-active',item===button);});
+            apply();
+        });
+    });
+
+    if(search)search.addEventListener('input',apply);
+}());
+</script>
 <?php admin_page_end(); ?>
