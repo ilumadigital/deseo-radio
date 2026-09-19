@@ -38,19 +38,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($attempts >= 5 && ($now - $lastAttempt) < 300) {
                     $error = 'Πολλές αποτυχημένες προσπάθειες. Δοκιμάστε ξανά σε λίγα λεπτά.';
                 } else {
-                    $password = (string) ($_POST['password'] ?? '');
-                    if (hash_equals(ADMIN_PASSWORD, $password)) {
+                    $email = strtolower(trim((string)($_POST['email'] ?? '')));
+                    $password = (string)($_POST['password'] ?? '');
+                    $account = filter_var($email, FILTER_VALIDATE_EMAIL)
+                        ? admin_authenticate_credentials($email, $password)
+                        : null;
+
+                    if ($account) {
                         session_regenerate_id(true);
-                        $_SESSION['iluma_admin'] = true;
+                        $_SESSION['iluma_user_email'] = (string)$account['email'];
+                        $_SESSION['iluma_user_role'] = (string)$account['role'];
                         $_SESSION['login_attempts'] = 0;
                         $_SESSION['login_last_attempt'] = 0;
+                        unset($_SESSION['iluma_admin']);
                         header('Location: index.php');
                         exit;
                     }
 
+                    if ($email === DESEO_CMS_MANAGER_EMAIL && RADIO_MANAGER_PASSWORD === '') {
+                        error_log('CMS manager login attempted but RADIO_MANAGER_PASSWORD is not configured.');
+                    }
+
                     $_SESSION['login_attempts'] = $attempts + 1;
                     $_SESSION['login_last_attempt'] = $now;
-                    $error = 'Λάθος κωδικός.';
+                    $error = 'Το email ή το password δεν είναι σωστό.';
                 }
             }
         }
@@ -79,14 +90,18 @@ if (!admin_is_logged_in()):
     <section class="login-card">
         <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
         <h1>Studio access</h1>
-        <p>Διαχείριση προγράμματος και εβδομαδιαίου Airplay.</p>
+        <p>Σύνδεση στο ILUMA CMS με τον προσωπικό λογαριασμό σου.</p>
         <?php if ($error): ?><div class="notice notice-error"><?= admin_e($error) ?></div><?php endif; ?>
-        <form method="post" autocomplete="off">
+        <form method="post" autocomplete="on">
             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
             <input type="hidden" name="action" value="login">
             <div class="field">
-                <label for="password">Master password</label>
-                <input id="password" type="password" name="password" autocomplete="current-password" required autofocus>
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" autocomplete="username" inputmode="email" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" autocomplete="current-password" required>
             </div>
 
             <?php if ($turnstileConfigured): ?>
@@ -181,16 +196,25 @@ admin_page_start('Overview', 'dashboard');
             </div>
         </div>
 
-        <a class="dashboard-audience-card" href="audience.php">
-            <div class="dashboard-audience-top">
-                <span>MONTHLY AUDIENCE</span>
-                <b>OPEN ↗</b>
+        <?php if (admin_can_access('audience')): ?>
+            <a class="dashboard-audience-card" href="audience.php">
+                <div class="dashboard-audience-top">
+                    <span>MONTHLY AUDIENCE</span>
+                    <b>OPEN ↗</b>
+                </div>
+                <strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong>
+                <p>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></p>
+                <div class="dashboard-audience-line"></div>
+                <small>Audience stats & estimated DJ reach</small>
+            </a>
+        <?php else: ?>
+            <div class="dashboard-audience-card is-readonly" aria-label="Monthly audience">
+                <div class="dashboard-audience-top">
+                    <span>MONTHLY AUDIENCE</span>
+                </div>
+                <strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong>
             </div>
-            <strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong>
-            <p>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></p>
-            <div class="dashboard-audience-line"></div>
-            <small>Audience stats & estimated DJ reach</small>
-        </a>
+        <?php endif; ?>
     </section>
 
     <section class="dashboard-metrics" aria-label="CMS metrics">
@@ -304,15 +328,17 @@ admin_page_start('Overview', 'dashboard');
                 <i>↗</i>
             </a>
 
-            <a class="dashboard-workspace-row" href="audience.php">
-                <div>
-                    <span>Performance</span>
-                    <strong>Audience</strong>
-                    <small>Monthly listeners και estimated DJ reach.</small>
-                </div>
-                <b>↗</b>
-                <i>↗</i>
-            </a>
+            <?php if (admin_can_access('audience')): ?>
+                <a class="dashboard-workspace-row" href="audience.php">
+                    <div>
+                        <span>Performance</span>
+                        <strong>Audience</strong>
+                        <small>Monthly listeners και estimated DJ reach.</small>
+                    </div>
+                    <b>↗</b>
+                    <i>↗</i>
+                </a>
+            <?php endif; ?>
         </article>
     </section>
 </div>
