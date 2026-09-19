@@ -1313,10 +1313,32 @@ admin_page_start('Radio Program', 'program');
     var nStart = scheduleMinutes(newStart);
     var nEnd = scheduleMinutes(newEnd);
 
-    if (eEnd <= eStart || nEnd <= nStart) {
+    // Adjacent slots are valid and must never be treated as overlaps.
+    // Example: Heatwave 18:00–20:00 followed by Noir 20:00–03:00.
+    if (eStart === nEnd || eEnd === nStart) {
+      return {type:'none', row:row};
+    }
+
+    // Ordinary same-day ranges can be previewed directly.
+    if (eEnd > eStart && nEnd > nStart) {
+      if (eEnd <= nStart || eStart >= nEnd) return {type:'none', row:row};
+    } else {
+      // Overnight rows need segment-aware overlap detection. Only flag them
+      // when they really intersect the new slot.
+      function segments(start, end) {
+        return end > start ? [[start,end]] : [[start,1440],[0,end]];
+      }
+
+      var overlaps = false;
+      segments(eStart,eEnd).forEach(function(a){
+        segments(nStart,nEnd).forEach(function(b){
+          if (Math.max(a[0],b[0]) < Math.min(a[1],b[1])) overlaps = true;
+        });
+      });
+
+      if (!overlaps) return {type:'none', row:row};
       return {type:'manual', reason:'overnight', row:row};
     }
-    if (eEnd <= nStart || eStart >= nEnd) return {type:'none', row:row};
 
     if (eStart < nStart && eEnd > nEnd) {
       return {
