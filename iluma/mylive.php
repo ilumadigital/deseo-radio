@@ -847,7 +847,10 @@ admin_page_start('MyLive', 'mylive');
                                 <?php else: ?>
                                     <div class="mylive-set-admin-list">
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
-                                        <form method="post" class="mylive-set-admin-row">
+                                        <form method="post"
+                                              class="mylive-set-admin-row"
+                                              onsubmit="var s=this.querySelector('select[name=status]'); if(s && s.value==='broadcasted' && !this.dataset.fileRemoved){ return confirm('BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;'); } return true;"
+                                              <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                             <input type="hidden" name="action" value="update_set">
                                             <input type="hidden" name="set_id" value="<?= (int)$set['id'] ?>">
