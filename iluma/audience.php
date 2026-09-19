@@ -19,7 +19,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string)($_POST['action'] ?? 'save_audience');
 
         try {
-            if ($action === 'toggle_dj_stats') {
+            if ($action === 'toggle_all_stats') {
+                $visible = (int)($_POST['visible'] ?? 0) === 1 ? 1 : 0;
+
+                $stmt = $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET show_audience_stats = ?
+                     WHERE is_active = 1 AND account_status = 'active'"
+                );
+                $stmt->execute([$visible]);
+
+                $notice = $visible
+                    ? 'Τα audience statistics είναι πλέον ορατά σε όλους τους ενεργούς DJs.'
+                    : 'Τα audience statistics κρύφτηκαν από όλους τους ενεργούς DJs.';
+            } elseif ($action === 'toggle_dj_stats') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $visible = (int)($_POST['visible'] ?? 0) === 1 ? 1 : 0;
 
@@ -179,13 +192,28 @@ admin_page_start('Audience', 'audience');
 </section>
 
 <section class="panel audience-djs-panel">
-    <div class="mylive-panel-head">
+    <div class="mylive-panel-head audience-panel-head">
         <div>
             <span>MYLIVE PREVIEW</span>
             <h2>DJ estimated reach</h2>
             <p>Έλεγχος του αριθμού που θα βλέπει ο κάθε ενεργός DJ στο MyLive για τον <?= admin_e($currentMonthLabel) ?>.</p>
         </div>
-        <strong><?= count($activeAccounts) ?></strong>
+
+        <div class="audience-global-actions">
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                <input type="hidden" name="action" value="toggle_all_stats">
+                <input type="hidden" name="visible" value="1">
+                <button class="button button-primary" type="submit">Show stats for all</button>
+            </form>
+
+            <form method="post" onsubmit="return confirm('Να κρυφτούν τα audience statistics από όλους τους ενεργούς DJs;');">
+                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                <input type="hidden" name="action" value="toggle_all_stats">
+                <input type="hidden" name="visible" value="0">
+                <button class="button button-secondary" type="submit">Hide stats for all</button>
+            </form>
+        </div>
     </div>
 
     <?php if (!$activeAccounts): ?>
