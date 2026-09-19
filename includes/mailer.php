@@ -249,7 +249,7 @@ function deseo_dj_email_frame(
         '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">' . deseo_dj_email_rows($rows) . '</table>' .
         '<div style="margin-top:26px;padding:18px;border:1px solid #252529;border-radius:16px;background:#09090b;">' .
         '<div style="color:#fff;font:800 14px Arial,sans-serif;">' . $e($nextTitle) . '</div>' .
-        '<p style="margin:7px 0 0;color:#85858b;font:400 13px/1.65 Arial,sans-serif;">' . $e($nextText) . '</p>' .
+        '<div style="margin:7px 0 0;color:#85858b;font:400 13px/1.65 Arial,sans-serif;">' . nl2br($e($nextText)) . '</div>' .
         '</div>' .
         '<p style="margin:24px 0 0;color:#5f5f65;font:400 11px/1.6 Arial,sans-serif;">Deseo Radio · An ILUMA Digital Agency project<br>radio@iluma.gr · deseoradio.com</p>' .
         '</td></tr></table></td></tr></table></body></html>';
@@ -349,9 +349,9 @@ function deseo_dj_approval_email(array $booking): array {
             'Τύπος set' => $c['set_type'],
         ],
         'Επόμενα βήματα',
-        'Η συμμετοχή σου στη Season 6 έχει επιβεβαιωθεί. Από εδώ και πέρα, η διαχείριση όλου του υλικού του show σου θα γίνεται αποκλειστικά μέσα από το <strong style="color:#fff;">MyLive</strong>, τον προσωπικό σου χώρο στο Deseo Radio.<br><br>'
-        . 'Από εκεί θα ανεβάζεις τα DJ Sets σου, θα κατεβάζεις artwork, προσωπικό imaging και promotional assets, και θα βλέπεις συγκεντρωμένα τα βασικά στοιχεία και τα διαθέσιμα στατιστικά του show σου.<br><br>'
-        . 'Σε δεύτερο ξεχωριστό email θα λάβεις τους προσωπικούς σου κωδικούς πρόσβασης, το temporary password και αναλυτικές οδηγίες για το πώς χρησιμοποιείται το MyLive.'
+        "Η συμμετοχή σου στη Season 6 έχει επιβεβαιωθεί. Από εδώ και πέρα, η διαχείριση όλου του υλικού του show σου θα γίνεται αποκλειστικά μέσα από το MyLive, τον προσωπικό σου χώρο στο Deseo Radio.\n\n"
+        . "Από εκεί θα ανεβάζεις τα DJ Sets σου, θα κατεβάζεις artwork, προσωπικό imaging και promotional assets και θα βλέπεις συγκεντρωμένα τα βασικά στοιχεία και τα διαθέσιμα στατιστικά του show σου.\n\n"
+        . "Σε δεύτερο ξεχωριστό email θα λάβεις τους προσωπικούς σου κωδικούς πρόσβασης, το temporary password και αναλυτικές οδηγίες για το πώς χρησιμοποιείται το MyLive."
     );
 
     $text = "DESEO RADIO · SEASON 6\n\n" .
