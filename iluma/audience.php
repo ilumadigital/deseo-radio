@@ -61,8 +61,9 @@ $activeStmt = $pdo->query(
 $activeAccounts = $activeStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $previews = [
-    ['label' => '20:00–21:00', 'note' => 'Strong', 'start' => '20:00:00', 'end' => '21:00:00', 'seed' => 201],
-    ['label' => '21:00–22:00', 'note' => 'Peak', 'start' => '21:00:00', 'end' => '22:00:00', 'seed' => 211],
+    ['label' => '15:00–18:00', 'note' => 'Main peak', 'start' => '15:00:00', 'end' => '18:00:00', 'seed' => 151],
+    ['label' => '18:00–20:00', 'note' => 'High', 'start' => '18:00:00', 'end' => '20:00:00', 'seed' => 181],
+    ['label' => '20:00–22:00', 'note' => 'Peak', 'start' => '20:00:00', 'end' => '22:00:00', 'seed' => 201],
     ['label' => '22:00–23:00', 'note' => 'Lower', 'start' => '22:00:00', 'end' => '23:00:00', 'seed' => 221],
     ['label' => '23:00–24:00', 'note' => 'Late', 'start' => '23:00:00', 'end' => '24:00:00', 'seed' => 231],
 ];
@@ -124,7 +125,7 @@ admin_page_start('Audience', 'audience');
     <article class="panel audience-model-card">
         <div class="audience-card-kicker">TIME WEIGHTING</div>
         <h2>Evening model</h2>
-        <p>Οι εκτιμήσεις είναι ανά 1-hour show. Το 20:00–22:00 είναι το ισχυρότερο window, μετά υπάρχει προοδευτική πτώση.</p>
+        <p>Η βασική καμπύλη είναι: 15:00–18:00 MAIN PEAK, 18:00–20:00 λίγο υψηλότερα, 20:00–22:00 το ισχυρότερο PEAK, και μετά προοδευτική πτώση στις 22:00–23:00 και 23:00–24:00.</p>
 
         <div class="audience-preview-grid">
             <?php foreach ($previews as $preview): ?>
