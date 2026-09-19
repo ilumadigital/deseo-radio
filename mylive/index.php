@@ -282,6 +282,7 @@ if (!deseo_mylive_logged_in()):
     <title>MyLive · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
+    <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <?php if ($turnstileConfigured): ?>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <?php endif; ?>
@@ -379,6 +380,7 @@ if (!empty($account['must_change_password'])):
     <title>Create your password · MyLive · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
+    <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
 </head>
 <body class="mylive-password-page">
 <main class="password-shell">
@@ -479,6 +481,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     <title>MyLive · <?= deseo_mylive_e($account['artist_name']) ?> · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
+    <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
 </head>
 <body class="mylive-dashboard-page">
 <header class="portal-header">
