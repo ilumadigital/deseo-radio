@@ -60,6 +60,75 @@ function program_intervals_overlap(string $startA, string $endA, string $startB,
     return false;
 }
 
+
+function program_minutes_to_time(int $minutes): string {
+    $minutes = max(0, min(1439, $minutes));
+    return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
+}
+
+function program_overlap_adjustment(array $row, string $newStart, string $newEnd): array {
+    $existingStart = substr((string)($row['start_time'] ?? ''), 0, 5);
+    $existingEnd = substr((string)($row['end_time'] ?? ''), 0, 5);
+
+    $eStart = program_time_to_minutes($existingStart);
+    $eEnd = program_time_to_minutes($existingEnd);
+    $nStart = program_time_to_minutes($newStart);
+    $nEnd = program_time_to_minutes($newEnd);
+
+    // Auto-adjust only ordinary same-day ranges. Overnight overlaps remain manual
+    // because shifting them silently can move content to the wrong broadcast day.
+    if ($eEnd <= $eStart || $nEnd <= $nStart) {
+        return [
+            'type' => 'manual',
+            'reason' => 'overnight',
+            'row' => $row,
+        ];
+    }
+
+    if ($eEnd <= $nStart || $eStart >= $nEnd) {
+        return ['type' => 'none', 'row' => $row];
+    }
+
+    // New show is fully inside the old one: preserve both sides by splitting.
+    if ($eStart < $nStart && $eEnd > $nEnd) {
+        return [
+            'type' => 'split',
+            'row' => $row,
+            'left_start' => $existingStart,
+            'left_end' => $newStart,
+            'right_start' => $newEnd,
+            'right_end' => $existingEnd,
+        ];
+    }
+
+    // Old show overlaps the beginning of the new one: shorten its end.
+    if ($eStart < $nStart && $eEnd > $nStart) {
+        return [
+            'type' => 'trim_end',
+            'row' => $row,
+            'start' => $existingStart,
+            'end' => $newStart,
+        ];
+    }
+
+    // Old show overlaps the end of the new one: move its start forward.
+    if ($eStart < $nEnd && $eEnd > $nEnd) {
+        return [
+            'type' => 'trim_start',
+            'row' => $row,
+            'start' => $newEnd,
+            'end' => $existingEnd,
+        ];
+    }
+
+    // New slot covers the old slot completely. Never delete it automatically.
+    return [
+        'type' => 'manual',
+        'reason' => 'covered',
+        'row' => $row,
+    ];
+}
+
 function program_collect_photos_for_ids(PDO $pdo, array $ids): array {
     $ids = array_values(array_unique(array_map('intval', $ids)));
     if (!$ids) return [];
@@ -459,14 +528,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($error === null) {
                 $existingStmt = $pdo->prepare(
-                    "SELECT id, photo_path, start_time, end_time
+                    "SELECT id, dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time
                      FROM program
                      WHERE day_of_week = ?
                      ORDER BY start_time ASC, id ASC"
                 );
 
-                $conflictIds = [];
-                $conflictPhotos = [];
+                $overlapPlan = [];
+                $manualConflicts = [];
 
                 foreach ($targetDays as $targetDay) {
                     $existingStmt->execute([$targetDay]);
@@ -478,21 +547,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (!$bulkEdit && $targetDay === $selectedDay && (int)$row['id'] === (int)$editId) continue;
                         }
 
-                        if (program_intervals_overlap(
+                        if (!program_intervals_overlap(
                             $startTime,
                             $endTime,
                             (string)$row['start_time'],
                             (string)$row['end_time']
                         )) {
-                            $conflictIds[] = (int)$row['id'];
-                            $conflictPhotos[] = (string)$row['photo_path'];
+                            continue;
+                        }
+
+                        $adjustment = program_overlap_adjustment($row, $startTime, $endTime);
+                        if (($adjustment['type'] ?? '') === 'manual') {
+                            $manualConflicts[] = $adjustment;
+                        } elseif (($adjustment['type'] ?? '') !== 'none') {
+                            $overlapPlan[] = $adjustment;
                         }
                     }
                 }
 
-                $pdo->beginTransaction();
-                try {
-                    program_delete_ids($pdo, $conflictIds);
+                if ($manualConflicts) {
+                    $names = array_values(array_unique(array_map(
+                        static fn(array $item): string => (string)($item['row']['dj_name'] ?? 'Unknown show'),
+                        $manualConflicts
+                    )));
+                    $error = 'Η νέα ώρα καλύπτει πλήρως ή μπλέκει με overnight slot: '
+                        . implode(', ', $names)
+                        . '. Δεν έγινε καμία αυτόματη διαγραφή. Ρύθμισε χειροκίνητα τις ώρες.';
+                } elseif ($overlapPlan && empty($_POST['overlap_confirmed'])) {
+                    $error = 'Οι αυτόματες αλλαγές στα υπάρχοντα slots πρέπει πρώτα να επιβεβαιωθούν από το preview.';
+                }
+
+                if ($error === null) {
+                    $pdo->beginTransaction();
+                    try {
+                        foreach ($overlapPlan as $adjustment) {
+                            $row = $adjustment['row'];
+                            $rowId = (int)$row['id'];
+
+                            if ($adjustment['type'] === 'trim_end') {
+                                $pdo->prepare(
+                                    "UPDATE program SET end_time = ? WHERE id = ?"
+                                )->execute([$adjustment['end'] . ':00', $rowId]);
+                            } elseif ($adjustment['type'] === 'trim_start') {
+                                $pdo->prepare(
+                                    "UPDATE program SET start_time = ? WHERE id = ?"
+                                )->execute([$adjustment['start'] . ':00', $rowId]);
+                            } elseif ($adjustment['type'] === 'split') {
+                                $pdo->prepare(
+                                    "UPDATE program SET end_time = ? WHERE id = ?"
+                                )->execute([$adjustment['left_end'] . ':00', $rowId]);
+
+                                $pdo->prepare(
+                                    "INSERT INTO program
+                                     (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
+                                     VALUES (?, ?, ?, ?, ?, ?)"
+                                )->execute([
+                                    (string)$row['dj_name'],
+                                    (string)$row['photo_path'],
+                                    !empty($row['mylive_account_id']) ? (int)$row['mylive_account_id'] : null,
+                                    (int)$row['day_of_week'],
+                                    $adjustment['right_start'] . ':00',
+                                    $adjustment['right_end'] . ':00',
+                                ]);
+                            }
+                        }
 
                     if ($editRow) {
                         if ($bulkEdit) {
@@ -545,40 +663,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
 
-                    $pdo->commit();
+                        $pdo->commit();
 
-                    $photosToClean = $conflictPhotos;
-                    if ($editRow) {
-                        if ($bulkEdit) {
-                            foreach ($bulkRows as $bulkRow) {
-                                $bulkOldPhoto = (string)($bulkRow['photo_path'] ?? '');
-                                if ($bulkOldPhoto !== '' && $bulkOldPhoto !== $photoPath) {
-                                    $photosToClean[] = $bulkOldPhoto;
+                        $photosToClean = [];
+                        if ($editRow) {
+                            if ($bulkEdit) {
+                                foreach ($bulkRows as $bulkRow) {
+                                    $bulkOldPhoto = (string)($bulkRow['photo_path'] ?? '');
+                                    if ($bulkOldPhoto !== '' && $bulkOldPhoto !== $photoPath) {
+                                        $photosToClean[] = $bulkOldPhoto;
+                                    }
                                 }
+                            } elseif ($oldEditPhoto !== '' && $oldEditPhoto !== $photoPath) {
+                                $photosToClean[] = $oldEditPhoto;
                             }
-                        } elseif ($oldEditPhoto !== '' && $oldEditPhoto !== $photoPath) {
-                            $photosToClean[] = $oldEditPhoto;
                         }
-                    }
-                    program_cleanup_photos($pdo, $photosToClean);
+                        program_cleanup_photos($pdo, $photosToClean);
 
-                    $replaced = count(array_unique($conflictIds));
-                    if ($editRow) {
-                        $success = $bulkEdit
-                            ? 'Ενημερώθηκαν όλες οι εμφανίσεις του "' . $djName . '" (' . count($bulkRows) . ' slots).'
-                            : 'Η εκπομπή ενημερώθηκε στην ' . $days[$selectedDay] . '.';
-                    } else {
-                        $dayCount = count($targetDays);
-                        $success = 'Η εκπομπή προστέθηκε σε ' . $dayCount . ' ημέρ' . ($dayCount === 1 ? 'α.' : 'ες.');
-                        if ($replaced > 0) {
-                            $success .= ' Αντικαταστάθηκαν ' . $replaced . ' υπάρχουσ' . ($replaced === 1 ? 'α εγγραφή.' : 'ες εγγραφές.');
+                        if ($editRow) {
+                            $success = $bulkEdit
+                                ? 'Ενημερώθηκαν όλες οι εμφανίσεις του "' . $djName . '" (' . count($bulkRows) . ' slots).'
+                                : 'Η εκπομπή ενημερώθηκε στην ' . $days[$selectedDay] . '.';
+                        } else {
+                            $dayCount = count($targetDays);
+                            $success = 'Η εκπομπή προστέθηκε σε ' . $dayCount . ' ημέρ' . ($dayCount === 1 ? 'α.' : 'ες.');
                         }
+
+                        if ($overlapPlan) {
+                            $success .= ' Προσαρμόστηκαν αυτόματα ' . count($overlapPlan) . ' υπάρχοντα slots χωρίς διαγραφή.';
+                        }
+                    } catch (Throwable $e) {
+                        if ($pdo->inTransaction()) $pdo->rollBack();
+                        if ($uploadedFile && is_file($uploadedFile)) @unlink($uploadedFile);
+                        error_log('Program save failed: ' . $e->getMessage());
+                        $error = 'Δεν ήταν δυνατή η αποθήκευση του προγράμματος.';
                     }
-                } catch (Throwable $e) {
-                    if ($pdo->inTransaction()) $pdo->rollBack();
-                    if ($uploadedFile && is_file($uploadedFile)) @unlink($uploadedFile);
-                    error_log('Program save failed: ' . $e->getMessage());
-                    $error = 'Δεν ήταν δυνατή η αποθήκευση του προγράμματος.';
                 }
             } elseif ($uploadedFile && is_file($uploadedFile)) {
                 @unlink($uploadedFile);
@@ -614,6 +733,13 @@ foreach ($weeklyShowRows as $row) {
     $weeklyShowCounts[(string)$row['show_key']] = (int)$row['total'];
 }
 $uniqueShowCount = count($weeklyShowCounts);
+
+$programWeekRows = $pdo->query(
+    "SELECT id, dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time
+     FROM program
+     WHERE day_of_week BETWEEN 1 AND 7
+     ORDER BY day_of_week ASC, start_time ASC, id ASC"
+)->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt = $pdo->prepare(
     "SELECT *
@@ -784,11 +910,12 @@ admin_page_start('Radio Program', 'program');
         <?php endif; ?>
 
         <div class="schedule-rule-note">
-            <strong>No duplicates.</strong>
-            Ώρες που επικαλύπτονται στην ίδια ημέρα αντικαθίστανται αυτόματα.
+            <strong>Smart overlap.</strong>
+            Αν μια νέα ώρα πέσει πάνω σε υπάρχον πρόγραμμα, θα δεις πρώτα preview και το παλιό slot θα προσαρμοστεί χωρίς αυτόματη διαγραφή.
         </div>
 
         <form method="post"
+              id="programEditorForm"
               action="program.php?day=<?= $selectedDay ?>"
               enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
@@ -796,6 +923,7 @@ admin_page_start('Radio Program', 'program');
             <input type="hidden" name="day" value="<?= $selectedDay ?>">
             <input type="hidden" name="edit_id" value="<?= $editRecord ? (int)$editRecord['id'] : '' ?>">
             <input type="hidden" name="edit_scope" value="<?= admin_e($editScope) ?>">
+            <input type="hidden" name="overlap_confirmed" id="overlapConfirmed" value="0">
 
             <div class="form-grid">
                 <div class="field full">
@@ -992,6 +1120,24 @@ admin_page_start('Radio Program', 'program');
     </section>
 </div>
 
+<div class="schedule-modal schedule-overlap-modal" id="overlapPreviewModal" hidden>
+    <div class="schedule-modal-backdrop" data-overlap-close></div>
+    <section class="schedule-modal-card schedule-overlap-card" role="dialog" aria-modal="true" aria-labelledby="overlapPreviewTitle">
+        <span class="schedule-modal-kicker">SMART SCHEDULE ADJUSTMENT</span>
+        <h2 id="overlapPreviewTitle">Έλεγξε τις αλλαγές πριν το Save</h2>
+        <p id="overlapPreviewIntro">Το νέο πρόγραμμα επικαλύπτεται με υπάρχοντα slots.</p>
+
+        <div class="schedule-overlap-new" id="overlapNewShow"></div>
+        <div class="schedule-overlap-list" id="overlapChangeList"></div>
+        <div class="schedule-overlap-blocked" id="overlapBlocked" hidden></div>
+
+        <div class="schedule-modal-actions">
+            <button class="button button-secondary" type="button" data-overlap-close>Cancel</button>
+            <button class="button button-primary" type="button" id="confirmOverlapChanges">Confirm & Save</button>
+        </div>
+    </section>
+</div>
+
 <div class="schedule-modal schedule-edit-choice-modal" id="editShowModal" hidden>
     <div class="schedule-modal-backdrop" data-edit-modal-close></div>
     <section class="schedule-modal-card" role="dialog" aria-modal="true" aria-labelledby="editShowTitle">
@@ -1135,6 +1281,215 @@ admin_page_start('Radio Program', 'program');
     all.addEventListener('change', sync);
     sync();
   }
+
+  var programEditorForm = document.getElementById('programEditorForm');
+  var overlapConfirmed = document.getElementById('overlapConfirmed');
+  var overlapPreviewModal = document.getElementById('overlapPreviewModal');
+  var overlapNewShow = document.getElementById('overlapNewShow');
+  var overlapChangeList = document.getElementById('overlapChangeList');
+  var overlapBlocked = document.getElementById('overlapBlocked');
+  var confirmOverlapChanges = document.getElementById('confirmOverlapChanges');
+  var programWeekRows = <?= json_encode($programWeekRows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  var programDayLabels = <?= json_encode($days, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  var editorEditId = <?= $editRecord ? (int)$editRecord['id'] : 0 ?>;
+  var editorEditScope = <?= json_encode($editScope, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  var editorOriginalName = <?= json_encode($editRecord ? (string)$editRecord['dj_name'] : '', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+  function scheduleMinutes(value) {
+    var parts = String(value || '').substring(0, 5).split(':');
+    return (parseInt(parts[0] || '0', 10) * 60) + parseInt(parts[1] || '0', 10);
+  }
+
+  function scheduleTime(value) {
+    return String(value || '').substring(0, 5);
+  }
+
+  function overlapPlanForRow(row, newStart, newEnd) {
+    var eStart = scheduleMinutes(row.start_time);
+    var eEnd = scheduleMinutes(row.end_time);
+    var nStart = scheduleMinutes(newStart);
+    var nEnd = scheduleMinutes(newEnd);
+
+    if (eEnd <= eStart || nEnd <= nStart) {
+      return {type:'manual', reason:'overnight', row:row};
+    }
+    if (eEnd <= nStart || eStart >= nEnd) return {type:'none', row:row};
+
+    if (eStart < nStart && eEnd > nEnd) {
+      return {
+        type:'split', row:row,
+        leftStart:scheduleTime(row.start_time), leftEnd:newStart,
+        rightStart:newEnd, rightEnd:scheduleTime(row.end_time)
+      };
+    }
+    if (eStart < nStart && eEnd > nStart) {
+      return {type:'trim_end', row:row, start:scheduleTime(row.start_time), end:newStart};
+    }
+    if (eStart < nEnd && eEnd > nEnd) {
+      return {type:'trim_start', row:row, start:newEnd, end:scheduleTime(row.end_time)};
+    }
+    return {type:'manual', reason:'covered', row:row};
+  }
+
+  function closeOverlapPreview() {
+    if (!overlapPreviewModal) return;
+    overlapPreviewModal.hidden = true;
+    document.body.classList.remove('schedule-modal-open');
+  }
+
+  function previewProgramOverlap() {
+    if (!programEditorForm) return {changes:[], blocked:[]};
+
+    var startInput = document.getElementById('start_time');
+    var endInput = document.getElementById('end_time');
+    var allDayInput = document.getElementById('all_day');
+    var nameInput = document.getElementById('dj_name');
+    var startValue = allDayInput && allDayInput.checked ? '00:00' : (startInput ? startInput.value : '');
+    var endValue = allDayInput && allDayInput.checked ? '23:59' : (endInput ? endInput.value : '');
+    if (!startValue || !endValue) return {changes:[], blocked:[]};
+
+    var targetDays = [];
+    if (editorEditId) {
+      if (editorEditScope === 'all') {
+        var originalKey = String(editorOriginalName || '').trim().toLowerCase();
+        programWeekRows.forEach(function(row){
+          if (String(row.dj_name || '').trim().toLowerCase() === originalKey) {
+            var d = parseInt(row.day_of_week,10);
+            if (targetDays.indexOf(d) === -1) targetDays.push(d);
+          }
+        });
+      } else {
+        targetDays = [<?= (int)$selectedDay ?>];
+      }
+    } else {
+      document.querySelectorAll('input[name="days[]"]:checked').forEach(function(input){
+        targetDays.push(parseInt(input.value,10));
+      });
+    }
+
+    var excludedIds = [];
+    if (editorEditId) {
+      if (editorEditScope === 'all') {
+        var key = String(editorOriginalName || '').trim().toLowerCase();
+        programWeekRows.forEach(function(row){
+          if (String(row.dj_name || '').trim().toLowerCase() === key) excludedIds.push(parseInt(row.id,10));
+        });
+      } else {
+        excludedIds.push(editorEditId);
+      }
+    }
+
+    var changes = [];
+    var blocked = [];
+    programWeekRows.forEach(function(row){
+      var rowDay = parseInt(row.day_of_week,10);
+      var rowId = parseInt(row.id,10);
+      if (targetDays.indexOf(rowDay) === -1 || excludedIds.indexOf(rowId) !== -1) return;
+
+      var plan = overlapPlanForRow(row, startValue, endValue);
+      if (plan.type === 'manual') blocked.push(plan);
+      else if (plan.type !== 'none') changes.push(plan);
+    });
+
+    return {
+      changes:changes,
+      blocked:blocked,
+      newName:nameInput ? nameInput.value.trim() : '',
+      start:startValue,
+      end:endValue,
+      targetDays:targetDays
+    };
+  }
+
+  function renderOverlapPreview(preview) {
+    if (!overlapPreviewModal || !overlapChangeList || !overlapBlocked || !confirmOverlapChanges) return;
+
+    overlapChangeList.textContent = '';
+    overlapBlocked.textContent = '';
+    overlapBlocked.hidden = true;
+
+    if (overlapNewShow) {
+      overlapNewShow.innerHTML = '';
+      var label = document.createElement('span');
+      label.textContent = 'NEW / UPDATED SHOW';
+      var strong = document.createElement('strong');
+      strong.textContent = (preview.newName || 'New show') + ' · ' + preview.start + '–' + preview.end;
+      overlapNewShow.appendChild(label);
+      overlapNewShow.appendChild(strong);
+    }
+
+    preview.changes.forEach(function(plan){
+      var row = plan.row;
+      var item = document.createElement('div');
+      item.className = 'schedule-overlap-change';
+
+      var meta = document.createElement('span');
+      meta.textContent = (programDayLabels[row.day_of_week] || ('Day ' + row.day_of_week)) + ' · ' + (row.dj_name || 'Existing show');
+
+      var before = document.createElement('small');
+      before.textContent = 'Τώρα: ' + scheduleTime(row.start_time) + '–' + scheduleTime(row.end_time);
+
+      var after = document.createElement('strong');
+      if (plan.type === 'split') {
+        after.textContent = 'Μετά: ' + plan.leftStart + '–' + plan.leftEnd + '  +  ' + plan.rightStart + '–' + plan.rightEnd;
+      } else {
+        after.textContent = 'Μετά: ' + plan.start + '–' + plan.end;
+      }
+
+      item.appendChild(meta);
+      item.appendChild(before);
+      item.appendChild(after);
+      overlapChangeList.appendChild(item);
+    });
+
+    if (preview.blocked.length) {
+      overlapBlocked.hidden = false;
+      var title = document.createElement('strong');
+      title.textContent = 'Χρειάζεται χειροκίνητη διόρθωση';
+      overlapBlocked.appendChild(title);
+
+      preview.blocked.forEach(function(plan){
+        var p = document.createElement('p');
+        var row = plan.row;
+        p.textContent = (programDayLabels[row.day_of_week] || '') + ' · ' + (row.dj_name || 'Existing show')
+          + ' · ' + scheduleTime(row.start_time) + '–' + scheduleTime(row.end_time)
+          + (plan.reason === 'overnight' ? ' (overnight overlap)' : ' (καλύπτεται πλήρως από τη νέα ώρα)');
+        overlapBlocked.appendChild(p);
+      });
+
+      confirmOverlapChanges.hidden = true;
+    } else {
+      confirmOverlapChanges.hidden = false;
+    }
+
+    overlapPreviewModal.hidden = false;
+    document.body.classList.add('schedule-modal-open');
+  }
+
+  if (programEditorForm) {
+    programEditorForm.addEventListener('submit', function(event){
+      if (overlapConfirmed && overlapConfirmed.value === '1') return;
+
+      var preview = previewProgramOverlap();
+      if (!preview.changes.length && !preview.blocked.length) return;
+
+      event.preventDefault();
+      renderOverlapPreview(preview);
+    });
+  }
+
+  if (confirmOverlapChanges) {
+    confirmOverlapChanges.addEventListener('click', function(){
+      if (!programEditorForm || !overlapConfirmed) return;
+      overlapConfirmed.value = '1';
+      closeOverlapPreview();
+      programEditorForm.requestSubmit();
+    });
+  }
+
+  document.querySelectorAll('[data-overlap-close]').forEach(function(button){
+    button.addEventListener('click', closeOverlapPreview);
+  });
 
   var editShowModal = document.getElementById('editShowModal');
   var editShowName = document.getElementById('editShowName');
@@ -1335,6 +1690,11 @@ admin_page_start('Radio Program', 'program');
 
   document.addEventListener('keydown', function(event){
     if (event.key !== 'Escape') return;
+
+    if (overlapPreviewModal && !overlapPreviewModal.hidden) {
+      closeOverlapPreview();
+      return;
+    }
 
     if (mediaModal && !mediaModal.hidden) {
       closeMediaBrowser();
