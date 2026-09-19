@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-season.php';
+require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/admin-ui.php';
 
 dj_season_bootstrap($pdo);
+deseo_mylive_bootstrap($pdo);
 
 $notice = null;
 $error = null;
@@ -107,6 +109,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $previousStatus = (string)$current['status'];
                 $pdo->commit();
 
+                try {
+                    if ($status === 'approved') {
+                        deseo_mylive_create_pending_from_booking($pdo, $bookingId);
+                    } elseif ($previousStatus === 'approved' && $status !== 'approved') {
+                        $cleanup = $pdo->prepare(
+                            "DELETE FROM dj_portal_accounts
+                             WHERE booking_id = ? AND account_status = 'pending'"
+                        );
+                        $cleanup->execute([$bookingId]);
+                    }
+                } catch (Throwable $portalSyncError) {
+                    error_log('MyLive pending sync failed: ' . $portalSyncError->getMessage());
+                    $error = 'Το application status αποθηκεύτηκε, αλλά δεν ενημερώθηκε σωστά το MyLive pending record.';
+                }
+
                 $mailStatuses = ['approved', 'guest', 'rejected'];
                 if (in_array($status, $mailStatuses, true) && $previousStatus !== $status) {
                     $mailStmt = $pdo->prepare(
@@ -138,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             );
 
                             if ($status === 'approved') {
-                                $notice = 'Ο DJ εγκρίθηκε για σταθερό slot, το slot έκλεισε για νέα inquiries και στάλθηκε welcome email με ημέρα/ώρα.';
+                                $notice = 'Ο DJ εγκρίθηκε, το slot έκλεισε για νέα inquiries και δημιουργήθηκε Pending εγγραφή στο MyLive. Από το MyLive CMS μπορείς τώρα να εγκρίνεις την πρόσβαση και να σταλεί το onboarding email.';
                             } elseif ($status === 'guest') {
                                 $notice = 'Ο DJ επιλέχθηκε ως Guest και στάλθηκε welcome email. Το προτιμώμενο weekly slot παραμένει διαθέσιμο.';
                             } else {
