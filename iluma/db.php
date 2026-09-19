@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 date_default_timezone_set('Europe/Athens');
 
+if (!headers_sent()) {
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
+    header('Cache-Control: private, no-store, no-cache, must-revalidate', true);
+    header('Pragma: no-cache', true);
+}
+
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 
