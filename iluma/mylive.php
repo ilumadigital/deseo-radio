@@ -475,6 +475,7 @@ admin_page_start('MyLive', 'mylive');
                                     <?php endforeach; ?>
                                 </select>
                                 <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
+                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
                                 <button class="button button-secondary" type="submit">Save</button>
                             </form>
                         <?php endforeach; ?>
@@ -515,12 +516,15 @@ admin_page_start('MyLive', 'mylive');
                                     <strong><?= admin_e($asset['title']) ?></strong>
                                     <small><?= admin_e($asset['original_name']) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?></small>
                                 </div>
+                                <div class="mylive-asset-actions">
+                                    <a class="button button-secondary" href="mylive-download.php?type=asset&id=<?= (int)$asset['id'] ?>">Download</a>
                                 <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το asset από το MyLive;');">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="delete_asset">
                                     <input type="hidden" name="asset_id" value="<?= (int)$asset['id'] ?>">
                                     <button class="danger-link" type="submit">Delete</button>
                                 </form>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                         </div>
