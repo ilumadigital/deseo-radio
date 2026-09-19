@@ -460,3 +460,50 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .public-profile-actions>div:last-child{grid-template-columns:1fr}
   .profile-draft-button,.public-profile-actions .primary-button{width:100%}
 }
+
+
+/* DJ SET BROADCAST RETENTION */
+.repository-head>div>p{
+  max-width:620px;
+  margin:7px 0 0;
+  color:#606067;
+  font-size:9px;
+  line-height:1.55;
+}
+.set-status{
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.set-status span.status-broadcasted{
+  color:#fff;
+  border-color:rgba(255,43,54,.32);
+  background:linear-gradient(180deg,rgba(255,43,54,.16),rgba(255,43,54,.07));
+  box-shadow:0 0 22px rgba(255,43,54,.08);
+}
+.set-retention{
+  max-width:190px;
+  color:#9b7b7e!important;
+  font-size:8px!important;
+  font-weight:600;
+  line-height:1.35;
+  text-align:right;
+}
+.set-retention.is-deleted{
+  color:#626269!important;
+}
+@media(max-width:620px){
+  .repository-head{
+    align-items:flex-start;
+    gap:18px;
+  }
+  .repository-head>div>p{max-width:none}
+  .set-status{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:8px;
+  }
+  .set-retention{
+    max-width:none;
+    text-align:left;
+  }
+}
