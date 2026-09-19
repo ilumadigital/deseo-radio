@@ -212,6 +212,25 @@ function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
     return max(0, (int)round($estimate));
 }
 
+function deseo_audience_band_baseline(
+    int $monthlyListeners,
+    int $dayOfWeek,
+    string $startTime,
+    string $endTime
+): int {
+    if ($monthlyListeners <= 0) return 0;
+
+    $dailyAudience = $monthlyListeners / 30.4375;
+    $slotShare = deseo_audience_slot_share($startTime, $endTime);
+    $dayModifier = deseo_audience_day_modifier($dayOfWeek);
+
+    // CMS band previews are normalized to a one-hour equivalent.
+    // This makes 15:00–18:00 comparable with one-hour late-night bands.
+    return max(0, (int)round(
+        $dailyAudience * $slotShare * $dayModifier
+    ));
+}
+
 function deseo_audience_preview(
     int $monthlyListeners,
     int $dayOfWeek,
