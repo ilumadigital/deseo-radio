@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $temporaryPassword = mylive_admin_temp_password();
                 $insert = $pdo->prepare(
                     "INSERT INTO dj_portal_accounts
-                     (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time, password_hash, must_change_password, is_active)
-                     VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1)"
+                     (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time, password_hash, must_change_password, is_active, account_status)
+                     VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1, 'active')"
                 );
                 $insert->execute([
                     $artistName,
@@ -128,6 +128,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'SMTP: ' . $mailError->getMessage();
                 }
 
+            } elseif ($action === 'approve_pending') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if ((string)($account['account_status'] ?? '') !== 'pending') {
+                    throw new RuntimeException('Το συγκεκριμένο MyLive record δεν είναι πλέον Pending.');
+                }
+
+                $temporaryPassword = mylive_admin_temp_password();
+                $passwordHash = password_hash($temporaryPassword, PASSWORD_DEFAULT);
+
+                $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET password_hash = ?,
+                         must_change_password = 1,
+                         is_active = 1,
+                         account_status = 'active'
+                     WHERE id = ? AND account_status = 'pending'"
+                )->execute([$passwordHash, $accountId]);
+
+                $account = mylive_admin_account($pdo, $accountId);
+
+                try {
+                    $mail = deseo_mylive_onboarding_email($account, $temporaryPassword);
+                    deseo_send_smtp_mail(
+                        (string)$account['email'],
+                        (string)$account['artist_name'],
+                        $mail['subject'],
+                        $mail['html'],
+                        $mail['text']
+                    );
+
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET onboarding_email_sent_at = NOW(), access_email_sent_at = NOW()
+                         WHERE id = ?"
+                    )->execute([$accountId]);
+
+                    $generatedCredentials = [
+                        'artist' => (string)$account['artist_name'],
+                        'email' => (string)$account['email'],
+                        'password' => $temporaryPassword
+                    ];
+                    $notice = 'Το Pending DJ εγκρίθηκε στο MyLive, δημιουργήθηκε temporary password και στάλθηκε το onboarding email.';
+                } catch (Throwable $mailError) {
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET password_hash = '',
+                             must_change_password = 1,
+                             is_active = 0,
+                             account_status = 'pending'
+                         WHERE id = ?"
+                    )->execute([$accountId]);
+
+                    error_log('MyLive pending approval email failed: ' . $mailError->getMessage());
+                    $error = 'Η πρόσβαση δεν ενεργοποιήθηκε επειδή το onboarding email δεν μπόρεσε να σταλεί: ' . $mailError->getMessage();
+                }
+
             } elseif ($action === 'update_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $artistName = trim((string)($_POST['artist_name'] ?? ''));
@@ -157,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $pdo->prepare(
                     "UPDATE dj_portal_accounts
-                     SET password_hash = ?, must_change_password = 1, is_active = 1
+                     SET password_hash = ?, must_change_password = 1, is_active = 1, account_status = 'active'
                      WHERE id = ?"
                 )->execute([password_hash($temporaryPassword, PASSWORD_DEFAULT), $accountId]);
 
@@ -186,7 +244,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($action === 'toggle_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $active = (int)($_POST['active'] ?? 0) === 1 ? 1 : 0;
-                $pdo->prepare("UPDATE dj_portal_accounts SET is_active = ? WHERE id = ?")->execute([$active, $accountId]);
+                $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET is_active = ?, account_status = ?
+                     WHERE id = ? AND account_status <> 'pending'"
+                )->execute([$active, $active ? 'active' : 'disabled', $accountId]);
                 $notice = $active ? 'Το MyLive account ενεργοποιήθηκε.' : 'Το MyLive account απενεργοποιήθηκε.';
 
             } elseif ($action === 'delete_account') {
@@ -296,10 +358,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $accountsStmt = $pdo->query(
     "SELECT a.*,
+            b.instagram AS application_instagram,
+            b.website AS application_website,
+            b.work_sample_url AS application_work_sample,
+            b.bio AS application_bio,
+            b.set_type AS application_set_type,
+            b.photo_path AS application_photo,
             (SELECT COUNT(*) FROM dj_portal_sets s WHERE s.account_id = a.id) AS set_count,
             (SELECT COUNT(*) FROM dj_portal_assets x WHERE x.account_id = a.id) AS asset_count
      FROM dj_portal_accounts a
-     ORDER BY a.is_active DESC, a.artist_name ASC, a.id DESC"
+     LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+     ORDER BY
+        CASE a.account_status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END,
+        a.artist_name ASC,
+        a.id DESC"
 );
 $accounts = $accountsStmt->fetchAll(PDO::FETCH_ASSOC);
 
