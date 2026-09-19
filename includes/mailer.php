@@ -628,6 +628,62 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
 }
 
 
+
+function deseo_mylive_public_profile_enabled_email(array $account): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+
+    $body = '<tr><td style="padding:0 0 18px;">'
+        . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">PUBLIC PROFILE · ACTIVE</div>'
+        . '<div style="margin-top:7px;font:800 25px/1.15 Arial,sans-serif;">Το profile σου είναι έτοιμο για διαχείριση.</div>'
+        . '</div></td></tr>';
+
+    $body .= deseo_mylive_email_section('01', 'Τι μπορείς να διαχειρίζεσαι',
+        'Μέσα από το <strong style="color:#fff;">MyLive → Your Public DJ Profile</strong> μπορείς να γράφεις και να ενημερώνεις το προσωπικό σου <strong style="color:#fff;">About</strong> και τα social links σου: Instagram, TikTok, SoundCloud, Spotify και Website.');
+
+    $body .= deseo_mylive_email_section('02', 'Πώς εμφανίζεται στους ακροατές',
+        'Όταν το show σου παίζει στον αέρα του Deseo Radio και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να <strong style="color:#fff;">πατήσει πάνω στη φωτογραφία σου</strong> στο Now On Air / Radio Program και να ανοίξει το μικρό δημόσιο DJ profile σου.<br><br>'
+        . 'Εκεί εμφανίζονται το About που έχεις δημοσιεύσει και τα social media links που έχεις επιλέξει.');
+
+    $body .= deseo_mylive_email_section('03', 'Save Draft & Publish',
+        'Το <strong style="color:#fff;">Save Draft</strong> αποθηκεύει τις αλλαγές μόνο μέσα στο MyLive και δεν τις εμφανίζει δημόσια.<br><br>'
+        . 'Μόνο όταν πατήσεις <strong style="color:#fff;">Publish Profile</strong> περνάει η νέα έκδοση στο website. Αν κάνεις νέες αλλαγές αργότερα, η προηγούμενη published έκδοση παραμένει live μέχρι να ξαναπατήσεις Publish.');
+
+    $body .= deseo_mylive_email_section('04', 'Η φωτογραφία και το show σου',
+        'Δεν χρειάζεται να ανεβάζεις φωτογραφία μέσα από το Public Profile. Η εικόνα, το show title και το on-air slot διαχειρίζονται από το <strong style="color:#fff;">Deseo Radio</strong> μέσα από το επίσημο Radio Program, ώστε η παρουσίαση να παραμένει ενιαία και σωστή.');
+
+    $body .= '<tr><td style="padding:2px 0 0;">'
+        . '<div style="padding:18px;border:1px solid #3f161b;border-radius:17px;background:#160b0d;color:#d8b4b7;font:400 12px/1.65 Arial,sans-serif;">'
+        . '<strong style="display:block;margin-bottom:5px;color:#ff4650;">TIP</strong>'
+        . 'Κράτησε το About σύντομο, προσωπικό και αντιπροσωπευτικό του sound σου. Είναι το κείμενο που θα βλέπει ο listener την ώρα που σε ακούει.'
+        . '</div></td></tr>';
+
+    $subject = 'Deseo Radio MyLive · Το Public Profile σου ενεργοποιήθηκε';
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · MYLIVE · PUBLIC PROFILE',
+        'Το Public Profile σου ενεργοποιήθηκε.',
+        $artist . ', από σήμερα μπορείς να διαχειρίζεσαι μέσα από το MyLive το κείμενο και τα social links που βλέπει ο listener όταν ανοίγει το DJ profile σου στο Deseo Radio.',
+        $body,
+        'OPEN MYLIVE',
+        'https://deseoradio.com/mylive/'
+    );
+
+    $text = "DESEO RADIO · MYLIVE · PUBLIC PROFILE\n\n"
+        . "{$artist}, το Public Profile σου ενεργοποιήθηκε.\n\n"
+        . "Μέσα από το MyLive μπορείς να διαχειρίζεσαι το About σου και τα social links: Instagram, TikTok, SoundCloud, Spotify και Website.\n\n"
+        . "Όταν το show σου παίζει στον αέρα και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να πατήσει πάνω στη φωτογραφία σου στο Now On Air / Radio Program και να δει το published About και τα social media σου.\n\n"
+        . "Save Draft: αποθηκεύει ιδιωτικά τις αλλαγές.\n"
+        . "Publish Profile: δημοσιεύει τη νέα έκδοση στο website.\n\n"
+        . "Η φωτογραφία, το show title και το on-air slot διαχειρίζονται από το Deseo Radio μέσα από το Radio Program.\n\n"
+        . "MyLive: https://deseoradio.com/mylive/\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
+
 function deseo_mylive_onboarding_email(array $account, string $temporaryPassword, bool $reset = false): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 
