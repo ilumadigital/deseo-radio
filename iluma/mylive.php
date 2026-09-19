@@ -8,6 +8,22 @@ require_once __DIR__ . '/admin-ui.php';
 
 deseo_mylive_bootstrap($pdo);
 
+// Backfill / sync any Season 6 DJs that were already approved before the
+// pending-access workflow was introduced.
+try {
+    $approvedStmt = $pdo->prepare(
+        "SELECT id
+         FROM dj_season_bookings
+         WHERE season = ? AND status = 'approved'"
+    );
+    $approvedStmt->execute([DESEO_DJ_SEASON]);
+    foreach ($approvedStmt->fetchAll(PDO::FETCH_COLUMN) as $approvedBookingId) {
+        deseo_mylive_create_pending_from_booking($pdo, (int)$approvedBookingId);
+    }
+} catch (Throwable $syncError) {
+    error_log('MyLive approved-DJ backfill failed: ' . $syncError->getMessage());
+}
+
 $notice = null;
 $error = null;
 $generatedCredentials = null;
