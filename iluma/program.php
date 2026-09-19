@@ -699,8 +699,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $error = 'Δεν ήταν δυνατή η αποθήκευση του προγράμματος.';
                     }
                 }
-            } elseif ($uploadedFile && is_file($uploadedFile)) {
+            }
+
+            if ($error !== null && $uploadedFile && is_file($uploadedFile)) {
                 @unlink($uploadedFile);
+                $uploadedFile = null;
             }
         }
     }
@@ -837,7 +840,7 @@ admin_page_start('Radio Program', 'program');
     <div>
         <span>Live schedule</span>
         <h1>Radio Program</h1>
-        <p>Διαχειρίσου το πρόγραμμα ανά ημέρα. Αν μια νέα ώρα επικαλύπτεται με υπάρχουσα εκπομπή, η παλιά εγγραφή αντικαθίσταται αυτόματα.</p>
+        <p>Διαχειρίσου το πρόγραμμα ανά ημέρα. Αν μια νέα ώρα επικαλύπτεται με υπάρχον slot, θα δεις πρώτα ακριβές preview και το υπάρχον πρόγραμμα θα προσαρμοστεί χωρίς αυτόματη διαγραφή.</p>
     </div>
 
     <?php if ($totalProgram > 0): ?>
