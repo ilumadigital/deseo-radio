@@ -153,8 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $originalName = basename((string)($file['name'] ?? ''));
             $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            if (!in_array($extension, ['mp3', 'wav'], true)) {
-                throw new RuntimeException('Για το MyLive δεχόμαστε μόνο MP3 ή WAV.');
+            if ($extension !== 'mp3') {
+                throw new RuntimeException('Το DJ Set πρέπει να είναι MP3 · 192 kbps · Stereo.');
             }
 
             $tmpName = (string)($file['tmp_name'] ?? '');
@@ -168,9 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mime = (string)$finfo->file($tmpName);
             }
 
-            $allowedMime = $extension === 'mp3'
-                ? ['audio/mpeg', 'audio/mp3', 'application/octet-stream']
-                : ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave', 'application/octet-stream'];
+            $allowedMime = ['audio/mpeg', 'audio/mp3', 'application/octet-stream'];
 
             if ($mime !== '' && !in_array($mime, $allowedMime, true)) {
                 throw new RuntimeException('Το αρχείο δεν φαίνεται να είναι έγκυρο ' . strtoupper($extension) . '.');
@@ -501,13 +499,13 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             <div class="upload-copy">
                 <span>NEXT DELIVERY</span>
                 <h2>EP<?= str_pad((string)$nextEpisode, 3, '0', STR_PAD_LEFT) ?></h2>
-                <p>MP3 ή WAV · έως 1 GB</p>
+                <p>MP3 · 192 kbps · Stereo · έως 1 GB</p>
             </div>
 
             <form id="uploadForm" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
                 <input type="hidden" name="action" value="upload">
-                <input id="setFile" type="file" name="dj_set" accept=".mp3,.wav,audio/mpeg,audio/wav" hidden required>
+                <input id="setFile" type="file" name="dj_set" accept=".mp3,audio/mpeg" hidden required>
 
                 <label class="drop-zone" for="setFile" id="dropZone">
                     <span class="plus">+</span>
