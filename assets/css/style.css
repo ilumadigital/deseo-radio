@@ -2287,7 +2287,7 @@ h2,
 .deseo-program-row.has-dj-profile{
   cursor:pointer;
 }
-.hero-cms-card.has-dj-profile::after{
+.hero-cms-card.has-dj-profile::before{
   content:"VIEW DJ PROFILE";
   position:absolute;
   right:18px;
@@ -2305,7 +2305,7 @@ h2,
   opacity:.72;
   transition:.2s ease;
 }
-.hero-cms-card.has-dj-profile:hover::after{opacity:1;border-color:rgba(255,43,54,.34)}
+.hero-cms-card.has-dj-profile:hover::before{opacity:1;border-color:rgba(255,43,54,.34)}
 .deseo-program-row.has-dj-profile:hover{
   padding-left:10px;
   padding-right:10px;
@@ -2487,6 +2487,6 @@ body.dj-profile-modal-open{overflow:hidden}
   .dj-profile-modal-copy>p{max-height:none;font-size:13px}
 }
 @media(max-width:430px){
-  .hero-cms-card.has-dj-profile::after{right:12px;top:12px;font-size:6px}
+  .hero-cms-card.has-dj-profile::before{right:12px;top:12px;font-size:6px}
   .dj-profile-modal-copy h2{font-size:40px}
 }
