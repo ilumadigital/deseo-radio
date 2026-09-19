@@ -101,66 +101,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $accountId = (int)$pdo->lastInsertId();
                 $account = mylive_admin_account($pdo, $accountId);
 
-                $mailResults = [
-                    'technical' => false,
-                    'access' => false,
-                ];
-                $mailErrors = [];
-
-                try {
-                    $technical = deseo_mylive_technical_email($account);
-                    deseo_send_smtp_mail(
-                        $email,
-                        $artistName,
-                        $technical['subject'],
-                        $technical['html'],
-                        $technical['text'],
-                        true
-                    );
-                    $pdo->prepare(
-                        "UPDATE dj_portal_accounts SET onboarding_email_sent_at = NOW() WHERE id = ?"
-                    )->execute([$accountId]);
-                    $mailResults['technical'] = true;
-                } catch (Throwable $technicalMailError) {
-                    error_log('MyLive technical onboarding email failed: ' . $technicalMailError->getMessage());
-                    $mailErrors[] = 'Season 6 Instructions: ' . $technicalMailError->getMessage();
-                }
-
-                // The access email is attempted even if the technical email failed.
-                // A temporary SMTP problem must never prevent the second automatic message.
-                try {
-                    $access = deseo_mylive_access_email($account, $temporaryPassword);
-                    deseo_send_smtp_mail(
-                        $email,
-                        $artistName,
-                        $access['subject'],
-                        $access['html'],
-                        $access['text'],
-                        true
-                    );
-                    $pdo->prepare(
-                        "UPDATE dj_portal_accounts SET access_email_sent_at = NOW() WHERE id = ?"
-                    )->execute([$accountId]);
-                    $mailResults['access'] = true;
-                } catch (Throwable $accessMailError) {
-                    error_log('MyLive access email failed: ' . $accessMailError->getMessage());
-                    $mailErrors[] = 'MyLive Access: ' . $accessMailError->getMessage();
-                }
-
                 $generatedCredentials = [
                     'artist' => $artistName,
                     'email' => $email,
                     'password' => $temporaryPassword
                 ];
 
-                if ($mailResults['technical'] && $mailResults['access']) {
-                    $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκαν αυτόματα και τα δύο emails.';
-                } elseif ($mailResults['technical'] || $mailResults['access']) {
-                    $notice = 'Το MyLive account δημιουργήθηκε. Στάλθηκε αυτόματα το ένα από τα δύο emails.';
-                    $error = 'Το άλλο email δεν στάλθηκε: ' . implode(' · ', $mailErrors);
-                } else {
-                    $notice = 'Το MyLive account δημιουργήθηκε, αλλά τα emails δεν μπόρεσαν να σταλούν.';
-                    $error = 'SMTP: ' . implode(' · ', $mailErrors);
+                try {
+                    $mail = deseo_mylive_onboarding_email($account, $temporaryPassword);
+                    deseo_send_smtp_mail(
+                        $email,
+                        $artistName,
+                        $mail['subject'],
+                        $mail['html'],
+                        $mail['text']
+                    );
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET onboarding_email_sent_at = NOW(), access_email_sent_at = NOW()
+                         WHERE id = ?"
+                    )->execute([$accountId]);
+                    $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκε αυτόματα το ενιαίο onboarding email.';
+                } catch (Throwable $mailError) {
+                    error_log('MyLive onboarding email failed: ' . $mailError->getMessage());
+                    $notice = 'Το MyLive account δημιουργήθηκε, αλλά το onboarding email δεν στάλθηκε.';
+                    $error = 'SMTP: ' . $mailError->getMessage();
                 }
 
             } elseif ($action === 'update_account') {
@@ -185,14 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$artistName, $fullName, $email, $day, $start, $end, $accountId]);
                 $notice = 'Τα στοιχεία του MyLive account ενημερώθηκαν.';
 
-            } elseif ($action === 'resend_technical') {
-                $accountId = (int)($_POST['account_id'] ?? 0);
-                $account = mylive_admin_account($pdo, $accountId);
-                $mail = deseo_mylive_technical_email($account);
-                deseo_send_smtp_mail((string)$account['email'], (string)$account['artist_name'], $mail['subject'], $mail['html'], $mail['text'], true);
-                $pdo->prepare("UPDATE dj_portal_accounts SET onboarding_email_sent_at = NOW() WHERE id = ?")->execute([$accountId]);
-                $notice = 'Οι τεχνικές οδηγίες στάλθηκαν ξανά.';
-
             } elseif ($action === 'reset_access') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $account = mylive_admin_account($pdo, $accountId);
@@ -205,16 +162,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )->execute([password_hash($temporaryPassword, PASSWORD_DEFAULT), $accountId]);
 
                 $account = mylive_admin_account($pdo, $accountId);
-                $mail = deseo_mylive_access_email($account, $temporaryPassword, true);
-                deseo_send_smtp_mail((string)$account['email'], (string)$account['artist_name'], $mail['subject'], $mail['html'], $mail['text'], true);
-                $pdo->prepare("UPDATE dj_portal_accounts SET access_email_sent_at = NOW() WHERE id = ?")->execute([$accountId]);
+                $mail = deseo_mylive_onboarding_email($account, $temporaryPassword, true);
+                deseo_send_smtp_mail(
+                    (string)$account['email'],
+                    (string)$account['artist_name'],
+                    $mail['subject'],
+                    $mail['html'],
+                    $mail['text']
+                );
+                $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET onboarding_email_sent_at = NOW(), access_email_sent_at = NOW()
+                     WHERE id = ?"
+                )->execute([$accountId]);
 
                 $generatedCredentials = [
                     'artist' => (string)$account['artist_name'],
                     'email' => (string)$account['email'],
                     'password' => $temporaryPassword
                 ];
-                $notice = 'Δημιουργήθηκε νέο temporary password και στάλθηκε το access email.';
+                $notice = 'Δημιουργήθηκε νέο temporary password και στάλθηκε ξανά το ενιαίο onboarding email.';
 
             } elseif ($action === 'toggle_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -356,7 +323,7 @@ admin_page_start('MyLive', 'mylive');
     <div>
         <span>Deseo Radio · DJ Delivery</span>
         <h1>MyLive accounts</h1>
-        <p>Δημιούργησε DJ access, στείλε αυτόματα τα branded onboarding emails και διαχειρίσου sets, artwork και imaging από ένα σημείο.</p>
+        <p>Δημιούργησε DJ access, στείλε αυτόματα ένα πλήρες branded onboarding email και διαχειρίσου sets, artwork και imaging από ένα σημείο.</p>
     </div>
     <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
 </div>
@@ -379,7 +346,7 @@ admin_page_start('MyLive', 'mylive');
         <div>
             <span>NEW ACCOUNT</span>
             <h2>Create & send onboarding</h2>
-            <p>Με μία ενέργεια δημιουργείται το account και αποστέλλονται πρώτα οι Season 6 οδηγίες και αμέσως μετά το MyLive access email.</p>
+            <p>Με μία ενέργεια δημιουργείται το account και αποστέλλεται ένα ενιαίο email με όλες τις Season 6 οδηγίες, το MyLive workflow και τα προσωρινά credentials στο τέλος.</p>
         </div>
         <strong>01</strong>
     </div>
@@ -424,12 +391,11 @@ admin_page_start('MyLive', 'mylive');
         </div>
 
         <div class="mylive-email-preview-strip">
-            <div><span>EMAIL 01</span><strong>Season 6 Instructions</strong></div>
-            <div><span>EMAIL 02</span><strong>MyLive Access</strong></div>
+            <div><span>ONBOARDING EMAIL</span><strong>Season 6 Instructions · MyLive · Credentials</strong></div>
         </div>
 
         <div class="form-actions">
-            <button class="button button-primary" type="submit">Create account & send emails</button>
+            <button class="button button-primary" type="submit">Create account & send onboarding</button>
         </div>
     </form>
 </section>
@@ -460,8 +426,7 @@ admin_page_start('MyLive', 'mylive');
             </div>
 
             <div class="mylive-account-meta">
-                <span>Instructions: <?= $account['onboarding_email_sent_at'] ? admin_e((string)$account['onboarding_email_sent_at']) : 'Not sent' ?></span>
-                <span>Access: <?= $account['access_email_sent_at'] ? admin_e((string)$account['access_email_sent_at']) : 'Not sent' ?></span>
+                <span>Onboarding: <?= $account['onboarding_email_sent_at'] ? admin_e((string)$account['onboarding_email_sent_at']) : 'Not sent' ?></span>
                 <span>Password: <?= !empty($account['must_change_password']) ? 'Temporary / change required' : 'Personal password set' ?></span>
                 <span>Last login: <?= $account['last_login_at'] ? admin_e((string)$account['last_login_at']) : 'Never' ?></span>
             </div>
@@ -511,17 +476,11 @@ admin_page_start('MyLive', 'mylive');
                     </form>
 
                     <div class="mylive-admin-actions">
-                        <form method="post">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="resend_technical">
-                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
-                            <button class="button button-secondary" type="submit">Resend instructions</button>
-                        </form>
-                        <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί access email;');">
+                        <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το πλήρες onboarding email;');">
                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                             <input type="hidden" name="action" value="reset_access">
                             <input type="hidden" name="account_id" value="<?= $accountId ?>">
-                            <button class="button button-secondary" type="submit">Reset & send access</button>
+                            <button class="button button-secondary" type="submit">Reset password & resend onboarding</button>
                         </form>
                         <form method="post">
                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
