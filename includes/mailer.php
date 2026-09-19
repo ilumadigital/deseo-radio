@@ -498,7 +498,7 @@ function deseo_mylive_technical_email(array $account): array {
         'Κάθε νέο set αριθμείται <strong style="color:#fff;">EP001, EP002, EP003…</strong>. Το MyLive αναλαμβάνει αυτόματα και την αρίθμηση και το filename, με format <strong style="color:#fff;">ARTISTNAME_DESEO_S06_EP001.mp3</strong>. Δεν χρειάζεται να μετονομάσεις το αρχείο πριν το upload.');
 
     $body .= deseo_mylive_email_section('06', 'Audio Format',
-        'Προτεινόμενη παράδοση: <strong style="color:#fff;">MP3 · 320 kbps · Stereo</strong> ή <strong style="color:#fff;">WAV · Stereo</strong>. Το αρχείο πρέπει να έχει καθαρή, συνεπή στάθμη χωρίς clipping ή εμφανές distortion.');
+        'Το DJ Set πρέπει να παραδίδεται σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>. Το αρχείο πρέπει να έχει καθαρή, συνεπή στάθμη χωρίς clipping ή εμφανές distortion.');
 
     $body .= deseo_mylive_email_section('07', 'Μουσική ταυτότητα',
         'Το set πρέπει να εκφράζει το προσωπικό σου sound και να παραμένει συμβατό με τη φιλοσοφία του Deseo Radio: <strong style="color:#fff;">House · Afro House · Organic House · Deep House · Melodic House · Electronica · sophisticated electronic sound</strong>. Δεν χρησιμοποιούνται εν γνώσει σου leaked, παράνομα ή μη εξουσιοδοτημένα recordings. Ισχύουν επίσης οι όροι της Season 6 για δικαιώματα και AI-generated musical works / recordings.');
@@ -547,7 +547,7 @@ function deseo_mylive_technical_email(array $account): array {
         . "Ιδανική διάρκεια set: 58–59 λεπτά. Σε manual περικοπή: 8-second fade out.\n"
         . "Exclusive set: Personal DJ Spot στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
         . "Naming: ARTISTNAME_DESEO_S06_EP001 — το MyLive το δημιουργεί αυτόματα.\n"
-        . "Format: MP3 320 kbps Stereo ή WAV Stereo.\n"
+        . "Format: MP3 192 kbps Stereo.\n"
         . "Artwork και branded DJ spots παραδίδονται μέσα από το MyLive.\n"
         . "Η ανακοίνωση στα προσωπικά social media με mention / collaboration του Deseo Radio αποτελεί μέρος της συμμετοχής.\n"
         . "Sponsor material απαιτεί προηγούμενη έγκριση.\n\n"
@@ -585,7 +585,7 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
         '<strong style="color:#fff;">' . $e($slot) . '</strong>. Το slot εμφανίζεται και μέσα στο προσωπικό dashboard.');
 
     $body .= deseo_mylive_email_section('02', 'Upload DJ Set',
-        'Μπαίνεις στο dashboard, πατάς <strong style="color:#fff;">+ Upload DJ Set</strong>, επιλέγεις MP3 ή WAV και κάνεις Upload. Δεν συμπληρώνεις episode number ή filename. Το MyLive δημιουργεί αυτόματα <strong style="color:#fff;">EP001 → EP002 → EP003</strong> και filenames όπως <strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong>.');
+        'Μπαίνεις στο dashboard, πατάς <strong style="color:#fff;">+ Upload DJ Set</strong>, επιλέγεις το τελικό <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong> αρχείο και κάνεις Upload. Δεν συμπληρώνεις episode number ή filename. Το MyLive δημιουργεί αυτόματα <strong style="color:#fff;">EP001 → EP002 → EP003</strong> και filenames όπως <strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong>.');
 
     $body .= deseo_mylive_email_section('03', 'Τα αρχεία από το Deseo Radio',
         'Στο <strong style="color:#fff;">Your Assets</strong> θα βρίσκεις ό,τι παραδίδει η ομάδα του Deseo Radio / <strong style="color:#fff;">ILUMA Digital Agency</strong>: προσωπικό Instagram / social artwork, Personal DJ Imaging, _30 Imaging και οποιοδήποτε πρόσθετο promotional ή on-air asset.');
