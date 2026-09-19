@@ -404,6 +404,7 @@ endif;
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
+$currentAudienceMonthLabel = deseo_audience_month_label();
 $monthlyAudience = deseo_audience_monthly_listeners($pdo);
 $estimatedReach = deseo_audience_estimated_reach($pdo, $account);
 $dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
@@ -466,7 +467,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         <article class="dj-metric-card dj-metric-reach">
             <span>ΣΕ ΑΚΟΥΣΑΝ</span>
             <strong><?= $monthlyAudience > 0 ? '~' . deseo_mylive_e(deseo_audience_format($estimatedReach)) : '—' ?></strong>
-            <small><?= $monthlyAudience > 0 ? 'εκτιμώμενη απήχηση ανά show' : 'audience estimate σύντομα' ?></small>
+            <small><?= $monthlyAudience > 0 ? 'εκτιμώμενη απήχηση · ' . deseo_mylive_e($currentAudienceMonthLabel) : 'Δεν έχει καταχωρηθεί ακόμη audience για ' . deseo_mylive_e($currentAudienceMonthLabel) ?></small>
         </article>
     </section>
 
