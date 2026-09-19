@@ -296,6 +296,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $pdo->beginTransaction();
                 try {
+                    $pdo->prepare("UPDATE program SET mylive_account_id = NULL WHERE mylive_account_id = ?")
+                        ->execute([$accountId]);
                     $pdo->prepare("DELETE FROM dj_portal_accounts WHERE id = ?")->execute([$accountId]);
                     $pdo->commit();
                 } catch (Throwable $deleteError) {
