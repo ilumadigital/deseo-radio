@@ -88,6 +88,10 @@ function program_normalize_photo_reference(string $value): string {
     $value = trim($value);
     if ($value === '') return '';
 
+    if (strlen($value) > 1000) {
+        throw new RuntimeException('Το image link είναι πολύ μεγάλο.');
+    }
+
     if (preg_match('~^https?://~i', $value)) {
         $url = filter_var($value, FILTER_VALIDATE_URL);
         if (!$url) {
@@ -123,41 +127,47 @@ function program_media_library_collect(string $absoluteRoot, string $publicBase,
     if (!$rootReal || !is_dir($rootReal)) return [];
 
     $items = [];
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($rootReal, FilesystemIterator::SKIP_DOTS)
-    );
 
-    foreach ($iterator as $file) {
-        if (!$file instanceof SplFileInfo || !$file->isFile()) continue;
-
-        $extension = strtolower($file->getExtension());
-        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) continue;
-
-        $real = $file->getRealPath();
-        if (!$real || !str_starts_with($real, $rootReal . DIRECTORY_SEPARATOR)) continue;
-
-        $relative = ltrim(substr($real, strlen($rootReal)), DIRECTORY_SEPARATOR);
-        $relative = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
-        if ($relative === '' || str_contains($relative, '/.')) continue;
-
-        $segments = array_map(
-            static fn(string $segment): string => rawurlencode($segment),
-            explode('/', $relative)
+    try {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($rootReal, FilesystemIterator::SKIP_DOTS)
         );
-        $url = rtrim($publicBase, '/') . '/' . implode('/', $segments);
 
-        $relativeFolder = dirname($relative);
-        $folder = $relativeFolder === '.'
-            ? $rootLabel
-            : $rootLabel . ' / ' . str_replace('/', ' / ', $relativeFolder);
+        foreach ($iterator as $file) {
+            if (!$file instanceof SplFileInfo || !$file->isFile()) continue;
 
-        $items[] = [
-            'url' => $url,
-            'name' => basename($relative),
-            'folder' => $folder,
-            'mtime' => (int)$file->getMTime(),
-            'size' => (int)$file->getSize(),
-        ];
+            $extension = strtolower($file->getExtension());
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) continue;
+
+            $real = $file->getRealPath();
+            if (!$real || !str_starts_with($real, $rootReal . DIRECTORY_SEPARATOR)) continue;
+
+            $relative = ltrim(substr($real, strlen($rootReal)), DIRECTORY_SEPARATOR);
+            $relative = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
+            if ($relative === '' || str_contains($relative, '/.')) continue;
+
+            $segments = array_map(
+                static fn(string $segment): string => rawurlencode($segment),
+                explode('/', $relative)
+            );
+            $url = rtrim($publicBase, '/') . '/' . implode('/', $segments);
+
+            $relativeFolder = dirname($relative);
+            $folder = $relativeFolder === '.'
+                ? $rootLabel
+                : $rootLabel . ' / ' . str_replace('/', ' / ', $relativeFolder);
+
+            $items[] = [
+                'url' => $url,
+                'name' => basename($relative),
+                'folder' => $folder,
+                'mtime' => (int)$file->getMTime(),
+                'size' => (int)$file->getSize(),
+            ];
+        }
+    } catch (Throwable $mediaScanError) {
+        error_log('Program media browser scan failed for ' . $rootLabel . ': ' . $mediaScanError->getMessage());
+        return [];
     }
 
     return $items;
