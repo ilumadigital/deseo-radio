@@ -270,7 +270,7 @@ if (!deseo_mylive_logged_in()):
 
             <label>
                 <span>Email</span>
-                <input type="email" name="email" autocomplete="email" required autofocus>
+                <input type="email" name="email" autocomplete="username" inputmode="email" required autofocus>
             </label>
 
             <label>
@@ -345,9 +345,19 @@ if (!empty($account['must_change_password'])):
 
         <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
 
-        <form method="post" class="password-form">
+        <form method="post" class="password-form" autocomplete="on">
             <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
             <input type="hidden" name="action" value="change_password">
+
+            <label>
+                <span>Email</span>
+                <input type="email"
+                       name="email"
+                       value="<?= deseo_mylive_e($account['email']) ?>"
+                       autocomplete="username"
+                       inputmode="email"
+                       readonly>
+            </label>
 
             <label>
                 <span>New password</span>
@@ -365,7 +375,7 @@ if (!empty($account['must_change_password'])):
                 </div>
             </label>
 
-            <small>Τουλάχιστον 8 χαρακτήρες. Ο νέος κωδικός αντικαθιστά οριστικά το temporary password.</small>
+            <small>Τουλάχιστον 8 χαρακτήρες. Αποθήκευσε το email και τον νέο κωδικό στον browser / password manager σου για την επόμενη σύνδεση.</small>
             <button class="primary-button" type="submit">Save & open MyLive</button>
         </form>
     </section>
