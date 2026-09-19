@@ -1,7 +1,24 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/admin-ui.php';
+
+deseo_mylive_bootstrap($pdo);
+
+$profileAccountsStmt = $pdo->query(
+    "SELECT id, artist_name, email
+     FROM dj_portal_accounts
+     WHERE is_active = 1
+       AND account_status = 'active'
+       AND public_profile_enabled = 1
+     ORDER BY artist_name ASC, id ASC"
+);
+$profileAccounts = $profileAccountsStmt->fetchAll(PDO::FETCH_ASSOC);
+$profileAccountIds = array_fill_keys(
+    array_map(static fn(array $row): int => (int)$row['id'], $profileAccounts),
+    true
+);
 
 $days = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',6=>'Σάββατο',7=>'Κυριακή'];
 $dayShort = [1=>'ΔΕΥ',2=>'ΤΡΙ',3=>'ΤΕΤ',4=>'ΠΕΜ',5=>'ΠΑΡ',6=>'ΣΑΒ',7=>'ΚΥΡ'];
@@ -179,6 +196,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'save') {
             $djName = trim((string)($_POST['dj_name'] ?? ''));
+            $myliveAccountRaw = trim((string)($_POST['mylive_account_id'] ?? ''));
+            $myliveAccountId = $myliveAccountRaw === ''
+                ? null
+                : filter_var($myliveAccountRaw, FILTER_VALIDATE_INT);
             $allDay = !empty($_POST['all_day']);
             $startTime = $allDay ? '00:00' : trim((string)($_POST['start_time'] ?? ''));
             $endTime = $allDay ? '23:59' : trim((string)($_POST['end_time'] ?? ''));
@@ -197,6 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($djName === '' || mb_strlen($djName) > 255) {
                 $error = 'Συμπληρώστε έγκυρο όνομα DJ / εκπομπής.';
+            } elseif ($myliveAccountRaw !== '' && (!$myliveAccountId || !isset($profileAccountIds[(int)$myliveAccountId]))) {
+                $error = 'Το επιλεγμένο MyLive DJ Profile δεν είναι διαθέσιμο.';
             } elseif (!$allDay && (!valid_time($startTime) || !valid_time($endTime))) {
                 $error = 'Συμπληρώστε έγκυρες ώρες έναρξης και λήξης.';
             } elseif (!$allDay && $startTime === $endTime) {
@@ -292,12 +315,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($editRow) {
                         $stmt = $pdo->prepare(
                             "UPDATE program
-                             SET dj_name = ?, photo_path = ?, start_time = ?, end_time = ?
+                             SET dj_name = ?, photo_path = ?, mylive_account_id = ?, start_time = ?, end_time = ?
                              WHERE id = ? AND day_of_week = ?"
                         );
                         $stmt->execute([
                             $djName,
                             $photoPath,
+                            $myliveAccountId ? (int)$myliveAccountId : null,
                             $startTime . ':00',
                             $endTime . ':00',
                             (int)$editId,
@@ -305,13 +329,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ]);
                     } else {
                         $stmt = $pdo->prepare(
-                            "INSERT INTO program (dj_name, photo_path, day_of_week, start_time, end_time)
-                             VALUES (?, ?, ?, ?, ?)"
+                            "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
+                             VALUES (?, ?, ?, ?, ?, ?)"
                         );
                         foreach ($targetDays as $targetDay) {
                             $stmt->execute([
                                 $djName,
                                 $photoPath,
+                                $myliveAccountId ? (int)$myliveAccountId : null,
                                 $targetDay,
                                 $startTime . ':00',
                                 $endTime . ':00'
@@ -404,6 +429,7 @@ if ($editRequest) {
 }
 
 $formName = $editRecord ? (string)$editRecord['dj_name'] : '';
+$formMyLiveAccountId = $editRecord ? (int)($editRecord['mylive_account_id'] ?? 0) : 0;
 $formStart = $editRecord ? substr((string)$editRecord['start_time'], 0, 5) : '';
 $formEnd = $editRecord ? substr((string)$editRecord['end_time'], 0, 5) : '';
 $formAllDay = $editRecord
@@ -413,6 +439,7 @@ $formDays = $editRecord ? [$selectedDay] : [$selectedDay];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save' && $error !== null) {
     $formName = trim((string)($_POST['dj_name'] ?? ''));
+    $formMyLiveAccountId = (int)($_POST['mylive_account_id'] ?? 0);
     $formAllDay = !empty($_POST['all_day']);
     $formStart = trim((string)($_POST['start_time'] ?? ''));
     $formEnd = trim((string)($_POST['end_time'] ?? ''));
@@ -500,6 +527,19 @@ admin_page_start('Radio Program', 'program');
                            maxlength="255"
                            value="<?= admin_e($formName) ?>"
                            required>
+                </div>
+
+                <div class="field full">
+                    <label for="mylive_account_id">DJ Profile / MyLive · optional</label>
+                    <select id="mylive_account_id" name="mylive_account_id">
+                        <option value="">No public DJ profile · autopilot / generic show</option>
+                        <?php foreach ($profileAccounts as $profileAccount): ?>
+                            <option value="<?= (int)$profileAccount['id'] ?>" <?= $formMyLiveAccountId === (int)$profileAccount['id'] ? 'selected' : '' ?>>
+                                <?= admin_e($profileAccount['artist_name']) ?> · <?= admin_e($profileAccount['email']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small class="field-help">Αν μείνει κενό, το πρόγραμμα λειτουργεί ακριβώς όπως τώρα και δεν ανοίγει DJ profile modal.</small>
                 </div>
 
                 <?php if (!$editRecord): ?>
@@ -604,7 +644,10 @@ admin_page_start('Radio Program', 'program');
                         <div class="program-row-copy">
                             <span class="program-time"><?= substr((string)$item['start_time'],0,5) ?> — <?= substr((string)$item['end_time'],0,5) ?></span>
                             <h3><?= admin_e($item['dj_name']) ?></h3>
-                            <small><?= $weeklyOccurrences ?> <?= $weeklyOccurrences === 1 ? 'slot' : 'slots' ?> this week</small>
+                            <small>
+                                <?= $weeklyOccurrences ?> <?= $weeklyOccurrences === 1 ? 'slot' : 'slots' ?> this week
+                                <?php if (!empty($item['mylive_account_id'])): ?> · MyLive profile linked<?php endif; ?>
+                            </small>
                         </div>
 
                         <div class="program-row-actions">
