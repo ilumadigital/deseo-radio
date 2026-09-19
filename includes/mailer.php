@@ -429,9 +429,9 @@ function deseo_dj_rejected_email(array $booking): array {
 function deseo_mylive_email_section(string $number, string $title, string $html): string {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     return '<tr><td style="padding:0 0 22px;">'
-        . '<div style="color:#ff2b36;font:800 10px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px;">' . $e($number) . '</div>'
-        . '<div style="color:#ffffff;font:800 19px/1.25 Arial,sans-serif;margin-bottom:9px;">' . $e($title) . '</div>'
-        . '<div style="color:#aaaab0;font:400 13px/1.72 Arial,sans-serif;">' . $html . '</div>'
+        . '<div style="color:#ff2b36;font:800 11px Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;margin-bottom:8px;">' . $e($number) . '</div>'
+        . '<div style="color:#ffffff;font:800 20px/1.28 Arial,sans-serif;margin-bottom:10px;">' . $e($title) . '</div>'
+        . '<div style="color:#b5b5bb;font:400 14px/1.76 Arial,sans-serif;">' . $html . '</div>'
         . '</td></tr>';
 }
 
@@ -453,16 +453,15 @@ function deseo_mylive_email_shell(
     }
 
     return '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">'
-        . '<style>@media only screen and (max-width:620px){.d-wrap{padding:12px!important}.d-card{border-radius:18px!important}.d-head,.d-body{padding:24px 20px!important}.d-title{font-size:29px!important;line-height:1.02!important}.d-logo{width:150px!important}.d-credentials td{display:block!important;width:100%!important;padding:8px 0!important}.d-credential-value{font-size:17px!important;word-break:break-word!important}}</style>'
+        . '<style>@media only screen and (max-width:620px){.d-wrap{padding:12px!important}.d-card{border-radius:18px!important}.d-head,.d-body{padding:25px 20px!important}.d-title{font-size:32px!important;line-height:1.06!important}.d-logo{width:156px!important}.d-intro{font-size:16px!important;line-height:1.72!important}.d-eyebrow{font-size:11px!important}.d-credentials td{display:block!important;width:100%!important;padding:9px 0!important}.d-credential-value{font-size:18px!important;word-break:break-word!important}}</style>'
         . '</head><body style="margin:0;padding:0;background:#050505;color:#ffffff;">'
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-wrap" style="width:100%;background:#050505;padding:30px 12px;"><tr><td align="center">'
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-card" style="width:100%;max-width:690px;background:#0c0c0e;border:1px solid #252529;border-radius:26px;overflow:hidden;">'
         . '<tr><td class="d-head" style="padding:32px 30px 28px;background:linear-gradient(145deg,#121214,#0b0b0d);border-bottom:1px solid #252529;">'
         . '<img class="d-logo" src="https://deseoradio.com/assets/img/deseoradio-logo.png" width="184" alt="Deseo Radio" style="display:block;width:184px;max-width:100%;height:auto;margin:0 0 27px;">'
-        . '<div style="display:inline-block;padding:6px 9px;border:1px solid #5b161d;border-radius:999px;color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">DESEO RADIO</div>'
-        . '<div style="margin-top:15px;color:#ff2b36;font:800 10px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;">' . $e($eyebrow) . '</div>'
-        . '<h1 class="d-title" style="margin:9px 0 13px;color:#fff;font:800 36px/1.02 Arial,sans-serif;letter-spacing:-.035em;">' . $e($title) . '</h1>'
-        . '<p style="margin:0;max-width:580px;color:#aaaab0;font:400 15px/1.68 Arial,sans-serif;">' . $e($intro) . '</p>'
+        . '<div class="d-eyebrow" style="margin-top:4px;color:#ff2b36;font:800 11px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">' . $e($eyebrow) . '</div>'
+        . '<h1 class="d-title" style="margin:11px 0 15px;color:#fff;font:800 40px/1.05 Arial,sans-serif;letter-spacing:-.035em;">' . $e($title) . '</h1>'
+        . '<p class="d-intro" style="margin:0;max-width:590px;color:#b4b4ba;font:400 17px/1.72 Arial,sans-serif;">' . $e($intro) . '</p>'
         . '</td></tr>'
         . '<tr><td class="d-body" style="padding:30px;">'
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">' . $body . '</table>'
@@ -695,16 +694,16 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $section = static function(string $kicker, string $title, string $content) use ($e): string {
         return '<tr><td style="padding:0 0 14px;">'
             . '<div style="padding:20px 20px 19px;border:1px solid #242428;border-radius:18px;background:#101012;">'
-            . '<div style="margin-bottom:7px;color:#ff3944;font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">' . $e($kicker) . '</div>'
-            . '<div style="margin-bottom:9px;color:#fff;font:800 18px/1.25 Arial,sans-serif;">' . $e($title) . '</div>'
-            . '<div style="color:#aaaab0;font:400 13px/1.72 Arial,sans-serif;">' . $content . '</div>'
+            . '<div style="margin-bottom:8px;color:#ff3944;font:800 10px Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;">' . $e($kicker) . '</div>'
+            . '<div style="margin-bottom:10px;color:#fff;font:800 20px/1.28 Arial,sans-serif;">' . $e($title) . '</div>'
+            . '<div style="color:#b4b4ba;font:400 14px/1.76 Arial,sans-serif;">' . $content . '</div>'
             . '</div></td></tr>';
     };
 
     $bullet = static function(string $text): string {
         return '<tr>'
-            . '<td width="18" valign="top" style="padding:0 0 8px;color:#ff3944;font:700 14px Arial,sans-serif;">•</td>'
-            . '<td valign="top" style="padding:0 0 8px;color:#b4b4ba;font:400 13px/1.58 Arial,sans-serif;">' . $text . '</td>'
+            . '<td width="20" valign="top" style="padding:0 0 9px;color:#ff3944;font:700 15px Arial,sans-serif;">•</td>'
+            . '<td valign="top" style="padding:0 0 9px;color:#bdbdc2;font:400 14px/1.62 Arial,sans-serif;">' . $text . '</td>'
             . '</tr>';
     };
 
@@ -718,8 +717,8 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $body = '<tr><td style="padding:0 0 18px;">'
         . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
-        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.08em;">Παίζεις στον Deseo κάθε:</div>'
-        . '<div style="margin-top:7px;font:800 25px/1.15 Arial,sans-serif;">' . $e($slot) . '</div>'
+        . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">Παίζεις στον Deseo κάθε:</div>'
+        . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($slot) . '</div>'
         . '</div></td></tr>';
 
     $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
@@ -791,13 +790,13 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $credentials = '<tr><td style="padding:8px 0 0;">'
         . '<div style="padding:23px;border:1px solid #5a171e;border-radius:20px;background:#160b0d;">'
         . '<div style="color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">MYLIVE ACCESS</div>'
-        . '<div style="margin:7px 0 6px;color:#fff;font:800 22px/1.2 Arial,sans-serif;">Τα προσωρινά στοιχεία πρόσβασής σου</div>'
-        . '<div style="margin-bottom:18px;color:#a9a9af;font:400 12px/1.65 Arial,sans-serif;">Χρησιμοποίησέ τα για την πρώτη σύνδεση. Αμέσως μετά, το MyLive θα σου ζητήσει να δημιουργήσεις τον δικό σου προσωπικό κωδικό πρόσβασης.</div>'
+        . '<div style="margin:8px 0 7px;color:#fff;font:800 23px/1.24 Arial,sans-serif;">Τα προσωρινά στοιχεία πρόσβασής σου</div>'
+        . '<div style="margin-bottom:19px;color:#b1b1b7;font:400 14px/1.7 Arial,sans-serif;">Χρησιμοποίησέ τα για την πρώτη σύνδεση. Αμέσως μετά, το MyLive θα σου ζητήσει να δημιουργήσεις τον δικό σου προσωπικό κωδικό πρόσβασης.</div>'
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-credentials" style="border:1px solid #2c2c31;border-radius:15px;background:#0b0b0d;">'
-        . '<tr><td style="padding:14px 16px;border-bottom:1px solid #252529;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;width:34%;">Email</td>'
-        . '<td class="d-credential-value" style="padding:14px 16px;border-bottom:1px solid #252529;color:#fff;font:700 15px Arial,sans-serif;">' . $e($email) . '</td></tr>'
-        . '<tr><td style="padding:14px 16px;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Temporary password</td>'
-        . '<td class="d-credential-value" style="padding:14px 16px;color:#fff;font:800 17px Arial,sans-serif;letter-spacing:.03em;">' . $e($temporaryPassword) . '</td></tr>'
+        . '<tr><td style="padding:15px 16px;border-bottom:1px solid #252529;color:#7f7f86;font:800 10px Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;width:34%;">Email</td>'
+        . '<td class="d-credential-value" style="padding:15px 16px;border-bottom:1px solid #252529;color:#fff;font:700 17px Arial,sans-serif;">' . $e($email) . '</td></tr>'
+        . '<tr><td style="padding:15px 16px;color:#7f7f86;font:800 10px Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;">Temporary password</td>'
+        . '<td class="d-credential-value" style="padding:15px 16px;color:#fff;font:800 19px Arial,sans-serif;letter-spacing:.03em;">' . $e($temporaryPassword) . '</td></tr>'
         . '</table>'
         . '<div style="margin-top:17px;color:#c9aeb1;font:400 12px/1.65 Arial,sans-serif;">'
         . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> δημιούργησε τον δικό σου password και αποθήκευσέ τον στον browser / password manager μαζί με το email σου, ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.'
@@ -814,7 +813,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         : 'Deseo Radio Season 6 · MyLive access & οδηγίες DJ';
 
     $html = deseo_mylive_email_shell(
-        'DESEO RADIO · SEASON 6 · MYLIVE',
+        'SEASON 6 · MYLIVE',
         $reset ? 'Το νέο MyLive access σου.' : 'Καλώς ήρθες στο MyLive.',
         $reset
             ? $artist . ', εκδώσαμε νέο προσωρινό κωδικό πρόσβασης. Παρακάτω θα βρεις ξανά συγκεντρωμένες και τις οδηγίες της Season 6.'
