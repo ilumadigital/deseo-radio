@@ -130,12 +130,11 @@ admin_page_start('Audience', 'audience');
         <div class="audience-preview-grid">
             <?php foreach ($previews as $preview): ?>
                 <?php
-                $previewReach = deseo_audience_preview(
+                $previewReach = deseo_audience_band_baseline(
                     $monthlyListeners,
                     5,
                     $preview['start'],
-                    $preview['end'],
-                    $preview['seed']
+                    $preview['end']
                 );
                 ?>
                 <div class="audience-preview">
@@ -147,7 +146,7 @@ admin_page_start('Audience', 'audience');
         </div>
 
         <div class="audience-method-note">
-            Το estimate δεν αλλάζει σε κάθε refresh. Χρησιμοποιεί σταθερή μηνιαία διακύμανση ±6% ανά DJ, ώστε το αποτέλεσμα να είναι φυσικό αλλά συνεπές μέσα στον ίδιο μήνα.
+            Οι παραπάνω ζώνες εμφανίζονται ως 1-hour equivalent για σωστή σύγκριση μεταξύ διαφορετικών time bands. Στο πραγματικό MyLive estimate εφαρμόζεται επιπλέον σταθερή μηνιαία διακύμανση ±6% ανά DJ, ώστε το αποτέλεσμα να παραμένει φυσικό αλλά συνεπές μέσα στον ίδιο μήνα.
         </div>
     </article>
 </section>
