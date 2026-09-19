@@ -115,8 +115,12 @@ endif;
 require_once __DIR__ . '/admin-ui.php';
 require_once __DIR__ . '/../includes/dj-season.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
+require_once __DIR__ . '/../includes/audience.php';
 dj_season_bootstrap($pdo);
 deseo_mylive_bootstrap($pdo);
+deseo_audience_bootstrap($pdo);
+
+$monthlyAudience = deseo_audience_monthly_listeners($pdo);
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
@@ -163,13 +167,15 @@ admin_page_start('Overview', 'dashboard');
     <div class="stat"><strong><?= $playlistCount ?></strong><span>Playlists</span></div>
     <div class="stat"><strong><?= $djApplicationCount ?></strong><span>Season 6 DJs</span></div>
     <div class="stat"><strong><?= $myLiveAccountCount ?></strong><span>MyLive accounts</span></div>
+    <div class="stat"><strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong><span>Monthly listeners</span></div>
 </section>
 
 <section class="quick-grid">
     <a class="quick-card" href="airplay.php"><small>Weekly rotation</small><h2>Airplay Top 10</h2><p>Ανανέωσε Spotify tracks, artwork και ranking.</p></a>
     <a class="quick-card" href="program.php"><small>Live schedule</small><h2>Radio Program</h2><p>Διαχειρίσου DJs, ημέρες, ώρες και φωτογραφίες.</p></a>
     <a class="quick-card" href="dj-season.php"><small>Season 6 onboarding</small><h2>DJ Applications</h2><p>Δες submissions, slots, φωτογραφίες, bios και acceptance records.</p></a>
-    <a class="quick-card" href="mylive.php"><small>DJ delivery workspace</small><h2>MyLive</h2><p>Accounts, IMPORTANT emails, DJ Sets, artwork και branded imaging.</p></a>
+    <a class="quick-card" href="mylive.php"><small>DJ delivery workspace</small><h2>MyLive</h2><p>Accounts, onboarding, DJ Sets, artwork και branded imaging.</p></a>
+    <a class="quick-card" href="audience.php"><small>Estimated DJ reach</small><h2>Audience</h2><p>Όρισε monthly listeners και έλεγξε την εκτιμώμενη απήχηση ανά MyLive slot.</p></a>
     <a class="quick-card" href="playlists.php"><small>Spotify curation</small><h2>Playlists</h2><p>Πρόσθεσε Spotify playlists, covers και σειρά εμφάνισης.</p></a>
 </section>
 <?php admin_page_end(); ?>
