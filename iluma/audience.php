@@ -26,7 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string)($_POST['action'] ?? 'save_audience');
 
         try {
-            if ($action === 'toggle_all_stats') {
+            if ($action === 'send_test_report') {
+                $testResult = deseo_audience_send_test_report($pdo);
+                $notice = 'Το test monthly report στάλθηκε αποκλειστικά στο greg@iluma.gr για '
+                    . deseo_audience_month_label((string)($testResult['month'] ?? deseo_audience_current_month_key()))
+                    . '.';
+            } elseif ($action === 'toggle_all_stats') {
                 $visible = (int)($_POST['visible'] ?? 0) === 1 ? 1 : 0;
 
                 $stmt = $pdo->prepare(
@@ -116,12 +121,19 @@ $previews = [
 
 admin_page_start('Audience', 'audience');
 ?>
-<div class="page-heading">
+<div class="page-heading audience-page-heading">
     <div>
         <span>Deseo Radio · Reach model</span>
         <h1>Audience · <?= admin_e($currentMonthLabel) ?></h1>
         <p>Όρισε την ακροαματικότητα του τρέχοντος μήνα. Το MyLive χρησιμοποιεί το audience του <?= admin_e($currentMonthLabel) ?> μαζί με ημέρα, ώρα και διάρκεια slot για να εμφανίζει εκτιμώμενο reach σε κάθε DJ.</p>
     </div>
+
+    <form method="post" class="audience-test-report-form" onsubmit="return confirm('Να σταλεί test Monthly Audience Report αποκλειστικά στο greg@iluma.gr;');">
+        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+        <input type="hidden" name="action" value="send_test_report">
+        <button class="button button-secondary" type="submit">Send test report</button>
+        <small>greg@iluma.gr only</small>
+    </form>
 </div>
 
 <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
