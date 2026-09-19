@@ -715,3 +715,13 @@ body.schedule-modal-open{overflow:hidden}
   .schedule-modal-actions .button{width:100%}
   .schedule-modal-actions form{width:100%}
 }
+
+
+/* PROGRAM -> MYLIVE PROFILE LINK */
+.field-help{
+  display:block;
+  margin-top:1px;
+  color:#5f5f5a;
+  font-size:9px;
+  line-height:1.5;
+}
