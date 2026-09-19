@@ -434,10 +434,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
 
-                if ($status === 'broadcasted' && !empty($updatedSet['delete_after']) && empty($updatedSet['file_deleted_at'])) {
-                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το audio file θα διαγραφεί αυτόματα στις '
-                        . date('d.m.Y · H:i', strtotime((string)$updatedSet['delete_after']))
-                        . ', ενώ το episode θα παραμείνει στη βάση.';
+                if ($status === 'broadcasted' && !empty($updatedSet['file_deleted_at'])) {
+                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED και το audio file διαγράφηκε αμέσως από τον server. Το episode παραμένει κανονικά στη βάση και στο MyLive ιστορικό.';
                 } elseif (!empty($updatedSet['file_deleted_at'])) {
                     $notice = 'Το status ενημερώθηκε. Το audio file έχει ήδη αφαιρεθεί από τον server και το episode παραμένει στο ιστορικό.';
                 } else {
@@ -859,8 +857,6 @@ admin_page_start('MyLive', 'mylive');
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                                     <em>Episode retained · audio file deleted from server</em>
-                                                <?php elseif (!empty($set['delete_after'])): ?>
-                                                    <em>15-day retention · file removal <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['delete_after']))) ?></em>
                                                 <?php endif; ?>
                                             </div>
                                             <select name="status">
@@ -872,17 +868,9 @@ admin_page_start('MyLive', 'mylive');
 
                                             <?php if (!empty($set['file_deleted_at'])): ?>
                                                 <span class="mylive-retention-state is-deleted">
-                                                    FILE REMOVED · <?= admin_e(date('d.m.Y', strtotime((string)$set['file_deleted_at']))) ?>
-                                                </span>
-                                            <?php elseif (!empty($set['delete_after'])): ?>
-                                                <span class="mylive-retention-state">
-                                                    REMOVE <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['delete_after']))) ?>
+                                                    FILE REMOVED · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['file_deleted_at']))) ?>
                                                 </span>
                                             <?php else: ?>
-                                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
-                                            <?php endif; ?>
-
-                                            <?php if (empty($set['file_deleted_at']) && !empty($set['delete_after'])): ?>
                                                 <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
                                             <?php endif; ?>
 
