@@ -4,7 +4,7 @@ require_once __DIR__ . '/i18n.php';
 
 $meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου! | House Music";
 $meta_desc = $meta_desc ?? "Άκου live το δεσεο radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Ζωντανά από το Αιγάλεω σε όλο τον κόσμο.";
-$meta_keywords = $meta_keywords ?? "ραδιόφωνο, δεσεο, deseo, radio, house music";
+$meta_keywords = $meta_keywords ?? "deseo radio, ραδιόφωνο, δεσεο, deseo, radio, house music, afro house, fly104, best radio, radio must, house radio, online radio, internet radio, live radio, web radio, greek radio, athens radio, electronic radio, electronic music, deep house, organic house, tech house, melodic house, dance radio, dj radio, house music radio, afro house radio, 24/7 radio, radio streaming, live streaming radio, music radio";
 $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
 $meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
 $meta_image_path = __DIR__ . '/../assets/img/deseoradio-seo-branded.png';
