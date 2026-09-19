@@ -258,3 +258,18 @@ fieldset:disabled{opacity:.55}
   .audience-visibility-form{grid-column:1/-1}
   .audience-visibility-form .button{width:100%}
 }
+
+
+/* AUDIENCE GLOBAL CONTROLS */
+.audience-panel-head{align-items:center}
+.audience-global-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.audience-global-actions form{margin:0}
+.audience-global-actions .button{min-height:38px;padding:0 13px;font-size:8px}
+@media(max-width:760px){
+  .audience-panel-head{align-items:stretch;flex-direction:column}
+  .audience-global-actions{display:grid;grid-template-columns:1fr 1fr}
+  .audience-global-actions .button{width:100%}
+}
+@media(max-width:520px){
+  .audience-global-actions{grid-template-columns:1fr}
+}
