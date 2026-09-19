@@ -35,7 +35,7 @@ if (!$fileRow) {
 
 if ($type === 'set' && !empty($fileRow['file_deleted_at'])) {
     http_response_code(410);
-    exit('The audio file has been removed after the 15-day BROADCASTED retention period. The episode remains in MyLive history.');
+    exit('The audio file was removed when the DJ Set was marked BROADCASTED. The episode remains in MyLive history.');
 }
 
 $relative = ltrim((string)$fileRow['file_path'], '/');
