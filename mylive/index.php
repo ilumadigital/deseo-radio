@@ -9,6 +9,12 @@ deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
 
+try {
+    deseo_mylive_cleanup_broadcasted_sets($pdo);
+} catch (Throwable $retentionError) {
+    error_log('MyLive DJ retention cleanup failed: ' . $retentionError->getMessage());
+}
+
 if (!headers_sent()) {
     header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
     header('Cache-Control: private, no-store, no-cache, must-revalidate', true);
