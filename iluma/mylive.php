@@ -8,6 +8,12 @@ require_once __DIR__ . '/admin-ui.php';
 
 deseo_mylive_bootstrap($pdo);
 
+try {
+    deseo_mylive_cleanup_broadcasted_sets($pdo);
+} catch (Throwable $retentionError) {
+    error_log('MyLive admin retention cleanup failed: ' . $retentionError->getMessage());
+}
+
 // Backfill / sync any Season 6 DJs that were already approved before the
 // pending-access workflow was introduced.
 try {
