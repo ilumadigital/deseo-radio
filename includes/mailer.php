@@ -652,6 +652,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . $bullet('<strong style="color:#fff;">58–59 λεπτά</strong> ιδανική διάρκεια για το ωριαίο slot.')
         . $bullet('Παράδοση σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>.')
         . $bullet('Το <strong style="color:#fff;">MyLive αριθμεί και μετονομάζει αυτόματα</strong> κάθε επεισόδιο.')
+        . $bullet('Στο dashboard βλέπεις <strong style="color:#fff;">πόσοι σε άκουσαν, πόσα episodes έχεις ανεβάσει και πόσα assets έχεις διαθέσιμα</strong>.')
         . $bullet('Artwork και branded DJ spots κατεβαίνουν από το <strong style="color:#fff;">MyLive</strong>.')
         . '</table>';
 
@@ -662,6 +663,18 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '</div></td></tr>';
 
     $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
+
+    $dashboard = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
+        . $bullet('<strong style="color:#fff;">Σε άκουσαν</strong> — βλέπεις την εκτιμώμενη απήχηση του show σου για τον τελευταίο ολοκληρωμένο μήνα, όταν τα στοιχεία είναι διαθέσιμα.')
+        . $bullet('<strong style="color:#fff;">Episodes</strong> — βλέπεις πόσα DJ Sets έχεις ήδη ανεβάσει στο MyLive.')
+        . $bullet('<strong style="color:#fff;">Your Assets</strong> — βλέπεις πόσα προσωπικά artwork, audio spots και άλλα αρχεία έχεις διαθέσιμα.')
+        . '</table>';
+
+    $body .= $section('YOUR MYLIVE DASHBOARD', 'Όλα για το show σου σε ένα σημείο',
+        'Μπαίνοντας στο MyLive θα βλέπεις πλέον μια απλή εικόνα του show σου:<br><br>'
+        . $dashboard
+        . '<div style="margin-top:7px;color:#77777e;font:400 11px/1.6 Arial,sans-serif;">Τα audience statistics ανανεώνονται όταν υπάρχουν διαθέσιμα στοιχεία για τον ολοκληρωμένο μήνα.</div>'
+    );
 
     $body .= $section('DJ SET DELIVERY', 'Διάρκεια & τελικό αρχείο',
         'Το slot σου είναι ωριαίο και η ιδανική διάρκεια του set είναι περίπου <strong style="color:#fff;">58–59 λεπτά</strong>. '
@@ -743,7 +756,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         $reset ? 'Το νέο MyLive access σου.' : 'Καλώς ήρθες στο MyLive.',
         $reset
             ? $artist . ', εκδώσαμε νέο προσωρινό κωδικό πρόσβασης. Παρακάτω θα βρεις ξανά συγκεντρωμένες και τις οδηγίες της Season 6.'
-            : $artist . ', εδώ θα βρεις όλα όσα χρειάζεσαι για το DJ Set delivery, το προσωπικό σου imaging, τα promotional assets και την πρόσβασή σου στο MyLive.',
+            : $artist . ', εδώ θα βρεις όλα όσα χρειάζεσαι για το DJ Set delivery, το προσωπικό σου imaging, τα promotional assets, τα βασικά στατιστικά του show σου και την πρόσβασή σου στο MyLive.',
         $body
     );
 
@@ -753,6 +766,8 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
+        . "MyLive dashboard: βλέπεις την εκτιμώμενη απήχηση του show σου, πόσα episodes έχεις ανεβάσει και πόσα προσωπικά assets έχεις διαθέσιμα.\n"
+        . "Audience stats: εμφανίζονται για τον τελευταίο ολοκληρωμένο μήνα, όταν υπάρχουν διαθέσιμα στοιχεία.\n"
         . "Exclusive set: Personal DJ Imaging στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
         . "Artwork και branded DJ spots: διαθέσιμα μέσα από το MyLive.\n"
         . "Social: ανακοίνωση της συμμετοχής, ιδανικά με Collaborator Post / mention Deseo Radio.\n"
