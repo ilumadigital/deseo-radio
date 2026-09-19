@@ -718,7 +718,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $body = '<tr><td style="padding:0 0 18px;">'
         . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
-        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">YOUR WEEKLY SLOT</div>'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.08em;">Παίζεις στον Deseo κάθε:</div>'
         . '<div style="margin-top:7px;font:800 25px/1.15 Arial,sans-serif;">' . $e($slot) . '</div>'
         . '</div></td></tr>';
 
