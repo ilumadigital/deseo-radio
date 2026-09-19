@@ -1,5 +1,10 @@
 # Public site crawl policy
+
 User-agent: *
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -8,7 +13,12 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 # Search engines
+
 User-agent: Googlebot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -17,6 +27,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Bingbot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -25,7 +39,12 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 # AI / model crawlers
+
 User-agent: GPTBot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -34,6 +53,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: OAI-SearchBot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -42,6 +65,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: ChatGPT-User
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -50,6 +77,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: ClaudeBot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -58,6 +89,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: anthropic-ai
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -66,6 +101,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Google-Extended
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -74,6 +113,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: PerplexityBot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -82,6 +125,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: CCBot
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -90,6 +137,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Bytespider
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -98,6 +149,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: meta-externalagent
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
@@ -106,6 +161,10 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Applebot-Extended
+Disallow: /iluma
+Disallow: /iluma/
+Disallow: /mylive
+Disallow: /mylive/
 Disallow: /djs
 Disallow: /djs/
 Disallow: /djs.php
