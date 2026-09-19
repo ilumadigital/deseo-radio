@@ -120,6 +120,7 @@ dj_season_bootstrap($pdo);
 deseo_mylive_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
 
+$currentAudienceMonthLabel = deseo_audience_month_label();
 $monthlyAudience = deseo_audience_monthly_listeners($pdo);
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
@@ -167,7 +168,7 @@ admin_page_start('Overview', 'dashboard');
     <div class="stat"><strong><?= $playlistCount ?></strong><span>Playlists</span></div>
     <div class="stat"><strong><?= $djApplicationCount ?></strong><span>Season 6 DJs</span></div>
     <div class="stat"><strong><?= $myLiveAccountCount ?></strong><span>MyLive accounts</span></div>
-    <div class="stat"><strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong><span>Monthly listeners</span></div>
+    <div class="stat"><strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong><span>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></span></div>
 </section>
 
 <section class="quick-grid">
