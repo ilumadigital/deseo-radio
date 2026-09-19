@@ -746,11 +746,6 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 
         <div class="mylive-station-grid">
             <article class="mylive-player-deck">
-                <div class="mylive-station-label">
-                    <span class="mylive-live-dot" aria-hidden="true"></span>
-                    <span>NOW PLAYING</span>
-                </div>
-
                 <div class="mylive-player-frame">
                     <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true"
                             width="100%"
