@@ -20,7 +20,7 @@ if (!$activeAccount) {
 
 $setId = (int)($_GET['id'] ?? 0);
 $stmt = $pdo->prepare(
-    "SELECT id, stored_name, file_path, file_size, mime_type
+    "SELECT id, stored_name, file_path, file_size, mime_type, file_deleted_at
      FROM dj_portal_sets
      WHERE id = ? AND account_id = ?
      LIMIT 1"
@@ -31,6 +31,11 @@ $set = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$set) {
     http_response_code(404);
     exit('File not found.');
+}
+
+if (!empty($set['file_deleted_at'])) {
+    http_response_code(410);
+    exit('The audio file has been removed after the 15-day BROADCASTED retention period. The episode remains in your MyLive history.');
 }
 
 $relative = ltrim((string)$set['file_path'], '/');
