@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/env.php';
+
 function deseo_env(string $key, string $default = ''): string {
     $value = getenv($key);
     return $value === false ? $default : trim((string)$value);
