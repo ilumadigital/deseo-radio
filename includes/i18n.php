@@ -99,6 +99,11 @@ function deseo_t(string $key): string {
             'partners.title' => 'Άκου Deseo παντού.',
             'partners.text' => 'Στο site, στο iRadios και σε επιλεγμένες radio platforms.',
 
+            'djcall.kicker' => 'DESEO RADIO · DJs CALL',
+            'djcall.title' => 'Γίνε το Soundtrack της ζωής τους.',
+            'djcall.text' => 'Το Deseo Radio ανοίγει τη Season 6 σε DJs που έχουν δικό τους ήχο. Στείλε το profile και ένα set που σε αντιπροσωπεύει, διάλεξε το slot που προτιμάς και μπες στο νέο πρόγραμμα του Deseo.',
+            'djcall.cta' => 'Γίνε ο DJ του Deseo',
+
             'faq.kicker' => 'DESEO RADIO · FAQ',
             'faq.title' => 'Ό,τι αξίζει να ξέρεις.',
             'faq.text' => 'Σύντομα και καθαρά: τι είναι το Deseo, τι παίζει και πού το ακούς.',
@@ -262,6 +267,11 @@ function deseo_t(string $key): string {
             'partners.kicker' => 'LISTEN EVERYWHERE',
             'partners.title' => 'Listen to Deseo everywhere.',
             'partners.text' => 'On this website, iRadios and selected radio platforms.',
+
+            'djcall.kicker' => 'DESEO RADIO · DJs CALL',
+            'djcall.title' => 'Become the soundtrack of their lives.',
+            'djcall.text' => 'Deseo Radio is opening Season 6 to DJs with a sound of their own. Send your profile and a set that represents you, choose your preferred slot and join the new Deseo schedule.',
+            'djcall.cta' => 'Become a Deseo DJ',
 
             'faq.kicker' => 'DESEO RADIO · FAQ',
             'faq.title' => 'Everything worth knowing.',
