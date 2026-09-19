@@ -437,7 +437,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     <section class="assets-section">
         <div class="section-head">
             <div>
-                <span class="eyebrow">FROM DESEO RADIO · ILUMA DIGITAL AGENCY</span>
+                <span class="eyebrow">FROM DESEO RADIO · ILUMA Digital Agency</span>
                 <h2>Your Assets</h2>
                 <p>Το επίσημο artwork, το personal imaging και ό,τι δημιουργούμε για το show σου.</p>
             </div>
