@@ -273,3 +273,15 @@ fieldset:disabled{opacity:.55}
 @media(max-width:520px){
   .audience-global-actions{grid-template-columns:1fr}
 }
+
+
+/* AUDIENCE TEST REPORT */
+.audience-page-heading{align-items:center}
+.audience-test-report-form{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.audience-test-report-form .button{white-space:nowrap}
+.audience-test-report-form small{color:#57575d;font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+@media(max-width:650px){
+  .audience-test-report-form{align-items:stretch;margin-top:16px}
+  .audience-test-report-form .button{width:100%}
+  .audience-test-report-form small{text-align:center}
+}
