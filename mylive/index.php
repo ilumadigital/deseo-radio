@@ -687,6 +687,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                 <div>
                     <span class="eyebrow">YOUR REPOSITORY</span>
                     <h3>Episodes</h3>
+                    <p>Τα BROADCASTED episodes παραμένουν στο ιστορικό σου. Το audio file αφαιρείται αυτόματα 15 ημέρες μετά τη μετάδοση.</p>
                 </div>
                 <strong><?= count($sets) ?> upload<?= count($sets) === 1 ? '' : 's' ?></strong>
             </div>
@@ -708,7 +709,19 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                             </div>
                             <div class="set-status">
                                 <span class="status-<?= deseo_mylive_e((string)$set['status']) ?>"><?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)$set['status']))) ?></span>
-                                <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
+
+                                <?php if (!empty($set['file_deleted_at'])): ?>
+                                    <small class="set-retention is-deleted">
+                                        FILE REMOVED · episode retained
+                                    </small>
+                                <?php elseif (!empty($set['delete_after'])): ?>
+                                    <small class="set-retention">
+                                        File removal · <?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['delete_after']))) ?>
+                                    </small>
+                                    <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
+                                <?php else: ?>
+                                    <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
+                                <?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>
