@@ -8,8 +8,9 @@ deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
 
 if (!headers_sent()) {
-    header('X-Robots-Tag: noindex, nofollow, noarchive', true);
-    header('Cache-Control: no-store, private');
+    header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
+    header('Cache-Control: private, no-store, no-cache, must-revalidate', true);
+    header('Pragma: no-cache', true);
 }
 
 $error = null;
@@ -236,7 +237,9 @@ if (!deseo_mylive_logged_in()):
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#070708">
-    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title>MyLive · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
@@ -328,7 +331,9 @@ if (!empty($account['must_change_password'])):
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#070708">
-    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title>Create your password · MyLive · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
@@ -406,7 +411,9 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#070708">
-    <meta name="robots" content="noindex,nofollow,noarchive">
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+    <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title>MyLive · <?= deseo_mylive_e($account['artist_name']) ?> · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
