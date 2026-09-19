@@ -396,6 +396,37 @@ $partners = [
         </div>
     </section>
 
+
+    <section class="content-section dj-call-section" id="dj-call">
+        <div class="wide-shell">
+            <div class="dj-call-grid reveal">
+                <a class="dj-call-visual"
+                   href="/dj"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="<?= deseo_e(deseo_t('djcall.cta')) ?>"
+                   data-analytics-event="dj_call_image_click">
+                    <img src="/assets/img/deseoradio-djcallwebsite.png?v=<?= $assetVersion ?>"
+                         data-fallback="/assets/img/bg.png?v=<?= $assetVersion ?>"
+                         alt="Deseo Radio DJs Call">
+                </a>
+
+                <div class="dj-call-copy">
+                    <span class="kicker" data-i18n="djcall.kicker"><?= deseo_e(deseo_t('djcall.kicker')) ?></span>
+                    <h2 class="metal-title section-title" data-i18n="djcall.title"><?= deseo_e(deseo_t('djcall.title')) ?></h2>
+                    <p data-i18n="djcall.text"><?= deseo_e(deseo_t('djcall.text')) ?></p>
+
+                    <a class="button button-red dj-call-cta"
+                       href="/dj"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       data-i18n="djcall.cta"
+                       data-analytics-event="dj_call_cta_click"><?= deseo_e(deseo_t('djcall.cta')) ?></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="content-section faq-section" id="faq">
         <div class="wide-shell">
             <div class="section-head reveal">
