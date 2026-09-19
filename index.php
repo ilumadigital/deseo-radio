@@ -35,12 +35,74 @@ try {
          LIMIT 10"
     )->fetchAll(PDO::FETCH_ASSOC);
 
-    $program = $pdo->query(
-        "SELECT id, dj_name, photo_path, day_of_week, start_time, end_time
-         FROM program
-         WHERE day_of_week BETWEEN 1 AND 7
-         ORDER BY day_of_week ASC, start_time ASC"
-    )->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $program = $pdo->query(
+            "SELECT id, dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time
+             FROM program
+             WHERE day_of_week BETWEEN 1 AND 7
+             ORDER BY day_of_week ASC, start_time ASC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $programProfileColumnError) {
+        $program = $pdo->query(
+            "SELECT id, dj_name, photo_path, NULL AS mylive_account_id, day_of_week, start_time, end_time
+             FROM program
+             WHERE day_of_week BETWEEN 1 AND 7
+             ORDER BY day_of_week ASC, start_time ASC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    $publishedProfiles = [];
+    $profileAccountIds = array_values(array_unique(array_filter(array_map(
+        static fn(array $show): int => (int)($show['mylive_account_id'] ?? 0),
+        $program
+    ))));
+
+    if ($profileAccountIds) {
+        try {
+            $profilePlaceholders = implode(',', array_fill(0, count($profileAccountIds), '?'));
+            $profileStmt = $pdo->prepare(
+                "SELECT a.id AS account_id,
+                        a.artist_name,
+                        p.published_bio AS bio,
+                        p.published_instagram AS instagram,
+                        p.published_tiktok AS tiktok,
+                        p.published_soundcloud AS soundcloud,
+                        p.published_spotify AS spotify,
+                        p.published_website AS website
+                 FROM dj_portal_accounts a
+                 INNER JOIN dj_public_profiles p ON p.account_id = a.id
+                 WHERE a.id IN ($profilePlaceholders)
+                   AND a.is_active = 1
+                   AND a.account_status = 'active'
+                   AND a.public_profile_enabled = 1
+                   AND p.is_published = 1"
+            );
+            $profileStmt->execute($profileAccountIds);
+
+            foreach ($profileStmt->fetchAll(PDO::FETCH_ASSOC) as $profileRow) {
+                $publishedProfiles[(int)$profileRow['account_id']] = [
+                    'artist_name' => (string)$profileRow['artist_name'],
+                    'bio' => (string)$profileRow['bio'],
+                    'instagram' => (string)$profileRow['instagram'],
+                    'tiktok' => (string)$profileRow['tiktok'],
+                    'soundcloud' => (string)$profileRow['soundcloud'],
+                    'spotify' => (string)$profileRow['spotify'],
+                    'website' => (string)$profileRow['website'],
+                ];
+            }
+        } catch (Throwable $profileError) {
+            error_log('Deseo public DJ profiles unavailable: ' . $profileError->getMessage());
+            $publishedProfiles = [];
+        }
+    }
+
+    foreach ($program as &$programShow) {
+        $profileId = (int)($programShow['mylive_account_id'] ?? 0);
+        $programShow['public_profile'] = $profileId > 0 && isset($publishedProfiles[$profileId])
+            ? $publishedProfiles[$profileId]
+            : null;
+    }
+    unset($programShow);
 
     try {
         $playlists = $pdo->query(
@@ -135,6 +197,7 @@ if (isset($_GET['program_feed']) && $_GET['program_feed'] === '1') {
             'photo_path' => (string)($show['photo_path'] ?? ''),
             'start_time' => (string)($show['start_time'] ?? ''),
             'end_time' => (string)($show['end_time'] ?? ''),
+            'profile' => is_array($show['public_profile'] ?? null) ? $show['public_profile'] : null,
         ];
     };
 
@@ -196,7 +259,15 @@ $partners = [
                     <span>NOW ON AIR</span>
                 </div>
 
-                <div class="hero-square hero-cms-card">
+                <?php $liveProfile = is_array($live_dj['public_profile'] ?? null) ? $live_dj['public_profile'] : null; ?>
+                <div class="hero-square hero-cms-card <?= $liveProfile ? 'has-dj-profile' : '' ?>"
+                     <?= $liveProfile ? 'data-profile-open role="button" tabindex="0"' : '' ?>
+                     <?php if ($liveProfile): ?>
+                         data-profile-json="<?= deseo_e(json_encode($liveProfile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>"
+                         data-profile-photo="<?= deseo_e($live_dj['photo_path'] ?: '/assets/img/bg.png') ?>"
+                         data-profile-show="<?= deseo_e((string)$live_dj['dj_name']) ?>"
+                         data-profile-time="<?= deseo_e(deseo_time($live_dj['start_time']) . ' — ' . deseo_time($live_dj['end_time'])) ?>"
+                     <?php endif; ?>>
                     <?php if ($live_dj): ?>
                         <img src="<?= deseo_e($live_dj['photo_path'] ?: '/assets/img/bg.png') ?>"
                              data-fallback="/assets/img/bg.png?v=<?= $assetVersion ?>"
@@ -288,8 +359,16 @@ $partners = [
                         <?php if ($todays_program): ?>
                             <?php foreach ($todays_program as $show):
                                 $isLiveRow = $live_dj && (int)$live_dj['id'] === (int)$show['id'];
+                                $showProfile = is_array($show['public_profile'] ?? null) ? $show['public_profile'] : null;
                             ?>
-                                <div class="deseo-panel-row deseo-program-row <?= $isLiveRow ? 'is-live' : '' ?>">
+                                <div class="deseo-panel-row deseo-program-row <?= $isLiveRow ? 'is-live' : '' ?> <?= $showProfile ? 'has-dj-profile' : '' ?>"
+                                     <?= $showProfile ? 'data-profile-open role="button" tabindex="0"' : '' ?>
+                                     <?php if ($showProfile): ?>
+                                         data-profile-json="<?= deseo_e(json_encode($showProfile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>"
+                                         data-profile-photo="<?= deseo_e($show['photo_path'] ?: '/assets/img/bg.png') ?>"
+                                         data-profile-show="<?= deseo_e((string)$show['dj_name']) ?>"
+                                         data-profile-time="<?= deseo_e(deseo_time($show['start_time']) . ' — ' . deseo_time($show['end_time'])) ?>"
+                                     <?php endif; ?>>
                                     <img class="deseo-row-cover"
                                          src="<?= deseo_e($show['photo_path'] ?: '/assets/img/bg.png') ?>"
                                          data-fallback="/assets/img/bg.png"
@@ -302,6 +381,8 @@ $partners = [
 
                                     <?php if ($isLiveRow): ?>
                                         <span class="deseo-live-tag">LIVE</span>
+                                    <?php elseif ($showProfile): ?>
+                                        <span class="deseo-profile-tag">PROFILE</span>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
@@ -470,5 +551,29 @@ $partners = [
         </div>
     </section>
 </main>
+
+<div class="dj-profile-modal" id="dj-profile-modal" hidden>
+    <div class="dj-profile-modal-backdrop" data-dj-profile-close></div>
+    <section class="dj-profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="dj-profile-name">
+        <button class="dj-profile-modal-close" type="button" data-dj-profile-close aria-label="Close">×</button>
+
+        <div class="dj-profile-modal-visual">
+            <img id="dj-profile-photo" src="/assets/img/bg.png" alt="">
+            <div class="dj-profile-modal-visual-shade"></div>
+            <div class="dj-profile-modal-show">
+                <span>DESEO RADIO · DJ PROFILE</span>
+                <small id="dj-profile-show"></small>
+                <small id="dj-profile-time"></small>
+            </div>
+        </div>
+
+        <div class="dj-profile-modal-copy">
+            <span class="dj-profile-modal-kicker">NOW ON DESEO</span>
+            <h2 id="dj-profile-name"></h2>
+            <p id="dj-profile-bio"></p>
+            <div class="dj-profile-socials" id="dj-profile-socials"></div>
+        </div>
+    </section>
+</div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
