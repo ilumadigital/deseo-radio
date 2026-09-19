@@ -31,6 +31,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         account_status VARCHAR(20) NOT NULL DEFAULT 'active',
         show_audience_stats TINYINT(1) NOT NULL DEFAULT 0,
+        public_profile_enabled TINYINT(1) NOT NULL DEFAULT 0,
         onboarding_email_sent_at DATETIME NULL,
         access_email_sent_at DATETIME NULL,
         last_login_at DATETIME NULL,
@@ -51,7 +52,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'must_change_password' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER password_hash",
         'account_status' => "VARCHAR(20) NOT NULL DEFAULT 'active' AFTER is_active",
         'show_audience_stats' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER account_status",
-        'onboarding_email_sent_at' => "DATETIME NULL AFTER show_audience_stats",
+        'public_profile_enabled' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER show_audience_stats",
+        'onboarding_email_sent_at' => "DATETIME NULL AFTER public_profile_enabled",
         'access_email_sent_at' => "DATETIME NULL AFTER onboarding_email_sent_at"
     ];
     foreach ($columns as $name => $definition) {
@@ -167,6 +169,28 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         CONSTRAINT fk_portal_assets_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dj_public_profiles (
+        account_id BIGINT PRIMARY KEY,
+        draft_bio TEXT NOT NULL,
+        draft_instagram VARCHAR(500) NOT NULL DEFAULT '',
+        draft_tiktok VARCHAR(500) NOT NULL DEFAULT '',
+        draft_soundcloud VARCHAR(500) NOT NULL DEFAULT '',
+        draft_spotify VARCHAR(500) NOT NULL DEFAULT '',
+        draft_website VARCHAR(500) NOT NULL DEFAULT '',
+        published_bio TEXT NOT NULL,
+        published_instagram VARCHAR(500) NOT NULL DEFAULT '',
+        published_tiktok VARCHAR(500) NOT NULL DEFAULT '',
+        published_soundcloud VARCHAR(500) NOT NULL DEFAULT '',
+        published_spotify VARCHAR(500) NOT NULL DEFAULT '',
+        published_website VARCHAR(500) NOT NULL DEFAULT '',
+        is_published TINYINT(1) NOT NULL DEFAULT 0,
+        published_at DATETIME NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_public_profile_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
+            ON UPDATE CASCADE ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 }
 
 function deseo_mylive_session_start(): void {
@@ -229,7 +253,7 @@ function deseo_mylive_next_episode(PDO $pdo, int $accountId): int {
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
         "SELECT id, booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
-                must_change_password, is_active, account_status, show_audience_stats, onboarding_email_sent_at, access_email_sent_at,
+                must_change_password, is_active, account_status, show_audience_stats, public_profile_enabled, onboarding_email_sent_at, access_email_sent_at,
                 last_login_at, created_at, updated_at
          FROM dj_portal_accounts
          WHERE id = ? AND is_active = 1
@@ -356,6 +380,142 @@ function deseo_mylive_create_pending_from_booking(PDO $pdo, int $bookingId): int
     ]);
 
     return (int)$pdo->lastInsertId();
+}
+
+function deseo_mylive_profile_clean_url(string $value): string {
+    $value = trim($value);
+    if ($value === '') return '';
+
+    if (!preg_match('~^https?://~i', $value)) {
+        $value = 'https://' . ltrim($value, '/');
+    }
+
+    $url = filter_var($value, FILTER_VALIDATE_URL);
+    if (!$url) return '';
+
+    $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
+    return in_array($scheme, ['http', 'https'], true) ? $url : '';
+}
+
+function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
+    $existing = $pdo->prepare("SELECT * FROM dj_public_profiles WHERE account_id = ? LIMIT 1");
+    $existing->execute([$accountId]);
+    $profile = $existing->fetch(PDO::FETCH_ASSOC);
+    if ($profile) return $profile;
+
+    $source = [
+        'bio' => '',
+        'instagram' => '',
+        'website' => '',
+    ];
+
+    $stmt = $pdo->prepare(
+        "SELECT b.bio, b.instagram, b.website
+         FROM dj_portal_accounts a
+         LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+         WHERE a.id = ?
+         LIMIT 1"
+    );
+    $stmt->execute([$accountId]);
+    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($booking) {
+        $source['bio'] = trim((string)($booking['bio'] ?? ''));
+        $source['instagram'] = deseo_mylive_profile_clean_url((string)($booking['instagram'] ?? ''));
+        $source['website'] = deseo_mylive_profile_clean_url((string)($booking['website'] ?? ''));
+    }
+
+    $insert = $pdo->prepare(
+        "INSERT INTO dj_public_profiles
+         (account_id, draft_bio, draft_instagram, draft_website, published_bio)
+         VALUES (?, ?, ?, ?, '')"
+    );
+    $insert->execute([
+        $accountId,
+        $source['bio'],
+        $source['instagram'],
+        $source['website'],
+    ]);
+
+    $existing->execute([$accountId]);
+    return $existing->fetch(PDO::FETCH_ASSOC) ?: [];
+}
+
+function deseo_mylive_public_profile(PDO $pdo, int $accountId): array {
+    return deseo_mylive_public_profile_ensure($pdo, $accountId);
+}
+
+function deseo_mylive_save_public_profile_draft(PDO $pdo, int $accountId, array $data): array {
+    deseo_mylive_public_profile_ensure($pdo, $accountId);
+
+    $bio = trim((string)($data['bio'] ?? ''));
+    if (mb_strlen($bio) > 1600) {
+        throw new RuntimeException('Το About μπορεί να έχει έως 1.600 χαρακτήρες.');
+    }
+
+    $instagram = deseo_mylive_profile_clean_url((string)($data['instagram'] ?? ''));
+    $tiktok = deseo_mylive_profile_clean_url((string)($data['tiktok'] ?? ''));
+    $soundcloud = deseo_mylive_profile_clean_url((string)($data['soundcloud'] ?? ''));
+    $spotify = deseo_mylive_profile_clean_url((string)($data['spotify'] ?? ''));
+    $website = deseo_mylive_profile_clean_url((string)($data['website'] ?? ''));
+
+    $cleaned = [
+        'instagram' => $instagram,
+        'tiktok' => $tiktok,
+        'soundcloud' => $soundcloud,
+        'spotify' => $spotify,
+        'website' => $website,
+    ];
+
+    foreach ($cleaned as $key => $clean) {
+        $raw = trim((string)($data[$key] ?? ''));
+        if ($raw !== '' && $clean === '') {
+            throw new RuntimeException('Το ' . ucfirst($key) . ' link δεν είναι έγκυρο.');
+        }
+    }
+
+    $stmt = $pdo->prepare(
+        "UPDATE dj_public_profiles
+         SET draft_bio = ?,
+             draft_instagram = ?,
+             draft_tiktok = ?,
+             draft_soundcloud = ?,
+             draft_spotify = ?,
+             draft_website = ?
+         WHERE account_id = ?"
+    );
+    $stmt->execute([$bio, $instagram, $tiktok, $soundcloud, $spotify, $website, $accountId]);
+
+    return deseo_mylive_public_profile_ensure($pdo, $accountId);
+}
+
+function deseo_mylive_publish_public_profile(PDO $pdo, int $accountId): array {
+    deseo_mylive_public_profile_ensure($pdo, $accountId);
+
+    $stmt = $pdo->prepare(
+        "UPDATE dj_public_profiles
+         SET published_bio = draft_bio,
+             published_instagram = draft_instagram,
+             published_tiktok = draft_tiktok,
+             published_soundcloud = draft_soundcloud,
+             published_spotify = draft_spotify,
+             published_website = draft_website,
+             is_published = 1,
+             published_at = NOW()
+         WHERE account_id = ?"
+    );
+    $stmt->execute([$accountId]);
+
+    return deseo_mylive_public_profile_ensure($pdo, $accountId);
+}
+
+function deseo_mylive_public_profile_has_unpublished_changes(array $profile): bool {
+    $fields = ['bio','instagram','tiktok','soundcloud','spotify','website'];
+    foreach ($fields as $field) {
+        if ((string)($profile['draft_' . $field] ?? '') !== (string)($profile['published_' . $field] ?? '')) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function deseo_mylive_format_bytes(int $bytes): string {
