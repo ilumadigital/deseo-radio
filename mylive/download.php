@@ -11,6 +11,13 @@ if (!deseo_mylive_logged_in()) {
     exit;
 }
 
+$activeAccount = deseo_mylive_account($pdo, deseo_mylive_account_id());
+if (!$activeAccount) {
+    $_SESSION = [];
+    header('Location: /mylive/');
+    exit;
+}
+
 $setId = (int)($_GET['id'] ?? 0);
 $stmt = $pdo->prepare(
     "SELECT id, stored_name, file_path, file_size, mime_type
