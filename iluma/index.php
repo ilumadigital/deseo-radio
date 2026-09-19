@@ -133,7 +133,7 @@ $currentAudienceMonthLabel = $latestAudience
     : deseo_audience_month_label();
 $monthlyAudience = $latestAudience ? (int)$latestAudience['monthly_listeners'] : 0;
 
-$airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
+$airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay WHERE position BETWEEN 1 AND 6")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
 $playlistCount = 0;
 try {
@@ -182,7 +182,7 @@ admin_page_start('Overview', 'dashboard');
 </section>
 
 <section class="quick-grid">
-    <a class="quick-card" href="airplay.php"><small>Weekly rotation</small><h2>Airplay Top 10</h2><p>Ανανέωσε Spotify tracks, artwork και ranking.</p></a>
+    <a class="quick-card" href="airplay.php"><small>Weekly rotation · max 6</small><h2>Airplay</h2><p>Διαχειρίσου έως 6 Spotify tracks, artwork και σειρά εμφάνισης.</p></a>
     <a class="quick-card" href="program.php"><small>Live schedule</small><h2>Radio Program</h2><p>Διαχειρίσου DJs, ημέρες, ώρες και φωτογραφίες.</p></a>
     <a class="quick-card" href="dj-season.php"><small>Season 6 onboarding</small><h2>DJ Applications</h2><p>Δες submissions, slots, φωτογραφίες, bios και acceptance records.</p></a>
     <a class="quick-card" href="mylive.php"><small>DJ delivery workspace</small><h2>MyLive</h2><p>Accounts, onboarding, DJ Sets, artwork και branded imaging.</p></a>
