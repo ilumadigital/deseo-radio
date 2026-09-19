@@ -120,8 +120,11 @@ dj_season_bootstrap($pdo);
 deseo_mylive_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
 
-$currentAudienceMonthLabel = deseo_audience_month_label();
-$monthlyAudience = deseo_audience_monthly_listeners($pdo);
+$latestAudience = deseo_audience_latest_record($pdo);
+$currentAudienceMonthLabel = $latestAudience
+    ? deseo_audience_month_label((string)$latestAudience['month_key'])
+    : deseo_audience_month_label();
+$monthlyAudience = $latestAudience ? (int)$latestAudience['monthly_listeners'] : 0;
 
 $airplayCount = (int) $pdo->query("SELECT COUNT(*) FROM airplay")->fetchColumn();
 $programCount = (int) $pdo->query("SELECT COUNT(*) FROM program")->fetchColumn();
