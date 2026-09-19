@@ -252,7 +252,10 @@ if (!deseo_mylive_logged_in()):
 <body class="mylive-login-page">
 <main class="login-shell">
     <section class="login-brand">
-        <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+        <div class="mylive-brand-lockup">
+            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+            <span class="mylive-brand-label">MY LIVE</span>
+        </div>
         <span>SEASON 6 · DJ ACCESS</span>
         <h1>Your sets.<br>Your space.</h1>
         <p>DJ Set delivery, personal artwork και branded imaging. Όλα σε ένα απλό, ιδιωτικό workspace.</p>
@@ -343,7 +346,10 @@ if (!empty($account['must_change_password'])):
 <body class="mylive-password-page">
 <main class="password-shell">
     <section class="password-card">
-        <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+        <div class="mylive-brand-lockup mylive-brand-lockup-password">
+            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+            <span class="mylive-brand-label">MY LIVE</span>
+        </div>
         <span class="eyebrow">FIRST ACCESS · <?= deseo_mylive_e($account['artist_name']) ?></span>
         <h1>Κάν’ το δικό σου.</h1>
         <p>Το password που έλαβες ήταν προσωρινό. Δημιούργησε τώρα τον προσωπικό σου κωδικό για το MyLive.</p>
@@ -432,7 +438,10 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 </head>
 <body class="mylive-dashboard-page">
 <header class="portal-header">
-    <a href="/mylive/" class="portal-logo"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio"></a>
+    <a href="/mylive/" class="portal-logo mylive-brand-lockup">
+        <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+        <span class="mylive-brand-label">MY LIVE</span>
+    </a>
     <div class="portal-user">
         <div>
             <strong><?= deseo_mylive_e($account['artist_name']) ?></strong>
