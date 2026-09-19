@@ -796,7 +796,7 @@ admin_page_start('MyLive', 'mylive');
                                         <input type="hidden" name="account_id" value="<?= $accountId ?>">
                                         <input type="hidden" name="enabled" value="<?= !empty($account['public_profile_enabled']) ? '0' : '1' ?>">
                                         <button class="button <?= !empty($account['public_profile_enabled']) ? 'button-secondary' : 'button-primary' ?>" type="submit">
-                                            <?= !empty($account['public_profile_enabled']) ? 'Disable Public Profile' : 'Enable Public Profile Demo' ?>
+                                            <?= !empty($account['public_profile_enabled']) ? 'Disable Public Profile' : 'Enable Public Profile' ?>
                                         </button>
                                     </form>
                                     <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το onboarding email;');">
