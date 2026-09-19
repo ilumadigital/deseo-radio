@@ -31,6 +31,15 @@ if ($adminPassword === false || trim($adminPassword) === '') {
 }
 define('ADMIN_PASSWORD', (string)$adminPassword);
 
+$managerPassword = getenv('RADIO_MANAGER_PASSWORD');
+define(
+    'RADIO_MANAGER_PASSWORD',
+    $managerPassword !== false ? trim((string)$managerPassword) : ''
+);
+
+const DESEO_CMS_ADMIN_EMAIL = 'greg@iluma.gr';
+const DESEO_CMS_MANAGER_EMAIL = 'radio@iluma.gr';
+
 try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS airplay (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -69,8 +78,81 @@ try {
     error_log('Core CMS schema check failed: ' . $schemaError->getMessage());
 }
 
+function admin_current_email(): string {
+    return strtolower(trim((string)($_SESSION['iluma_user_email'] ?? '')));
+}
+
+function admin_current_role(): string {
+    $role = strtolower(trim((string)($_SESSION['iluma_user_role'] ?? '')));
+    return in_array($role, ['administrator', 'manager'], true) ? $role : '';
+}
+
 function admin_is_logged_in(): bool {
-    return !empty($_SESSION['iluma_admin']);
+    $email = admin_current_email();
+    $role = admin_current_role();
+
+    if ($role === 'administrator') {
+        return $email === DESEO_CMS_ADMIN_EMAIL;
+    }
+
+    if ($role === 'manager') {
+        return $email === DESEO_CMS_MANAGER_EMAIL;
+    }
+
+    return false;
+}
+
+function admin_is_administrator(): bool {
+    return admin_is_logged_in() && admin_current_role() === 'administrator';
+}
+
+function admin_is_manager(): bool {
+    return admin_is_logged_in() && admin_current_role() === 'manager';
+}
+
+function admin_authenticate_credentials(string $email, string $password): ?array {
+    $email = strtolower(trim($email));
+
+    if ($email === DESEO_CMS_ADMIN_EMAIL && hash_equals(ADMIN_PASSWORD, $password)) {
+        return [
+            'email' => DESEO_CMS_ADMIN_EMAIL,
+            'role' => 'administrator',
+        ];
+    }
+
+    if (
+        $email === DESEO_CMS_MANAGER_EMAIL
+        && RADIO_MANAGER_PASSWORD !== ''
+        && hash_equals(RADIO_MANAGER_PASSWORD, $password)
+    ) {
+        return [
+            'email' => DESEO_CMS_MANAGER_EMAIL,
+            'role' => 'manager',
+        ];
+    }
+
+    return null;
+}
+
+function admin_can_access(string $resource): bool {
+    if (!admin_is_logged_in()) {
+        return false;
+    }
+
+    if ($resource === 'audience') {
+        return admin_is_administrator();
+    }
+
+    return true;
+}
+
+function admin_require_access(string $resource): void {
+    admin_require_login();
+
+    if (!admin_can_access($resource)) {
+        header('Location: index.php', true, 302);
+        exit;
+    }
 }
 
 function admin_csrf_token(): string {
@@ -100,4 +182,8 @@ function admin_e(?string $value): string {
 $currentFile = basename($_SERVER['PHP_SELF'] ?? '');
 if ($currentFile !== 'index.php') {
     admin_require_login();
+
+    if ($currentFile === 'audience.php') {
+        admin_require_access('audience');
+    }
 }
