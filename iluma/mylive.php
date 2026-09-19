@@ -101,20 +101,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $accountId = (int)$pdo->lastInsertId();
                 $account = mylive_admin_account($pdo, $accountId);
 
-                $technical = deseo_mylive_technical_email($account);
-                deseo_send_smtp_mail($email, $artistName, $technical['subject'], $technical['html'], $technical['text'], true);
-                $pdo->prepare("UPDATE dj_portal_accounts SET onboarding_email_sent_at = NOW() WHERE id = ?")->execute([$accountId]);
+                $mailResults = [
+                    'technical' => false,
+                    'access' => false,
+                ];
+                $mailErrors = [];
 
-                $access = deseo_mylive_access_email($account, $temporaryPassword);
-                deseo_send_smtp_mail($email, $artistName, $access['subject'], $access['html'], $access['text'], true);
-                $pdo->prepare("UPDATE dj_portal_accounts SET access_email_sent_at = NOW() WHERE id = ?")->execute([$accountId]);
+                try {
+                    $technical = deseo_mylive_technical_email($account);
+                    deseo_send_smtp_mail(
+                        $email,
+                        $artistName,
+                        $technical['subject'],
+                        $technical['html'],
+                        $technical['text'],
+                        true
+                    );
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts SET onboarding_email_sent_at = NOW() WHERE id = ?"
+                    )->execute([$accountId]);
+                    $mailResults['technical'] = true;
+                } catch (Throwable $technicalMailError) {
+                    error_log('MyLive technical onboarding email failed: ' . $technicalMailError->getMessage());
+                    $mailErrors[] = 'Season 6 Instructions: ' . $technicalMailError->getMessage();
+                }
+
+                // The access email is attempted even if the technical email failed.
+                // A temporary SMTP problem must never prevent the second automatic message.
+                try {
+                    $access = deseo_mylive_access_email($account, $temporaryPassword);
+                    deseo_send_smtp_mail(
+                        $email,
+                        $artistName,
+                        $access['subject'],
+                        $access['html'],
+                        $access['text'],
+                        true
+                    );
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts SET access_email_sent_at = NOW() WHERE id = ?"
+                    )->execute([$accountId]);
+                    $mailResults['access'] = true;
+                } catch (Throwable $accessMailError) {
+                    error_log('MyLive access email failed: ' . $accessMailError->getMessage());
+                    $mailErrors[] = 'MyLive Access: ' . $accessMailError->getMessage();
+                }
 
                 $generatedCredentials = [
                     'artist' => $artistName,
                     'email' => $email,
                     'password' => $temporaryPassword
                 ];
-                $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκαν τα δύο IMPORTANT emails.';
+
+                if ($mailResults['technical'] && $mailResults['access']) {
+                    $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκαν αυτόματα και τα δύο IMPORTANT emails.';
+                } elseif ($mailResults['technical'] || $mailResults['access']) {
+                    $notice = 'Το MyLive account δημιουργήθηκε. Στάλθηκε αυτόματα το ένα από τα δύο emails.';
+                    $error = 'Το άλλο email δεν στάλθηκε: ' . implode(' · ', $mailErrors);
+                } else {
+                    $notice = 'Το MyLive account δημιουργήθηκε, αλλά τα emails δεν μπόρεσαν να σταλούν.';
+                    $error = 'SMTP: ' . implode(' · ', $mailErrors);
+                }
 
             } elseif ($action === 'update_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
