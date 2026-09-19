@@ -167,26 +167,153 @@ $todayCount = (int) $stmt->fetchColumn();
 
 admin_page_start('Overview', 'dashboard');
 ?>
-<div class="page-heading">
-    <div><span>Deseo Studio</span><h1>Content overview</h1><p>Το κεντρικό σημείο ελέγχου για όσα εμφανίζονται στο Deseo Radio.</p></div>
+<div class="dashboard-home">
+    <section class="dashboard-hero">
+        <div class="dashboard-hero-copy">
+            <div class="dashboard-kicker">DESEO STUDIO · SEASON 6</div>
+            <h1>Content overview</h1>
+            <p>Το κεντρικό control room για το πρόγραμμα, το Airplay, τους DJs και το MyLive του Deseo Radio.</p>
+
+            <div class="dashboard-hero-meta">
+                <span><b><?= $todayCount ?></b> shows today</span>
+                <span><b><?= $airplayCount ?>/6</b> airplay slots</span>
+                <span><b><?= $myLiveAccountCount ?></b> active MyLive</span>
+            </div>
+        </div>
+
+        <a class="dashboard-audience-card" href="audience.php">
+            <div class="dashboard-audience-top">
+                <span>MONTHLY AUDIENCE</span>
+                <b>OPEN ↗</b>
+            </div>
+            <strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong>
+            <p>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></p>
+            <div class="dashboard-audience-line"></div>
+            <small>Audience stats & estimated DJ reach</small>
+        </a>
+    </section>
+
+    <section class="dashboard-metrics" aria-label="CMS metrics">
+        <a href="airplay.php" class="dashboard-metric">
+            <span>01 · AIRPLAY</span>
+            <strong><?= $airplayCount ?><em>/6</em></strong>
+            <small>weekly rotation</small>
+        </a>
+        <a href="program.php" class="dashboard-metric">
+            <span>02 · PROGRAM</span>
+            <strong><?= $programCount ?></strong>
+            <small>total slots</small>
+        </a>
+        <a href="program.php" class="dashboard-metric">
+            <span>03 · TODAY</span>
+            <strong><?= $todayCount ?></strong>
+            <small>shows on air today</small>
+        </a>
+        <a href="playlists.php" class="dashboard-metric">
+            <span>04 · PLAYLISTS</span>
+            <strong><?= $playlistCount ?></strong>
+            <small>Spotify collections</small>
+        </a>
+        <a href="dj-season.php" class="dashboard-metric">
+            <span>05 · SEASON 6</span>
+            <strong><?= $djApplicationCount ?></strong>
+            <small>DJ applications</small>
+        </a>
+        <a href="mylive.php" class="dashboard-metric">
+            <span>06 · MYLIVE</span>
+            <strong><?= $myLiveAccountCount ?></strong>
+            <small>active accounts</small>
+        </a>
+    </section>
+
+    <div class="dashboard-section-head">
+        <div>
+            <span>WORKSPACES</span>
+            <h2>Manage Deseo Radio</h2>
+        </div>
+        <p>Όλα τα βασικά εργαλεία του σταθμού, οργανωμένα ανά λειτουργία.</p>
+    </div>
+
+    <section class="dashboard-workspaces">
+        <article class="dashboard-workspace">
+            <div class="dashboard-workspace-head">
+                <div>
+                    <span>ON AIR & CONTENT</span>
+                    <h3>Broadcast control</h3>
+                </div>
+                <b>01</b>
+            </div>
+
+            <a class="dashboard-workspace-row is-featured" href="airplay.php">
+                <div>
+                    <span>Weekly rotation · max 6</span>
+                    <strong>Airplay</strong>
+                    <small>Spotify tracks, artwork και σειρά εμφάνισης.</small>
+                </div>
+                <b><?= $airplayCount ?>/6</b>
+                <i>↗</i>
+            </a>
+
+            <a class="dashboard-workspace-row" href="program.php">
+                <div>
+                    <span>Live schedule</span>
+                    <strong>Radio Program</strong>
+                    <small>DJs, ημέρες, ώρες και φωτογραφίες.</small>
+                </div>
+                <b><?= $programCount ?></b>
+                <i>↗</i>
+            </a>
+
+            <a class="dashboard-workspace-row" href="playlists.php">
+                <div>
+                    <span>Spotify curation</span>
+                    <strong>Playlists</strong>
+                    <small>Collections, covers και σειρά εμφάνισης.</small>
+                </div>
+                <b><?= $playlistCount ?></b>
+                <i>↗</i>
+            </a>
+        </article>
+
+        <article class="dashboard-workspace">
+            <div class="dashboard-workspace-head">
+                <div>
+                    <span>DJS & SEASON 6</span>
+                    <h3>Artist management</h3>
+                </div>
+                <b>02</b>
+            </div>
+
+            <a class="dashboard-workspace-row" href="dj-season.php">
+                <div>
+                    <span>Season 6 onboarding</span>
+                    <strong>DJ Applications</strong>
+                    <small>Submissions, slots, bios και approvals.</small>
+                </div>
+                <b><?= $djApplicationCount ?></b>
+                <i>↗</i>
+            </a>
+
+            <a class="dashboard-workspace-row is-featured" href="mylive.php">
+                <div>
+                    <span>DJ workspace</span>
+                    <strong>MyLive</strong>
+                    <small>Accounts, DJ Sets, assets και onboarding.</small>
+                </div>
+                <b><?= $myLiveAccountCount ?></b>
+                <i>↗</i>
+            </a>
+
+            <a class="dashboard-workspace-row" href="audience.php">
+                <div>
+                    <span>Performance</span>
+                    <strong>Audience</strong>
+                    <small>Monthly listeners και estimated DJ reach.</small>
+                </div>
+                <b>↗</b>
+                <i>↗</i>
+            </a>
+        </article>
+    </section>
 </div>
-
-<section class="stats">
-    <div class="stat"><strong><?= $airplayCount ?></strong><span>Airplay tracks</span></div>
-    <div class="stat"><strong><?= $programCount ?></strong><span>Program slots</span></div>
-    <div class="stat"><strong><?= $todayCount ?></strong><span>Shows today</span></div>
-    <div class="stat"><strong><?= $playlistCount ?></strong><span>Playlists</span></div>
-    <div class="stat"><strong><?= $djApplicationCount ?></strong><span>Season 6 DJs</span></div>
-    <div class="stat"><strong><?= $myLiveAccountCount ?></strong><span>MyLive accounts</span></div>
-    <div class="stat"><strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong><span>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></span></div>
-</section>
-
-<section class="quick-grid">
-    <a class="quick-card" href="airplay.php"><small>Weekly rotation · max 6</small><h2>Airplay</h2><p>Διαχειρίσου έως 6 Spotify tracks, artwork και σειρά εμφάνισης.</p></a>
-    <a class="quick-card" href="program.php"><small>Live schedule</small><h2>Radio Program</h2><p>Διαχειρίσου DJs, ημέρες, ώρες και φωτογραφίες.</p></a>
-    <a class="quick-card" href="dj-season.php"><small>Season 6 onboarding</small><h2>DJ Applications</h2><p>Δες submissions, slots, φωτογραφίες, bios και acceptance records.</p></a>
-    <a class="quick-card" href="mylive.php"><small>DJ delivery workspace</small><h2>MyLive</h2><p>Accounts, onboarding, DJ Sets, artwork και branded imaging.</p></a>
-    <a class="quick-card" href="audience.php"><small>Estimated DJ reach</small><h2>Audience</h2><p>Όρισε monthly listeners και έλεγξε την εκτιμώμενη απήχηση ανά MyLive slot.</p></a>
-    <a class="quick-card" href="playlists.php"><small>Spotify curation</small><h2>Playlists</h2><p>Πρόσθεσε Spotify playlists, covers και σειρά εμφάνισης.</p></a>
-</section>
 <?php admin_page_end(); ?>
