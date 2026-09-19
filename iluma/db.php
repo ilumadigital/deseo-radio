@@ -53,7 +53,7 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS program (
         id INT AUTO_INCREMENT PRIMARY KEY,
         dj_name VARCHAR(255) NOT NULL,
-        photo_path VARCHAR(255) DEFAULT '',
+        photo_path VARCHAR(1000) DEFAULT '',
         mylive_account_id BIGINT NULL,
         day_of_week TINYINT NOT NULL,
         start_time TIME NOT NULL,
@@ -70,6 +70,12 @@ try {
           AND older.start_time = newer.start_time
           AND older.id < newer.id"
     );
+
+    try {
+        $pdo->exec("ALTER TABLE program MODIFY photo_path VARCHAR(1000) DEFAULT ''");
+    } catch (Throwable $photoPathMigrationError) {
+        error_log('Program photo_path migration failed: ' . $photoPathMigrationError->getMessage());
+    }
 
     $profileColumnStmt = $pdo->query("SHOW COLUMNS FROM program LIKE 'mylive_account_id'");
     if (!$profileColumnStmt || !$profileColumnStmt->fetch(PDO::FETCH_ASSOC)) {
