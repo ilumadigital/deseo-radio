@@ -342,6 +342,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $endTime = $allDay ? '23:59' : trim((string)($_POST['end_time'] ?? ''));
             $editIdRaw = trim((string)($_POST['edit_id'] ?? ''));
             $editId = $editIdRaw === '' ? null : filter_var($editIdRaw, FILTER_VALIDATE_INT);
+            $editScope = (string)($_POST['edit_scope'] ?? 'single') === 'all' ? 'all' : 'single';
+            $bulkEdit = $editId && $editScope === 'all';
+            $bulkRows = [];
+            $bulkIds = [];
             $postedDays = array_values(array_unique(array_filter(
                 array_map('intval', (array)($_POST['days'] ?? [])),
                 static fn(int $day): bool => $day >= 1 && $day <= 7
@@ -378,6 +382,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $photoPath = (string)($editRow['photo_path'] ?? '');
                     $oldEditPhoto = $photoPath;
+
+                    if ($bulkEdit) {
+                        $bulkStmt = $pdo->prepare(
+                            "SELECT *
+                             FROM program
+                             WHERE LOWER(TRIM(dj_name)) = LOWER(TRIM(?))
+                             ORDER BY day_of_week ASC, start_time ASC, id ASC"
+                        );
+                        $bulkStmt->execute([(string)$editRow['dj_name']]);
+                        $bulkRows = $bulkStmt->fetchAll(PDO::FETCH_ASSOC);
+                        $bulkIds = array_map(static fn(array $row): int => (int)$row['id'], $bulkRows);
+
+                        if (!$bulkRows) {
+                            $error = 'Δεν βρέθηκαν τα υπόλοιπα slots της εκπομπής.';
+                        } else {
+                            $targetDays = array_values(array_unique(array_map(
+                                static fn(array $row): int => (int)$row['day_of_week'],
+                                $bulkRows
+                            )));
+
+                            $dayOccurrences = [];
+                            foreach ($bulkRows as $bulkRow) {
+                                $bulkDay = (int)$bulkRow['day_of_week'];
+                                $dayOccurrences[$bulkDay] = ($dayOccurrences[$bulkDay] ?? 0) + 1;
+                            }
+
+                            if (max($dayOccurrences ?: [0]) > 1) {
+                                $error = 'Το ίδιο show εμφανίζεται περισσότερες από μία φορές στην ίδια ημέρα. Για ασφάλεια, οι ώρες πρέπει να επεξεργαστούν ανά slot.';
+                            }
+                        }
+                    }
                 }
             }
 
@@ -438,7 +473,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $existingRows = $existingStmt->fetchAll(PDO::FETCH_ASSOC);
 
                     foreach ($existingRows as $row) {
-                        if ($editId && $targetDay === $selectedDay && (int)$row['id'] === (int)$editId) continue;
+                        if ($editId) {
+                            if ($bulkEdit && in_array((int)$row['id'], $bulkIds, true)) continue;
+                            if (!$bulkEdit && $targetDay === $selectedDay && (int)$row['id'] === (int)$editId) continue;
+                        }
 
                         if (program_intervals_overlap(
                             $startTime,
@@ -457,20 +495,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     program_delete_ids($pdo, $conflictIds);
 
                     if ($editRow) {
-                        $stmt = $pdo->prepare(
-                            "UPDATE program
-                             SET dj_name = ?, photo_path = ?, mylive_account_id = ?, start_time = ?, end_time = ?
-                             WHERE id = ? AND day_of_week = ?"
-                        );
-                        $stmt->execute([
-                            $djName,
-                            $photoPath,
-                            $myliveAccountId ? (int)$myliveAccountId : null,
-                            $startTime . ':00',
-                            $endTime . ':00',
-                            (int)$editId,
-                            $selectedDay
-                        ]);
+                        if ($bulkEdit) {
+                            $stmt = $pdo->prepare(
+                                "UPDATE program
+                                 SET dj_name = ?, photo_path = ?, mylive_account_id = ?, start_time = ?, end_time = ?
+                                 WHERE id = ?"
+                            );
+
+                            foreach ($bulkRows as $bulkRow) {
+                                $stmt->execute([
+                                    $djName,
+                                    $photoPath,
+                                    $myliveAccountId ? (int)$myliveAccountId : null,
+                                    $startTime . ':00',
+                                    $endTime . ':00',
+                                    (int)$bulkRow['id']
+                                ]);
+                            }
+                        } else {
+                            $stmt = $pdo->prepare(
+                                "UPDATE program
+                                 SET dj_name = ?, photo_path = ?, mylive_account_id = ?, start_time = ?, end_time = ?
+                                 WHERE id = ? AND day_of_week = ?"
+                            );
+                            $stmt->execute([
+                                $djName,
+                                $photoPath,
+                                $myliveAccountId ? (int)$myliveAccountId : null,
+                                $startTime . ':00',
+                                $endTime . ':00',
+                                (int)$editId,
+                                $selectedDay
+                            ]);
+                        }
                     } else {
                         $stmt = $pdo->prepare(
                             "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
@@ -491,14 +548,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->commit();
 
                     $photosToClean = $conflictPhotos;
-                    if ($editRow && $oldEditPhoto !== '' && $oldEditPhoto !== $photoPath) {
-                        $photosToClean[] = $oldEditPhoto;
+                    if ($editRow) {
+                        if ($bulkEdit) {
+                            foreach ($bulkRows as $bulkRow) {
+                                $bulkOldPhoto = (string)($bulkRow['photo_path'] ?? '');
+                                if ($bulkOldPhoto !== '' && $bulkOldPhoto !== $photoPath) {
+                                    $photosToClean[] = $bulkOldPhoto;
+                                }
+                            }
+                        } elseif ($oldEditPhoto !== '' && $oldEditPhoto !== $photoPath) {
+                            $photosToClean[] = $oldEditPhoto;
+                        }
                     }
                     program_cleanup_photos($pdo, $photosToClean);
 
                     $replaced = count(array_unique($conflictIds));
                     if ($editRow) {
-                        $success = 'Η εκπομπή ενημερώθηκε στην ' . $days[$selectedDay] . '.';
+                        $success = $bulkEdit
+                            ? 'Ενημερώθηκαν όλες οι εμφανίσεις του "' . $djName . '" (' . count($bulkRows) . ' slots).'
+                            : 'Η εκπομπή ενημερώθηκε στην ' . $days[$selectedDay] . '.';
                     } else {
                         $dayCount = count($targetDays);
                         $success = 'Η εκπομπή προστέθηκε σε ' . $dayCount . ' ημέρ' . ($dayCount === 1 ? 'α.' : 'ες.');
@@ -557,6 +625,14 @@ $stmt->execute([$selectedDay]);
 $program = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $editRecord = null;
+$editScope = (
+    (string)($_GET['scope'] ?? (
+        ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save')
+            ? ($_POST['edit_scope'] ?? 'single')
+            : 'single'
+    )) === 'all'
+) ? 'all' : 'single';
+
 $editSource = $_GET['edit'] ?? (
     ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save')
         ? ($_POST['edit_id'] ?? null)
@@ -570,6 +646,15 @@ if ($editRequest) {
             break;
         }
     }
+}
+
+$editOccurrenceCount = 0;
+if ($editRecord) {
+    $editShowKey = mb_strtolower(trim((string)$editRecord['dj_name']), 'UTF-8');
+    $editOccurrenceCount = (int)($weeklyShowCounts[$editShowKey] ?? 1);
+}
+if (!$editRecord) {
+    $editScope = 'single';
 }
 
 $formName = $editRecord ? (string)$editRecord['dj_name'] : '';
@@ -666,13 +751,37 @@ admin_page_start('Radio Program', 'program');
         <div class="schedule-panel-head">
             <div>
                 <span class="schedule-eyebrow"><?= admin_e($days[$selectedDay]) ?></span>
-                <h2><?= $editRecord ? 'Edit show' : 'Add show' ?></h2>
-                <p><?= $editRecord ? 'Άλλαξε στοιχεία ή ώρες. Η υπάρχουσα φωτογραφία μένει αν δεν ανεβάσεις νέα.' : 'Επίλεξε μία ή περισσότερες ημέρες για να περάσεις την εκπομπή με μία κίνηση.' ?></p>
+                <h2>
+                    <?php if (!$editRecord): ?>
+                        Add show
+                    <?php elseif ($editScope === 'all'): ?>
+                        Edit all <?= $editOccurrenceCount ?> slots
+                    <?php else: ?>
+                        Edit show
+                    <?php endif; ?>
+                </h2>
+                <p>
+                    <?php if (!$editRecord): ?>
+                        Επίλεξε μία ή περισσότερες ημέρες για να περάσεις την εκπομπή με μία κίνηση.
+                    <?php elseif ($editScope === 'all'): ?>
+                        Οι αλλαγές θα εφαρμοστούν σε όλες τις εμφανίσεις του “<?= admin_e((string)$editRecord['dj_name']) ?>”. Οι ημέρες παραμένουν ίδιες.
+                    <?php else: ?>
+                        Άλλαξε μόνο αυτό το συγκεκριμένο slot.
+                    <?php endif; ?>
+                </p>
             </div>
             <?php if ($editRecord): ?>
                 <a class="schedule-cancel-edit" href="program.php?day=<?= $selectedDay ?>">Cancel edit</a>
             <?php endif; ?>
         </div>
+
+        <?php if ($editRecord && $editScope === 'all'): ?>
+            <div class="schedule-bulk-edit-note">
+                <span>BULK EDIT</span>
+                <strong><?= $editOccurrenceCount ?> slots · <?= admin_e((string)$editRecord['dj_name']) ?></strong>
+                <small>Show name, cover, MyLive profile και ώρες θα ενημερωθούν σε όλες τις εμφανίσεις. Οι ημέρες δεν αλλάζουν.</small>
+            </div>
+        <?php endif; ?>
 
         <div class="schedule-rule-note">
             <strong>No duplicates.</strong>
@@ -686,6 +795,7 @@ admin_page_start('Radio Program', 'program');
             <input type="hidden" name="action" value="save">
             <input type="hidden" name="day" value="<?= $selectedDay ?>">
             <input type="hidden" name="edit_id" value="<?= $editRecord ? (int)$editRecord['id'] : '' ?>">
+            <input type="hidden" name="edit_scope" value="<?= admin_e($editScope) ?>">
 
             <div class="form-grid">
                 <div class="field full">
@@ -843,8 +953,14 @@ admin_page_start('Radio Program', 'program');
                         </div>
 
                         <div class="program-row-actions">
-                            <a class="schedule-action schedule-action-edit"
-                               href="program.php?day=<?= $selectedDay ?>&edit=<?= (int)$item['id'] ?>">Edit</a>
+                            <button
+                                class="schedule-action schedule-action-edit"
+                                type="button"
+                                data-edit-show
+                                data-edit-id="<?= (int)$item['id'] ?>"
+                                data-edit-name="<?= admin_e((string)$item['dj_name']) ?>"
+                                data-edit-count="<?= $weeklyOccurrences ?>"
+                            >Edit</button>
 
                             <form method="post"
                                   action="program.php?day=<?= $selectedDay ?>"
@@ -873,6 +989,35 @@ admin_page_start('Radio Program', 'program');
                 Πρόσθεσε την πρώτη εκπομπή από τη φόρμα.
             </div>
         <?php endif; ?>
+    </section>
+</div>
+
+<div class="schedule-modal schedule-edit-choice-modal" id="editShowModal" hidden>
+    <div class="schedule-modal-backdrop" data-edit-modal-close></div>
+    <section class="schedule-modal-card" role="dialog" aria-modal="true" aria-labelledby="editShowTitle">
+        <span class="schedule-modal-kicker">EDIT PROGRAM</span>
+        <h2 id="editShowTitle">Τι θέλεις να επεξεργαστείς;</h2>
+        <p>
+            Η εκπομπή <strong id="editShowName"></strong> υπάρχει
+            <strong id="editShowCount"></strong> φορές μέσα στην εβδομάδα.
+        </p>
+
+        <div class="schedule-edit-choice-grid">
+            <a class="schedule-edit-choice" id="editSingleLink" href="#">
+                <span>THIS SLOT</span>
+                <strong>Edit only this slot</strong>
+                <small>Αλλάζει μόνο τη συγκεκριμένη ημέρα και ώρα.</small>
+            </a>
+            <a class="schedule-edit-choice is-all" id="editAllLink" href="#">
+                <span>ALL WEEK</span>
+                <strong>Edit all matching slots</strong>
+                <small>Εφαρμόζει τις αλλαγές σε όλες τις εμφανίσεις με το ίδιο όνομα.</small>
+            </a>
+        </div>
+
+        <div class="schedule-modal-actions">
+            <button class="button button-secondary" type="button" data-edit-modal-close>Cancel</button>
+        </div>
     </section>
 </div>
 
@@ -990,6 +1135,41 @@ admin_page_start('Radio Program', 'program');
     all.addEventListener('change', sync);
     sync();
   }
+
+  var editShowModal = document.getElementById('editShowModal');
+  var editShowName = document.getElementById('editShowName');
+  var editShowCount = document.getElementById('editShowCount');
+  var editSingleLink = document.getElementById('editSingleLink');
+  var editAllLink = document.getElementById('editAllLink');
+
+  function closeEditShowModal(){
+    if (!editShowModal) return;
+    editShowModal.hidden = true;
+    document.body.classList.remove('schedule-modal-open');
+  }
+
+  document.querySelectorAll('[data-edit-show]').forEach(function(button){
+    button.addEventListener('click', function(){
+      if (!editShowModal) return;
+
+      var id = button.getAttribute('data-edit-id') || '';
+      var name = button.getAttribute('data-edit-name') || '';
+      var count = button.getAttribute('data-edit-count') || '1';
+      var base = 'program.php?day=<?= $selectedDay ?>&edit=' + encodeURIComponent(id);
+
+      if (editShowName) editShowName.textContent = name;
+      if (editShowCount) editShowCount.textContent = count;
+      if (editSingleLink) editSingleLink.href = base + '&scope=single';
+      if (editAllLink) editAllLink.href = base + '&scope=all';
+
+      editShowModal.hidden = false;
+      document.body.classList.add('schedule-modal-open');
+    });
+  });
+
+  document.querySelectorAll('[data-edit-modal-close]').forEach(function(button){
+    button.addEventListener('click', closeEditShowModal);
+  });
 
   var photoReference = document.getElementById('photo_reference');
   var photoUpload = document.getElementById('photo');
@@ -1158,6 +1338,11 @@ admin_page_start('Radio Program', 'program');
 
     if (mediaModal && !mediaModal.hidden) {
       closeMediaBrowser();
+      return;
+    }
+
+    if (editShowModal && !editShowModal.hidden) {
+      closeEditShowModal();
       return;
     }
 
