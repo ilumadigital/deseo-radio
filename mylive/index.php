@@ -456,7 +456,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             <div class="assets-empty">
                 <span>COMING HERE</span>
                 <strong>Τα προσωπικά σου assets θα εμφανιστούν εδώ.</strong>
-                <p>Μόλις το γραφιστικό και audio team της ILUMA Digital Agency ολοκληρώσει το υλικό σου, θα μπορείς να το κατεβάσεις απευθείας από το MyLive.</p>
+                <p>Εδώ θα εμφανίζονται οι εικόνες για τα social media και τα προσωπικά σου audio spots από την ομάδα Creative της ILUMA Digital Agency. Από εδώ μπορείς να κατεβάζεις και να χρησιμοποιείς όλα τα διαθέσιμα assets για την προώθηση και την παρουσίαση του show σου.</p>
             </div>
         <?php else: ?>
             <div class="assets-grid">
