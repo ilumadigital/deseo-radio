@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             );
 
                             if ($status === 'approved') {
-                                $notice = 'Ο DJ εγκρίθηκε, το slot έκλεισε για νέα inquiries και δημιουργήθηκε Pending εγγραφή στο MyLive. Από το MyLive CMS μπορείς τώρα να εγκρίνεις την πρόσβαση και να σταλεί το onboarding email.';
+                                $notice = 'Ο DJ εγκρίθηκε και στάλθηκε το Welcome / Approved email της Season 6. Δημιουργήθηκε επίσης Pending εγγραφή στο MyLive, χωρίς login ή password. Το MyLive onboarding email θα σταλεί μόνο όταν πατήσεις Approve & Create Access μέσα από το MyLive CMS.';
                             } elseif ($status === 'guest') {
                                 $notice = 'Ο DJ επιλέχθηκε ως Guest, στάλθηκε welcome email και δημιουργήθηκε Pending εγγραφή στο MyLive. Από το MyLive CMS μπορείς τώρα να εγκρίνεις την πρόσβαση και να σταλεί το onboarding email. Το weekly slot παραμένει διαθέσιμο.';
                             } else {
