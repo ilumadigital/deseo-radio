@@ -30,6 +30,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         must_change_password TINYINT(1) NOT NULL DEFAULT 1,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         account_status VARCHAR(20) NOT NULL DEFAULT 'active',
+        show_audience_stats TINYINT(1) NOT NULL DEFAULT 1,
         onboarding_email_sent_at DATETIME NULL,
         access_email_sent_at DATETIME NULL,
         last_login_at DATETIME NULL,
@@ -49,7 +50,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'end_time' => "TIME NULL AFTER start_time",
         'must_change_password' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER password_hash",
         'account_status' => "VARCHAR(20) NOT NULL DEFAULT 'active' AFTER is_active",
-        'onboarding_email_sent_at' => "DATETIME NULL AFTER account_status",
+        'show_audience_stats' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER account_status",
+        'onboarding_email_sent_at' => "DATETIME NULL AFTER show_audience_stats",
         'access_email_sent_at' => "DATETIME NULL AFTER onboarding_email_sent_at"
     ];
     foreach ($columns as $name => $definition) {
@@ -216,7 +218,7 @@ function deseo_mylive_next_episode(PDO $pdo, int $accountId): int {
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
         "SELECT id, booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
-                must_change_password, is_active, account_status, onboarding_email_sent_at, access_email_sent_at,
+                must_change_password, is_active, account_status, show_audience_stats, onboarding_email_sent_at, access_email_sent_at,
                 last_login_at, created_at, updated_at
          FROM dj_portal_accounts
          WHERE id = ? AND is_active = 1
@@ -289,13 +291,13 @@ function deseo_mylive_create_pending_from_booking(PDO $pdo, int $bookingId): int
                 COALESCE(b.final_end_time, s.end_time) AS effective_end
          FROM dj_season_bookings b
          INNER JOIN dj_season_slots s ON s.id = b.slot_id
-         WHERE b.id = ? AND b.season = ? AND b.status = 'approved'
+         WHERE b.id = ? AND b.season = ? AND b.status IN ('approved','guest')
          LIMIT 1"
     );
     $stmt->execute([$bookingId, DESEO_DJ_SEASON]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$booking) {
-        throw new RuntimeException('Δεν βρέθηκε approved DJ για δημιουργία MyLive pending account.');
+        throw new RuntimeException('Δεν βρέθηκε Approved ή Guest DJ για δημιουργία MyLive pending account.');
     }
 
     $existing = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE booking_id = ? OR LOWER(email) = LOWER(?) LIMIT 1");
