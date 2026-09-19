@@ -16,32 +16,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_verify_csrf($_POST['csrf_token'] ?? null)) {
         $error = 'Η συνεδρία έληξε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.';
     } else {
+        $action = (string)($_POST['action'] ?? 'save_audience');
+
         try {
-            $raw = preg_replace('/[^0-9]/', '', (string)($_POST['monthly_listeners'] ?? '')) ?? '';
-            $monthlyListeners = (int)$raw;
+            if ($action === 'toggle_dj_stats') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $visible = (int)($_POST['visible'] ?? 0) === 1 ? 1 : 0;
 
-            if ($monthlyListeners < 1) {
-                throw new RuntimeException('Συμπλήρωσε έγκυρο αριθμό μηνιαίων ακροατών.');
+                if ($accountId < 1) {
+                    throw new RuntimeException('Μη έγκυρο MyLive account.');
+                }
+
+                $stmt = $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET show_audience_stats = ?
+                     WHERE id = ? AND is_active = 1 AND account_status = 'active'"
+                );
+                $stmt->execute([$visible, $accountId]);
+
+                if ($stmt->rowCount() < 1) {
+                    throw new RuntimeException('Το MyLive account δεν βρέθηκε ή δεν είναι ενεργό.');
+                }
+
+                $notice = $visible
+                    ? 'Τα audience statistics είναι πλέον ορατά στο MyLive του DJ.'
+                    : 'Τα audience statistics κρύφτηκαν από το MyLive του DJ.';
+            } else {
+                $raw = preg_replace('/[^0-9]/', '', (string)($_POST['monthly_listeners'] ?? '')) ?? '';
+                $monthlyListeners = (int)$raw;
+
+                if ($monthlyListeners < 1) {
+                    throw new RuntimeException('Συμπλήρωσε έγκυρο αριθμό μηνιαίων ακροατών.');
+                }
+
+                if ($monthlyListeners > 1000000000) {
+                    throw new RuntimeException('Ο αριθμός μηνιαίων ακροατών είναι υπερβολικά μεγάλος.');
+                }
+
+                $currentMonthKey = deseo_audience_current_month_key();
+                $stmt = $pdo->prepare(
+                    "UPDATE deseo_audience_settings
+                     SET monthly_listeners = ?, audience_month = ?
+                     WHERE id = 1"
+                );
+                $stmt->execute([$monthlyListeners, $currentMonthKey]);
+
+                $notice = 'Η ακροαματικότητα για ' . deseo_audience_month_label($currentMonthKey) . ' ενημερώθηκε. Τα MyLive estimates χρησιμοποιούν πλέον αυτό το audience.';
             }
-
-            if ($monthlyListeners > 1000000000) {
-                throw new RuntimeException('Ο αριθμός μηνιαίων ακροατών είναι υπερβολικά μεγάλος.');
-            }
-
-            $currentMonthKey = deseo_audience_current_month_key();
-            $stmt = $pdo->prepare(
-                "UPDATE deseo_audience_settings
-                 SET monthly_listeners = ?, audience_month = ?
-                 WHERE id = 1"
-            );
-            $stmt->execute([$monthlyListeners, $currentMonthKey]);
-
-            $notice = 'Η ακροαματικότητα για ' . deseo_audience_month_label($currentMonthKey) . ' ενημερώθηκε. Τα MyLive estimates χρησιμοποιούν πλέον αυτό το audience.';
         } catch (Throwable $e) {
             $error = $e instanceof RuntimeException
                 ? $e->getMessage()
-                : 'Η ακροαματικότητα δεν αποθηκεύτηκε.';
-            error_log('Audience settings save failed: ' . $e->getMessage());
+                : 'Η αλλαγή δεν αποθηκεύτηκε.';
+            error_log('Audience admin action failed: ' . $e->getMessage());
         }
     }
 }
@@ -53,7 +79,7 @@ $monthlyListeners = deseo_audience_monthly_listeners($pdo);
 $updatedAt = deseo_audience_updated_at($pdo);
 
 $activeStmt = $pdo->query(
-    "SELECT id, artist_name, day_of_week, start_time, end_time
+    "SELECT id, artist_name, day_of_week, start_time, end_time, show_audience_stats
      FROM dj_portal_accounts
      WHERE is_active = 1 AND account_status = 'active'
      ORDER BY day_of_week ASC, start_time ASC, artist_name ASC"
@@ -89,6 +115,7 @@ admin_page_start('Audience', 'audience');
 
         <form method="post" class="audience-form">
             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+            <input type="hidden" name="action" value="save_audience">
 
             <label>
                 <span>Monthly listeners · <?= admin_e($currentMonthLabel) ?></span>
@@ -168,11 +195,27 @@ admin_page_start('Audience', 'audience');
             <?php foreach ($activeAccounts as $account): ?>
                 <?php $estimate = deseo_audience_estimated_reach($pdo, $account); ?>
                 <div class="audience-dj-row">
-                    <div>
+                    <div class="audience-dj-copy">
                         <span><?= admin_e(deseo_mylive_day_label((int)$account['day_of_week'])) ?> · <?= admin_e(deseo_mylive_format_time((string)$account['start_time'])) ?>–<?= admin_e(deseo_mylive_format_time((string)$account['end_time'])) ?></span>
                         <strong><?= admin_e($account['artist_name']) ?></strong>
                     </div>
-                    <b><?= $monthlyListeners > 0 ? '~' . admin_e(deseo_audience_format($estimate)) : '—' ?></b>
+
+                    <div class="audience-dj-value">
+                        <span class="audience-visibility <?= !empty($account['show_audience_stats']) ? 'is-visible' : 'is-hidden' ?>">
+                            <?= !empty($account['show_audience_stats']) ? 'VISIBLE' : 'HIDDEN' ?>
+                        </span>
+                        <b><?= $monthlyListeners > 0 ? '~' . admin_e(deseo_audience_format($estimate)) : '—' ?></b>
+                    </div>
+
+                    <form method="post" class="audience-visibility-form">
+                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                        <input type="hidden" name="action" value="toggle_dj_stats">
+                        <input type="hidden" name="account_id" value="<?= (int)$account['id'] ?>">
+                        <input type="hidden" name="visible" value="<?= !empty($account['show_audience_stats']) ? '0' : '1' ?>">
+                        <button class="button <?= !empty($account['show_audience_stats']) ? 'button-secondary' : 'button-primary' ?>" type="submit">
+                            <?= !empty($account['show_audience_stats']) ? 'Hide stats' : 'Show stats' ?>
+                        </button>
+                    </form>
                 </div>
             <?php endforeach; ?>
         </div>
