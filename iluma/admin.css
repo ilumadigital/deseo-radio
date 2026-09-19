@@ -1095,3 +1095,84 @@ body.schedule-media-open{overflow:hidden}
   .schedule-media-grid{grid-template-columns:1fr 1fr;gap:7px}
   .schedule-media-meta{padding:8px}
 }
+
+
+/* RADIO PROGRAM EDIT SCOPE */
+.schedule-bulk-edit-note{
+  display:grid;
+  gap:5px;
+  margin-bottom:14px;
+  padding:14px 15px;
+  border:1px solid rgba(255,48,56,.22);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(255,48,56,.09),rgba(255,48,56,.03));
+}
+.schedule-bulk-edit-note span{
+  color:var(--acid);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.schedule-bulk-edit-note strong{
+  color:#fff;
+  font-size:12px;
+}
+.schedule-bulk-edit-note small{
+  color:#7b6c6e;
+  font-size:9px;
+  line-height:1.5;
+}
+
+.schedule-edit-choice-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:20px;
+}
+.schedule-edit-choice{
+  display:block;
+  min-width:0;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:17px;
+  background:#0b0b0c;
+  transition:border-color .18s,background .18s,transform .18s;
+}
+.schedule-edit-choice:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.17);
+  background:#111113;
+}
+.schedule-edit-choice span,
+.schedule-edit-choice strong,
+.schedule-edit-choice small{display:block}
+.schedule-edit-choice span{
+  color:#77777c;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.schedule-edit-choice strong{
+  margin-top:7px;
+  color:#fff;
+  font-size:13px;
+}
+.schedule-edit-choice small{
+  margin-top:6px;
+  color:#626268;
+  font-size:9px;
+  line-height:1.5;
+}
+.schedule-edit-choice.is-all{
+  border-color:rgba(255,48,56,.18);
+  background:rgba(255,48,56,.035);
+}
+.schedule-edit-choice.is-all span{color:var(--acid)}
+.schedule-edit-choice.is-all:hover{
+  border-color:rgba(255,48,56,.36);
+  background:rgba(255,48,56,.075);
+}
+
+@media(max-width:560px){
+  .schedule-edit-choice-grid{grid-template-columns:1fr}
+}
