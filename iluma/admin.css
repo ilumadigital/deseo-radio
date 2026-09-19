@@ -1258,3 +1258,52 @@ body.schedule-media-open{overflow:hidden}
   .schedule-overlap-card{padding:21px}
   .schedule-overlap-list{max-height:290px}
 }
+
+
+/* MYLIVE DJ SET RETENTION */
+.mylive-set-copy em{
+  display:block;
+  margin-top:4px;
+  color:#8c6b6e;
+  font-size:8px;
+  font-style:normal;
+  line-height:1.4;
+}
+.mylive-retention-state{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid rgba(255,48,56,.16);
+  border-radius:999px;
+  background:rgba(255,48,56,.04);
+  color:#c8878b;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+.mylive-retention-state.is-deleted{
+  border-color:var(--line);
+  background:#0a0a0b;
+  color:#66666c;
+}
+.mylive-set-admin-row{
+  grid-template-columns:minmax(0,1.35fr) .75fr minmax(110px,1fr) auto auto auto;
+}
+@media(max-width:980px){
+  .mylive-set-admin-row{
+    grid-template-columns:1fr 1fr;
+  }
+  .mylive-retention-state{
+    justify-content:center;
+  }
+}
+@media(max-width:650px){
+  .mylive-set-admin-row{
+    grid-template-columns:1fr;
+  }
+  .mylive-retention-state{
+    width:100%;
+  }
+}
