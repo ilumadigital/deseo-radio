@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+admin_require_access('audience');
+
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/audience-report.php';
