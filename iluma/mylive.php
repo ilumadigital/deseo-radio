@@ -268,6 +268,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )->execute([$active, $active ? 'active' : 'disabled', $accountId]);
                 $notice = $active ? 'Το MyLive account ενεργοποιήθηκε.' : 'Το MyLive account απενεργοποιήθηκε.';
 
+            } elseif ($action === 'toggle_public_profile') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $enabled = (int)($_POST['enabled'] ?? 0) === 1 ? 1 : 0;
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if ((string)($account['account_status'] ?? '') === 'pending') {
+                    throw new RuntimeException('Ενεργοποίησε πρώτα το MyLive access του DJ.');
+                }
+
+                $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET public_profile_enabled = ?
+                     WHERE id = ?"
+                )->execute([$enabled, $accountId]);
+
+                if ($enabled) {
+                    deseo_mylive_public_profile_ensure($pdo, $accountId);
+                    $notice = 'Το Public Profile demo ενεργοποιήθηκε για τον ' . (string)$account['artist_name'] . '. Τα αρχικά στοιχεία εισήχθησαν από την αίτηση, όπου υπήρχαν.';
+                } else {
+                    $notice = 'Το Public Profile απενεργοποιήθηκε για τον ' . (string)$account['artist_name'] . '. Δεν εμφανίζεται πλέον δημόσιο modal.';
+                }
+
             } elseif ($action === 'delete_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $account = mylive_admin_account($pdo, $accountId);
@@ -383,7 +405,9 @@ $accountsStmt = $pdo->query(
             b.photo_path AS application_photo,
             b.status AS application_status,
             (SELECT COUNT(*) FROM dj_portal_sets s WHERE s.account_id = a.id) AS set_count,
-            (SELECT COUNT(*) FROM dj_portal_assets x WHERE x.account_id = a.id) AS asset_count
+            (SELECT COUNT(*) FROM dj_portal_assets x WHERE x.account_id = a.id) AS asset_count,
+            (SELECT p.is_published FROM dj_public_profiles p WHERE p.account_id = a.id LIMIT 1) AS public_profile_published,
+            (SELECT p.published_at FROM dj_public_profiles p WHERE p.account_id = a.id LIMIT 1) AS public_profile_published_at
      FROM dj_portal_accounts a
      LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
      ORDER BY
@@ -657,6 +681,16 @@ admin_page_start('MyLive', 'mylive');
                             <?= $account['onboarding_email_sent_at'] ? 'Onboarding sent' : 'Onboarding not sent' ?>
                         </span>
                         <span>Last login: <?= $account['last_login_at'] ? admin_e(date('d.m.Y H:i', strtotime((string)$account['last_login_at']))) : 'Never' ?></span>
+                        <span class="<?= !empty($account['public_profile_enabled']) ? 'is-good' : '' ?>">
+                            Public profile:
+                            <?php if (empty($account['public_profile_enabled'])): ?>
+                                Off
+                            <?php elseif (!empty($account['public_profile_published'])): ?>
+                                Published
+                            <?php else: ?>
+                                Draft
+                            <?php endif; ?>
+                        </span>
                         <?php if (admin_is_administrator()): ?>
                             <span>Stats: <?= !empty($account['show_audience_stats']) ? 'Visible' : 'Hidden' ?></span>
                         <?php endif; ?>
@@ -712,6 +746,15 @@ admin_page_start('MyLive', 'mylive');
                                 </form>
 
                                 <div class="mylive-admin-actions">
+                                    <form method="post">
+                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="toggle_public_profile">
+                                        <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                        <input type="hidden" name="enabled" value="<?= !empty($account['public_profile_enabled']) ? '0' : '1' ?>">
+                                        <button class="button <?= !empty($account['public_profile_enabled']) ? 'button-secondary' : 'button-primary' ?>" type="submit">
+                                            <?= !empty($account['public_profile_enabled']) ? 'Disable Public Profile' : 'Enable Public Profile Demo' ?>
+                                        </button>
+                                    </form>
                                     <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το onboarding email;');">
                                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                         <input type="hidden" name="action" value="reset_access">
