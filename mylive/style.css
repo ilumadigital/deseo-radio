@@ -217,3 +217,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .dj-metric-card{min-height:118px;padding:20px 22px;border-radius:21px}
   .dj-metric-card>strong,.dj-metric-reach>strong{font-size:34px}
 }
+
+
+/* MYLIVE BRAND LOCKUP */
+.mylive-brand-lockup{
+    display:inline-flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+}
+.mylive-brand-lockup img{
+    display:block;
+    margin:0!important;
+}
+.mylive-brand-label{
+    display:block;
+    color:var(--red)!important;
+    font-size:10px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    letter-spacing:.28em!important;
+    text-transform:uppercase;
+}
+.login-brand .mylive-brand-lockup{margin-bottom:42px}
+.login-brand .mylive-brand-lockup img{width:176px}
+.password-card .mylive-brand-lockup-password{margin-bottom:30px}
+.password-card .mylive-brand-lockup-password img{width:164px}
+.portal-logo.mylive-brand-lockup{gap:6px}
+.portal-logo .mylive-brand-label{font-size:8px!important;letter-spacing:.25em!important}
+
+@media(max-width:620px){
+    .login-brand .mylive-brand-lockup{margin-bottom:30px}
+    .password-card .mylive-brand-lockup-password{margin-bottom:24px}
+    .password-card .mylive-brand-lockup-password img{width:136px}
+    .portal-logo .mylive-brand-label{font-size:7px!important}
+}
