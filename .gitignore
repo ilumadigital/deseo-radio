@@ -15,3 +15,10 @@ tailwindcss
 # Never push/pull uploaded media through Git.
 /iluma/uploads/*
 !/iluma/uploads/.gitignore
+
+# MyLive DJ sets and assets are production runtime data.
+# Never track, overwrite, pull, or redeploy user-uploaded files.
+/mylive/storage/**
+!/mylive/storage/.gitignore
+!/mylive/storage/.htaccess
+
