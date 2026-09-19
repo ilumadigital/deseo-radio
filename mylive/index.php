@@ -404,10 +404,16 @@ endif;
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
-$currentAudienceMonthLabel = deseo_audience_month_label();
+$latestAudience = deseo_audience_latest_record($pdo);
+$audienceMonthKey = $latestAudience ? (string)$latestAudience['month_key'] : '';
+$currentAudienceMonthLabel = $audienceMonthKey !== ''
+    ? deseo_audience_month_label($audienceMonthKey)
+    : deseo_audience_month_label();
 $statsVisible = !empty($account['show_audience_stats']);
-$monthlyAudience = deseo_audience_monthly_listeners($pdo);
-$estimatedReach = $statsVisible ? deseo_audience_estimated_reach($pdo, $account) : 0;
+$monthlyAudience = $latestAudience ? (int)$latestAudience['monthly_listeners'] : 0;
+$estimatedReach = ($statsVisible && $latestAudience && $audienceMonthKey !== '')
+    ? deseo_audience_estimated_reach_for_month($pdo, $account, $audienceMonthKey, $monthlyAudience)
+    : 0;
 $dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
 $startTime = deseo_mylive_format_time((string)$account['start_time']);
 ?>
