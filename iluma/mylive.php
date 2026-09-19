@@ -37,6 +37,28 @@ function mylive_admin_asset_extension(string $name): string {
     return strtolower(pathinfo($name, PATHINFO_EXTENSION));
 }
 
+function mylive_admin_remove_tree(string $directory, string $storageRoot): void {
+    $storageRootReal = realpath($storageRoot);
+    $directoryReal = realpath($directory);
+    if (!$storageRootReal || !$directoryReal || !str_starts_with($directoryReal, $storageRootReal . DIRECTORY_SEPARATOR)) {
+        return;
+    }
+
+    $items = scandir($directoryReal);
+    if ($items === false) return;
+
+    foreach ($items as $item) {
+        if ($item === '.' || $item === '..') continue;
+        $path = $directoryReal . DIRECTORY_SEPARATOR . $item;
+        if (is_dir($path)) {
+            mylive_admin_remove_tree($path, $storageRootReal);
+        } elseif (is_file($path)) {
+            @unlink($path);
+        }
+    }
+    @rmdir($directoryReal);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_verify_csrf($_POST['csrf_token'] ?? null)) {
         $error = 'Η συνεδρία έληξε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.';
@@ -152,6 +174,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $active = (int)($_POST['active'] ?? 0) === 1 ? 1 : 0;
                 $pdo->prepare("UPDATE dj_portal_accounts SET is_active = ? WHERE id = ?")->execute([$active, $accountId]);
                 $notice = $active ? 'Το MyLive account ενεργοποιήθηκε.' : 'Το MyLive account απενεργοποιήθηκε.';
+
+            } elseif ($action === 'delete_account') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                $pdo->beginTransaction();
+                try {
+                    $pdo->prepare("DELETE FROM dj_portal_accounts WHERE id = ?")->execute([$accountId]);
+                    $pdo->commit();
+                } catch (Throwable $deleteError) {
+                    if ($pdo->inTransaction()) $pdo->rollBack();
+                    throw $deleteError;
+                }
+
+                $storageRoot = dirname(__DIR__) . '/mylive/storage';
+                mylive_admin_remove_tree($storageRoot . '/' . $accountId, $storageRoot);
+                mylive_admin_remove_tree($storageRoot . '/assets/' . $accountId, $storageRoot);
+
+                $notice = 'Το MyLive account του ' . (string)$account['artist_name'] . ' διαγράφηκε μαζί με τα DJ Sets και τα προσωπικά assets. Η DJ αίτηση και το Radio Program δεν επηρεάστηκαν.';
 
             } elseif ($action === 'upload_asset') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -443,6 +484,12 @@ admin_page_start('MyLive', 'mylive');
                             <button class="button <?= !empty($account['is_active']) ? 'button-danger' : 'button-primary' ?>" type="submit">
                                 <?= !empty($account['is_active']) ? 'Disable account' : 'Enable account' ?>
                             </button>
+                        </form>
+                        <form method="post" onsubmit="return confirm('ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ: Θα διαγραφούν το MyLive account, όλα τα DJ Sets και όλα τα προσωπικά assets αυτού του DJ. Η αίτηση DJ και το Radio Program δεν θα επηρεαστούν. Συνέχεια;');">
+                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="delete_account">
+                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                            <button class="button button-danger" type="submit">Delete MyLive user</button>
                         </form>
                     </div>
                 </div>
