@@ -374,6 +374,14 @@ $accountsStmt = $pdo->query(
         a.id DESC"
 );
 $accounts = $accountsStmt->fetchAll(PDO::FETCH_ASSOC);
+$pendingAccounts = array_values(array_filter(
+    $accounts,
+    static fn(array $account): bool => (string)($account['account_status'] ?? '') === 'pending'
+));
+$managedAccounts = array_values(array_filter(
+    $accounts,
+    static fn(array $account): bool => (string)($account['account_status'] ?? '') !== 'pending'
+));
 
 $assetsByAccount = [];
 $setsByAccount = [];
@@ -413,12 +421,70 @@ admin_page_start('MyLive', 'mylive');
     </section>
 <?php endif; ?>
 
+<?php if ($pendingAccounts): ?>
+<section class="panel mylive-pending-panel">
+    <div class="mylive-panel-head">
+        <div>
+            <span>APPROVED APPLICATIONS · PENDING ACCESS</span>
+            <h2>Ready for MyLive</h2>
+            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί από τις Season 6 αιτήσεις. Τα στοιχεία τους έχουν μεταφερθεί αυτόματα εδώ, αλλά δεν έχουν ακόμη login ή password.</p>
+        </div>
+        <strong><?= count($pendingAccounts) ?></strong>
+    </div>
+
+    <div class="mylive-pending-list">
+        <?php foreach ($pendingAccounts as $pending): ?>
+            <article class="mylive-pending-card">
+                <div class="mylive-pending-main">
+                    <?php if (!empty($pending['application_photo'])): ?>
+                        <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
+                    <?php else: ?>
+                        <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
+                    <?php endif; ?>
+
+                    <div class="mylive-pending-copy">
+                        <span>PENDING ACCESS · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
+                        <h3><?= admin_e($pending['artist_name']) ?></h3>
+                        <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
+
+                        <div class="mylive-pending-tags">
+                            <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
+                            <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
+                            <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
+                            <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
+                            <?php if (!empty($pending['booking_id'])): ?><a href="dj-photo.php?id=<?= (int)$pending['booking_id'] ?>">Photo ↓</a><?php endif; ?>
+                        </div>
+
+                        <?php if (!empty($pending['application_bio'])): ?>
+                            <p class="mylive-pending-bio"><?= admin_e($pending['application_bio']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="mylive-pending-action">
+                    <div>
+                        <span>NO LOGIN YET</span>
+                        <p>Με το approve δημιουργείται temporary password, ενεργοποιείται το MyLive και στέλνεται αυτόματα το ενιαίο onboarding email.</p>
+                    </div>
+                    <form method="post" onsubmit="return confirm('Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email με temporary credentials;');">
+                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                        <input type="hidden" name="action" value="approve_pending">
+                        <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
+                        <button class="button button-primary" type="submit">Approve & Create Access</button>
+                    </form>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <section class="panel mylive-create-panel">
     <div class="mylive-panel-head">
         <div>
-            <span>NEW ACCOUNT</span>
-            <h2>Create & send onboarding</h2>
-            <p>Με μία ενέργεια δημιουργείται το account και αποστέλλεται ένα ενιαίο email με όλες τις Season 6 οδηγίες, το MyLive workflow και τα προσωρινά credentials στο τέλος.</p>
+            <span>MANUAL / STANDALONE ACCOUNT</span>
+            <h2>Create access manually</h2>
+            <p>Χρησιμοποίησέ το μόνο για DJ που δεν προέρχεται από τις Season 6 αιτήσεις. Για Approved applications χρησιμοποίησε το Pending Access queue παραπάνω.</p>
         </div>
         <strong>01</strong>
     </div>
@@ -473,10 +539,10 @@ admin_page_start('MyLive', 'mylive');
 </section>
 
 <section class="mylive-admin-list">
-<?php if (!$accounts): ?>
-    <div class="empty-admin">Δεν υπάρχουν ακόμη MyLive accounts.</div>
+<?php if (!$managedAccounts): ?>
+    <div class="empty-admin">Δεν υπάρχουν ακόμη ενεργά ή απενεργοποιημένα MyLive accounts.</div>
 <?php else: ?>
-    <?php foreach ($accounts as $account): ?>
+    <?php foreach ($managedAccounts as $account): ?>
         <?php
         $accountId = (int)$account['id'];
         $slot = deseo_mylive_slot($account);
@@ -486,7 +552,7 @@ admin_page_start('MyLive', 'mylive');
                 <div class="mylive-account-identity">
                     <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></div>
                     <div>
-                        <span><?= !empty($account['is_active']) ? 'ACTIVE' : 'DISABLED' ?> · <?= admin_e($slot) ?></span>
+                        <span><?= admin_e(strtoupper((string)($account['account_status'] ?? (!empty($account['is_active']) ? 'active' : 'disabled')))) ?> · <?= admin_e($slot) ?></span>
                         <h2><?= admin_e($account['artist_name']) ?></h2>
                         <p><?= admin_e($account['email']) ?></p>
                     </div>
