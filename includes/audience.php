@@ -22,7 +22,7 @@ function deseo_audience_bootstrap(PDO $pdo): void {
          VALUES (1, 0, '')"
     );
 
-    $currentMonth = date('Y-m');
+    $currentMonth = deseo_audience_current_month_key();
     $stmt = $pdo->prepare(
         "UPDATE deseo_audience_settings
          SET audience_month = ?
@@ -258,7 +258,7 @@ function deseo_audience_seeded_variation(
     ?string $endTime,
     ?string $monthKey = null
 ): float {
-    $monthKey = $monthKey ?: date('Y-m');
+    $monthKey = $monthKey ?: deseo_audience_current_month_key();
     $seed = implode('|', [
         'deseo-audience-v1',
         $accountId,
