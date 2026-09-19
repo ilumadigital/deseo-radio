@@ -1,0 +1,15 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block known search-engine and AI/model crawlers at the server layer.
+    RewriteCond %{HTTP_USER_AGENT} "(Googlebot|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|anthropic-ai|Google-Extended|PerplexityBot|CCBot|Bytespider|meta-externalagent|Applebot-Extended|Amazonbot|YouBot|cohere-ai|Diffbot)" [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate"
+    Header always set Cache-Control "private, no-store, no-cache, must-revalidate"
+    Header always set Pragma "no-cache"
+</IfModule>
