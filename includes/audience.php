@@ -36,12 +36,12 @@ function deseo_audience_updated_at(PDO $pdo): ?string {
 
 function deseo_audience_hour_share(int $hour): float {
     return match ($hour) {
-        18 => 0.075,
-        19 => 0.105,
+        18 => 0.080,
+        19 => 0.110,
         20 => 0.155,
         21 => 0.165,
-        22 => 0.120,
-        23 => 0.085,
+        22 => 0.140,
+        23 => 0.115,
         default => 0.055,
     };
 }
