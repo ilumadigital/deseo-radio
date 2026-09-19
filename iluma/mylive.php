@@ -14,14 +14,14 @@ try {
     $approvedStmt = $pdo->prepare(
         "SELECT id
          FROM dj_season_bookings
-         WHERE season = ? AND status = 'approved'"
+         WHERE season = ? AND status IN ('approved','guest')"
     );
     $approvedStmt->execute([DESEO_DJ_SEASON]);
     foreach ($approvedStmt->fetchAll(PDO::FETCH_COLUMN) as $approvedBookingId) {
         deseo_mylive_create_pending_from_booking($pdo, (int)$approvedBookingId);
     }
 } catch (Throwable $syncError) {
-    error_log('MyLive approved-DJ backfill failed: ' . $syncError->getMessage());
+    error_log('MyLive Approved/Guest DJ backfill failed: ' . $syncError->getMessage());
 }
 
 $notice = null;
@@ -380,6 +380,7 @@ $accountsStmt = $pdo->query(
             b.bio AS application_bio,
             b.set_type AS application_set_type,
             b.photo_path AS application_photo,
+            b.status AS application_status,
             (SELECT COUNT(*) FROM dj_portal_sets s WHERE s.account_id = a.id) AS set_count,
             (SELECT COUNT(*) FROM dj_portal_assets x WHERE x.account_id = a.id) AS asset_count
      FROM dj_portal_accounts a
@@ -441,9 +442,9 @@ admin_page_start('MyLive', 'mylive');
 <section class="panel mylive-pending-panel">
     <div class="mylive-panel-head">
         <div>
-            <span>APPROVED APPLICATIONS · PENDING ACCESS</span>
+            <span>APPROVED / GUEST APPLICATIONS · PENDING ACCESS</span>
             <h2>Ready for MyLive</h2>
-            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί από τις Season 6 αιτήσεις. Τα στοιχεία τους έχουν μεταφερθεί αυτόματα εδώ, αλλά δεν έχουν ακόμη login ή password.</p>
+            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί ως Approved ή Guest από τις Season 6 αιτήσεις. Τα στοιχεία τους έχουν μεταφερθεί αυτόματα εδώ, αλλά δεν έχουν ακόμη login ή password.</p>
         </div>
         <strong><?= count($pendingAccounts) ?></strong>
     </div>
@@ -459,7 +460,7 @@ admin_page_start('MyLive', 'mylive');
                     <?php endif; ?>
 
                     <div class="mylive-pending-copy">
-                        <span>PENDING ACCESS · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
+                        <span><?= admin_e(strtoupper((string)($pending['application_status'] ?? 'approved'))) ?> · PENDING ACCESS · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
                         <h3><?= admin_e($pending['artist_name']) ?></h3>
                         <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
 
@@ -500,7 +501,7 @@ admin_page_start('MyLive', 'mylive');
         <div>
             <span>MANUAL / STANDALONE ACCOUNT</span>
             <h2>Create access manually</h2>
-            <p>Χρησιμοποίησέ το μόνο για DJ που δεν προέρχεται από τις Season 6 αιτήσεις. Για Approved applications χρησιμοποίησε το Pending Access queue παραπάνω.</p>
+            <p>Χρησιμοποίησέ το μόνο για DJ που δεν προέρχεται από τις Season 6 αιτήσεις. Για Approved ή Guest applications χρησιμοποίησε το Pending Access queue παραπάνω.</p>
         </div>
         <strong>01</strong>
     </div>
