@@ -239,6 +239,55 @@ function deseo_audience_report_email(array $report, string $newMonthKey): array 
     ];
 }
 
+function deseo_audience_send_test_report(PDO $pdo): array {
+    deseo_audience_bootstrap($pdo);
+
+    $latest = deseo_audience_latest_record($pdo);
+    $reportMonth = $latest
+        ? (string)$latest['month_key']
+        : deseo_audience_previous_month_key();
+
+    if ($reportMonth === '') {
+        $reportMonth = deseo_audience_current_month_key();
+    }
+
+    $reportDate = DateTimeImmutable::createFromFormat(
+        '!Y-m',
+        $reportMonth,
+        new DateTimeZone('Europe/Athens')
+    );
+    $nextMonth = $reportDate
+        ? $reportDate->modify('+1 month')->format('Y-m')
+        : deseo_audience_current_month_key();
+
+    $report = deseo_audience_report_data($pdo, $reportMonth);
+    $mail = deseo_audience_report_email($report, $nextMonth);
+
+    $mail['subject'] = '[TEST] ' . (string)$mail['subject'];
+    $mail['html'] = str_replace(
+        'ILUMA CMS · MONTHLY AUDIENCE',
+        'TEST EMAIL · ILUMA CMS · MONTHLY AUDIENCE',
+        (string)$mail['html']
+    );
+    $mail['text'] = "TEST EMAIL · ILUMA CMS\n\n" . (string)$mail['text'];
+
+    // Test reports are intentionally hard-coded to Greg only.
+    // This function never updates deseo_audience_report_state.
+    deseo_send_smtp_mail(
+        DESEO_AUDIENCE_REPORT_RECIPIENT,
+        DESEO_AUDIENCE_REPORT_RECIPIENT_NAME,
+        (string)$mail['subject'],
+        (string)$mail['html'],
+        (string)$mail['text']
+    );
+
+    return [
+        'status' => 'test_sent',
+        'month' => $reportMonth,
+        'recipient' => DESEO_AUDIENCE_REPORT_RECIPIENT,
+    ];
+}
+
 function deseo_audience_maybe_send_monthly_report(PDO $pdo): array {
     deseo_audience_bootstrap($pdo);
 
