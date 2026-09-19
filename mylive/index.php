@@ -468,7 +468,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         <article class="dj-metric-card dj-metric-reach">
             <span>ΣΕ ΑΚΟΥΣΑΝ</span>
             <?php if (!$statsVisible): ?>
-                <strong>No Data</strong>
+                <strong>Not Available</strong>
             <?php else: ?>
                 <strong><?= $monthlyAudience > 0 ? '~' . deseo_mylive_e(deseo_audience_format($estimatedReach)) : '—' ?></strong>
                 <small><?= $monthlyAudience > 0 ? 'εκτιμώμενη απήχηση · ' . deseo_mylive_e($currentAudienceMonthLabel) : 'Δεν έχει καταχωρηθεί ακόμη audience για ' . deseo_mylive_e($currentAudienceMonthLabel) ?></small>
