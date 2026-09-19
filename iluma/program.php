@@ -104,6 +104,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        if ($action === 'delete_show_week') {
+            $showName = trim((string)($_POST['show_name'] ?? ''));
+
+            if ($showName === '') {
+                $error = 'Δεν βρέθηκε έγκυρο όνομα εκπομπής.';
+            } else {
+                $stmt = $pdo->prepare(
+                    "SELECT id, photo_path
+                     FROM program
+                     WHERE LOWER(TRIM(dj_name)) = LOWER(TRIM(?))"
+                );
+                $stmt->execute([$showName]);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!$rows) {
+                    $error = 'Δεν βρέθηκαν εμφανίσεις αυτής της εκπομπής.';
+                } else {
+                    $ids = array_map(static fn(array $row): int => (int)$row['id'], $rows);
+                    $photos = array_map(static fn(array $row): string => (string)$row['photo_path'], $rows);
+
+                    $pdo->beginTransaction();
+                    try {
+                        program_delete_ids($pdo, $ids);
+                        $pdo->commit();
+                        program_cleanup_photos($pdo, $photos);
+
+                        $deletedCount = count($ids);
+                        $success = 'Διαγράφηκαν όλες οι εμφανίσεις του "' . $showName . '" από την εβδομάδα (' . $deletedCount . ' slots).';
+                    } catch (Throwable $e) {
+                        if ($pdo->inTransaction()) $pdo->rollBack();
+                        error_log('Program weekly show delete failed: ' . $e->getMessage());
+                        $error = 'Δεν ήταν δυνατή η διαγραφή της εκπομπής από όλη την εβδομάδα.';
+                    }
+                }
+            }
+        }
+
         if ($action === 'delete_day') {
             $stmt = $pdo->prepare("SELECT id, photo_path FROM program WHERE day_of_week = ?");
             $stmt->execute([$selectedDay]);
@@ -329,6 +366,18 @@ foreach ($countRows as $row) {
 }
 $totalProgram = array_sum($dayCounts);
 
+$weeklyShowRows = $pdo->query(
+    "SELECT LOWER(TRIM(dj_name)) AS show_key, COUNT(*) AS total
+     FROM program
+     GROUP BY LOWER(TRIM(dj_name))"
+)->fetchAll(PDO::FETCH_ASSOC);
+
+$weeklyShowCounts = [];
+foreach ($weeklyShowRows as $row) {
+    $weeklyShowCounts[(string)$row['show_key']] = (int)$row['total'];
+}
+$uniqueShowCount = count($weeklyShowCounts);
+
 $stmt = $pdo->prepare(
     "SELECT *
      FROM program
@@ -409,6 +458,12 @@ admin_page_start('Radio Program', 'program');
         </a>
     <?php endforeach; ?>
 </nav>
+
+<section class="schedule-overview">
+    <div><span>WEEK TOTAL</span><strong><?= $totalProgram ?></strong><small>program slots</small></div>
+    <div><span>UNIQUE SHOWS</span><strong><?= $uniqueShowCount ?></strong><small>different shows</small></div>
+    <div><span><?= admin_e(strtoupper($dayShort[$selectedDay])) ?></span><strong><?= (int)$dayCounts[$selectedDay] ?></strong><small>slots selected day</small></div>
+</section>
 
 <div class="schedule-layout">
     <section class="panel schedule-editor-panel">
@@ -542,23 +597,37 @@ admin_page_start('Radio Program', 'program');
                 <?php foreach ($program as $item): ?>
                     <article class="program-row <?= $editRecord && (int)$editRecord['id'] === (int)$item['id'] ? 'is-editing' : '' ?>">
                         <img src="<?= admin_e($item['photo_path'] ?: '/assets/img/bg.png') ?>" alt="">
+                        <?php
+                        $showKey = mb_strtolower(trim((string)$item['dj_name']), 'UTF-8');
+                        $weeklyOccurrences = (int)($weeklyShowCounts[$showKey] ?? 1);
+                        ?>
                         <div class="program-row-copy">
                             <span class="program-time"><?= substr((string)$item['start_time'],0,5) ?> — <?= substr((string)$item['end_time'],0,5) ?></span>
                             <h3><?= admin_e($item['dj_name']) ?></h3>
+                            <small><?= $weeklyOccurrences ?> <?= $weeklyOccurrences === 1 ? 'slot' : 'slots' ?> this week</small>
                         </div>
 
                         <div class="program-row-actions">
-                            <a class="schedule-edit-link"
+                            <a class="schedule-action schedule-action-edit"
                                href="program.php?day=<?= $selectedDay ?>&edit=<?= (int)$item['id'] ?>">Edit</a>
+
                             <form method="post"
                                   action="program.php?day=<?= $selectedDay ?>"
-                                  onsubmit="return confirm('Να διαγραφεί αυτή η εκπομπή;');">
+                                  onsubmit="return confirm('Να διαγραφεί μόνο αυτό το συγκεκριμένο slot;');">
                                 <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="day" value="<?= $selectedDay ?>">
                                 <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                                <button class="danger-link" type="submit">Delete</button>
+                                <button class="schedule-action schedule-action-delete" type="submit">Delete slot</button>
                             </form>
+
+                            <button
+                                class="schedule-action schedule-action-week"
+                                type="button"
+                                data-delete-week
+                                data-show-name="<?= admin_e((string)$item['dj_name']) ?>"
+                                data-show-count="<?= $weeklyOccurrences ?>"
+                            >Delete all week</button>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -569,6 +638,35 @@ admin_page_start('Radio Program', 'program');
                 Πρόσθεσε την πρώτη εκπομπή από τη φόρμα.
             </div>
         <?php endif; ?>
+    </section>
+</div>
+
+<div class="schedule-modal" id="deleteWeekModal" hidden>
+    <div class="schedule-modal-backdrop" data-modal-close></div>
+    <section class="schedule-modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteWeekTitle">
+        <span class="schedule-modal-kicker">DELETE FROM ENTIRE WEEK</span>
+        <h2 id="deleteWeekTitle">Να διαγραφεί όλη η εβδομάδα;</h2>
+        <p>
+            Θα διαγραφούν όλες οι εμφανίσεις του
+            <strong id="deleteWeekShowName"></strong>
+            από όλες τις ημέρες της εβδομάδας.
+        </p>
+        <div class="schedule-modal-count">
+            <span>SLOTS TO DELETE</span>
+            <strong id="deleteWeekCount">0</strong>
+        </div>
+        <p class="schedule-modal-warning">Η ενέργεια δεν αναιρείται.</p>
+
+        <div class="schedule-modal-actions">
+            <button class="button button-secondary" type="button" data-modal-close>Όχι, κράτησέ τα</button>
+            <form method="post" action="program.php?day=<?= $selectedDay ?>">
+                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                <input type="hidden" name="action" value="delete_show_week">
+                <input type="hidden" name="day" value="<?= $selectedDay ?>">
+                <input type="hidden" name="show_name" id="deleteWeekShowInput" value="">
+                <button class="button button-danger" type="submit">Ναι, διαγραφή όλων</button>
+            </form>
+        </div>
     </section>
 </div>
 
@@ -586,8 +684,46 @@ admin_page_start('Radio Program', 'program');
     end.required = !disabled;
   }
 
-  all.addEventListener('change', sync);
-  sync();
+  if (all && start && end) {
+    all.addEventListener('change', sync);
+    sync();
+  }
+
+  var modal = document.getElementById('deleteWeekModal');
+  var modalName = document.getElementById('deleteWeekShowName');
+  var modalCount = document.getElementById('deleteWeekCount');
+  var modalInput = document.getElementById('deleteWeekShowInput');
+
+  function closeDeleteWeekModal(){
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove('schedule-modal-open');
+  }
+
+  document.querySelectorAll('[data-delete-week]').forEach(function(button){
+    button.addEventListener('click', function(){
+      if (!modal) return;
+      var name = button.getAttribute('data-show-name') || '';
+      var count = button.getAttribute('data-show-count') || '0';
+
+      if (modalName) modalName.textContent = name;
+      if (modalCount) modalCount.textContent = count;
+      if (modalInput) modalInput.value = name;
+
+      modal.hidden = false;
+      document.body.classList.add('schedule-modal-open');
+    });
+  });
+
+  document.querySelectorAll('[data-modal-close]').forEach(function(button){
+    button.addEventListener('click', closeDeleteWeekModal);
+  });
+
+  document.addEventListener('keydown', function(event){
+    if (event.key === 'Escape' && modal && !modal.hidden) {
+      closeDeleteWeekModal();
+    }
+  });
 }());
 </script>
 <?php admin_page_end(); ?>
