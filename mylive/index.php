@@ -733,6 +733,63 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             <?php endif; ?>
         </div>
     </section>
+
+    <section class="mylive-station-section" aria-labelledby="mylive-station-title">
+        <div class="section-head mylive-station-head">
+            <div>
+                <span class="eyebrow">DESEO RADIO · LIVE</span>
+                <h2 id="mylive-station-title">Listen to the station.</h2>
+                <p>Άκου live τον σταθμό και δες το σημερινό πρόγραμμα όπως ακριβώς εμφανίζεται στο Deseo Radio.</p>
+            </div>
+            <span class="mylive-live-state"><i></i> LIVE 24/7</span>
+        </div>
+
+        <div class="mylive-station-grid">
+            <article class="mylive-player-deck">
+                <div class="mylive-station-label">
+                    <span class="mylive-live-dot" aria-hidden="true"></span>
+                    <span>NOW PLAYING</span>
+                </div>
+
+                <div class="mylive-player-frame">
+                    <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true"
+                            width="100%"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media; clipboard-write;"
+                            style="border:none; width:100%; max-width:600px; aspect-ratio:1 / 1; margin:0 auto; display:block; box-shadow:0 20px 40px rgba(0,0,0,0.5); border-radius:32px; overflow:hidden;"></iframe>
+                </div>
+            </article>
+
+            <article class="deseo-panel mylive-program-panel" id="mylive-program">
+                <header class="deseo-panel-header">
+                    <h3>PROGRAM</h3>
+                    <span>DESEO RADIO</span>
+                </header>
+
+                <div class="deseo-panel-body" id="mylive-program-body" aria-live="polite">
+                    <div class="deseo-panel-empty">Loading today’s program…</div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="mylive-referral-section">
+        <div class="mylive-referral-copy">
+            <span class="mylive-referral-kicker"><i></i> DJ PARTNER REWARD</span>
+            <h2>Φέρε το brand.<br>Κράτα το 20%.</h2>
+        </div>
+
+        <div class="mylive-referral-action">
+            <p>Ξέρεις μια επιχείρηση που θέλει να ακουστεί στο Deseo Radio; Σύστησέ τη στην ILUMA και κέρδισε <strong>20%</strong> από κάθε νέα διαφημιστική καμπάνια που κλείνει μέσω της δικής σου σύστασης.</p>
+
+            <a href="https://iluma.gr/contact/?service=radio_ads&ref=myads-demo#digital-services"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="mylive-referral-button">
+                ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ ↗
+            </a>
+        </div>
+    </section>
 </main>
 
 <footer class="mylive-footer">
@@ -827,6 +884,146 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         xhr.send(new FormData(form));
     });
 })();
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    var body = document.getElementById('mylive-program-body');
+    if (!body) return;
+
+    var refreshTimer = null;
+    var refreshHour = Math.floor(Date.now() / 3600000);
+
+    function programTime(value) {
+        return value && typeof value === 'string' ? value.slice(0, 5) : '--:--';
+    }
+
+    function createImage(show) {
+        var image = document.createElement('img');
+        image.className = 'deseo-row-cover';
+        image.src = show.photo_path || '/assets/img/bg.png';
+        image.alt = show.dj_name || 'Deseo Radio';
+        image.addEventListener('error', function () {
+            if (this.getAttribute('src') !== '/assets/img/bg.png') {
+                this.setAttribute('src', '/assets/img/bg.png');
+            }
+        });
+        return image;
+    }
+
+    function renderProgram(today, nextShow) {
+        body.textContent = '';
+
+        if (!Array.isArray(today) || !today.length) {
+            var empty = document.createElement('div');
+            empty.className = 'deseo-panel-empty';
+            empty.textContent = 'Δεν υπάρχει καταχωρημένο πρόγραμμα για σήμερα.';
+            body.appendChild(empty);
+            return;
+        }
+
+        today.forEach(function (show) {
+            var row = document.createElement('div');
+            row.className = 'deseo-panel-row deseo-program-row' + (show.is_live ? ' is-live' : '');
+
+            row.appendChild(createImage(show));
+
+            var copy = document.createElement('span');
+            copy.className = 'deseo-row-copy';
+
+            var time = document.createElement('small');
+            time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
+
+            var name = document.createElement('strong');
+            name.textContent = show.dj_name || 'Deseo Radio';
+
+            copy.appendChild(time);
+            copy.appendChild(name);
+            row.appendChild(copy);
+
+            if (show.is_live) {
+                var live = document.createElement('span');
+                live.className = 'deseo-live-tag';
+                live.textContent = 'LIVE';
+                row.appendChild(live);
+            } else if (show.profile) {
+                var profile = document.createElement('span');
+                profile.className = 'deseo-profile-tag';
+                profile.textContent = 'PROFILE';
+                row.appendChild(profile);
+            }
+
+            body.appendChild(row);
+        });
+
+        if (nextShow) {
+            var next = document.createElement('div');
+            next.className = 'deseo-next-pill';
+
+            var label = document.createElement('span');
+            label.textContent = 'Next:';
+
+            var name = document.createElement('strong');
+            name.textContent = nextShow.dj_name || 'Deseo Radio';
+
+            var time = document.createElement('small');
+            time.textContent = '· ' + programTime(nextShow.start_time);
+
+            next.appendChild(label);
+            next.appendChild(name);
+            next.appendChild(time);
+            body.appendChild(next);
+        }
+    }
+
+    function refreshProgram() {
+        return fetch('/?program_feed=1&_=' + Date.now(), {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(function (response) {
+            if (!response.ok) throw new Error('Program feed unavailable');
+            return response.json();
+        })
+        .then(function (payload) {
+            if (!payload || !Array.isArray(payload.today)) return;
+            renderProgram(payload.today, payload.next || null);
+            refreshHour = Math.floor(Date.now() / 3600000);
+        })
+        .catch(function () {
+            if (!body.children.length || body.querySelector('.deseo-panel-empty')) {
+                body.innerHTML = '<div class="deseo-panel-empty">Το πρόγραμμα δεν είναι διαθέσιμο αυτή τη στιγμή.</div>';
+            }
+        });
+    }
+
+    function scheduleRefresh() {
+        if (refreshTimer) window.clearTimeout(refreshTimer);
+        var hour = 60 * 60 * 1000;
+        var delay = hour - (Date.now() % hour) + 1200;
+
+        refreshTimer = window.setTimeout(function () {
+            refreshProgram().finally(scheduleRefresh);
+        }, delay);
+    }
+
+    refreshProgram().finally(scheduleRefresh);
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState !== 'visible') return;
+        var currentHour = Math.floor(Date.now() / 3600000);
+        if (currentHour !== refreshHour) {
+            refreshProgram().finally(scheduleRefresh);
+        }
+    });
+
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) refreshProgram().finally(scheduleRefresh);
+    });
+}());
 </script>
 </body>
 </html>
