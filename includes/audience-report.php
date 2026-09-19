@@ -212,7 +212,7 @@ function deseo_audience_report_email(array $report, string $newMonthKey): array 
 
             '<div style="margin-top:28px;padding:22px;border:1px solid rgba(255,43,54,.28);border-radius:18px;background:rgba(255,43,54,.06);">' .
                 '<div style="color:#ff2b36;font:800 9px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;">NEXT ACTION · ' . $e($newMonthLabel) . '</div>' .
-                '<h2 style="margin:7px 0 8px;color:#fff;font:800 22px Arial,sans-serif;">Πέρασε τα νέα audience stats.</h2>' .
+                '<h2 style="margin:7px 0 8px;color:#fff;font:800 22px Arial,sans-serif;">Όταν είναι διαθέσιμα, πέρασε τα νέα audience stats.</h2>' .
                 '<p style="margin:0;color:#8f8f96;font:400 13px/1.65 Arial,sans-serif;">Μέχρι να καταχωρηθούν τα νέα στοιχεία, οι DJs συνεχίζουν να βλέπουν τον τελευταίο ολοκληρωμένο μήνα στο MyLive. Μόλις αποθηκευτεί το νέο audience, τα estimates ενημερώνονται αυτόματα.</p>' .
                 '<a href="https://deseoradio.com/iluma/audience.php" style="display:inline-block;margin-top:17px;padding:12px 18px;border-radius:999px;background:#ff2b36;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.05em;">OPEN AUDIENCE IN ILUMA CMS</a>' .
             '</div>' .
@@ -229,7 +229,7 @@ function deseo_audience_report_email(array $report, string $newMonthKey): array 
         "Assets published: " . (int)$report['total_assets'] . "\n" .
         "Stats visible: " . (int)$report['visible_djs'] . "/" . (int)$report['active_djs'] . "\n" .
         "Strongest estimated reach: {$strongestText}\n\n" .
-        "Next action: πέρασε τα νέα audience stats για {$newMonthLabel}.\n" .
+        "Next action: όταν είναι διαθέσιμα, πέρασε τα νέα audience stats για {$newMonthLabel}.\n" .
         "https://deseoradio.com/iluma/audience.php";
 
     return [
