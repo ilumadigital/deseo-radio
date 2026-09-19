@@ -19,6 +19,15 @@ if ($customEnvFile !== false && trim($customEnvFile) !== '') {
 $envCandidates[] = $domainRoot . '/.env';
 $envCandidates[] = $projectRoot . '/.env';
 
+// Hostinger / Hestia style layouts commonly keep .env one level above public_html.
+// Resolve it from the actual web document root as well, so SMTP and DB loading do
+// not depend on where the repository directory happens to sit.
+$documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string)$_SERVER['DOCUMENT_ROOT']) : false;
+if ($documentRoot !== false && $documentRoot !== '') {
+    $envCandidates[] = dirname($documentRoot) . '/.env';
+    $envCandidates[] = $documentRoot . '/.env';
+}
+
 $homeDir = getenv('HOME');
 if ($homeDir !== false && trim($homeDir) !== '') {
     $envCandidates[] = rtrim($homeDir, '/\\') . '/.deseo-radio.env';
