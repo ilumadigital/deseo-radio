@@ -48,7 +48,7 @@ $mime = (string)$asset['mime_type'] ?: 'application/octet-stream';
 $downloadName = basename((string)$asset['original_name']);
 $disposition = ($viewInline && str_starts_with($mime, 'image/')) ? 'inline' : 'attachment';
 
-header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . filesize($file));
 header(
@@ -56,6 +56,7 @@ header(
     . '; filename="' . rawurlencode($downloadName) . '"'
     . "; filename*=UTF-8''" . rawurlencode($downloadName)
 );
-header('Cache-Control: private, no-store');
+header('Cache-Control: private, no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
 readfile($file);
 exit;
