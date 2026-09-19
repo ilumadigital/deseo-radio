@@ -2187,3 +2187,96 @@ h2,
     letter-spacing:-.05em!important;
   }
 }
+
+
+/* DJs Call */
+.dj-call-section{
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 12% 50%,rgba(255,43,54,.08),transparent 34%),
+    #070708;
+}
+.dj-call-grid{
+  display:grid;
+  grid-template-columns:minmax(320px,.88fr) minmax(0,1.12fr);
+  align-items:center;
+  gap:clamp(48px,7vw,104px);
+}
+.dj-call-visual{
+  position:relative;
+  display:block;
+  overflow:hidden;
+  aspect-ratio:1/1;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:30px;
+  background:#0d0d0f;
+  box-shadow:0 38px 100px rgba(0,0,0,.48);
+}
+.dj-call-visual:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+}
+.dj-call-visual img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  transition:transform .6s cubic-bezier(.2,.7,.2,1),filter .6s ease;
+}
+.dj-call-visual:hover img{
+  transform:scale(1.025);
+  filter:brightness(1.04);
+}
+.dj-call-copy{
+  max-width:720px;
+}
+.dj-call-copy .section-title{
+  max-width:690px;
+}
+.dj-call-copy>p{
+  max-width:590px;
+  margin:28px 0 30px;
+  color:#8a8a90;
+  font-size:14px;
+  line-height:1.85;
+}
+.dj-call-cta{
+  min-width:190px;
+}
+
+@media (max-width:900px){
+  .dj-call-grid{
+    grid-template-columns:1fr;
+    gap:36px;
+  }
+  .dj-call-visual{
+    width:min(100%,620px);
+  }
+  .dj-call-copy{
+    max-width:680px;
+  }
+}
+
+@media (max-width:640px){
+  .dj-call-section{
+    padding-top:82px;
+    padding-bottom:82px;
+  }
+  .dj-call-grid{
+    gap:30px;
+  }
+  .dj-call-visual{
+    border-radius:24px;
+  }
+  .dj-call-copy>p{
+    margin:22px 0 26px;
+    font-size:13px;
+  }
+  .dj-call-cta{
+    width:100%;
+  }
+}
