@@ -58,8 +58,27 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
 
     try {
         $pdo->exec("ALTER TABLE dj_portal_accounts MODIFY booking_id BIGINT NULL");
+
+        $ruleStmt = $pdo->query(
+            "SELECT DELETE_RULE
+             FROM information_schema.REFERENTIAL_CONSTRAINTS
+             WHERE CONSTRAINT_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'dj_portal_accounts'
+               AND CONSTRAINT_NAME = 'fk_portal_booking'
+             LIMIT 1"
+        );
+        $deleteRule = $ruleStmt ? strtoupper((string)$ruleStmt->fetchColumn()) : '';
+        if ($deleteRule !== '' && $deleteRule !== 'SET NULL') {
+            $pdo->exec("ALTER TABLE dj_portal_accounts DROP FOREIGN KEY fk_portal_booking");
+            $pdo->exec(
+                "ALTER TABLE dj_portal_accounts
+                 ADD CONSTRAINT fk_portal_booking
+                 FOREIGN KEY (booking_id) REFERENCES dj_season_bookings(id)
+                 ON UPDATE CASCADE ON DELETE SET NULL"
+            );
+        }
     } catch (Throwable $e) {
-        error_log('MyLive booking_id migration: ' . $e->getMessage());
+        error_log('MyLive booking link migration: ' . $e->getMessage());
     }
 
     try {
