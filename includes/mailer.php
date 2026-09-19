@@ -349,7 +349,9 @@ function deseo_dj_approval_email(array $booking): array {
             'Τύπος set' => $c['set_type'],
         ],
         'Επόμενα βήματα',
-        'Η συμμετοχή σου στη Season 6 έχει επιβεβαιωθεί. Το MyLive access δεν αποστέλλεται με αυτό το email. Θα λάβεις ξεχωριστό δεύτερο email όταν ενεργοποιηθεί ο λογαριασμός σου, με temporary password, οδηγίες για τα DJ Sets, τα assets και το προσωπικό σου dashboard.'
+        'Η συμμετοχή σου στη Season 6 έχει επιβεβαιωθεί. Από εδώ και πέρα, η διαχείριση όλου του υλικού του show σου θα γίνεται αποκλειστικά μέσα από το <strong style="color:#fff;">MyLive</strong>, τον προσωπικό σου χώρο στο Deseo Radio.<br><br>'
+        . 'Από εκεί θα ανεβάζεις τα DJ Sets σου, θα κατεβάζεις artwork, προσωπικό imaging και promotional assets, και θα βλέπεις συγκεντρωμένα τα βασικά στοιχεία και τα διαθέσιμα στατιστικά του show σου.<br><br>'
+        . 'Σε δεύτερο ξεχωριστό email θα λάβεις τους προσωπικούς σου κωδικούς πρόσβασης, το temporary password και αναλυτικές οδηγίες για το πώς χρησιμοποιείται το MyLive.'
     );
 
     $text = "DESEO RADIO · SEASON 6\n\n" .
@@ -358,7 +360,8 @@ function deseo_dj_approval_email(array $booking): array {
         "Ημέρα / ώρα: {$c['slot']}\n" .
         "Artist name: {$c['artist']}\n\n" .
         "Η συμμετοχή σου έχει επιβεβαιωθεί.\n" .
-        "Το MyLive access θα σταλεί ξεχωριστά σε δεύτερο email όταν ενεργοποιηθεί ο λογαριασμός σου. Εκεί θα λάβεις temporary password και όλες τις οδηγίες.\n\n" .
+        "Από εδώ και πέρα, η διαχείριση όλου του υλικού του show σου θα γίνεται αποκλειστικά μέσα από το MyLive. Εκεί θα ανεβάζεις DJ Sets, θα κατεβάζεις artwork, imaging και promotional assets και θα βλέπεις συγκεντρωμένα τα βασικά στοιχεία και τα διαθέσιμα στατιστικά του show σου.\n\n" .
+        "Σε δεύτερο ξεχωριστό email θα λάβεις τους προσωπικούς σου κωδικούς πρόσβασης, το temporary password και αναλυτικές οδηγίες χρήσης του MyLive.\n\n" .
         "Deseo Radio · radio@iluma.gr";
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
