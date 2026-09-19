@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
 
                 if ($mailResults['technical'] && $mailResults['access']) {
-                    $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκαν αυτόματα και τα δύο IMPORTANT emails.';
+                    $notice = 'Το MyLive account δημιουργήθηκε και στάλθηκαν αυτόματα και τα δύο emails.';
                 } elseif ($mailResults['technical'] || $mailResults['access']) {
                     $notice = 'Το MyLive account δημιουργήθηκε. Στάλθηκε αυτόματα το ένα από τα δύο emails.';
                     $error = 'Το άλλο email δεν στάλθηκε: ' . implode(' · ', $mailErrors);
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail = deseo_mylive_technical_email($account);
                 deseo_send_smtp_mail((string)$account['email'], (string)$account['artist_name'], $mail['subject'], $mail['html'], $mail['text'], true);
                 $pdo->prepare("UPDATE dj_portal_accounts SET onboarding_email_sent_at = NOW() WHERE id = ?")->execute([$accountId]);
-                $notice = 'Οι IMPORTANT τεχνικές οδηγίες στάλθηκαν ξανά.';
+                $notice = 'Οι τεχνικές οδηγίες στάλθηκαν ξανά.';
 
             } elseif ($action === 'reset_access') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'email' => (string)$account['email'],
                     'password' => $temporaryPassword
                 ];
-                $notice = 'Δημιουργήθηκε νέο temporary password και στάλθηκε IMPORTANT access email.';
+                $notice = 'Δημιουργήθηκε νέο temporary password και στάλθηκε το access email.';
 
             } elseif ($action === 'toggle_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -356,7 +356,7 @@ admin_page_start('MyLive', 'mylive');
     <div>
         <span>Deseo Radio · DJ Delivery</span>
         <h1>MyLive accounts</h1>
-        <p>Δημιούργησε DJ access, στείλε αυτόματα τα branded IMPORTANT emails και διαχειρίσου sets, artwork και imaging από ένα σημείο.</p>
+        <p>Δημιούργησε DJ access, στείλε αυτόματα τα branded onboarding emails και διαχειρίσου sets, artwork και imaging από ένα σημείο.</p>
     </div>
     <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
 </div>
@@ -424,8 +424,8 @@ admin_page_start('MyLive', 'mylive');
         </div>
 
         <div class="mylive-email-preview-strip">
-            <div><span>EMAIL 01</span><strong>IMPORTANT · Season 6 Instructions</strong></div>
-            <div><span>EMAIL 02</span><strong>IMPORTANT · MyLive Access</strong></div>
+            <div><span>EMAIL 01</span><strong>Season 6 Instructions</strong></div>
+            <div><span>EMAIL 02</span><strong>MyLive Access</strong></div>
         </div>
 
         <div class="form-actions">
