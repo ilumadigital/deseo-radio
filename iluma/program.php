@@ -122,6 +122,33 @@ function program_normalize_photo_reference(string $value): string {
     return $value;
 }
 
+function program_media_folder_label(string $rootLabel, string $relativeFolder): string {
+    if ($relativeFolder === '.' || $relativeFolder === '') {
+        return $rootLabel;
+    }
+
+    $parts = explode('/', str_replace('\\', '/', $relativeFolder));
+    $mapped = [];
+
+    foreach ($parts as $part) {
+        $key = strtolower(trim($part));
+        $mapped[] = match ($key) {
+            'deseo_auto' => 'Deseo Auto',
+            'deseo_djs' => 'deseo djs',
+            default => str_replace('_', ' ', $part),
+        };
+    }
+
+    // For the two dedicated Deseo media folders, show them as top-level
+    // categories instead of prefixing them with "Uploads".
+    $first = strtolower(trim($parts[0] ?? ''));
+    if (in_array($first, ['deseo_auto', 'deseo_djs'], true)) {
+        return implode(' / ', $mapped);
+    }
+
+    return $rootLabel . ' / ' . implode(' / ', $mapped);
+}
+
 function program_media_library_collect(string $absoluteRoot, string $publicBase, string $rootLabel): array {
     $rootReal = realpath($absoluteRoot);
     if (!$rootReal || !is_dir($rootReal)) return [];
@@ -153,9 +180,7 @@ function program_media_library_collect(string $absoluteRoot, string $publicBase,
             $url = rtrim($publicBase, '/') . '/' . implode('/', $segments);
 
             $relativeFolder = dirname($relative);
-            $folder = $relativeFolder === '.'
-                ? $rootLabel
-                : $rootLabel . ' / ' . str_replace('/', ' / ', $relativeFolder);
+            $folder = program_media_folder_label($rootLabel, $relativeFolder);
 
             $items[] = [
                 'url' => $url,
@@ -577,7 +602,23 @@ $mediaFolders = array_values(array_unique(array_map(
     static fn(array $item): string => (string)$item['folder'],
     $mediaLibrary
 )));
-sort($mediaFolders, SORT_NATURAL | SORT_FLAG_CASE);
+usort($mediaFolders, static function(string $a, string $b): int {
+    $priority = [
+        'Deseo Auto' => 1,
+        'deseo djs' => 2,
+        'Uploads' => 3,
+        'Site Assets' => 4,
+    ];
+
+    $aBase = explode(' / ', $a)[0] ?? $a;
+    $bBase = explode(' / ', $b)[0] ?? $b;
+    $aPriority = $priority[$aBase] ?? 20;
+    $bPriority = $priority[$bBase] ?? 20;
+
+    return $aPriority !== $bPriority
+        ? $aPriority <=> $bPriority
+        : strnatcasecmp($a, $b);
+});
 
 admin_page_start('Radio Program', 'program');
 ?>
