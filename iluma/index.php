@@ -116,9 +116,16 @@ require_once __DIR__ . '/admin-ui.php';
 require_once __DIR__ . '/../includes/dj-season.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/audience.php';
+require_once __DIR__ . '/../includes/audience-report.php';
 dj_season_bootstrap($pdo);
 deseo_mylive_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
+
+try {
+    deseo_audience_maybe_send_monthly_report($pdo);
+} catch (Throwable $reportError) {
+    error_log('Audience monthly report overview fallback failed: ' . $reportError->getMessage());
+}
 
 $latestAudience = deseo_audience_latest_record($pdo);
 $currentAudienceMonthLabel = $latestAudience
