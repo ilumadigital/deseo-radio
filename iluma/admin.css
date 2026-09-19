@@ -172,3 +172,31 @@ fieldset:disabled{opacity:.55}
   .mylive-set-admin-row .button{width:100%}
   .mylive-credentials-admin>div{grid-template-columns:1fr}
 }
+
+
+/* MYLIVE PENDING ACCESS */
+.mylive-pending-panel{margin-bottom:22px;background:linear-gradient(145deg,rgba(255,48,56,.075),#0d0d0f);border-color:rgba(255,48,56,.22)}
+.mylive-pending-list{display:grid;gap:12px}
+.mylive-pending-card{overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:#0a0a0b}
+.mylive-pending-main{display:flex;gap:16px;padding:18px 20px}
+.mylive-pending-main>img{width:76px;height:76px;flex:0 0 auto;object-fit:cover;border-radius:17px;background:#070707}
+.mylive-pending-copy{min-width:0}
+.mylive-pending-copy>span{display:block;color:var(--acid);font-size:8px;font-weight:900;letter-spacing:.12em}
+.mylive-pending-copy h3{margin:5px 0 2px;font-size:21px;letter-spacing:-.035em}
+.mylive-pending-copy>p{margin:0;color:#777;font-size:10px}
+.mylive-pending-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.mylive-pending-tags span,.mylive-pending-tags a{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border:1px solid var(--line);border-radius:999px;color:#8b8b90;font-size:8px;font-weight:700}
+.mylive-pending-tags a:hover{border-color:rgba(255,48,56,.35);color:var(--acid)}
+.mylive-pending-bio{margin-top:12px!important;max-width:760px;color:#939399!important;font-size:10px!important;line-height:1.6!important}
+.mylive-pending-action{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 20px;border-top:1px solid var(--line);background:#0d0d0f}
+.mylive-pending-action>div{max-width:650px}
+.mylive-pending-action span{display:block;color:#777;font-size:8px;font-weight:900;letter-spacing:.12em}
+.mylive-pending-action p{margin:4px 0 0;color:#64646a;font-size:9px;line-height:1.55}
+.mylive-pending-action .button{white-space:nowrap}
+@media(max-width:650px){
+  .mylive-pending-main{padding:16px;align-items:flex-start}
+  .mylive-pending-main>img{width:62px;height:62px;border-radius:14px}
+  .mylive-pending-copy h3{font-size:19px}
+  .mylive-pending-action{align-items:stretch;flex-direction:column;padding:16px}
+  .mylive-pending-action .button{width:100%}
+}
