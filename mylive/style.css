@@ -196,3 +196,24 @@ button:disabled{opacity:.5;cursor:not-allowed}
     .asset-visual{aspect-ratio:1.55/1}
     .mylive-footer{width:min(100% - 28px,1180px);flex-direction:column}
 }
+
+
+/* DJ METRICS */
+.dj-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:-8px 0 68px}
+.dj-metric-card{min-height:142px;display:flex;flex-direction:column;justify-content:center;padding:24px 26px;border:1px solid var(--line);border-radius:25px;background:linear-gradient(145deg,#111113,#0c0c0e)}
+.dj-metric-card>span{display:block;color:#707077;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.dj-metric-card>strong{display:block;margin-top:8px;color:#fff;font-size:38px;line-height:1;letter-spacing:-.055em}
+.dj-metric-card>small{display:block;margin-top:8px;color:#55555c;font-size:9px;line-height:1.45}
+.dj-metric-reach{border-color:rgba(255,43,54,.18);background:linear-gradient(145deg,rgba(255,43,54,.055),#0c0c0e)}
+.dj-metric-reach>span{color:var(--red)}
+.dj-metric-reach>strong{font-size:42px}
+@media(max-width:760px){
+  .dj-metrics{grid-template-columns:1fr 1fr;margin-bottom:54px}
+  .dj-metric-reach{grid-column:1/-1}
+}
+@media(max-width:520px){
+  .dj-metrics{grid-template-columns:1fr;gap:10px}
+  .dj-metric-reach{grid-column:auto}
+  .dj-metric-card{min-height:118px;padding:20px 22px;border-radius:21px}
+  .dj-metric-card>strong,.dj-metric-reach>strong{font-size:34px}
+}
