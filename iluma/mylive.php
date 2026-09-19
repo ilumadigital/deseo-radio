@@ -425,12 +425,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $setId = (int)($_POST['set_id'] ?? 0);
                 $status = (string)($_POST['status'] ?? 'received');
                 $note = trim((string)($_POST['admin_note'] ?? ''));
-                if (!in_array($status, ['received', 'checked', 'scheduled', 'needs_changes'], true)) {
-                    throw new RuntimeException('Μη έγκυρο status.');
+
+                $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
+
+                if ($status === 'broadcasted' && !empty($updatedSet['delete_after']) && empty($updatedSet['file_deleted_at'])) {
+                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το audio file θα διαγραφεί αυτόματα στις '
+                        . date('d.m.Y · H:i', strtotime((string)$updatedSet['delete_after']))
+                        . ', ενώ το episode θα παραμείνει στη βάση.';
+                } elseif (!empty($updatedSet['file_deleted_at'])) {
+                    $notice = 'Το status ενημερώθηκε. Το audio file έχει ήδη αφαιρεθεί από τον server και το episode παραμένει στο ιστορικό.';
+                } else {
+                    $notice = 'Το status του DJ Set ενημερώθηκε.';
                 }
-                $pdo->prepare("UPDATE dj_portal_sets SET status = ?, admin_note = ? WHERE id = ?")
-                    ->execute([$status, $note, $setId]);
-                $notice = 'Το status του DJ Set ενημερώθηκε.';
             }
         } catch (Throwable $e) {
             error_log('MyLive admin action failed: ' . $e->getMessage());
@@ -476,7 +482,8 @@ foreach ($accounts as $account) {
     $assetsByAccount[$accountId] = deseo_mylive_assets($pdo, $accountId);
 
     $stmt = $pdo->prepare(
-        "SELECT id, episode_no, stored_name, file_size, status, admin_note, uploaded_at
+        "SELECT id, episode_no, stored_name, file_size, status, admin_note,
+                broadcasted_at, delete_after, file_deleted_at, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
     );
     $stmt->execute([$accountId]);
@@ -844,14 +851,35 @@ admin_page_start('MyLive', 'mylive');
                                                 <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
                                                 <strong><?= admin_e($set['stored_name']) ?></strong>
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                                <?php if (!empty($set['file_deleted_at'])): ?>
+                                                    <em>Episode retained · audio file deleted from server</em>
+                                                <?php elseif (!empty($set['delete_after'])): ?>
+                                                    <em>15-day retention · file removal <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['delete_after']))) ?></em>
+                                                <?php endif; ?>
                                             </div>
                                             <select name="status">
-                                                <?php foreach (['received','checked','scheduled','needs_changes'] as $status): ?>
+                                                <?php foreach (deseo_mylive_set_statuses() as $status): ?>
                                                     <option value="<?= $status ?>" <?= $set['status'] === $status ? 'selected' : '' ?>><?= strtoupper(str_replace('_',' ', $status)) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                             <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
-                                            <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
+
+                                            <?php if (!empty($set['file_deleted_at'])): ?>
+                                                <span class="mylive-retention-state is-deleted">
+                                                    FILE REMOVED · <?= admin_e(date('d.m.Y', strtotime((string)$set['file_deleted_at']))) ?>
+                                                </span>
+                                            <?php elseif (!empty($set['delete_after'])): ?>
+                                                <span class="mylive-retention-state">
+                                                    REMOVE <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['delete_after']))) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
+                                            <?php endif; ?>
+
+                                            <?php if (empty($set['file_deleted_at']) && !empty($set['delete_after'])): ?>
+                                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
+                                            <?php endif; ?>
+
                                             <button class="button button-secondary" type="submit">Save</button>
                                         </form>
                                     <?php endforeach; ?>
