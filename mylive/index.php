@@ -2,10 +2,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/dj-portal.php';
+require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
+deseo_audience_bootstrap($pdo);
 
 if (!headers_sent()) {
     header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
@@ -402,6 +404,8 @@ endif;
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
+$monthlyAudience = deseo_audience_monthly_listeners($pdo);
+$estimatedReach = deseo_audience_estimated_reach($pdo, $account);
 $dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
 $startTime = deseo_mylive_format_time((string)$account['start_time']);
 ?>
@@ -444,6 +448,26 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             <span>YOUR WEEKLY SLOT</span>
             <strong><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
         </div>
+    </section>
+
+    <section class="dj-metrics" aria-label="DJ metrics">
+        <article class="dj-metric-card">
+            <span>EPISODES</span>
+            <strong><?= count($sets) ?></strong>
+            <small>uploaded στο MyLive</small>
+        </article>
+
+        <article class="dj-metric-card">
+            <span>YOUR ASSETS</span>
+            <strong><?= count($assets) ?></strong>
+            <small>διαθέσιμα για download</small>
+        </article>
+
+        <article class="dj-metric-card dj-metric-reach">
+            <span>ΣΕ ΑΚΟΥΣΑΝ</span>
+            <strong><?= $monthlyAudience > 0 ? '~' . deseo_mylive_e(deseo_audience_format($estimatedReach)) : '—' ?></strong>
+            <small><?= $monthlyAudience > 0 ? 'εκτιμώμενη απήχηση ανά show' : 'audience estimate σύντομα' ?></small>
+        </article>
     </section>
 
     <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
