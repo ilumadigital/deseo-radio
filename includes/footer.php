@@ -344,6 +344,14 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
     var programRefreshInFlight = false;
     var programRefreshHour = Math.floor(Date.now() / 3600000);
 
+    var djProfileModal = document.getElementById('dj-profile-modal');
+    var djProfilePhoto = document.getElementById('dj-profile-photo');
+    var djProfileName = document.getElementById('dj-profile-name');
+    var djProfileBio = document.getElementById('dj-profile-bio');
+    var djProfileShow = document.getElementById('dj-profile-show');
+    var djProfileTime = document.getElementById('dj-profile-time');
+    var djProfileSocials = document.getElementById('dj-profile-socials');
+
     function programTranslation(key, fallback) {
         var language = window.DESEO_LANGUAGE || document.documentElement.lang || 'el';
         var catalog = window.DESEO_TRANSLATIONS && window.DESEO_TRANSLATIONS[language];
@@ -367,6 +375,103 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         return image;
     }
 
+    function attachProgramProfile(element, show) {
+        if (!element) return;
+
+        element.classList.remove('has-dj-profile');
+        element.removeAttribute('data-profile-open');
+        element.removeAttribute('data-profile-json');
+        element.removeAttribute('data-profile-photo');
+        element.removeAttribute('data-profile-show');
+        element.removeAttribute('data-profile-time');
+        element.removeAttribute('role');
+        element.removeAttribute('tabindex');
+
+        if (!show || !show.profile) return;
+
+        element.classList.add('has-dj-profile');
+        element.setAttribute('data-profile-open', '');
+        element.setAttribute('data-profile-json', JSON.stringify(show.profile));
+        element.setAttribute('data-profile-photo', show.photo_path || '/assets/img/bg.png');
+        element.setAttribute('data-profile-show', show.dj_name || 'Deseo Radio');
+        element.setAttribute('data-profile-time', programTime(show.start_time) + ' — ' + programTime(show.end_time));
+        element.setAttribute('role', 'button');
+        element.setAttribute('tabindex', '0');
+    }
+
+    function safeProfileUrl(value) {
+        if (!value || typeof value !== 'string') return '';
+        return /^https?:\/\//i.test(value) ? value : '';
+    }
+
+    function closeDjProfile() {
+        if (!djProfileModal) return;
+        djProfileModal.classList.remove('is-open');
+        document.body.classList.remove('dj-profile-modal-open');
+        window.setTimeout(function () {
+            djProfileModal.hidden = true;
+        }, 180);
+    }
+
+    function openDjProfile(element) {
+        if (!djProfileModal || !element) return;
+
+        var profile = null;
+        try {
+            profile = JSON.parse(element.getAttribute('data-profile-json') || 'null');
+        } catch (e) {}
+
+        if (!profile) return;
+
+        var photo = element.getAttribute('data-profile-photo') || '/assets/img/bg.png';
+        var showName = element.getAttribute('data-profile-show') || 'Deseo Radio';
+        var time = element.getAttribute('data-profile-time') || '';
+
+        if (djProfilePhoto) {
+            djProfilePhoto.src = photo;
+            djProfilePhoto.alt = profile.artist_name || showName;
+        }
+        if (djProfileName) djProfileName.textContent = profile.artist_name || showName;
+        if (djProfileBio) djProfileBio.textContent = profile.bio || '';
+        if (djProfileShow) djProfileShow.textContent = showName;
+        if (djProfileTime) djProfileTime.textContent = time;
+
+        if (djProfileSocials) {
+            djProfileSocials.textContent = '';
+
+            [
+                ['Instagram', profile.instagram],
+                ['TikTok', profile.tiktok],
+                ['SoundCloud', profile.soundcloud],
+                ['Spotify', profile.spotify],
+                ['Website', profile.website]
+            ].forEach(function (item) {
+                var url = safeProfileUrl(item[1]);
+                if (!url) return;
+
+                var link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = item[0] + ' ↗';
+                djProfileSocials.appendChild(link);
+            });
+        }
+
+        djProfileModal.hidden = false;
+        document.body.classList.add('dj-profile-modal-open');
+        window.requestAnimationFrame(function () {
+            djProfileModal.classList.add('is-open');
+        });
+
+        if (window.DeseoAnalytics) {
+            window.DeseoAnalytics.event('dj_profile_open', {
+                artist_name: profile.artist_name || '',
+                show_name: showName
+            });
+        }
+    }
+
     function renderLiveProgram(live) {
         var deck = document.getElementById('live-program-deck');
         if (!deck) return;
@@ -377,6 +482,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         var card = deck.querySelector('.hero-cms-card');
         if (!card) return;
         card.textContent = '';
+        attachProgramProfile(card, live);
 
         var image;
         var overlay = document.createElement('div');
@@ -437,6 +543,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         today.forEach(function (show) {
             var row = document.createElement('div');
             row.className = 'deseo-panel-row deseo-program-row' + (show.is_live ? ' is-live' : '');
+            attachProgramProfile(row, show);
 
             row.appendChild(createProgramImage(show.photo_path, show.dj_name, 'deseo-row-cover', '/assets/img/bg.png'));
 
@@ -458,6 +565,11 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
                 liveTag.className = 'deseo-live-tag';
                 liveTag.textContent = 'LIVE';
                 row.appendChild(liveTag);
+            } else if (show.profile) {
+                var profileTag = document.createElement('span');
+                profileTag.className = 'deseo-profile-tag';
+                profileTag.textContent = 'PROFILE';
+                row.appendChild(profileTag);
             }
 
             body.appendChild(row);
@@ -570,6 +682,30 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         } else {
             for (i = 0; i < revealItems.length; i++) revealItems[i].classList.add('is-visible');
         }
+
+        document.addEventListener('click', function (event) {
+            var opener = event.target && event.target.closest ? event.target.closest('[data-profile-open]') : null;
+            if (opener) {
+                if (event.target && event.target.closest && event.target.closest('a')) return;
+                openDjProfile(opener);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if ((event.key === 'Enter' || event.key === ' ') && event.target && event.target.matches && event.target.matches('[data-profile-open]')) {
+                event.preventDefault();
+                openDjProfile(event.target);
+                return;
+            }
+
+            if (event.key === 'Escape' && djProfileModal && !djProfileModal.hidden) {
+                closeDjProfile();
+            }
+        });
+
+        document.querySelectorAll('[data-dj-profile-close]').forEach(function (button) {
+            button.addEventListener('click', closeDjProfile);
+        });
 
         bindLanguageSwitcher();
         bindAnalytics();
