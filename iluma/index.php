@@ -121,6 +121,7 @@ if (!admin_is_logged_in()):
         <div class="login-meta">Private management area · Deseo Radio / ILUMA Digital Agency</div>
     </section>
 </div>
+<script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
 </body>
 </html>
 <?php
