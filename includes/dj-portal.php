@@ -29,6 +29,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         password_hash VARCHAR(255) NOT NULL,
         must_change_password TINYINT(1) NOT NULL DEFAULT 1,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
+        account_status VARCHAR(20) NOT NULL DEFAULT 'active',
         onboarding_email_sent_at DATETIME NULL,
         access_email_sent_at DATETIME NULL,
         last_login_at DATETIME NULL,
@@ -47,13 +48,30 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'start_time' => "TIME NULL AFTER day_of_week",
         'end_time' => "TIME NULL AFTER start_time",
         'must_change_password' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER password_hash",
-        'onboarding_email_sent_at' => "DATETIME NULL AFTER is_active",
+        'account_status' => "VARCHAR(20) NOT NULL DEFAULT 'active' AFTER is_active",
+        'onboarding_email_sent_at' => "DATETIME NULL AFTER account_status",
         'access_email_sent_at' => "DATETIME NULL AFTER onboarding_email_sent_at"
     ];
     foreach ($columns as $name => $definition) {
         if (!deseo_mylive_column_exists($pdo, 'dj_portal_accounts', $name)) {
             $pdo->exec("ALTER TABLE dj_portal_accounts ADD COLUMN " . $name . " " . $definition);
         }
+    }
+
+    try {
+        $pdo->exec(
+            "UPDATE dj_portal_accounts
+             SET account_status = CASE
+                 WHEN account_status = 'pending' THEN 'pending'
+                 WHEN is_active = 1 THEN 'active'
+                 ELSE 'disabled'
+             END
+             WHERE account_status NOT IN ('pending','active','disabled')
+                OR account_status IS NULL
+                OR account_status = ''"
+        );
+    } catch (Throwable $e) {
+        error_log('MyLive account status migration: ' . $e->getMessage());
     }
 
     try {
@@ -191,7 +209,7 @@ function deseo_mylive_next_episode(PDO $pdo, int $accountId): int {
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
         "SELECT id, booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
-                must_change_password, is_active, onboarding_email_sent_at, access_email_sent_at,
+                must_change_password, is_active, account_status, onboarding_email_sent_at, access_email_sent_at,
                 last_login_at, created_at, updated_at
          FROM dj_portal_accounts
          WHERE id = ? AND is_active = 1
@@ -254,6 +272,70 @@ function deseo_mylive_slot(array $account): string {
     $start = deseo_mylive_format_time((string)($account['start_time'] ?? ''));
     if ($day === '—' && $start === '—') return 'Slot to be announced';
     return trim($day . ' · ' . $start, " ·");
+}
+
+function deseo_mylive_create_pending_from_booking(PDO $pdo, int $bookingId): int {
+    $stmt = $pdo->prepare(
+        "SELECT b.id, b.artist_name, b.full_name, b.email,
+                COALESCE(b.final_day_of_week, s.day_of_week) AS effective_day,
+                COALESCE(b.final_start_time, s.start_time) AS effective_start,
+                COALESCE(b.final_end_time, s.end_time) AS effective_end
+         FROM dj_season_bookings b
+         INNER JOIN dj_season_slots s ON s.id = b.slot_id
+         WHERE b.id = ? AND b.season = ? AND b.status = 'approved'
+         LIMIT 1"
+    );
+    $stmt->execute([$bookingId, DESEO_DJ_SEASON]);
+    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$booking) {
+        throw new RuntimeException('Δεν βρέθηκε approved DJ για δημιουργία MyLive pending account.');
+    }
+
+    $existing = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE booking_id = ? OR LOWER(email) = LOWER(?) LIMIT 1");
+    $existing->execute([$bookingId, (string)$booking['email']]);
+    $existingId = (int)($existing->fetchColumn() ?: 0);
+
+    if ($existingId > 0) {
+        $pdo->prepare(
+            "UPDATE dj_portal_accounts
+             SET booking_id = ?,
+                 artist_name = ?,
+                 full_name = ?,
+                 email = ?,
+                 day_of_week = ?,
+                 start_time = ?,
+                 end_time = ?
+             WHERE id = ?"
+        )->execute([
+            $bookingId,
+            (string)$booking['artist_name'],
+            (string)$booking['full_name'],
+            strtolower(trim((string)$booking['email'])),
+            (int)$booking['effective_day'],
+            (string)$booking['effective_start'],
+            (string)$booking['effective_end'],
+            $existingId
+        ]);
+        return $existingId;
+    }
+
+    $insert = $pdo->prepare(
+        "INSERT INTO dj_portal_accounts
+         (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
+          password_hash, must_change_password, is_active, account_status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '', 1, 0, 'pending')"
+    );
+    $insert->execute([
+        $bookingId,
+        (string)$booking['artist_name'],
+        (string)$booking['full_name'],
+        strtolower(trim((string)$booking['email'])),
+        (int)$booking['effective_day'],
+        (string)$booking['effective_start'],
+        (string)$booking['effective_end']
+    ]);
+
+    return (int)$pdo->lastInsertId();
 }
 
 function deseo_mylive_format_bytes(int $bytes): string {
