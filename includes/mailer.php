@@ -120,7 +120,9 @@ function deseo_send_smtp_mail(string $toEmail, string $toName, string $subject, 
         deseo_smtp_command($socket, 'DATA', [354]);
 
         $boundary = 'deseo_' . bin2hex(random_bytes(12));
-        $messageId = '<' . bin2hex(random_bytes(12)) . '@deseoradio.com>';
+        $fromDomain = substr(strrchr($fromEmail, '@') ?: '@iluma.gr', 1) ?: 'iluma.gr';
+        $fromDomain = preg_replace('/[^a-zA-Z0-9.-]/', '', $fromDomain) ?: 'iluma.gr';
+        $messageId = '<' . bin2hex(random_bytes(12)) . '@' . $fromDomain . '>';
         $plain = $text !== '' ? $text : trim(html_entity_decode(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
 
         $headers = [
@@ -134,13 +136,6 @@ function deseo_send_smtp_mail(string $toEmail, string $toName, string $subject, 
             'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
             'X-Mailer: Deseo Radio Season 6',
         ];
-        if ($important) {
-            $headers[] = 'X-Priority: 1';
-            $headers[] = 'X-MSMail-Priority: High';
-            $headers[] = 'Importance: high';
-            $headers[] = 'Priority: urgent';
-        }
-
         $body = implode("\r\n", $headers) . "\r\n\r\n";
         $body .= '--' . $boundary . "\r\n";
         $body .= "Content-Type: text/plain; charset=UTF-8\r\n";
@@ -460,7 +455,7 @@ function deseo_mylive_email_shell(
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-card" style="width:100%;max-width:690px;background:#0c0c0e;border:1px solid #252529;border-radius:26px;overflow:hidden;">'
         . '<tr><td class="d-head" style="padding:32px 30px 28px;background:linear-gradient(145deg,#121214,#0b0b0d);border-bottom:1px solid #252529;">'
         . '<img class="d-logo" src="https://deseoradio.com/assets/img/deseoradio-logo.png" width="184" alt="Deseo Radio" style="display:block;width:184px;max-width:100%;height:auto;margin:0 0 27px;">'
-        . '<div style="display:inline-block;padding:6px 9px;border:1px solid #5b161d;border-radius:999px;color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">IMPORTANT</div>'
+        . '<div style="display:inline-block;padding:6px 9px;border:1px solid #5b161d;border-radius:999px;color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">DESEO RADIO</div>'
         . '<div style="margin-top:15px;color:#ff2b36;font:800 10px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;">' . $e($eyebrow) . '</div>'
         . '<h1 class="d-title" style="margin:9px 0 13px;color:#fff;font:800 36px/1.02 Arial,sans-serif;letter-spacing:-.035em;">' . $e($title) . '</h1>'
         . '<p style="margin:0;max-width:580px;color:#aaaab0;font:400 15px/1.68 Arial,sans-serif;">' . $e($intro) . '</p>'
@@ -536,10 +531,10 @@ function deseo_mylive_technical_email(array $account): array {
 
     $body .= '<tr><td style="padding:2px 0 0;"><div style="padding:18px;border:1px solid #3f161b;border-radius:17px;background:#160b0d;color:#d8b4b7;font:400 12px/1.65 Arial,sans-serif;">'
         . '<strong style="display:block;margin-bottom:5px;color:#ff4650;">NEXT EMAIL · MYLIVE ACCESS</strong>'
-        . 'Σε ξεχωριστό IMPORTANT email θα λάβεις το MyLive URL, το email πρόσβασης και προσωρινό password. Στην πρώτη είσοδο θα πρέπει υποχρεωτικά να δημιουργήσεις δικό σου password.'
+        . 'Σε ξεχωριστό email θα λάβεις το MyLive URL, το email πρόσβασης και προσωρινό password. Στην πρώτη είσοδο θα πρέπει υποχρεωτικά να δημιουργήσεις δικό σου password.'
         . '</div></td></tr>';
 
-    $subject = 'IMPORTANT · Deseo Radio Season 6 — Οδηγίες συμμετοχής & DJ Set Delivery';
+    $subject = 'Deseo Radio Season 6 · Οδηγίες συμμετοχής & DJ Set Delivery';
     $html = deseo_mylive_email_shell(
         'DESEO RADIO · SEASON 6',
         'Οι οδηγίες για το show σου.',
@@ -547,7 +542,7 @@ function deseo_mylive_technical_email(array $account): array {
         $body
     );
 
-    $text = "IMPORTANT · DESEO RADIO SEASON 6\n\n"
+    $text = "DESEO RADIO · SEASON 6\n\n"
         . "Artist: {$artist}\nSlot: {$slot}\n\n"
         . "Ιδανική διάρκεια set: 58–59 λεπτά. Σε manual περικοπή: 8-second fade out.\n"
         . "Exclusive set: Personal DJ Spot στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
@@ -556,7 +551,7 @@ function deseo_mylive_technical_email(array $account): array {
         . "Artwork και branded DJ spots παραδίδονται μέσα από το MyLive.\n"
         . "Η ανακοίνωση στα προσωπικά social media με mention / collaboration του Deseo Radio αποτελεί μέρος της συμμετοχής.\n"
         . "Sponsor material απαιτεί προηγούμενη έγκριση.\n\n"
-        . "Θα ακολουθήσει ξεχωριστό IMPORTANT email με τα στοιχεία MyLive.\n\n"
+        . "Θα ακολουθήσει ξεχωριστό email με τα στοιχεία MyLive.\n\n"
         . "Deseo Radio · Powered by ILUMA Digital Agency";
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
@@ -583,7 +578,7 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
         . '<td class="d-credential-value" style="padding:17px 20px;color:#fff;font:800 19px Arial,sans-serif;letter-spacing:.04em;">' . $e($temporaryPassword) . '</td></tr>'
         . '</table></td></tr>';
 
-    $body .= deseo_mylive_email_section('IMPORTANT', 'Το password είναι προσωρινό',
+    $body .= deseo_mylive_email_section('FIRST ACCESS', 'Το password είναι προσωρινό',
         'Στην πρώτη είσοδο το MyLive θα σε μεταφέρει υποχρεωτικά σε οθόνη δημιουργίας προσωπικού password. Θα υπάρχει <strong style="color:#fff;">Show / Hide Password</strong> και στα δύο πεδία ώστε να μπορείς να ελέγξεις τι πληκτρολογείς. Μετά την αλλαγή, το temporary password παύει να ισχύει.');
 
     $body .= deseo_mylive_email_section('01', 'Το weekly slot σου',
@@ -596,14 +591,14 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
         'Στο <strong style="color:#fff;">Your Assets</strong> θα βρίσκεις ό,τι παραδίδει η ομάδα του Deseo Radio / <strong style="color:#fff;">ILUMA Digital Agency</strong>: προσωπικό Instagram / social artwork, Personal DJ Imaging, _30 Imaging και οποιοδήποτε πρόσθετο promotional ή on-air asset.');
 
     $body .= deseo_mylive_email_section('04', 'Πριν το Upload',
-        'Το αρχείο πρέπει να είναι το final on-air master. Για exclusive Deseo set ακολούθησε τις οδηγίες του προηγούμενου IMPORTANT email: Personal Imaging στην αρχή, _30 περίπου στο μέσο και 8-second fade out όταν έχει γίνει manual περικοπή.');
+        'Το αρχείο πρέπει να είναι το final on-air master. Για exclusive Deseo set ακολούθησε τις οδηγίες του προηγούμενου email με τις Season 6 οδηγίες: Personal Imaging στην αρχή, _30 περίπου στο μέσο και 8-second fade out όταν έχει γίνει manual περικοπή.');
 
     $body .= deseo_mylive_email_section('05', 'Privacy & Access',
         'Τα DJ Sets και τα προσωπικά assets δεν είναι δημόσια. Η πρόσβαση παρέχεται μόνο στο προσωπικό σου account και στην εξουσιοδοτημένη ομάδα του Deseo Radio / ILUMA Digital Agency. Μην κοινοποιείς το password σου σε τρίτους.');
 
     $subject = $reset
-        ? 'IMPORTANT · Νέο προσωρινό password για το Deseo Radio MyLive'
-        : 'IMPORTANT · Το Deseo Radio MyLive account σου είναι έτοιμο';
+        ? 'Deseo Radio MyLive · Νέο προσωρινό password'
+        : 'Deseo Radio MyLive · Το account σου είναι έτοιμο';
 
     $html = deseo_mylive_email_shell(
         'DESEO RADIO · MYLIVE',
@@ -616,7 +611,7 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
         'https://deseoradio.com/mylive/'
     );
 
-    $text = "IMPORTANT · DESEO RADIO MYLIVE\n\n"
+    $text = "DESEO RADIO · MYLIVE\n\n"
         . "URL: https://deseoradio.com/mylive/\n"
         . "Email: {$email}\n"
         . "Temporary Password: {$temporaryPassword}\n\n"
