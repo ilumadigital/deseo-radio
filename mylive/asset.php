@@ -11,6 +11,13 @@ if (!deseo_mylive_logged_in()) {
     exit;
 }
 
+$activeAccount = deseo_mylive_account($pdo, deseo_mylive_account_id());
+if (!$activeAccount) {
+    $_SESSION = [];
+    header('Location: /mylive/');
+    exit;
+}
+
 $assetId = (int)($_GET['id'] ?? 0);
 $viewInline = (int)($_GET['view'] ?? 0) === 1;
 
