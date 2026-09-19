@@ -6,23 +6,79 @@ function deseo_audience_bootstrap(PDO $pdo): void {
         "CREATE TABLE IF NOT EXISTS deseo_audience_settings (
             id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
             monthly_listeners BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            audience_month CHAR(7) NOT NULL DEFAULT '',
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
+    $columnStmt = $pdo->prepare("SHOW COLUMNS FROM deseo_audience_settings LIKE ?");
+    $columnStmt->execute(['audience_month']);
+    if (!$columnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE deseo_audience_settings ADD COLUMN audience_month CHAR(7) NOT NULL DEFAULT '' AFTER monthly_listeners");
+    }
+
     $pdo->exec(
-        "INSERT IGNORE INTO deseo_audience_settings (id, monthly_listeners)
-         VALUES (1, 0)"
+        "INSERT IGNORE INTO deseo_audience_settings (id, monthly_listeners, audience_month)
+         VALUES (1, 0, '')"
     );
+
+    $currentMonth = date('Y-m');
+    $stmt = $pdo->prepare(
+        "UPDATE deseo_audience_settings
+         SET audience_month = ?
+         WHERE id = 1 AND monthly_listeners > 0 AND audience_month = ''"
+    );
+    $stmt->execute([$currentMonth]);
+}
+
+function deseo_audience_current_month_key(): string {
+    return date('Y-m');
+}
+
+function deseo_audience_month_label(?string $monthKey = null): string {
+    $monthKey = $monthKey ?: deseo_audience_current_month_key();
+    [$year, $month] = array_pad(explode('-', $monthKey, 2), 2, '');
+
+    $months = [
+        '01' => 'Ιανουάριος',
+        '02' => 'Φεβρουάριος',
+        '03' => 'Μάρτιος',
+        '04' => 'Απρίλιος',
+        '05' => 'Μάιος',
+        '06' => 'Ιούνιος',
+        '07' => 'Ιούλιος',
+        '08' => 'Αύγουστος',
+        '09' => 'Σεπτέμβριος',
+        '10' => 'Οκτώβριος',
+        '11' => 'Νοέμβριος',
+        '12' => 'Δεκέμβριος',
+    ];
+
+    $label = $months[$month] ?? $monthKey;
+    return trim($label . ' ' . $year);
+}
+
+function deseo_audience_stored_month(PDO $pdo): string {
+    deseo_audience_bootstrap($pdo);
+    $value = $pdo->query(
+        "SELECT audience_month FROM deseo_audience_settings WHERE id = 1 LIMIT 1"
+    )->fetchColumn();
+
+    return trim((string)$value);
 }
 
 function deseo_audience_monthly_listeners(PDO $pdo): int {
     deseo_audience_bootstrap($pdo);
-    $value = $pdo->query(
-        "SELECT monthly_listeners FROM deseo_audience_settings WHERE id = 1 LIMIT 1"
-    )->fetchColumn();
+    $stmt = $pdo->prepare(
+        "SELECT monthly_listeners
+         FROM deseo_audience_settings
+         WHERE id = 1 AND audience_month = ?
+         LIMIT 1"
+    );
+    $stmt->execute([deseo_audience_current_month_key()]);
+    $value = $stmt->fetchColumn();
 
-    return max(0, (int)$value);
+    return max(0, (int)($value ?: 0));
 }
 
 function deseo_audience_updated_at(PDO $pdo): ?string {
