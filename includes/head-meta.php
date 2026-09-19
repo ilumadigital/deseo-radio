@@ -7,6 +7,10 @@ $meta_desc = $meta_desc ?? "Άκου live το δεσεο radio. Το κορυφ
 $meta_keywords = $meta_keywords ?? "ραδιόφωνο, δεσεο, deseo, radio, house music";
 $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
 $meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
+$meta_image_path = __DIR__ . '/../assets/img/deseoradio-seo-branded.png';
+$meta_image_version = is_file($meta_image_path) ? (int)filemtime($meta_image_path) : 1;
+$meta_image = $meta_image ?? ('https://deseoradio.com/assets/img/deseoradio-seo-branded.png?v=' . $meta_image_version);
+$meta_image_alt = $meta_image_alt ?? 'Deseo Radio — Το Soundtrack της ζωής σου';
 $private_page = !empty($private_page);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 $cloudflareAnalyticsToken = trim((string)(getenv('CLOUDFLARE_WEB_ANALYTICS_TOKEN') ?: ''));
@@ -17,6 +21,7 @@ foreach ([
     __DIR__ . '/../manifest.json',
     __DIR__ . '/../sw.js',
     __DIR__ . '/../assets/img/bg.png',
+    __DIR__ . '/../assets/img/deseoradio-seo-branded.png',
 ] as $assetFile) {
     if (is_file($assetFile)) $assetVersion = max($assetVersion, (int)filemtime($assetFile));
 }
@@ -55,7 +60,10 @@ $schema = [
             '@id' => 'https://deseoradio.com/#radio',
             'name' => 'Deseo Radio',
             'url' => 'https://deseoradio.com/',
-            'image' => 'https://deseoradio.com/assets/img/favicon.png',
+            'image' => [
+                '@id' => 'https://deseoradio.com/#primaryimage',
+            ],
+            'logo' => 'https://deseoradio.com/assets/img/favicon.png',
             'description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
             'genre' => ['House', 'Afro House', 'Organic House', 'Electronic music'],
             'areaServed' => 'Worldwide',
@@ -78,6 +86,25 @@ $schema = [
             'url' => 'https://deseoradio.com/',
             'name' => 'Deseo Radio',
             'publisher' => ['@id' => 'https://deseoradio.com/#radio'],
+            'image' => ['@id' => 'https://deseoradio.com/#primaryimage'],
+            'inLanguage' => deseo_lang() === 'en' ? 'en' : 'el',
+        ],
+        [
+            '@type' => 'ImageObject',
+            '@id' => 'https://deseoradio.com/#primaryimage',
+            'url' => $meta_image,
+            'contentUrl' => $meta_image,
+            'caption' => $meta_image_alt,
+            'inLanguage' => deseo_lang() === 'en' ? 'en' : 'el',
+        ],
+        [
+            '@type' => 'WebPage',
+            '@id' => $meta_canonical . '#webpage',
+            'url' => $meta_canonical,
+            'name' => $meta_title,
+            'description' => $meta_desc,
+            'isPartOf' => ['@id' => 'https://deseoradio.com/#website'],
+            'primaryImageOfPage' => ['@id' => 'https://deseoradio.com/#primaryimage'],
             'inLanguage' => deseo_lang() === 'en' ? 'en' : 'el',
         ],
         [
@@ -106,6 +133,25 @@ $schema = [
     <?php endif; ?>
 
     <link rel="canonical" href="<?= deseo_e($meta_canonical) ?>">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Deseo Radio">
+    <meta property="og:title" content="<?= deseo_e($meta_title) ?>">
+    <meta property="og:description" content="<?= deseo_e($meta_desc) ?>">
+    <meta property="og:url" content="<?= deseo_e($meta_canonical) ?>">
+    <meta property="og:image" content="<?= deseo_e($meta_image) ?>">
+    <meta property="og:image:secure_url" content="<?= deseo_e($meta_image) ?>">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="<?= deseo_e($meta_image_alt) ?>">
+    <meta property="og:locale" content="<?= deseo_lang() === 'en' ? 'en_US' : 'el_GR' ?>">
+    <meta property="og:locale:alternate" content="<?= deseo_lang() === 'en' ? 'el_GR' : 'en_US' ?>">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= deseo_e($meta_title) ?>">
+    <meta name="twitter:description" content="<?= deseo_e($meta_desc) ?>">
+    <meta name="twitter:image" content="<?= deseo_e($meta_image) ?>">
+    <meta name="twitter:image:alt" content="<?= deseo_e($meta_image_alt) ?>">
+
     <link rel="alternate" hreflang="el" href="<?= deseo_e($meta_canonical) ?>">
     <link rel="alternate" hreflang="en" href="<?= deseo_e($meta_canonical . (str_contains($meta_canonical, '?') ? '&' : '?') . 'lang=en') ?>">
     <link rel="alternate" hreflang="x-default" href="<?= deseo_e($meta_canonical) ?>">
