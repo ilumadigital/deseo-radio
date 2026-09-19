@@ -50,7 +50,8 @@ if ($envFile !== null) {
         }
 
         [$key, $value] = array_map('trim', explode('=', $line, 2));
-        if ($key === '' || getenv($key) !== false) {
+        $existing = $key !== '' ? getenv($key) : false;
+        if ($key === '' || ($existing !== false && trim((string)$existing) !== '')) {
             continue;
         }
 
