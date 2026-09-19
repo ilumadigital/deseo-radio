@@ -45,13 +45,14 @@ if (!$base || !$file || !str_starts_with($file, $base . DIRECTORY_SEPARATOR) || 
 $name = basename((string)$fileRow['download_name']);
 $mime = (string)$fileRow['mime_type'] ?: 'application/octet-stream';
 
-header('X-Robots-Tag: noindex, nofollow, noarchive', true);
+header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . filesize($file));
 header(
     'Content-Disposition: attachment; filename="' . rawurlencode($name) . '"'
     . "; filename*=UTF-8''" . rawurlencode($name)
 );
-header('Cache-Control: private, no-store');
+header('Cache-Control: private, no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
 readfile($file);
 exit;
