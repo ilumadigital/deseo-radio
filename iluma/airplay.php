@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $host = strtolower((string) ($parts['host'] ?? ''));
             $path = (string) ($parts['path'] ?? '');
 
-            if (!$position || $position < 1 || $position > 10) {
-                $error = 'Επιλέξτε έγκυρη θέση 1–10.';
+            if (!$position || $position < 1 || $position > 6) {
+                $error = 'Επιλέξτε έγκυρη θέση 1–6.';
             } elseif (!in_array($host, ['open.spotify.com', 'www.open.spotify.com'], true) || strpos($path, '/track/') !== 0) {
                 $error = 'Χρησιμοποιήστε έγκυρο Spotify track link.';
             } else {
@@ -75,12 +75,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$tracks = $pdo->query("SELECT * FROM airplay ORDER BY position ASC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$tracks = $pdo->query(
+    "SELECT * FROM airplay
+     WHERE position BETWEEN 1 AND 6
+     ORDER BY position ASC, id DESC"
+)->fetchAll(PDO::FETCH_ASSOC);
 
-admin_page_start('Airplay Top 10', 'airplay');
+admin_page_start('Airplay', 'airplay');
 ?>
 <div class="page-heading">
-    <div><span>Weekly rotation</span><h1>Airplay Top 10</h1><p>Βάλε ένα Spotify track σε συγκεκριμένη θέση. Αν η θέση είναι ήδη γεμάτη, αντικαθίσταται με ασφάλεια.</p></div>
+    <div><span>Weekly rotation</span><h1>Airplay</h1><p>Διαχειρίσου έως 6 Spotify tracks. Κάθε θέση από #1 έως #6 μπορεί να έχει μόνο ένα track και, αν είναι ήδη γεμάτη, αντικαθίσταται με ασφάλεια.</p></div>
 </div>
 
 <?php if ($success): ?><div class="notice notice-success"><?= admin_e($success) ?></div><?php endif; ?>
@@ -98,7 +102,7 @@ admin_page_start('Airplay Top 10', 'airplay');
             <div class="field">
                 <label for="position">Chart position</label>
                 <select id="position" name="position" required>
-                    <?php for ($i=1; $i<=10; $i++): ?><option value="<?= $i ?>">#<?= $i ?></option><?php endfor; ?>
+                    <?php for ($i=1; $i<=6; $i++): ?><option value="<?= $i ?>">#<?= $i ?></option><?php endfor; ?>
                 </select>
             </div>
         </div>
