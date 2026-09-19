@@ -65,13 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $stmt = $pdo->prepare(
-                "SELECT a.id, a.password_hash
-                 FROM dj_portal_accounts a
-                 INNER JOIN dj_season_bookings b ON b.id = a.booking_id
-                 WHERE LOWER(a.email) = ? AND a.is_active = 1 AND b.season = ?
+                "SELECT id, password_hash
+                 FROM dj_portal_accounts
+                 WHERE LOWER(email) = ? AND is_active = 1
                  LIMIT 1"
             );
-            $stmt->execute([$email, DESEO_DJ_SEASON]);
+            $stmt->execute([$email]);
             $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$account || !password_verify($password, (string)$account['password_hash'])) {
@@ -85,11 +84,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['mylive_attempts'] = 0;
             $_SESSION['mylive_last_attempt'] = 0;
 
-            $update = $pdo->prepare("UPDATE dj_portal_accounts SET last_login_at = NOW() WHERE id = ?");
-            $update->execute([(int)$account['id']]);
+            $pdo->prepare("UPDATE dj_portal_accounts SET last_login_at = NOW() WHERE id = ?")
+                ->execute([(int)$account['id']]);
 
             header('Location: /mylive/');
             exit;
+        }
+
+        if ($action === 'change_password') {
+            if (!deseo_mylive_logged_in()) throw new RuntimeException('Η συνεδρία σου έχει λήξει.');
+
+            $accountId = deseo_mylive_account_id();
+            $account = deseo_mylive_account($pdo, $accountId);
+            if (!$account) throw new RuntimeException('Το account δεν είναι ενεργό.');
+
+            $password = (string)($_POST['new_password'] ?? '');
+            $confirm = (string)($_POST['confirm_password'] ?? '');
+
+            if (strlen($password) < 8) {
+                throw new RuntimeException('Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+            }
+            if ($password !== $confirm) {
+                throw new RuntimeException('Οι δύο κωδικοί δεν είναι ίδιοι.');
+            }
+
+            $pdo->prepare(
+                "UPDATE dj_portal_accounts
+                 SET password_hash = ?, must_change_password = 0
+                 WHERE id = ?"
+            )->execute([password_hash($password, PASSWORD_DEFAULT), $accountId]);
+
+            session_regenerate_id(true);
+            $notice = 'Ο προσωπικός σου κωδικός αποθηκεύτηκε.';
         }
 
         if ($action === 'upload') {
@@ -99,8 +125,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $accountId = deseo_mylive_account_id();
             $account = deseo_mylive_account($pdo, $accountId);
-            if (!$account) {
-                throw new RuntimeException('Το account δεν είναι πλέον ενεργό.');
+            if (!$account) throw new RuntimeException('Το account δεν είναι πλέον ενεργό.');
+            if (!empty($account['must_change_password'])) {
+                throw new RuntimeException('Δημιούργησε πρώτα το προσωπικό σου password.');
             }
 
             if (!isset($_FILES['dj_set']) || !is_array($_FILES['dj_set'])) {
@@ -114,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     UPLOAD_ERR_INI_SIZE => 'Το αρχείο ξεπερνά το όριο upload του server.',
                     UPLOAD_ERR_FORM_SIZE => 'Το αρχείο είναι πολύ μεγάλο.',
                     UPLOAD_ERR_PARTIAL => 'Το upload διακόπηκε πριν ολοκληρωθεί.',
-                    UPLOAD_ERR_NO_FILE => 'Δεν επιλέχθηκε αρχείο.',
+                    UPLOAD_ERR_NO_FILE => 'Δεν επιλέχθηκε αρχείο.'
                 ];
                 throw new RuntimeException($uploadMessages[$uploadError] ?? 'Το upload δεν ολοκληρώθηκε.');
             }
@@ -150,11 +177,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $pdo->beginTransaction();
-            $lock = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE id = ? FOR UPDATE");
+            $lock = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE id = ? AND is_active = 1 FOR UPDATE");
             $lock->execute([$accountId]);
-            if (!$lock->fetchColumn()) {
-                throw new RuntimeException('Το account δεν βρέθηκε.');
-            }
+            if (!$lock->fetchColumn()) throw new RuntimeException('Το account δεν βρέθηκε.');
 
             $episode = deseo_mylive_next_episode($pdo, $accountId);
             $artist = deseo_mylive_slug((string)$account['artist_name']);
@@ -184,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $storedName,
                     $relativeDir . '/' . $storedName,
                     $size,
-                    $mime,
+                    $mime
                 ]);
                 $pdo->commit();
             } catch (Throwable $dbError) {
@@ -194,9 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $message = sprintf('Το EP%03d ανέβηκε επιτυχώς.', $episode);
-            if ($isAjax) {
-                mylive_json(true, $message, ['episode' => $episode, 'filename' => $storedName]);
-            }
+            if ($isAjax) mylive_json(true, $message, ['episode' => $episode, 'filename' => $storedName]);
             $notice = $message;
         }
     } catch (Throwable $e) {
@@ -228,15 +251,15 @@ if (!deseo_mylive_logged_in()):
     <section class="login-brand">
         <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
         <span>SEASON 6 · DJ ACCESS</span>
-        <h1>Your sets.<br>One place.</h1>
-        <p>Το προσωπικό σου σημείο για να παραδίδεις τα DJ Sets σου στο Deseo Radio.</p>
+        <h1>Your sets.<br>Your space.</h1>
+        <p>DJ Set delivery, personal artwork και branded imaging. Όλα σε ένα απλό, ιδιωτικό workspace.</p>
     </section>
 
     <section class="login-card">
         <div class="login-card-head">
-            <span>MY LIVE</span>
+            <span>MYLIVE</span>
             <h2>Καλώς ήρθες.</h2>
-            <p>Μπες με τα στοιχεία που σου έστειλε το Deseo Radio.</p>
+            <p>Μπες με τα στοιχεία πρόσβασης που έλαβες από το Deseo Radio.</p>
         </div>
 
         <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
@@ -252,7 +275,10 @@ if (!deseo_mylive_logged_in()):
 
             <label>
                 <span>Password</span>
-                <input type="password" name="password" autocomplete="current-password" required>
+                <div class="password-field">
+                    <input id="loginPassword" type="password" name="password" autocomplete="current-password" required>
+                    <button type="button" class="password-toggle" data-password-toggle="loginPassword">Show</button>
+                </div>
             </label>
 
             <?php if ($turnstileConfigured): ?>
@@ -270,9 +296,19 @@ if (!deseo_mylive_logged_in()):
             <button class="primary-button" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>Enter MyLive</button>
         </form>
 
-        <small>Private DJ delivery area · Deseo Radio / ILUMA</small>
+        <small>Private DJ workspace · Deseo Radio / ILUMA Digital Agency</small>
     </section>
 </main>
+<script>
+document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        const visible = input.type === 'text';
+        input.type = visible ? 'password' : 'text';
+        button.textContent = visible ? 'Show' : 'Hide';
+    });
+});
+</script>
 </body>
 </html>
 <?php
@@ -285,10 +321,76 @@ if (!$account) {
     header('Location: /mylive/');
     exit;
 }
+
+if (!empty($account['must_change_password'])):
+?>
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#070708">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <title>Create your password · MyLive · Deseo Radio</title>
+    <link rel="icon" href="/assets/img/favicon.png">
+    <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
+</head>
+<body class="mylive-password-page">
+<main class="password-shell">
+    <section class="password-card">
+        <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
+        <span class="eyebrow">FIRST ACCESS · <?= deseo_mylive_e($account['artist_name']) ?></span>
+        <h1>Κάν’ το δικό σου.</h1>
+        <p>Το password που έλαβες ήταν προσωρινό. Δημιούργησε τώρα τον προσωπικό σου κωδικό για το MyLive.</p>
+
+        <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+
+        <form method="post" class="password-form">
+            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+            <input type="hidden" name="action" value="change_password">
+
+            <label>
+                <span>New password</span>
+                <div class="password-field">
+                    <input id="newPassword" type="password" name="new_password" minlength="8" autocomplete="new-password" required autofocus>
+                    <button type="button" class="password-toggle" data-password-toggle="newPassword">Show</button>
+                </div>
+            </label>
+
+            <label>
+                <span>Confirm password</span>
+                <div class="password-field">
+                    <input id="confirmPassword" type="password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle" data-password-toggle="confirmPassword">Show</button>
+                </div>
+            </label>
+
+            <small>Τουλάχιστον 8 χαρακτήρες. Ο νέος κωδικός αντικαθιστά οριστικά το temporary password.</small>
+            <button class="primary-button" type="submit">Save & open MyLive</button>
+        </form>
+    </section>
+</main>
+<script>
+document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        const visible = input.type === 'text';
+        input.type = visible ? 'password' : 'text';
+        button.textContent = visible ? 'Show' : 'Hide';
+    });
+});
+</script>
+</body>
+</html>
+<?php
+exit;
+endif;
+
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
+$assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
-$dayLabel = dj_season_day_label((int)$account['day_of_week']);
-$startTime = dj_season_format_time((string)$account['start_time']);
+$dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
+$startTime = deseo_mylive_format_time((string)$account['start_time']);
 ?>
 <!doctype html>
 <html lang="el">
@@ -320,73 +422,136 @@ $startTime = dj_season_format_time((string)$account['start_time']);
 <main class="portal-shell">
     <section class="portal-intro">
         <div>
-            <span class="eyebrow">DESEO RADIO · MY LIVE</span>
-            <h1>Τα DJ Sets σου.</h1>
+            <span class="eyebrow">DESEO RADIO · MYLIVE</span>
+            <h1>Welcome, <?= deseo_mylive_e($account['artist_name']) ?>.</h1>
         </div>
-        <p>Ανέβασε το επόμενο επεισόδιο και εμείς αναλαμβάνουμε το σωστό filename, την αρίθμηση και την αποθήκευση.</p>
+        <div class="slot-pill">
+            <span>YOUR WEEKLY SLOT</span>
+            <strong><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+        </div>
     </section>
 
     <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
 
-    <section class="upload-card">
-        <div class="upload-copy">
-            <span>NEXT DELIVERY</span>
-            <h2>EP<?= str_pad((string)$nextEpisode, 3, '0', STR_PAD_LEFT) ?></h2>
-            <p>MP3 ή WAV · έως 1 GB</p>
-        </div>
-
-        <form id="uploadForm" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
-            <input type="hidden" name="action" value="upload">
-            <input id="setFile" type="file" name="dj_set" accept=".mp3,.wav,audio/mpeg,audio/wav" hidden required>
-
-            <label class="drop-zone" for="setFile" id="dropZone">
-                <span class="plus">+</span>
-                <strong id="dropTitle">Upload DJ Set</strong>
-                <small id="dropText">Πάτησε εδώ ή σύρε το αρχείο σου</small>
-            </label>
-
-            <div class="upload-actions" id="uploadActions" hidden>
-                <div class="progress-track"><span id="progressBar"></span></div>
-                <button class="primary-button" type="submit" id="uploadButton">Upload EP<?= str_pad((string)$nextEpisode, 3, '0', STR_PAD_LEFT) ?></button>
-            </div>
-        </form>
-    </section>
-
-    <section class="repository">
-        <div class="repository-head">
+    <section class="assets-section">
+        <div class="section-head">
             <div>
-                <span class="eyebrow">YOUR REPOSITORY</span>
-                <h2>Episodes</h2>
+                <span class="eyebrow">FROM DESEO RADIO · ILUMA DIGITAL AGENCY</span>
+                <h2>Your Assets</h2>
+                <p>Το επίσημο artwork, το personal imaging και ό,τι δημιουργούμε για το show σου.</p>
             </div>
-            <strong><?= count($sets) ?> upload<?= count($sets) === 1 ? '' : 's' ?></strong>
+            <strong><?= count($assets) ?></strong>
         </div>
 
-        <?php if (!$sets): ?>
-            <div class="empty-repository">
-                <strong>Δεν έχεις ανεβάσει ακόμη κάποιο set.</strong>
-                <p>Το πρώτο σου upload θα εμφανιστεί εδώ ως EP001.</p>
+        <?php if (!$assets): ?>
+            <div class="assets-empty">
+                <span>COMING HERE</span>
+                <strong>Τα προσωπικά σου assets θα εμφανιστούν εδώ.</strong>
+                <p>Μόλις το γραφιστικό και audio team της ILUMA Digital Agency ολοκληρώσει το υλικό σου, θα μπορείς να το κατεβάσεις απευθείας από το MyLive.</p>
             </div>
         <?php else: ?>
-            <div class="set-list">
-                <?php foreach ($sets as $set): ?>
-                    <article class="set-row">
-                        <div class="episode-number">EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></div>
-                        <div class="set-details">
-                            <strong><?= deseo_mylive_e($set['stored_name']) ?></strong>
-                            <span><?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?> · <?= deseo_mylive_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?></span>
+            <div class="assets-grid">
+                <?php foreach ($assets as $asset): ?>
+                    <?php
+                    $isImage = str_starts_with((string)$asset['mime_type'], 'image/');
+                    $isAudio = str_starts_with((string)$asset['mime_type'], 'audio/');
+                    ?>
+                    <article class="asset-card">
+                        <div class="asset-visual <?= $isImage ? 'has-preview' : '' ?>">
+                            <?php if ($isImage): ?>
+                                <img src="/mylive/asset.php?id=<?= (int)$asset['id'] ?>&view=1" alt="<?= deseo_mylive_e($asset['title']) ?>">
+                            <?php else: ?>
+                                <span><?= $isAudio ? 'AUDIO' : strtoupper(pathinfo((string)$asset['original_name'], PATHINFO_EXTENSION)) ?></span>
+                            <?php endif; ?>
                         </div>
-                        <div class="set-status">
-                            <span><?= deseo_mylive_e(strtoupper((string)$set['status'])) ?></span>
-                            <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
+                        <div class="asset-body">
+                            <span><?= deseo_mylive_e(deseo_mylive_asset_label((string)$asset['asset_type'])) ?></span>
+                            <h3><?= deseo_mylive_e($asset['title']) ?></h3>
+                            <p><?= deseo_mylive_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?> · <?= deseo_mylive_e(date('d.m.Y', strtotime((string)$asset['created_at']))) ?></p>
+                            <a href="/mylive/asset.php?id=<?= (int)$asset['id'] ?>" class="asset-download">Download ↓</a>
                         </div>
                     </article>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </section>
+
+    <section class="delivery-section">
+        <div class="section-head delivery-head">
+            <div>
+                <span class="eyebrow">DJ SET DELIVERY</span>
+                <h2>Your DJ Sets</h2>
+                <p>Upload το επόμενο episode. Το filename και το EP number δημιουργούνται αυτόματα.</p>
+            </div>
+            <strong><?= count($sets) ?></strong>
+        </div>
+
+        <section class="upload-card">
+            <div class="upload-copy">
+                <span>NEXT DELIVERY</span>
+                <h2>EP<?= str_pad((string)$nextEpisode, 3, '0', STR_PAD_LEFT) ?></h2>
+                <p>MP3 ή WAV · έως 1 GB</p>
+            </div>
+
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+                <input type="hidden" name="action" value="upload">
+                <input id="setFile" type="file" name="dj_set" accept=".mp3,.wav,audio/mpeg,audio/wav" hidden required>
+
+                <label class="drop-zone" for="setFile" id="dropZone">
+                    <span class="plus">+</span>
+                    <strong id="dropTitle">Upload DJ Set</strong>
+                    <small id="dropText">Πάτησε εδώ ή σύρε το αρχείο σου</small>
+                </label>
+
+                <div class="upload-actions" id="uploadActions" hidden>
+                    <div class="progress-track"><span id="progressBar"></span></div>
+                    <button class="primary-button" type="submit" id="uploadButton">Upload EP<?= str_pad((string)$nextEpisode, 3, '0', STR_PAD_LEFT) ?></button>
+                </div>
+            </form>
+        </section>
+
+        <div class="repository">
+            <div class="repository-head">
+                <div>
+                    <span class="eyebrow">YOUR REPOSITORY</span>
+                    <h3>Episodes</h3>
+                </div>
+                <strong><?= count($sets) ?> upload<?= count($sets) === 1 ? '' : 's' ?></strong>
+            </div>
+
+            <?php if (!$sets): ?>
+                <div class="empty-repository">
+                    <strong>Δεν έχεις ανεβάσει ακόμη κάποιο set.</strong>
+                    <p>Το πρώτο σου upload θα εμφανιστεί εδώ ως EP001.</p>
+                </div>
+            <?php else: ?>
+                <div class="set-list">
+                    <?php foreach ($sets as $set): ?>
+                        <article class="set-row">
+                            <div class="episode-number">EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></div>
+                            <div class="set-details">
+                                <strong><?= deseo_mylive_e($set['stored_name']) ?></strong>
+                                <span><?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?> · <?= deseo_mylive_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?></span>
+                                <?php if (!empty($set['admin_note'])): ?><small><?= deseo_mylive_e($set['admin_note']) ?></small><?php endif; ?>
+                            </div>
+                            <div class="set-status">
+                                <span class="status-<?= deseo_mylive_e((string)$set['status']) ?>"><?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)$set['status']))) ?></span>
+                                <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
 </main>
+
+<footer class="mylive-footer">
+    <span>Deseo Radio · Season 6</span>
+    <strong>Powered by ILUMA Digital Agency</strong>
+</footer>
 
 <div class="toast" id="toast" hidden></div>
 
