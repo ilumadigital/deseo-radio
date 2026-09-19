@@ -721,7 +721,9 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $body .= $section('MUSIC & RIGHTS', 'Το sound σου, μέσα στη φιλοσοφία του Deseo',
         'Το set πρέπει να εκφράζει το προσωπικό σου sound και να παραμένει συμβατό με τη μουσική ταυτότητα του Deseo Radio: '
         . '<strong style="color:#fff;">House · Afro House · Organic House · Deep House · Melodic House · Electronica · sophisticated electronic sound</strong>.<br><br>'
-        . 'Δεν χρησιμοποιούνται εν γνώσει σου leaked, παράνομα ή μη εξουσιοδοτημένα recordings. Ισχύουν επίσης οι όροι της Season 6 για δικαιώματα και AI-generated musical works / recordings.');
+        . 'Δεν χρησιμοποιούνται εν γνώσει σου leaked, παράνομα ή μη εξουσιοδοτημένα recordings.<br><br>'
+        . '<strong style="color:#fff;">Promo tracks:</strong> επιτρέπονται μόνο όταν τα έχεις παραλάβει απευθείας από τον ίδιο τον δημιουργό ή τον νόμιμο δικαιούχο και έχεις άδεια να μεταδοθούν μέσω internet / online radio. Η άδεια αυτή αφορά αποκλειστικά τη χρήση τους μέσα στο δικό σου DJ Set και δεν σημαίνει ότι επιτρέπεται ξεχωριστή δημοσίευση, διανομή ή άλλη χρήση του αρχείου.<br><br>'
+        . 'Ισχύουν επίσης οι όροι της Season 6 για δικαιώματα και AI-generated musical works / recordings.');
 
     $body .= $section('SPONSORS', 'Αν το show έχει προσωπικό χορηγό',
         'Ενημέρωσε το Deseo Radio πριν από την παράδοση του επεισοδίου. Sponsor ID, commercial spot, promo code, paid mention ή άλλο branded message χρειάζεται προηγούμενη έγκριση από Deseo Radio / ILUMA Digital Agency. '
@@ -772,6 +774,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
         . "MyLive dashboard: βλέπεις την εκτιμώμενη απήχηση του show σου, πόσα episodes έχεις ανεβάσει και πόσα προσωπικά assets έχεις διαθέσιμα.\n"
         . "Audience stats: εμφανίζονται για τον τελευταίο ολοκληρωμένο μήνα, όταν υπάρχουν διαθέσιμα στοιχεία.\n"
+        . "Promo tracks: επιτρέπονται μόνο αν τα έχεις λάβει απευθείας από τον δημιουργό ή νόμιμο δικαιούχο και έχεις άδεια για online / internet radio μετάδοση, αποκλειστικά μέσα στο δικό σου DJ Set.\n"
         . "Exclusive set: Personal DJ Imaging στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
         . "Artwork και branded DJ spots: διαθέσιμα μέσα από το MyLive.\n"
         . "Social: ανακοίνωση της συμμετοχής, ιδανικά με Collaborator Post / mention Deseo Radio.\n"
