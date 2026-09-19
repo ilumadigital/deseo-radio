@@ -622,3 +622,147 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
 }
+
+
+function deseo_mylive_onboarding_email(array $account, string $temporaryPassword, bool $reset = false): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $email = trim((string)($account['email'] ?? ''));
+    $slot = deseo_mylive_slot($account);
+    $artistSlug = deseo_mylive_slug($artist);
+
+    $section = static function(string $kicker, string $title, string $content) use ($e): string {
+        return '<tr><td style="padding:0 0 14px;">'
+            . '<div style="padding:20px 20px 19px;border:1px solid #242428;border-radius:18px;background:#101012;">'
+            . '<div style="margin-bottom:7px;color:#ff3944;font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">' . $e($kicker) . '</div>'
+            . '<div style="margin-bottom:9px;color:#fff;font:800 18px/1.25 Arial,sans-serif;">' . $e($title) . '</div>'
+            . '<div style="color:#aaaab0;font:400 13px/1.72 Arial,sans-serif;">' . $content . '</div>'
+            . '</div></td></tr>';
+    };
+
+    $bullet = static function(string $text): string {
+        return '<tr>'
+            . '<td width="18" valign="top" style="padding:0 0 8px;color:#ff3944;font:700 14px Arial,sans-serif;">•</td>'
+            . '<td valign="top" style="padding:0 0 8px;color:#b4b4ba;font:400 13px/1.58 Arial,sans-serif;">' . $text . '</td>'
+            . '</tr>';
+    };
+
+    $quick = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
+        . $bullet('<strong style="color:#fff;">58–59 λεπτά</strong> ιδανική διάρκεια για το ωριαίο slot.')
+        . $bullet('Παράδοση σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>.')
+        . $bullet('Το <strong style="color:#fff;">MyLive αριθμεί και μετονομάζει αυτόματα</strong> κάθε επεισόδιο.')
+        . $bullet('Artwork και branded DJ spots κατεβαίνουν από το <strong style="color:#fff;">MyLive</strong>.')
+        . '</table>';
+
+    $body = '<tr><td style="padding:0 0 18px;">'
+        . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">YOUR WEEKLY SLOT</div>'
+        . '<div style="margin-top:7px;font:800 25px/1.15 Arial,sans-serif;">' . $e($slot) . '</div>'
+        . '</div></td></tr>';
+
+    $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
+
+    $body .= $section('DJ SET DELIVERY', 'Διάρκεια & τελικό αρχείο',
+        'Το slot σου είναι ωριαίο και η ιδανική διάρκεια του set είναι περίπου <strong style="color:#fff;">58–59 λεπτά</strong>. '
+        . 'Αν το set είναι μεγαλύτερο, δεν χρειάζεται υποχρεωτικά manual edit: το Airtime του Deseo Radio μπορεί να ολοκληρώσει την αναπαραγωγή όταν έρθει η ώρα για το επόμενο προγραμματισμένο Imaging Spot. '
+        . 'Αν κάνεις χειροκίνητη περικοπή, επίλεξε φυσικό μουσικό σημείο και ολοκλήρωσε με <strong style="color:#fff;">8-second fade out</strong>.<br><br>'
+        . 'Το τελικό DJ Set πρέπει να παραδίδεται σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>, χωρίς clipping, εμφανές distortion ή μεγάλα ανεπιθύμητα κενά.');
+
+    $body .= $section('MYLIVE AUTOMATION', 'Δεν χρειάζεται να μετονομάζεις τίποτα',
+        'Ανεβάζεις απλώς το τελικό MP3 από το κουμπί <strong style="color:#fff;">+ Upload DJ Set</strong>. '
+        . 'Το MyLive βρίσκει μόνο του ποιο episode ακολουθεί και αποθηκεύει το set με το σωστό naming format.<br><br>'
+        . '<strong style="color:#fff;">EP001 → EP002 → EP003…</strong><br>'
+        . '<strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong><br><br>'
+        . 'Δεν χρειάζεται να αλλάξεις μόνος σου filename, να γράψεις episode number ή να στείλεις WeTransfer / Drive link.');
+
+    $body .= $section('DESEO IMAGING', 'Τα προσωπικά branded DJ spots σου',
+        'Το Deseo Radio σε συνεργασία με την <strong style="color:#fff;">ILUMA Digital Agency</strong> δημιουργεί το προσωπικό σου branded radio imaging. '
+        . 'Θα το βρίσκεις μέσα στο MyLive, μαζί με κάθε άλλο επίσημο asset του show σου.<br><br>'
+        . 'Για exclusive set του Deseo Radio, το βασικό Personal DJ Spot τοποθετείται στην αρχή, ιδανικά πάνω σε intro ή καθαρό instrumental σημείο. '
+        . 'Το αρχείο με ένδειξη <strong style="color:#fff;">_30</strong> τοποθετείται περίπου στο 30ό λεπτό, σε σημείο όπου η εκφώνηση ακούγεται καθαρά. '
+        . 'Δεν χρειάζεται ακρίβεια δευτερολέπτου — προτεραιότητα έχει η μουσική ροή.');
+
+    $body .= $section('EXISTING SETS', 'Αν το set έχει ήδη ηχογραφηθεί',
+        'Μπορείς να χρησιμοποιήσεις ήδη ηχογραφημένο ή δημοσιευμένο set, εφόσον είναι κατάλληλο για radio broadcast. '
+        . 'Δεν πρέπει να περιλαμβάνει station IDs άλλου ραδιοφωνικού σταθμού, μη εγκεκριμένες διαφημίσεις ή commercial spots, μεγάλα silent σημεία ή εμφανή τεχνικά προβλήματα. '
+        . 'Αν γίνει manual cut, ισχύει και εδώ το <strong style="color:#fff;">8-second fade out</strong>.');
+
+    $body .= $section('YOUR ASSETS', 'Artwork, Imaging & αρχεία του show',
+        'Το MyLive είναι και ο προσωπικός σου χώρος παραλαβής υλικού. Από το section <strong style="color:#fff;">Your Assets</strong> θα μπορείς να κατεβάζεις:<br><br>'
+        . '• το προσωπικό Instagram / social artwork σου<br>'
+        . '• το Personal DJ Imaging<br>'
+        . '• το <strong style="color:#fff;">_30 Imaging</strong><br>'
+        . '• οποιοδήποτε πρόσθετο promotional ή on-air asset δημιουργήσει το Deseo Radio / ILUMA Digital Agency.');
+
+    $body .= $section('SOCIAL MEDIA', 'Η ανακοίνωση της συμμετοχής σου',
+        'Το προσωπικό promotional artwork δημιουργείται από το γραφιστικό τμήμα της <strong style="color:#fff;">ILUMA Digital Agency</strong> με Artist Name, ημέρα, ώρα και Deseo Radio branding. '
+        . 'Η δημοσίευσή του στα προσωπικά σου social media αποτελεί μέρος της συμμετοχής στη Season 6.<br><br>'
+        . 'Το Deseo Radio θα προωθεί αντίστοιχα τη συμμετοχή σου από τα επίσημα κανάλια του. Ιδανικά χρησιμοποιούμε <strong style="color:#fff;">Collaborator Post</strong>. '
+        . 'Όταν λαμβάνεις collaboration request από το Deseo Radio, αποδέξου το. Αν δεν είναι διαθέσιμο, χρησιμοποίησε tag / mention και repost της επίσημης ανακοίνωσης.');
+
+    $body .= $section('MUSIC & RIGHTS', 'Το sound σου, μέσα στη φιλοσοφία του Deseo',
+        'Το set πρέπει να εκφράζει το προσωπικό σου sound και να παραμένει συμβατό με τη μουσική ταυτότητα του Deseo Radio: '
+        . '<strong style="color:#fff;">House · Afro House · Organic House · Deep House · Melodic House · Electronica · sophisticated electronic sound</strong>.<br><br>'
+        . 'Δεν χρησιμοποιούνται εν γνώσει σου leaked, παράνομα ή μη εξουσιοδοτημένα recordings. Ισχύουν επίσης οι όροι της Season 6 για δικαιώματα και AI-generated musical works / recordings.');
+
+    $body .= $section('SPONSORS', 'Αν το show έχει προσωπικό χορηγό',
+        'Ενημέρωσε το Deseo Radio πριν από την παράδοση του επεισοδίου. Sponsor ID, commercial spot, promo code, paid mention ή άλλο branded message χρειάζεται προηγούμενη έγκριση από Deseo Radio / ILUMA Digital Agency. '
+        . 'Για ωριαίο show προτείνονται έως <strong style="color:#fff;">1–2 σύντομες sponsor αναφορές</strong>, κατόπιν έγκρισης.');
+
+    $body .= $section('BEFORE UPLOAD', 'Ένας τελευταίος έλεγχος',
+        'Πριν πατήσεις Upload, βεβαιώσου ότι ανεβάζεις το <strong style="color:#fff;">final on-air master</strong>: σωστό MP3 192 kbps Stereo, χωρίς IDs άλλων stations, χωρίς μη εγκεκριμένα commercial messages, χωρίς μεγάλα κενά ή distortion και με τα Deseo Imaging Spots σωστά τοποθετημένα όπου απαιτείται.');
+
+    $credentials = '<tr><td style="padding:8px 0 0;">'
+        . '<div style="padding:23px;border:1px solid #5a171e;border-radius:20px;background:#160b0d;">'
+        . '<div style="color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">MYLIVE ACCESS</div>'
+        . '<div style="margin:7px 0 6px;color:#fff;font:800 22px/1.2 Arial,sans-serif;">Τα προσωρινά στοιχεία πρόσβασής σου</div>'
+        . '<div style="margin-bottom:18px;color:#a9a9af;font:400 12px/1.65 Arial,sans-serif;">Χρησιμοποίησέ τα για την πρώτη σύνδεση. Αμέσως μετά, το MyLive θα σου ζητήσει να δημιουργήσεις τον δικό σου προσωπικό κωδικό πρόσβασης.</div>'
+        . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-credentials" style="border:1px solid #2c2c31;border-radius:15px;background:#0b0b0d;">'
+        . '<tr><td style="padding:14px 16px;border-bottom:1px solid #252529;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;width:34%;">Email</td>'
+        . '<td class="d-credential-value" style="padding:14px 16px;border-bottom:1px solid #252529;color:#fff;font:700 15px Arial,sans-serif;">' . $e($email) . '</td></tr>'
+        . '<tr><td style="padding:14px 16px;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Temporary password</td>'
+        . '<td class="d-credential-value" style="padding:14px 16px;color:#fff;font:800 17px Arial,sans-serif;letter-spacing:.03em;">' . $e($temporaryPassword) . '</td></tr>'
+        . '</table>'
+        . '<div style="margin-top:17px;color:#c9aeb1;font:400 12px/1.65 Arial,sans-serif;">'
+        . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> δημιούργησε τον δικό σου password και αποθήκευσέ τον στον browser / password manager μαζί με το email σου, ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.'
+        . '</div>'
+        . '<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:18px;"><tr><td style="border-radius:999px;background:#ff2b36;">'
+        . '<a href="https://deseoradio.com/mylive/" style="display:inline-block;padding:14px 23px;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;">OPEN MYLIVE</a>'
+        . '</td></tr></table>'
+        . '</div></td></tr>';
+
+    $body .= $credentials;
+
+    $subject = $reset
+        ? 'Deseo Radio MyLive · Νέα στοιχεία πρόσβασης & Season 6 οδηγίες'
+        : 'Deseo Radio Season 6 · MyLive access & οδηγίες DJ';
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · SEASON 6 · MYLIVE',
+        $reset ? 'Το νέο MyLive access σου.' : 'Καλώς ήρθες στο MyLive.',
+        $reset
+            ? $artist . ', εκδώσαμε νέο προσωρινό κωδικό πρόσβασης. Παρακάτω θα βρεις ξανά συγκεντρωμένες και τις οδηγίες της Season 6.'
+            : $artist . ', εδώ θα βρεις όλα όσα χρειάζεσαι για το DJ Set delivery, το προσωπικό σου imaging, τα promotional assets και την πρόσβασή σου στο MyLive.',
+        $body
+    );
+
+    $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
+        . "Artist: {$artist}\n"
+        . "Weekly slot: {$slot}\n\n"
+        . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
+        . "Manual cut: 8-second fade out.\n"
+        . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
+        . "Exclusive set: Personal DJ Imaging στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
+        . "Artwork και branded DJ spots: διαθέσιμα μέσα από το MyLive.\n"
+        . "Social: ανακοίνωση της συμμετοχής, ιδανικά με Collaborator Post / mention Deseo Radio.\n"
+        . "Sponsor material: απαιτεί προηγούμενη έγκριση.\n\n"
+        . "MYLIVE ACCESS\n"
+        . "URL: https://deseoradio.com/mylive/\n"
+        . "Email: {$email}\n"
+        . "Temporary password: {$temporaryPassword}\n\n"
+        . "Με την πρώτη σύνδεση θα δημιουργήσεις τον προσωπικό σου κωδικό. Αποθήκευσέ τον μαζί με το email σου στον browser / password manager.\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
