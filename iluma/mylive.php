@@ -272,22 +272,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $enabled = (int)($_POST['enabled'] ?? 0) === 1 ? 1 : 0;
                 $account = mylive_admin_account($pdo, $accountId);
+                $wasEnabled = !empty($account['public_profile_enabled']);
 
                 if ((string)($account['account_status'] ?? '') === 'pending') {
                     throw new RuntimeException('Ενεργοποίησε πρώτα το MyLive access του DJ.');
                 }
 
-                $pdo->prepare(
-                    "UPDATE dj_portal_accounts
-                     SET public_profile_enabled = ?
-                     WHERE id = ?"
-                )->execute([$enabled, $accountId]);
-
                 if ($enabled) {
-                    deseo_mylive_public_profile_ensure($pdo, $accountId);
-                    $notice = 'Το Public Profile demo ενεργοποιήθηκε για τον ' . (string)$account['artist_name'] . '. Τα αρχικά στοιχεία εισήχθησαν από την αίτηση, όπου υπήρχαν.';
+                    if ($wasEnabled) {
+                        $notice = 'Το Public Profile είναι ήδη ενεργό για τον ' . (string)$account['artist_name'] . '.';
+                    } else {
+                        deseo_mylive_public_profile_ensure($pdo, $accountId);
+
+                        $pdo->prepare(
+                            "UPDATE dj_portal_accounts
+                             SET public_profile_enabled = 1
+                             WHERE id = ?"
+                        )->execute([$accountId]);
+
+                        try {
+                            $mail = deseo_mylive_public_profile_enabled_email($account);
+                            deseo_send_smtp_mail(
+                                (string)$account['email'],
+                                (string)$account['artist_name'],
+                                $mail['subject'],
+                                $mail['html'],
+                                $mail['text']
+                            );
+
+                            $notice = 'Το Public Profile ενεργοποιήθηκε για τον '
+                                . (string)$account['artist_name']
+                                . ' και στάλθηκε ενημερωτικό email στο '
+                                . (string)$account['email']
+                                . '. Τα αρχικά στοιχεία εισήχθησαν από την αίτηση, όπου υπήρχαν.';
+                        } catch (Throwable $mailError) {
+                            $pdo->prepare(
+                                "UPDATE dj_portal_accounts
+                                 SET public_profile_enabled = 0
+                                 WHERE id = ?"
+                            )->execute([$accountId]);
+
+                            error_log('MyLive Public Profile activation email failed: ' . $mailError->getMessage());
+
+                            throw new RuntimeException(
+                                'Το Public Profile δεν ενεργοποιήθηκε επειδή το ενημερωτικό email δεν μπόρεσε να σταλεί. SMTP: '
+                                . $mailError->getMessage()
+                            );
+                        }
+                    }
                 } else {
-                    $notice = 'Το Public Profile απενεργοποιήθηκε για τον ' . (string)$account['artist_name'] . '. Δεν εμφανίζεται πλέον δημόσιο modal.';
+                    $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET public_profile_enabled = 0
+                         WHERE id = ?"
+                    )->execute([$accountId]);
+
+                    $notice = 'Το Public Profile απενεργοποιήθηκε για τον '
+                        . (string)$account['artist_name']
+                        . '. Δεν εμφανίζεται πλέον δημόσιο modal.';
                 }
 
             } elseif ($action === 'delete_account') {
