@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+    --red:#ff2b36;
+    --red-dark:#cf0717;
+    --bg:#070708;
+    --panel:#0e0e10;
+    --panel-2:#121214;
+    --line:rgba(255,255,255,.09);
+    --muted:#7f7f86;
+    --text:#f5f5f7;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Google Sans",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button,a{transition:.2s ease}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+.mylive-login-page{
+    min-height:100vh;
+    background:
+        linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.34)),
+        radial-gradient(circle at 78% 18%,rgba(255,43,54,.22),transparent 30%),
+        url('/assets/img/bg.png') center/cover fixed;
+}
+.login-shell{width:min(1180px,calc(100% - 48px));min-height:100vh;margin:auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(360px,.62fr);gap:80px;align-items:center;padding:70px 0}
+.login-brand img{width:176px;margin-bottom:46px}
+.login-brand>span,.eyebrow,.login-card-head>span,.upload-copy>span{display:block;color:var(--red);font-size:10px;font-weight:700;letter-spacing:.17em}
+.login-brand h1{margin:14px 0 24px;font-size:clamp(64px,7vw,112px);line-height:.84;letter-spacing:-.065em}
+.login-brand p{max-width:550px;margin:0;color:#a3a3aa;font-size:17px;line-height:1.65}
+.login-card{padding:34px;border:1px solid rgba(255,255,255,.12);border-radius:30px;background:rgba(9,9,11,.84);backdrop-filter:blur(24px);box-shadow:0 38px 110px rgba(0,0,0,.45)}
+.login-card-head h2{margin:8px 0 8px;font-size:34px;letter-spacing:-.045em}
+.login-card-head p{margin:0 0 28px;color:#77777f;font-size:13px;line-height:1.6}
+.login-card form{display:grid;gap:16px}
+.login-card label{display:grid;gap:8px}
+.login-card label span{color:#a7a7ad;font-size:11px;font-weight:600}
+.login-card input{width:100%;min-height:52px;padding:0 15px;border:1px solid var(--line);border-radius:15px;background:#070708;color:#fff;outline:none}
+.login-card input:focus{border-color:rgba(255,43,54,.58);box-shadow:0 0 0 3px rgba(255,43,54,.08)}
+.turnstile-box{padding:14px;border:1px solid var(--line);border-radius:16px;background:#09090b}
+.primary-button{min-height:50px;border:0;border-radius:999px;padding:0 22px;background:linear-gradient(180deg,#ff4650,#d60020);color:#fff;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 14px 34px rgba(214,0,32,.22)}
+.primary-button:hover{transform:translateY(-1px);background:#fff;color:#070708}
+.login-card>small{display:block;margin-top:20px;color:#505057;font-size:9px;text-align:center;letter-spacing:.07em}
+.alert{padding:14px 16px;margin:0 0 18px;border-radius:15px;font-size:12px;line-height:1.5}
+.alert.error{border:1px solid rgba(255,77,87,.2);background:rgba(255,43,54,.08);color:#ff9ea4}
+.alert.success{border:1px solid rgba(58,211,118,.2);background:rgba(58,211,118,.08);color:#a9edc3}
+
+.mylive-dashboard-page{min-height:100vh;background:radial-gradient(circle at 92% 0,rgba(255,43,54,.08),transparent 25%),#070708}
+.portal-header{width:min(1380px,calc(100% - 48px));height:92px;margin:auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.portal-logo img{width:142px;display:block}
+.portal-user{display:flex;align-items:center;gap:18px}
+.portal-user>div{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.portal-user strong{font-size:12px}
+.portal-user span{color:#68686e;font-size:10px}
+.logout-button{min-height:36px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:#0d0d0f;color:#85858b;font-size:9px;font-weight:700;text-transform:uppercase}
+.logout-button:hover{border-color:rgba(255,255,255,.2);color:#fff}
+.portal-shell{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:82px 0 110px}
+.portal-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:50px;margin-bottom:46px}
+.portal-intro h1{margin:12px 0 0;font-size:clamp(52px,6vw,86px);line-height:.9;letter-spacing:-.058em}
+.portal-intro>p{max-width:430px;margin:0;color:#77777e;font-size:13px;line-height:1.75}
+
+.upload-card{display:grid;grid-template-columns:220px minmax(0,1fr);gap:34px;padding:28px;border:1px solid rgba(255,43,54,.19);border-radius:30px;background:linear-gradient(145deg,#111113,#0a0a0b);box-shadow:0 34px 100px rgba(0,0,0,.28)}
+.upload-copy{padding:14px 4px}
+.upload-copy h2{margin:9px 0 9px;font-size:42px;letter-spacing:-.055em}
+.upload-copy p{margin:0;color:#66666d;font-size:11px}
+#uploadForm{display:grid;gap:13px}
+.drop-zone{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,.18);border-radius:23px;background:rgba(255,255,255,.018);cursor:pointer;text-align:center;transition:.2s}
+.drop-zone:hover,.drop-zone.is-dragging{border-color:var(--red);background:rgba(255,43,54,.045)}
+.drop-zone.has-file{border-style:solid;border-color:rgba(255,43,54,.32)}
+.plus{width:46px;height:46px;display:grid;place-items:center;margin-bottom:15px;border-radius:50%;background:var(--red);color:#080808;font-size:30px;font-weight:400;box-shadow:0 13px 32px rgba(255,43,54,.18)}
+.drop-zone strong{max-width:90%;font-size:16px}
+.drop-zone small{margin-top:5px;color:#6d6d74;font-size:10px}
+.upload-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.progress-track{height:5px;overflow:hidden;border-radius:99px;background:#1b1b1e}
+.progress-track span{display:block;width:0;height:100%;border-radius:inherit;background:var(--red);transition:width .15s}
+
+.repository{margin-top:76px}
+.repository-head{display:flex;justify-content:space-between;align-items:end;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.repository-head h2{margin:7px 0 0;font-size:32px;letter-spacing:-.045em}
+.repository-head>strong{color:#5e5e64;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.empty-repository{padding:42px 0;border-bottom:1px solid var(--line)}
+.empty-repository strong{font-size:15px}
+.empty-repository p{margin:7px 0 0;color:#65656b;font-size:12px}
+.set-list{display:grid}
+.set-row{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:22px;align-items:center;min-height:92px;border-bottom:1px solid var(--line)}
+.episode-number{color:var(--red);font-size:12px;font-weight:700;letter-spacing:.06em}
+.set-details{min-width:0;display:flex;flex-direction:column;gap:5px}
+.set-details strong{overflow:hidden;font-size:13px;white-space:nowrap;text-overflow:ellipsis}
+.set-details span{color:#5e5e64;font-size:10px}
+.set-status{display:flex;align-items:center;gap:14px}
+.set-status span{padding:7px 9px;border:1px solid rgba(255,255,255,.09);border-radius:999px;color:#7a7a81;font-size:8px;font-weight:700;letter-spacing:.08em}
+.set-status a{color:#cfcfd3;font-size:10px;font-weight:600}
+.set-status a:hover{color:var(--red)}
+
+.toast{position:fixed;right:24px;bottom:24px;z-index:20;max-width:360px;padding:15px 18px;border:1px solid var(--line);border-radius:16px;background:#111114;box-shadow:0 24px 70px rgba(0,0,0,.45);font-size:12px}
+.toast-success{color:#b1edc7}
+.toast-error{color:#ff9da3}
+
+@media(max-width:900px){
+    .login-shell{grid-template-columns:1fr;gap:34px;padding:48px 0}
+    .login-brand{padding-top:20px}
+    .login-brand img{margin-bottom:34px}
+    .login-brand h1{font-size:clamp(56px,14vw,86px)}
+    .portal-intro{align-items:flex-start;flex-direction:column}
+    .upload-card{grid-template-columns:1fr}
+    .upload-copy{padding:0}
+}
+@media(max-width:620px){
+    .login-shell,.portal-header,.portal-shell{width:min(100% - 28px,1180px)}
+    .login-card{padding:24px;border-radius:24px}
+    .portal-header{height:auto;min-height:88px}
+    .portal-logo img{width:118px}
+    .portal-user>div{display:none}
+    .portal-shell{padding:55px 0 80px}
+    .portal-intro{gap:22px;margin-bottom:32px}
+    .portal-intro h1{font-size:50px}
+    .upload-card{padding:20px;border-radius:24px}
+    .drop-zone{min-height:180px}
+    .upload-actions{grid-template-columns:1fr}
+    .repository{margin-top:56px}
+    .set-row{grid-template-columns:62px minmax(0,1fr);gap:12px;padding:17px 0}
+    .set-status{grid-column:2;justify-content:flex-start}
+    .toast{left:14px;right:14px;bottom:14px;max-width:none}
+}
