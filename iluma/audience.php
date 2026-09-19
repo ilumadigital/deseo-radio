@@ -4,10 +4,17 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/audience.php';
+require_once __DIR__ . '/../includes/audience-report.php';
 require_once __DIR__ . '/admin-ui.php';
 
 deseo_mylive_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
+
+try {
+    deseo_audience_maybe_send_monthly_report($pdo);
+} catch (Throwable $reportError) {
+    error_log('Audience monthly report fallback failed: ' . $reportError->getMessage());
+}
 
 $notice = null;
 $error = null;
@@ -67,12 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $currentMonthKey = deseo_audience_current_month_key();
-                $stmt = $pdo->prepare(
-                    "UPDATE deseo_audience_settings
-                     SET monthly_listeners = ?, audience_month = ?
-                     WHERE id = 1"
-                );
-                $stmt->execute([$monthlyListeners, $currentMonthKey]);
+                deseo_audience_save_month($pdo, $currentMonthKey, $monthlyListeners);
 
                 $notice = 'Η ακροαματικότητα για ' . deseo_audience_month_label($currentMonthKey) . ' ενημερώθηκε. Τα MyLive estimates χρησιμοποιούν πλέον αυτό το audience.';
             }
@@ -90,6 +92,11 @@ $currentMonthLabel = deseo_audience_month_label($currentMonthKey);
 $storedMonth = deseo_audience_stored_month($pdo);
 $monthlyListeners = deseo_audience_monthly_listeners($pdo);
 $updatedAt = deseo_audience_updated_at($pdo);
+$displayAudience = deseo_audience_latest_record($pdo);
+$displayMonthKey = $displayAudience ? (string)$displayAudience['month_key'] : '';
+$displayMonthLabel = $displayMonthKey !== '' ? deseo_audience_month_label($displayMonthKey) : '';
+$displayListeners = $displayAudience ? (int)$displayAudience['monthly_listeners'] : 0;
+$previewListeners = $monthlyListeners > 0 ? $monthlyListeners : $displayListeners;
 
 $activeStmt = $pdo->query(
     "SELECT id, artist_name, day_of_week, start_time, end_time, show_audience_stats
@@ -149,12 +156,12 @@ admin_page_start('Audience', 'audience');
 
         <div class="audience-current">
             <span><?= admin_e(strtoupper($currentMonthLabel)) ?></span>
-            <strong><?= $monthlyListeners > 0 ? admin_e(deseo_audience_format($monthlyListeners)) : '—' ?></strong>
+            <strong><?= $monthlyListeners > 0 ? admin_e(deseo_audience_format($monthlyListeners)) : 'AWAITING DATA' ?></strong>
             <small>
                 <?php if ($monthlyListeners > 0 && $updatedAt): ?>
                     Updated <?= admin_e(date('d.m.Y · H:i', strtotime($updatedAt))) ?>
-                <?php elseif ($storedMonth !== '' && $storedMonth !== $currentMonthKey): ?>
-                    Δεν έχει καταχωρηθεί ακόμη audience για <?= admin_e($currentMonthLabel) ?>. Τελευταία καταχώρηση: <?= admin_e(deseo_audience_month_label($storedMonth)) ?>.
+                <?php elseif ($displayAudience): ?>
+                    Δεν έχει καταχωρηθεί ακόμη audience για <?= admin_e($currentMonthLabel) ?>. Το MyLive συνεχίζει να εμφανίζει <?= admin_e($displayMonthLabel) ?> · <?= admin_e(deseo_audience_format($displayListeners)) ?> listeners.
                 <?php else: ?>
                     Δεν έχει καταχωρηθεί ακόμη audience για <?= admin_e($currentMonthLabel) ?>.
                 <?php endif; ?>
@@ -171,7 +178,7 @@ admin_page_start('Audience', 'audience');
             <?php foreach ($previews as $preview): ?>
                 <?php
                 $previewReach = deseo_audience_band_baseline(
-                    $monthlyListeners,
+                    $previewListeners,
                     5,
                     $preview['start'],
                     $preview['end']
@@ -180,7 +187,7 @@ admin_page_start('Audience', 'audience');
                 <div class="audience-preview">
                     <span><?= admin_e($preview['note']) ?></span>
                     <strong><?= admin_e($preview['label']) ?></strong>
-                    <b><?= $monthlyListeners > 0 ? '~' . admin_e(deseo_audience_format($previewReach)) : '—' ?></b>
+                    <b><?= $previewListeners > 0 ? '~' . admin_e(deseo_audience_format($previewReach)) : '—' ?></b>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -196,7 +203,13 @@ admin_page_start('Audience', 'audience');
         <div>
             <span>MYLIVE PREVIEW</span>
             <h2>DJ estimated reach</h2>
-            <p>Έλεγχος του αριθμού που θα βλέπει ο κάθε ενεργός DJ στο MyLive για τον <?= admin_e($currentMonthLabel) ?>.</p>
+            <p>
+                <?php if ($displayAudience): ?>
+                    Το MyLive εμφανίζει αυτή τη στιγμή τα τελευταία ολοκληρωμένα stats: <?= admin_e($displayMonthLabel) ?>.
+                <?php else: ?>
+                    Δεν υπάρχουν ακόμη ολοκληρωμένα audience stats για προβολή στο MyLive.
+                <?php endif; ?>
+            </p>
         </div>
 
         <div class="audience-global-actions">
@@ -221,7 +234,11 @@ admin_page_start('Audience', 'audience');
     <?php else: ?>
         <div class="audience-dj-list">
             <?php foreach ($activeAccounts as $account): ?>
-                <?php $estimate = deseo_audience_estimated_reach($pdo, $account); ?>
+                <?php
+                $estimate = ($displayAudience && $displayMonthKey !== '')
+                    ? deseo_audience_estimated_reach_for_month($pdo, $account, $displayMonthKey, $displayListeners)
+                    : 0;
+                ?>
                 <div class="audience-dj-row">
                     <div class="audience-dj-copy">
                         <span><?= admin_e(deseo_mylive_day_label((int)$account['day_of_week'])) ?> · <?= admin_e(deseo_mylive_format_time((string)$account['start_time'])) ?>–<?= admin_e(deseo_mylive_format_time((string)$account['end_time'])) ?></span>
@@ -232,7 +249,7 @@ admin_page_start('Audience', 'audience');
                         <span class="audience-visibility <?= !empty($account['show_audience_stats']) ? 'is-visible' : 'is-hidden' ?>">
                             <?= !empty($account['show_audience_stats']) ? 'VISIBLE' : 'HIDDEN' ?>
                         </span>
-                        <b><?= $monthlyListeners > 0 ? '~' . admin_e(deseo_audience_format($estimate)) : '—' ?></b>
+                        <b><?= $displayAudience ? '~' . admin_e(deseo_audience_format($estimate)) : '—' ?></b>
                     </div>
 
                     <form method="post" class="audience-visibility-form">
