@@ -29,11 +29,57 @@ function deseo_audience_bootstrap(PDO $pdo): void {
          WHERE id = 1 AND monthly_listeners > 0 AND audience_month = ''"
     );
     $stmt->execute([$currentMonth]);
+
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS deseo_audience_months (
+            month_key CHAR(7) NOT NULL PRIMARY KEY,
+            monthly_listeners BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS deseo_audience_report_state (
+            id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+            last_seen_month CHAR(7) NOT NULL DEFAULT '',
+            last_report_month CHAR(7) NOT NULL DEFAULT '',
+            last_report_sent_at DATETIME NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+    $pdo->exec(
+        "INSERT IGNORE INTO deseo_audience_report_state (id, last_seen_month, last_report_month)
+         VALUES (1, '', '')"
+    );
+
+    $legacy = $pdo->query(
+        "SELECT monthly_listeners, audience_month
+         FROM deseo_audience_settings
+         WHERE id = 1
+         LIMIT 1"
+    )->fetch(PDO::FETCH_ASSOC);
+
+    if ($legacy && (int)$legacy['monthly_listeners'] > 0 && trim((string)$legacy['audience_month']) !== '') {
+        $history = $pdo->prepare(
+            "INSERT IGNORE INTO deseo_audience_months (month_key, monthly_listeners)
+             VALUES (?, ?)"
+        );
+        $history->execute([
+            trim((string)$legacy['audience_month']),
+            (int)$legacy['monthly_listeners']
+        ]);
+    }
 }
 
 function deseo_audience_current_month_key(): string {
     $now = new DateTimeImmutable('now', new DateTimeZone('Europe/Athens'));
     return $now->format('Y-m');
+}
+
+function deseo_audience_previous_month_key(?string $monthKey = null): string {
+    $monthKey = $monthKey ?: deseo_audience_current_month_key();
+    $date = DateTimeImmutable::createFromFormat('!Y-m', $monthKey, new DateTimeZone('Europe/Athens'));
+    if (!$date) return '';
+    return $date->modify('-1 month')->format('Y-m');
 }
 
 function deseo_audience_month_label(?string $monthKey = null): string {
@@ -68,18 +114,71 @@ function deseo_audience_stored_month(PDO $pdo): string {
     return trim((string)$value);
 }
 
-function deseo_audience_monthly_listeners(PDO $pdo): int {
+function deseo_audience_month_listeners(PDO $pdo, string $monthKey): int {
     deseo_audience_bootstrap($pdo);
     $stmt = $pdo->prepare(
         "SELECT monthly_listeners
-         FROM deseo_audience_settings
-         WHERE id = 1 AND audience_month = ?
+         FROM deseo_audience_months
+         WHERE month_key = ?
+         LIMIT 1"
+    );
+    $stmt->execute([$monthKey]);
+    return max(0, (int)($stmt->fetchColumn() ?: 0));
+}
+
+function deseo_audience_monthly_listeners(PDO $pdo): int {
+    return deseo_audience_month_listeners($pdo, deseo_audience_current_month_key());
+}
+
+function deseo_audience_latest_record(PDO $pdo): ?array {
+    deseo_audience_bootstrap($pdo);
+    $stmt = $pdo->prepare(
+        "SELECT month_key, monthly_listeners, recorded_at
+         FROM deseo_audience_months
+         WHERE month_key <= ?
+           AND monthly_listeners > 0
+         ORDER BY month_key DESC
          LIMIT 1"
     );
     $stmt->execute([deseo_audience_current_month_key()]);
-    $value = $stmt->fetchColumn();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    return max(0, (int)($value ?: 0));
+    return $row ?: null;
+}
+
+function deseo_audience_save_month(PDO $pdo, string $monthKey, int $monthlyListeners): void {
+    deseo_audience_bootstrap($pdo);
+
+    if (!preg_match('/^\\d{4}-\\d{2}$/', $monthKey)) {
+        throw new RuntimeException('Μη έγκυρος μήνας audience.');
+    }
+    if ($monthlyListeners < 1) {
+        throw new RuntimeException('Το audience πρέπει να είναι μεγαλύτερο από μηδέν.');
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO deseo_audience_months (month_key, monthly_listeners)
+             VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE
+                monthly_listeners = VALUES(monthly_listeners),
+                recorded_at = CURRENT_TIMESTAMP"
+        );
+        $stmt->execute([$monthKey, $monthlyListeners]);
+
+        $stmt = $pdo->prepare(
+            "UPDATE deseo_audience_settings
+             SET monthly_listeners = ?, audience_month = ?
+             WHERE id = 1"
+        );
+        $stmt->execute([$monthlyListeners, $monthKey]);
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $e;
+    }
 }
 
 function deseo_audience_updated_at(PDO $pdo): ?string {
@@ -176,8 +275,13 @@ function deseo_audience_seeded_variation(
     return 0.94 + ($normalized * 0.12);
 }
 
-function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
-    $monthly = deseo_audience_monthly_listeners($pdo);
+function deseo_audience_estimated_reach_for_month(
+    PDO $pdo,
+    array $account,
+    string $monthKey,
+    ?int $monthlyListeners = null
+): int {
+    $monthly = $monthlyListeners ?? deseo_audience_month_listeners($pdo, $monthKey);
     if ($monthly <= 0) return 0;
 
     $day = isset($account['day_of_week']) ? (int)$account['day_of_week'] : null;
@@ -193,14 +297,14 @@ function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
     if ($endMinutes <= $startMinutes) $endMinutes = $startMinutes + 60;
 
     $durationHours = max(0.5, ($endMinutes - $startMinutes) / 60);
-    // Longer shows reach more unique listeners, but with overlap between hours.
     $durationModifier = pow($durationHours, 0.62);
 
     $variation = deseo_audience_seeded_variation(
         (int)($account['id'] ?? 0),
         $day,
         $start,
-        $end
+        $end,
+        $monthKey
     );
 
     $estimate = $dailyAudience
@@ -210,6 +314,14 @@ function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
         * $variation;
 
     return max(0, (int)round($estimate));
+}
+
+function deseo_audience_estimated_reach(PDO $pdo, array $account): int {
+    return deseo_audience_estimated_reach_for_month(
+        $pdo,
+        $account,
+        deseo_audience_current_month_key()
+    );
 }
 
 function deseo_audience_band_baseline(
