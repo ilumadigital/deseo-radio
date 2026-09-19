@@ -70,6 +70,13 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
                 OR account_status IS NULL
                 OR account_status = ''"
         );
+        $pdo->exec(
+            "UPDATE dj_portal_accounts
+             SET account_status = 'disabled'
+             WHERE is_active = 0
+               AND account_status = 'active'
+               AND password_hash <> ''"
+        );
     } catch (Throwable $e) {
         error_log('MyLive account status migration: ' . $e->getMessage());
     }
