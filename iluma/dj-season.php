@@ -110,9 +110,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
 
                 try {
-                    if ($status === 'approved') {
+                    $myliveStatuses = ['approved', 'guest'];
+                    if (in_array($status, $myliveStatuses, true)) {
                         deseo_mylive_create_pending_from_booking($pdo, $bookingId);
-                    } elseif ($previousStatus === 'approved' && $status !== 'approved') {
+                    } elseif (
+                        in_array($previousStatus, $myliveStatuses, true)
+                        && !in_array($status, $myliveStatuses, true)
+                    ) {
                         $cleanup = $pdo->prepare(
                             "DELETE FROM dj_portal_accounts
                              WHERE booking_id = ? AND account_status = 'pending'"
@@ -157,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if ($status === 'approved') {
                                 $notice = 'Ο DJ εγκρίθηκε, το slot έκλεισε για νέα inquiries και δημιουργήθηκε Pending εγγραφή στο MyLive. Από το MyLive CMS μπορείς τώρα να εγκρίνεις την πρόσβαση και να σταλεί το onboarding email.';
                             } elseif ($status === 'guest') {
-                                $notice = 'Ο DJ επιλέχθηκε ως Guest και στάλθηκε welcome email. Το προτιμώμενο weekly slot παραμένει διαθέσιμο.';
+                                $notice = 'Ο DJ επιλέχθηκε ως Guest, στάλθηκε welcome email και δημιουργήθηκε Pending εγγραφή στο MyLive. Από το MyLive CMS μπορείς τώρα να εγκρίνεις την πρόσβαση και να σταλεί το onboarding email. Το weekly slot παραμένει διαθέσιμο.';
                             } else {
                                 $notice = 'Η αίτηση απορρίφθηκε και στάλθηκε ενημερωτικό email για πιθανή μελλοντική Guest εμφάνιση.';
                             }
