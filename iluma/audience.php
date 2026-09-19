@@ -28,14 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Ο αριθμός μηνιαίων ακροατών είναι υπερβολικά μεγάλος.');
             }
 
+            $currentMonthKey = deseo_audience_current_month_key();
             $stmt = $pdo->prepare(
                 "UPDATE deseo_audience_settings
-                 SET monthly_listeners = ?
+                 SET monthly_listeners = ?, audience_month = ?
                  WHERE id = 1"
             );
-            $stmt->execute([$monthlyListeners]);
+            $stmt->execute([$monthlyListeners, $currentMonthKey]);
 
-            $notice = 'Η μηνιαία ακροαματικότητα ενημερώθηκε. Τα MyLive estimates υπολογίζονται πλέον με το νέο audience.';
+            $notice = 'Η ακροαματικότητα για ' . deseo_audience_month_label($currentMonthKey) . ' ενημερώθηκε. Τα MyLive estimates χρησιμοποιούν πλέον αυτό το audience.';
         } catch (Throwable $e) {
             $error = $e instanceof RuntimeException
                 ? $e->getMessage()
@@ -45,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$currentMonthKey = deseo_audience_current_month_key();
+$currentMonthLabel = deseo_audience_month_label($currentMonthKey);
+$storedMonth = deseo_audience_stored_month($pdo);
 $monthlyListeners = deseo_audience_monthly_listeners($pdo);
 $updatedAt = deseo_audience_updated_at($pdo);
 
@@ -68,8 +72,8 @@ admin_page_start('Audience', 'audience');
 <div class="page-heading">
     <div>
         <span>Deseo Radio · Reach model</span>
-        <h1>Audience</h1>
-        <p>Όρισε τη μηνιαία ακροαματικότητα του σταθμού. Το MyLive χρησιμοποιεί αυτό το νούμερο μαζί με ημέρα, ώρα και διάρκεια slot για να εμφανίζει εκτιμώμενο reach σε κάθε DJ.</p>
+        <h1>Audience · <?= admin_e($currentMonthLabel) ?></h1>
+        <p>Όρισε την ακροαματικότητα του τρέχοντος μήνα. Το MyLive χρησιμοποιεί το audience του <?= admin_e($currentMonthLabel) ?> μαζί με ημέρα, ώρα και διάρκεια slot για να εμφανίζει εκτιμώμενο reach σε κάθε DJ.</p>
     </div>
 </div>
 
@@ -78,15 +82,15 @@ admin_page_start('Audience', 'audience');
 
 <section class="audience-layout">
     <article class="panel audience-settings-card">
-        <div class="audience-card-kicker">STATION AUDIENCE</div>
+        <div class="audience-card-kicker">CURRENT MONTH · <?= admin_e(strtoupper($currentMonthLabel)) ?></div>
         <h2>Monthly listeners</h2>
-        <p>Χρησιμοποίησε το πιο πρόσφατο συνολικό monthly audience του Deseo Radio.</p>
+        <p>Καταχώρησε το συνολικό audience του Deseo Radio για τον <?= admin_e($currentMonthLabel) ?>.</p>
 
         <form method="post" class="audience-form">
             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
 
             <label>
-                <span>Monthly listeners</span>
+                <span>Monthly listeners · <?= admin_e($currentMonthLabel) ?></span>
                 <input
                     type="number"
                     min="1"
@@ -103,9 +107,17 @@ admin_page_start('Audience', 'audience');
         </form>
 
         <div class="audience-current">
-            <span>CURRENT</span>
+            <span><?= admin_e(strtoupper($currentMonthLabel)) ?></span>
             <strong><?= $monthlyListeners > 0 ? admin_e(deseo_audience_format($monthlyListeners)) : '—' ?></strong>
-            <small><?= $updatedAt ? 'Updated ' . admin_e(date('d.m.Y · H:i', strtotime($updatedAt))) : 'Not configured yet' ?></small>
+            <small>
+                <?php if ($monthlyListeners > 0 && $updatedAt): ?>
+                    Updated <?= admin_e(date('d.m.Y · H:i', strtotime($updatedAt))) ?>
+                <?php elseif ($storedMonth !== '' && $storedMonth !== $currentMonthKey): ?>
+                    Δεν έχει καταχωρηθεί ακόμη audience για <?= admin_e($currentMonthLabel) ?>. Τελευταία καταχώρηση: <?= admin_e(deseo_audience_month_label($storedMonth)) ?>.
+                <?php else: ?>
+                    Δεν έχει καταχωρηθεί ακόμη audience για <?= admin_e($currentMonthLabel) ?>.
+                <?php endif; ?>
+            </small>
         </div>
     </article>
 
@@ -144,7 +156,7 @@ admin_page_start('Audience', 'audience');
         <div>
             <span>MYLIVE PREVIEW</span>
             <h2>DJ estimated reach</h2>
-            <p>Έλεγχος του αριθμού που θα βλέπει ο κάθε ενεργός DJ στο MyLive.</p>
+            <p>Έλεγχος του αριθμού που θα βλέπει ο κάθε ενεργός DJ στο MyLive για τον <?= admin_e($currentMonthLabel) ?>.</p>
         </div>
         <strong><?= count($activeAccounts) ?></strong>
     </div>
