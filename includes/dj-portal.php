@@ -206,11 +206,6 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    try {
-        deseo_mylive_cleanup_broadcasted_sets($pdo);
-    } catch (Throwable $retentionError) {
-        error_log('MyLive set retention fallback cleanup failed: ' . $retentionError->getMessage());
-    }
 }
 
 function deseo_mylive_session_start(): void {
