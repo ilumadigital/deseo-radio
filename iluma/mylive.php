@@ -484,7 +484,7 @@ admin_page_start('MyLive', 'mylive');
 
                 <section class="mylive-subpanel">
                     <div class="mylive-subpanel-head">
-                        <div><span>FROM DESEO / ILUMA DIGITAL AGENCY</span><h3>DJ Assets</h3></div>
+                        <div><span>FROM DESEO / ILUMA Digital Agency</span><h3>DJ Assets</h3></div>
                         <strong><?= count($assetsByAccount[$accountId]) ?></strong>
                     </div>
 
