@@ -4,12 +4,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-season.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/admin-ui.php';
 
 dj_season_bootstrap($pdo);
+deseo_mylive_bootstrap($pdo);
 
 $notice = null;
 $error = null;
+
+function season6_temp_password(): string {
+    return strtoupper(bin2hex(random_bytes(8)));
+}
 
 function season6_admin_time(string $value, string $fieldLabel): string {
     $value = trim($value);
@@ -157,6 +163,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $notice = 'Το status της αίτησης ενημερώθηκε. Το Radio Program παραμένει ανεξάρτητο.';
                     }
                 }
+            } elseif ($action === 'mylive_create_account') {
+                $bookingId = (int)($_POST['booking_id'] ?? 0);
+
+                $stmt = $pdo->prepare(
+                    "SELECT id, email, artist_name, status
+                     FROM dj_season_bookings
+                     WHERE id = ? AND season = ?
+                     LIMIT 1"
+                );
+                $stmt->execute([$bookingId, DESEO_DJ_SEASON]);
+                $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$booking) {
+                    throw new RuntimeException('Η αίτηση δεν βρέθηκε.');
+                }
+                if (!in_array((string)$booking['status'], ['approved', 'guest'], true)) {
+                    throw new RuntimeException('MyLive access δημιουργείται μόνο για Approved ή Guest DJ.');
+                }
+
+                $existing = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE booking_id = ? LIMIT 1");
+                $existing->execute([$bookingId]);
+                if ($existing->fetchColumn()) {
+                    throw new RuntimeException('Υπάρχει ήδη MyLive account για αυτόν τον DJ. Χρησιμοποίησε Reset password.');
+                }
+
+                $temporaryPassword = season6_temp_password();
+                $insert = $pdo->prepare(
+                    "INSERT INTO dj_portal_accounts (booking_id, email, password_hash, is_active)
+                     VALUES (?, ?, ?, 1)"
+                );
+                $insert->execute([
+                    $bookingId,
+                    strtolower(trim((string)$booking['email'])),
+                    password_hash($temporaryPassword, PASSWORD_DEFAULT),
+                ]);
+
+                $notice = 'MyLive account δημιουργήθηκε για ' . (string)$booking['artist_name']
+                    . '. Temporary password: ' . $temporaryPassword
+                    . ' · URL: https://deseoradio.com/mylive/';
+
+            } elseif ($action === 'mylive_reset_password') {
+                $bookingId = (int)($_POST['booking_id'] ?? 0);
+                $temporaryPassword = season6_temp_password();
+
+                $stmt = $pdo->prepare(
+                    "UPDATE dj_portal_accounts a
+                     INNER JOIN dj_season_bookings b ON b.id = a.booking_id
+                     SET a.password_hash = ?, a.email = LOWER(b.email), a.is_active = 1
+                     WHERE a.booking_id = ? AND b.season = ?"
+                );
+                $stmt->execute([
+                    password_hash($temporaryPassword, PASSWORD_DEFAULT),
+                    $bookingId,
+                    DESEO_DJ_SEASON,
+                ]);
+
+                if ($stmt->rowCount() < 1) {
+                    throw new RuntimeException('Δεν υπάρχει MyLive account για αυτόν τον DJ.');
+                }
+
+                $notice = 'Νέο MyLive temporary password: ' . $temporaryPassword
+                    . ' · URL: https://deseoradio.com/mylive/';
+
+            } elseif ($action === 'mylive_toggle_account') {
+                $bookingId = (int)($_POST['booking_id'] ?? 0);
+                $active = (int)($_POST['active'] ?? 0) === 1 ? 1 : 0;
+
+                $stmt = $pdo->prepare(
+                    "UPDATE dj_portal_accounts a
+                     INNER JOIN dj_season_bookings b ON b.id = a.booking_id
+                     SET a.is_active = ?
+                     WHERE a.booking_id = ? AND b.season = ?"
+                );
+                $stmt->execute([$active, $bookingId, DESEO_DJ_SEASON]);
+
+                if ($stmt->rowCount() < 1) {
+                    throw new RuntimeException('Δεν υπάρχει MyLive account για αυτόν τον DJ.');
+                }
+
+                $notice = $active
+                    ? 'Το MyLive account ενεργοποιήθηκε.'
+                    : 'Το MyLive account απενεργοποιήθηκε.';
+
             } elseif ($action === 'release_booking') {
                 $bookingId = (int)($_POST['booking_id'] ?? 0);
 
@@ -197,9 +286,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $slots = dj_season_slots($pdo, true);
 
 $stmt = $pdo->prepare(
-    "SELECT b.*, s.day_of_week, s.start_time, s.end_time
+    "SELECT b.*, s.day_of_week, s.start_time, s.end_time,
+            a.id AS mylive_account_id,
+            a.is_active AS mylive_is_active,
+            a.last_login_at AS mylive_last_login_at
      FROM dj_season_bookings b
      INNER JOIN dj_season_slots s ON s.id = b.slot_id
+     LEFT JOIN dj_portal_accounts a ON a.booking_id = b.id
      WHERE b.season = ?
      ORDER BY s.day_of_week ASC, s.start_time ASC, b.created_at ASC"
 );
@@ -219,7 +312,10 @@ admin_page_start('Season 6 DJs', 'dj-season');
         <h1>DJ applications</h1>
         <p>Διαχείριση inquiries, προτιμήσεων slot και επιλογής DJs για τη Season 6. Καμία ενέργεια εδώ δεν γράφει στο Radio Program.</p>
     </div>
-    <a class="button button-secondary" href="/djs" target="_blank" rel="noopener">Open public form ↗</a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
+        <a class="button button-secondary" href="/dj" target="_blank" rel="noopener">Open public form ↗</a>
+    </div>
 </div>
 
 <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
@@ -355,6 +451,55 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                         <button class="button button-primary" type="submit">Save schedule / status</button>
                                     </div>
                                 </form>
+
+                                <?php if (in_array((string)$booking['status'], ['approved', 'guest'], true)): ?>
+                                    <div style="width:100%;margin-top:4px;padding:15px;border:1px solid rgba(255,43,54,.16);border-radius:16px;background:rgba(255,43,54,.04)">
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                                            <div>
+                                                <span style="display:block;color:#ff3038;font-size:9px;font-weight:800;letter-spacing:.12em">MY LIVE · DJ DELIVERY</span>
+                                                <?php if (!empty($booking['mylive_account_id'])): ?>
+                                                    <strong style="display:block;margin-top:5px;font-size:13px">
+                                                        <?= !empty($booking['mylive_is_active']) ? 'Active account' : 'Disabled account' ?>
+                                                    </strong>
+                                                    <small style="display:block;margin-top:4px;color:#666">
+                                                        <?= !empty($booking['mylive_last_login_at']) ? 'Last login: ' . admin_e((string)$booking['mylive_last_login_at']) : 'Δεν έχει γίνει login ακόμη.' ?>
+                                                    </small>
+                                                <?php else: ?>
+                                                    <strong style="display:block;margin-top:5px;font-size:13px">No MyLive account yet</strong>
+                                                    <small style="display:block;margin-top:4px;color:#666">Δημιούργησε πρόσβαση για upload των DJ sets.</small>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                                <?php if (empty($booking['mylive_account_id'])): ?>
+                                                    <form method="post">
+                                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                                        <input type="hidden" name="action" value="mylive_create_account">
+                                                        <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
+                                                        <button class="button button-primary" type="submit">Create MyLive access</button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <form method="post">
+                                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                                        <input type="hidden" name="action" value="mylive_reset_password">
+                                                        <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
+                                                        <button class="button button-secondary" type="submit">Reset password</button>
+                                                    </form>
+
+                                                    <form method="post">
+                                                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                                        <input type="hidden" name="action" value="mylive_toggle_account">
+                                                        <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
+                                                        <input type="hidden" name="active" value="<?= !empty($booking['mylive_is_active']) ? '0' : '1' ?>">
+                                                        <button class="button button-secondary" type="submit">
+                                                            <?= !empty($booking['mylive_is_active']) ? 'Disable' : 'Enable' ?>
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
 
                                 <form method="post" onsubmit="return confirm('Να διαγραφεί οριστικά αυτό το inquiry;');">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
