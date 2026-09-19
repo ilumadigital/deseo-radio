@@ -30,7 +30,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         must_change_password TINYINT(1) NOT NULL DEFAULT 1,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         account_status VARCHAR(20) NOT NULL DEFAULT 'active',
-        show_audience_stats TINYINT(1) NOT NULL DEFAULT 1,
+        show_audience_stats TINYINT(1) NOT NULL DEFAULT 0,
         onboarding_email_sent_at DATETIME NULL,
         access_email_sent_at DATETIME NULL,
         last_login_at DATETIME NULL,
@@ -50,7 +50,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'end_time' => "TIME NULL AFTER start_time",
         'must_change_password' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER password_hash",
         'account_status' => "VARCHAR(20) NOT NULL DEFAULT 'active' AFTER is_active",
-        'show_audience_stats' => "TINYINT(1) NOT NULL DEFAULT 1 AFTER account_status",
+        'show_audience_stats' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER account_status",
         'onboarding_email_sent_at' => "DATETIME NULL AFTER show_audience_stats",
         'access_email_sent_at' => "DATETIME NULL AFTER onboarding_email_sent_at"
     ];
@@ -58,6 +58,17 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         if (!deseo_mylive_column_exists($pdo, 'dj_portal_accounts', $name)) {
             $pdo->exec("ALTER TABLE dj_portal_accounts ADD COLUMN " . $name . " " . $definition);
         }
+    }
+
+    // New MyLive accounts always start with audience statistics hidden.
+    // This changes only the database default; existing DJ visibility choices are preserved.
+    try {
+        $pdo->exec(
+            "ALTER TABLE dj_portal_accounts
+             MODIFY show_audience_stats TINYINT(1) NOT NULL DEFAULT 0"
+        );
+    } catch (Throwable $e) {
+        error_log('MyLive audience visibility default migration: ' . $e->getMessage());
     }
 
     try {
@@ -331,8 +342,8 @@ function deseo_mylive_create_pending_from_booking(PDO $pdo, int $bookingId): int
     $insert = $pdo->prepare(
         "INSERT INTO dj_portal_accounts
          (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
-          password_hash, must_change_password, is_active, account_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, '', 1, 0, 'pending')"
+          password_hash, must_change_password, is_active, account_status, show_audience_stats)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '', 1, 0, 'pending', 0)"
     );
     $insert->execute([
         $bookingId,
