@@ -121,6 +121,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notice = 'Ο προσωπικός σου κωδικός αποθηκεύτηκε.';
         }
 
+        if ($action === 'save_public_profile' || $action === 'publish_public_profile') {
+            if (!deseo_mylive_logged_in()) {
+                throw new RuntimeException('Η συνεδρία σου έχει λήξει. Κάνε ξανά login.');
+            }
+
+            $accountId = deseo_mylive_account_id();
+            $profileAccount = deseo_mylive_account($pdo, $accountId);
+            if (!$profileAccount || empty($profileAccount['public_profile_enabled'])) {
+                throw new RuntimeException('Το Public Profile δεν είναι ενεργό για το account σου.');
+            }
+            if (!empty($profileAccount['must_change_password'])) {
+                throw new RuntimeException('Δημιούργησε πρώτα το προσωπικό σου password.');
+            }
+
+            deseo_mylive_save_public_profile_draft($pdo, $accountId, [
+                'bio' => (string)($_POST['bio'] ?? ''),
+                'instagram' => (string)($_POST['instagram'] ?? ''),
+                'tiktok' => (string)($_POST['tiktok'] ?? ''),
+                'soundcloud' => (string)($_POST['soundcloud'] ?? ''),
+                'spotify' => (string)($_POST['spotify'] ?? ''),
+                'website' => (string)($_POST['website'] ?? ''),
+            ]);
+
+            if ($action === 'publish_public_profile') {
+                deseo_mylive_publish_public_profile($pdo, $accountId);
+                $notice = 'Το Public Profile δημοσιεύτηκε. Θα εμφανίζεται στο site όταν το show σου είναι συνδεδεμένο με το MyLive profile.';
+            } else {
+                $notice = 'Το draft του Public Profile αποθηκεύτηκε. Οι αλλαγές δεν είναι ακόμη δημόσιες.';
+            }
+        }
+
         if ($action === 'upload') {
             if (!deseo_mylive_logged_in()) {
                 throw new RuntimeException('Η συνεδρία σου έχει λήξει. Κάνε ξανά login.');
@@ -407,6 +438,13 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
 exit;
 endif;
 
+$publicProfile = !empty($account['public_profile_enabled'])
+    ? deseo_mylive_public_profile($pdo, (int)$account['id'])
+    : null;
+$publicProfileHasChanges = $publicProfile
+    ? deseo_mylive_public_profile_has_unpublished_changes($publicProfile)
+    : false;
+
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
@@ -493,6 +531,78 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 
     <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+
+    <?php if ($publicProfile): ?>
+        <section class="public-profile-editor">
+            <div class="public-profile-head">
+                <div>
+                    <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
+                    <h2>What listeners see.</h2>
+                    <p>Γράψε το About σου και πρόσθεσε τα socials σου. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
+                </div>
+
+                <div class="public-profile-status <?= !empty($publicProfile['is_published']) ? 'is-published' : 'is-draft' ?>">
+                    <span><?= !empty($publicProfile['is_published']) ? 'PUBLISHED' : 'DRAFT ONLY' ?></span>
+                    <?php if (!empty($publicProfile['is_published'])): ?>
+                        <small><?= !empty($publicProfile['published_at']) ? deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$publicProfile['published_at']))) : 'Live' ?></small>
+                    <?php else: ?>
+                        <small>Not public yet</small>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <?php if (!empty($publicProfile['is_published']) && $publicProfileHasChanges): ?>
+                <div class="public-profile-unpublished">
+                    <strong>You have unpublished changes.</strong>
+                    <span>Το site συνεχίζει να δείχνει την προηγούμενη published έκδοση μέχρι να πατήσεις Publish Profile.</span>
+                </div>
+            <?php endif; ?>
+
+            <form method="post" class="public-profile-form">
+                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+
+                <label class="public-profile-about">
+                    <span>ABOUT YOU</span>
+                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Tell listeners a little about your sound, your story and your show…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
+                    <small>Έως 1.600 χαρακτήρες. Το αρχικό κείμενο έχει εισαχθεί από την Season 6 αίτησή σου, όπου υπήρχε.</small>
+                </label>
+
+                <div class="public-profile-links">
+                    <label>
+                        <span>Instagram</span>
+                        <input type="url" name="instagram" value="<?= deseo_mylive_e((string)($publicProfile['draft_instagram'] ?? '')) ?>" placeholder="https://instagram.com/...">
+                    </label>
+                    <label>
+                        <span>TikTok</span>
+                        <input type="url" name="tiktok" value="<?= deseo_mylive_e((string)($publicProfile['draft_tiktok'] ?? '')) ?>" placeholder="https://tiktok.com/@...">
+                    </label>
+                    <label>
+                        <span>SoundCloud</span>
+                        <input type="url" name="soundcloud" value="<?= deseo_mylive_e((string)($publicProfile['draft_soundcloud'] ?? '')) ?>" placeholder="https://soundcloud.com/...">
+                    </label>
+                    <label>
+                        <span>Spotify</span>
+                        <input type="url" name="spotify" value="<?= deseo_mylive_e((string)($publicProfile['draft_spotify'] ?? '')) ?>" placeholder="https://open.spotify.com/...">
+                    </label>
+                    <label class="public-profile-wide">
+                        <span>Website</span>
+                        <input type="url" name="website" value="<?= deseo_mylive_e((string)($publicProfile['draft_website'] ?? '')) ?>" placeholder="https://...">
+                    </label>
+                </div>
+
+                <div class="public-profile-actions">
+                    <div>
+                        <strong>No photo upload here.</strong>
+                        <span>Το public modal χρησιμοποιεί πάντα τη φωτογραφία που έχει ορίσει το Deseo Radio στο πρόγραμμα.</span>
+                    </div>
+                    <div>
+                        <button class="profile-draft-button" type="submit" name="action" value="save_public_profile">Save Draft</button>
+                        <button class="primary-button" type="submit" name="action" value="publish_public_profile">Publish Profile</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    <?php endif; ?>
 
     <section class="assets-section">
         <div class="section-head">
