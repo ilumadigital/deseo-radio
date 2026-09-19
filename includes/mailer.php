@@ -349,7 +349,7 @@ function deseo_dj_approval_email(array $booking): array {
             'Τύπος set' => $c['set_type'],
         ],
         'Επόμενα βήματα',
-        'Θα επικοινωνήσουμε μαζί σου μέσω email με όλες τις πληροφορίες για το τελικό set, τις τεχνικές οδηγίες και τα promotional assets.'
+        'Η συμμετοχή σου στη Season 6 έχει επιβεβαιωθεί. Το MyLive access δεν αποστέλλεται με αυτό το email. Θα λάβεις ξεχωριστό δεύτερο email όταν ενεργοποιηθεί ο λογαριασμός σου, με temporary password, οδηγίες για τα DJ Sets, τα assets και το προσωπικό σου dashboard.'
     );
 
     $text = "DESEO RADIO · SEASON 6\n\n" .
@@ -357,7 +357,8 @@ function deseo_dj_approval_email(array $booking): array {
         "Σε επιλέξαμε για το σταθερό πρόγραμμα της Season 6.\n\n" .
         "Ημέρα / ώρα: {$c['slot']}\n" .
         "Artist name: {$c['artist']}\n\n" .
-        "Θα σε ενημερώσουμε για τα επόμενα βήματα μέσω email.\n\n" .
+        "Η συμμετοχή σου έχει επιβεβαιωθεί.\n" .
+        "Το MyLive access θα σταλεί ξεχωριστά σε δεύτερο email όταν ενεργοποιηθεί ο λογαριασμός σου. Εκεί θα λάβεις temporary password και όλες τις οδηγίες.\n\n" .
         "Deseo Radio · radio@iluma.gr";
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
