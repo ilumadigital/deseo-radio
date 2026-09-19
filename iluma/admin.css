@@ -1176,3 +1176,85 @@ body.schedule-media-open{overflow:hidden}
 @media(max-width:560px){
   .schedule-edit-choice-grid{grid-template-columns:1fr}
 }
+
+
+/* RADIO PROGRAM SMART OVERLAP PREVIEW */
+.schedule-overlap-card{
+  width:min(650px,100%);
+}
+.schedule-overlap-new{
+  display:grid;
+  gap:5px;
+  margin-top:20px;
+  padding:15px 16px;
+  border:1px solid rgba(255,48,56,.20);
+  border-radius:16px;
+  background:rgba(255,48,56,.055);
+}
+.schedule-overlap-new span{
+  color:var(--acid);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.schedule-overlap-new strong{
+  color:#fff;
+  font-size:14px;
+}
+.schedule-overlap-list{
+  display:grid;
+  gap:8px;
+  max-height:330px;
+  overflow:auto;
+  margin-top:12px;
+  padding-right:2px;
+}
+.schedule-overlap-change{
+  display:grid;
+  gap:5px;
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#0a0a0b;
+}
+.schedule-overlap-change>span{
+  color:#77777c;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.schedule-overlap-change>small{
+  color:#66666b;
+  font-size:9px;
+}
+.schedule-overlap-change>strong{
+  color:#e7e7e3;
+  font-size:11px;
+}
+.schedule-overlap-blocked{
+  margin-top:12px;
+  padding:14px 15px;
+  border:1px solid rgba(255,98,105,.24);
+  border-radius:15px;
+  background:rgba(255,48,56,.07);
+}
+.schedule-overlap-blocked>strong{
+  display:block;
+  color:#ff9298;
+  font-size:10px;
+}
+.schedule-overlap-blocked>p{
+  margin:7px 0 0;
+  color:#9a7477;
+  font-size:9px;
+  line-height:1.5;
+}
+.schedule-overlap-card .schedule-modal-actions{
+  margin-top:18px;
+}
+
+@media(max-width:560px){
+  .schedule-overlap-card{padding:21px}
+  .schedule-overlap-list{max-height:290px}
+}
