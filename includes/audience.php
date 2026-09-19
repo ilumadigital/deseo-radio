@@ -32,7 +32,8 @@ function deseo_audience_bootstrap(PDO $pdo): void {
 }
 
 function deseo_audience_current_month_key(): string {
-    return date('Y-m');
+    $now = new DateTimeImmutable('now', new DateTimeZone('Europe/Athens'));
+    return $now->format('Y-m');
 }
 
 function deseo_audience_month_label(?string $monthKey = null): string {
