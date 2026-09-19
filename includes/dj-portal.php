@@ -489,7 +489,11 @@ function deseo_mylive_save_public_profile_draft(PDO $pdo, int $accountId, array 
 }
 
 function deseo_mylive_publish_public_profile(PDO $pdo, int $accountId): array {
-    deseo_mylive_public_profile_ensure($pdo, $accountId);
+    $profile = deseo_mylive_public_profile_ensure($pdo, $accountId);
+
+    if (trim((string)($profile['draft_bio'] ?? '')) === '') {
+        throw new RuntimeException('Συμπλήρωσε το About πριν δημοσιεύσεις το Public Profile.');
+    }
 
     $stmt = $pdo->prepare(
         "UPDATE dj_public_profiles
