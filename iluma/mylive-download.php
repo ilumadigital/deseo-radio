@@ -16,7 +16,7 @@ if ($id < 1 || !in_array($type, ['set', 'asset'], true)) {
 
 if ($type === 'set') {
     $stmt = $pdo->prepare(
-        "SELECT stored_name AS download_name, file_path, mime_type
+        "SELECT stored_name AS download_name, file_path, mime_type, file_deleted_at
          FROM dj_portal_sets WHERE id = ? LIMIT 1"
     );
 } else {
@@ -31,6 +31,11 @@ $fileRow = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$fileRow) {
     http_response_code(404);
     exit('File not found.');
+}
+
+if ($type === 'set' && !empty($fileRow['file_deleted_at'])) {
+    http_response_code(410);
+    exit('The audio file has been removed after the 15-day BROADCASTED retention period. The episode remains in MyLive history.');
 }
 
 $relative = ltrim((string)$fileRow['file_path'], '/');
