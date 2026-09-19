@@ -54,6 +54,7 @@ try {
         id INT AUTO_INCREMENT PRIMARY KEY,
         dj_name VARCHAR(255) NOT NULL,
         photo_path VARCHAR(255) DEFAULT '',
+        mylive_account_id BIGINT NULL,
         day_of_week TINYINT NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
@@ -69,6 +70,11 @@ try {
           AND older.start_time = newer.start_time
           AND older.id < newer.id"
     );
+
+    $profileColumnStmt = $pdo->query("SHOW COLUMNS FROM program LIKE 'mylive_account_id'");
+    if (!$profileColumnStmt || !$profileColumnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec("ALTER TABLE program ADD COLUMN mylive_account_id BIGINT NULL AFTER photo_path");
+    }
 
     $indexStmt = $pdo->query("SHOW INDEX FROM program WHERE Key_name = 'uniq_program_day_start'");
     if (!$indexStmt->fetch(PDO::FETCH_ASSOC)) {
