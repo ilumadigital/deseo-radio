@@ -444,7 +444,7 @@ admin_page_start('MyLive', 'mylive');
         <div>
             <span>APPROVED / GUEST APPLICATIONS · PENDING ACCESS</span>
             <h2>Ready for MyLive</h2>
-            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί ως Approved ή Guest από τις Season 6 αιτήσεις. Τα στοιχεία τους έχουν μεταφερθεί αυτόματα εδώ, αλλά δεν έχουν ακόμη login ή password.</p>
+            <p>Οι DJs αυτοί έχουν ήδη εγκριθεί ως Approved ή Guest από τις Season 6 αιτήσεις. Η Season 6 ενημέρωση γίνεται ξεχωριστά. Εδώ δεν έχουν ακόμη MyLive login ή password και δεν έχει σταλεί το MyLive onboarding email.</p>
         </div>
         <strong><?= count($pendingAccounts) ?></strong>
     </div>
@@ -481,7 +481,7 @@ admin_page_start('MyLive', 'mylive');
                 <div class="mylive-pending-action">
                     <div>
                         <span>NO LOGIN YET</span>
-                        <p>Με το approve δημιουργείται temporary password, ενεργοποιείται το MyLive και στέλνεται αυτόματα το ενιαίο onboarding email.</p>
+                        <p>Με το approve δημιουργείται temporary password, ενεργοποιείται το MyLive και τότε στέλνεται το ξεχωριστό MyLive onboarding email με credentials και οδηγίες.</p>
                     </div>
                     <form method="post" onsubmit="return confirm('Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email με temporary credentials;');">
                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
