@@ -93,13 +93,25 @@ function deseo_audience_updated_at(PDO $pdo): ?string {
 
 function deseo_audience_hour_share(int $hour): float {
     return match ($hour) {
-        18 => 0.080,
-        19 => 0.110,
-        20 => 0.155,
-        21 => 0.165,
-        22 => 0.140,
-        23 => 0.115,
-        default => 0.055,
+        // Main afternoon peak
+        15 => 0.145,
+        16 => 0.150,
+        17 => 0.155,
+
+        // Early evening: slightly stronger than 15:00–18:00
+        18 => 0.160,
+        19 => 0.165,
+
+        // Strongest peak of the day
+        20 => 0.172,
+        21 => 0.178,
+
+        // Gradual late-evening decline
+        22 => 0.155,
+        23 => 0.138,
+
+        14 => 0.115,
+        default => 0.070,
     };
 }
 
