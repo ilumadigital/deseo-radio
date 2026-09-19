@@ -491,7 +491,7 @@ function deseo_mylive_technical_email(array $account): array {
         'Προτεινόμενη παράδοση: <strong style="color:#fff;">MP3 · 320 kbps · Stereo</strong> ή <strong style="color:#fff;">WAV · Stereo</strong>. Το αρχείο πρέπει να έχει καθαρή, συνεπή στάθμη χωρίς clipping ή εμφανές distortion.');
 
     $body .= deseo_mylive_email_section('07', 'Μουσική ταυτότητα',
-        'Το set πρέπει να εκφράζει το προσωπικό σου sound και να παραμένει συμβατό με τη φιλοσοφία του Deseo Radio: <strong style="color:#fff;">House · Afro House · Organic House · Deep House · Melodic House · Electronica · sophisticated electronic sound</strong>.');
+        'Το set πρέπει να εκφράζει το προσωπικό σου sound και να παραμένει συμβατό με τη φιλοσοφία του Deseo Radio: <strong style="color:#fff;">House · Afro House · Organic House · Deep House · Melodic House · Electronica · sophisticated electronic sound</strong>. Δεν χρησιμοποιούνται εν γνώσει σου leaked, παράνομα ή μη εξουσιοδοτημένα recordings. Ισχύουν επίσης οι όροι της Season 6 για δικαιώματα και AI-generated musical works / recordings.');
 
     $body .= deseo_mylive_email_section('08', 'Personal Promotional Artwork',
         'Το γραφιστικό τμήμα της <strong style="color:#fff;">ILUMA Digital Agency</strong> δημιουργεί προσωπικό branded artwork με Artist Name, ημέρα, ώρα και Deseo Radio branding. Το artwork, τα Personal DJ Spots, το <strong style="color:#fff;">_30 Imaging</strong> και κάθε πρόσθετο asset θα παραδίδονται μέσα από το MyLive.');
