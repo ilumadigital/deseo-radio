@@ -49,8 +49,15 @@ function deseo_send_smtp_mail(string $toEmail, string $toName, string $subject, 
     $fromName = deseo_env('SMTP_FROM_NAME', 'Deseo Radio');
     $replyTo = deseo_env('SMTP_REPLY_TO', $fromEmail);
 
-    if ($host === '' || $port < 1 || $username === '' || $password === '' || $fromEmail === '') {
-        throw new RuntimeException('SMTP configuration is incomplete.');
+    $missing = [];
+    if ($host === '') $missing[] = 'SMTP_HOST';
+    if ($port < 1) $missing[] = 'SMTP_PORT';
+    if ($username === '') $missing[] = 'SMTP_USERNAME';
+    if ($password === '') $missing[] = 'SMTP_PASSWORD';
+    if ($fromEmail === '') $missing[] = 'SMTP_FROM_EMAIL';
+
+    if ($missing) {
+        throw new RuntimeException('SMTP configuration is incomplete. Missing: ' . implode(', ', $missing) . '.');
     }
 
     if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL) || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
@@ -79,7 +86,13 @@ function deseo_send_smtp_mail(string $toEmail, string $toName, string $subject, 
     );
 
     if (!$socket) {
-        throw new RuntimeException('Could not connect to SMTP server.');
+        $safeDetail = trim((string)$errstr);
+        throw new RuntimeException(
+            'Could not connect to SMTP server'
+            . ($safeDetail !== '' ? ': ' . $safeDetail : '')
+            . ($errno > 0 ? ' (code ' . $errno . ')' : '')
+            . '.'
+        );
     }
 
     stream_set_timeout($socket, 15);
