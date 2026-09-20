@@ -206,6 +206,29 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dj_password_resets (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        account_id BIGINT NOT NULL,
+        token_hash CHAR(64) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_password_reset_token (token_hash),
+        KEY idx_password_reset_account (account_id, created_at),
+        KEY idx_password_reset_expiry (expires_at, used_at),
+        CONSTRAINT fk_password_reset_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
+            ON UPDATE CASCADE ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    try {
+        $pdo->exec(
+            "DELETE FROM dj_password_resets
+             WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY)
+                OR (used_at IS NOT NULL AND used_at < DATE_SUB(NOW(), INTERVAL 1 DAY))"
+        );
+    } catch (Throwable $e) {
+        error_log('MyLive password reset cleanup failed: ' . $e->getMessage());
+    }
 }
 
 function deseo_mylive_session_start(): void {
@@ -263,6 +286,103 @@ function deseo_mylive_next_episode(PDO $pdo, int $accountId): int {
     $stmt = $pdo->prepare("SELECT COALESCE(MAX(episode_no), 0) + 1 FROM dj_portal_sets WHERE account_id = ?");
     $stmt->execute([$accountId]);
     return max(1, (int)$stmt->fetchColumn());
+}
+
+function deseo_mylive_password_reset_recent(PDO $pdo, int $accountId, int $seconds = 120): bool {
+    $seconds = max(30, min(3600, $seconds));
+    $stmt = $pdo->prepare(
+        "SELECT id
+         FROM dj_password_resets
+         WHERE account_id = ?
+           AND used_at IS NULL
+           AND expires_at > NOW()
+           AND created_at >= DATE_SUB(NOW(), INTERVAL " . $seconds . " SECOND)
+         LIMIT 1"
+    );
+    $stmt->execute([$accountId]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function deseo_mylive_password_reset_create(PDO $pdo, int $accountId, int $ttlSeconds = 3600): string {
+    $ttlSeconds = max(300, min(86400, $ttlSeconds));
+    $rawToken = bin2hex(random_bytes(32));
+    $tokenHash = hash('sha256', $rawToken);
+
+    $timezone = new DateTimeZone('Europe/Athens');
+    $expiresAt = (new DateTimeImmutable('now', $timezone))
+        ->modify('+' . $ttlSeconds . ' seconds')
+        ->format('Y-m-d H:i:s');
+
+    $pdo->prepare(
+        "UPDATE dj_password_resets
+         SET used_at = NOW()
+         WHERE account_id = ? AND used_at IS NULL"
+    )->execute([$accountId]);
+
+    $pdo->prepare(
+        "INSERT INTO dj_password_resets (account_id, token_hash, expires_at)
+         VALUES (?, ?, ?)"
+    )->execute([$accountId, $tokenHash, $expiresAt]);
+
+    return $rawToken;
+}
+
+function deseo_mylive_password_reset_lookup(PDO $pdo, string $token, bool $forUpdate = false): ?array {
+    $token = strtolower(trim($token));
+    if (!preg_match('/^[a-f0-9]{64}$/', $token)) return null;
+
+    $sql =
+        "SELECT r.id AS reset_id, r.account_id, r.expires_at, r.used_at,
+                a.artist_name, a.email, a.is_active, a.account_status
+         FROM dj_password_resets r
+         INNER JOIN dj_portal_accounts a ON a.id = r.account_id
+         WHERE r.token_hash = ?
+           AND r.used_at IS NULL
+           AND r.expires_at > NOW()
+           AND a.is_active = 1
+           AND a.account_status = 'active'
+         LIMIT 1";
+
+    if ($forUpdate) $sql .= " FOR UPDATE";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([hash('sha256', $token)]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
+}
+
+function deseo_mylive_password_reset_consume(PDO $pdo, string $token, string $newPasswordHash): ?array {
+    $startedTransaction = !$pdo->inTransaction();
+    if ($startedTransaction) $pdo->beginTransaction();
+
+    try {
+        $reset = deseo_mylive_password_reset_lookup($pdo, $token, true);
+        if (!$reset) {
+            if ($startedTransaction && $pdo->inTransaction()) $pdo->rollBack();
+            return null;
+        }
+
+        $accountId = (int)$reset['account_id'];
+
+        $pdo->prepare(
+            "UPDATE dj_portal_accounts
+             SET password_hash = ?,
+                 must_change_password = 0
+             WHERE id = ? AND is_active = 1 AND account_status = 'active'"
+        )->execute([$newPasswordHash, $accountId]);
+
+        $pdo->prepare(
+            "UPDATE dj_password_resets
+             SET used_at = NOW()
+             WHERE account_id = ? AND used_at IS NULL"
+        )->execute([$accountId]);
+
+        if ($startedTransaction) $pdo->commit();
+        return $reset;
+    } catch (Throwable $e) {
+        if ($startedTransaction && $pdo->inTransaction()) $pdo->rollBack();
+        throw $e;
+    }
 }
 
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
