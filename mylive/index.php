@@ -849,6 +849,16 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     const button = document.getElementById('uploadButton');
     const bar = document.getElementById('progressBar');
     const toast = document.getElementById('toast');
+    const defaultTabTitle = document.title;
+
+    const setUploadTabProgress = percent => {
+        const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+        document.title = 'Uploading ' + safePercent + '% · MyLive · Deseo Radio';
+    };
+
+    const restoreTabTitle = () => {
+        document.title = defaultTabTitle;
+    };
 
     const choose = file => {
         if (!file) return;
@@ -890,6 +900,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         button.disabled = true;
         button.textContent = 'Uploading…';
         bar.style.width = '0%';
+        setUploadTabProgress(0);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/mylive/', true);
@@ -897,7 +908,9 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 
         xhr.upload.onprogress = event => {
             if (!event.lengthComputable) return;
-            bar.style.width = Math.round((event.loaded / event.total) * 100) + '%';
+            const percent = Math.round((event.loaded / event.total) * 100);
+            bar.style.width = percent + '%';
+            setUploadTabProgress(percent);
         };
 
         xhr.onload = () => {
@@ -905,19 +918,31 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             try { result = JSON.parse(xhr.responseText); } catch (e) {}
             if (xhr.status >= 200 && xhr.status < 300 && result && result.ok) {
                 bar.style.width = '100%';
+                setUploadTabProgress(100);
                 showToast(result.message || 'Το set ανέβηκε.');
-                setTimeout(() => window.location.reload(), 700);
+                setTimeout(() => {
+                    restoreTabTitle();
+                    window.location.reload();
+                }, 700);
                 return;
             }
+            restoreTabTitle();
             button.disabled = false;
             button.textContent = 'Try again';
             showToast((result && result.message) || 'Το upload δεν ολοκληρώθηκε.', true);
         };
 
         xhr.onerror = () => {
+            restoreTabTitle();
             button.disabled = false;
             button.textContent = 'Try again';
             showToast('Η σύνδεση διακόπηκε κατά το upload.', true);
+        };
+
+        xhr.onabort = () => {
+            restoreTabTitle();
+            button.disabled = false;
+            button.textContent = 'Try again';
         };
 
         xhr.send(new FormData(form));
