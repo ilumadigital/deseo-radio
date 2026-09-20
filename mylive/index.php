@@ -864,10 +864,24 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 <script>
 document.querySelectorAll('[data-unpublish-profile]').forEach(button => {
     button.addEventListener('click', event => {
-        const confirmed = window.confirm(
-            'Unpublish Public Profile;\n\nΤο profile θα κρυφτεί από τους listeners, αλλά το show θα παραμείνει κανονικά συνδεδεμένο με το Radio Program. Μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.'
-        );
-        if (!confirmed) event.preventDefault();
+        event.preventDefault();
+
+        if (!window.DeseoDialog) return;
+
+        window.DeseoDialog.confirm(
+            'Το profile θα κρυφτεί από τους listeners, αλλά το show θα παραμείνει κανονικά συνδεδεμένο με το Radio Program. Μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.',
+            {
+                title: 'Unpublish Public Profile',
+                confirmLabel: 'Unpublish',
+                cancelLabel: 'Cancel',
+                danger: true
+            }
+        ).then(confirmed => {
+            if (!confirmed) return;
+            if (button.form && typeof button.form.requestSubmit === 'function') {
+                button.form.requestSubmit(button);
+            }
+        });
     });
 });
 </script>
@@ -1191,12 +1205,25 @@ document.querySelectorAll('[data-unpublish-profile]').forEach(button => {
                 }, 1800);
             }
 
+            function showCopyFallback() {
+                if (!window.DeseoDialog) return;
+
+                window.DeseoDialog.prompt(
+                    'Αντέγραψε το προσωπικό referral link σου από το πεδίο παρακάτω.',
+                    url,
+                    {
+                        title: 'Copy referral link',
+                        confirmLabel: 'Close',
+                        cancelLabel: 'Cancel',
+                        inputLabel: 'Referral link'
+                    }
+                );
+            }
+
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(url).then(done).catch(function () {
-                    window.prompt('Copy your referral link:', url);
-                });
+                navigator.clipboard.writeText(url).then(done).catch(showCopyFallback);
             } else {
-                window.prompt('Copy your referral link:', url);
+                showCopyFallback();
             }
         });
     });
