@@ -18,6 +18,7 @@ function deseo_rewards_bootstrap(PDO $pdo): void {
         internal_note TEXT NOT NULL,
         referred_at DATE NULL,
         paid_at DATETIME NULL,
+        notification_email_sent_at DATETIME NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         KEY idx_rewards_account (account_id, created_at),
@@ -25,6 +26,15 @@ function deseo_rewards_bootstrap(PDO $pdo): void {
         CONSTRAINT fk_rewards_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    try {
+        $emailColumn = $pdo->query("SHOW COLUMNS FROM dj_rewards LIKE 'notification_email_sent_at'");
+        if (!$emailColumn || !$emailColumn->fetch(PDO::FETCH_ASSOC)) {
+            $pdo->exec("ALTER TABLE dj_rewards ADD COLUMN notification_email_sent_at DATETIME NULL AFTER paid_at");
+        }
+    } catch (Throwable $e) {
+        error_log('Rewards notification email column migration failed: ' . $e->getMessage());
+    }
 }
 
 function deseo_rewards_statuses(): array {
