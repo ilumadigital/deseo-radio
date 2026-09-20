@@ -59,6 +59,154 @@ function mylive_admin_asset_extension(string $name): string {
     return strtolower(pathinfo($name, PATHINFO_EXTENSION));
 }
 
+function mylive_admin_asset_media_folder_label(string $rootLabel, string $relativeFolder): string {
+    if ($relativeFolder === '.' || $relativeFolder === '') {
+        return $rootLabel;
+    }
+
+    $parts = explode('/', str_replace('\\', '/', $relativeFolder));
+    $mapped = array_map(
+        static fn(string $part): string => str_replace('_', ' ', $part),
+        $parts
+    );
+
+    return $rootLabel . ' / ' . implode(' / ', $mapped);
+}
+
+function mylive_admin_asset_media_library_collect(string $absoluteRoot, string $publicBase, string $rootLabel): array {
+    $rootReal = realpath($absoluteRoot);
+    if (!$rootReal || !is_dir($rootReal)) return [];
+
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav'];
+    $items = [];
+
+    try {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($rootReal, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file instanceof SplFileInfo || !$file->isFile()) continue;
+
+            $extension = strtolower($file->getExtension());
+            if (!in_array($extension, $allowed, true)) continue;
+
+            $size = (int)$file->getSize();
+            if ($size < 1 || $size > DESEO_MYLive_ASSET_MAX_BYTES) continue;
+
+            $real = $file->getRealPath();
+            if (!$real || !str_starts_with($real, $rootReal . DIRECTORY_SEPARATOR)) continue;
+
+            $relative = ltrim(substr($real, strlen($rootReal)), DIRECTORY_SEPARATOR);
+            $relative = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
+            if ($relative === '' || str_contains($relative, '/.')) continue;
+
+            $segments = array_map(
+                static fn(string $segment): string => rawurlencode($segment),
+                explode('/', $relative)
+            );
+
+            $url = rtrim($publicBase, '/') . '/' . implode('/', $segments);
+            $folder = mylive_admin_asset_media_folder_label($rootLabel, dirname($relative));
+
+            $items[] = [
+                'url' => $url,
+                'name' => basename($relative),
+                'folder' => $folder,
+                'extension' => $extension,
+                'size' => $size,
+                'mtime' => (int)$file->getMTime(),
+                'is_image' => in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true),
+                'is_audio' => in_array($extension, ['mp3', 'wav'], true),
+            ];
+        }
+    } catch (Throwable $mediaScanError) {
+        error_log('MyLive asset media browser scan failed for ' . $rootLabel . ': ' . $mediaScanError->getMessage());
+        return [];
+    }
+
+    return $items;
+}
+
+function mylive_admin_asset_media_library(): array {
+    $items = array_merge(
+        mylive_admin_asset_media_library_collect(__DIR__ . '/uploads', '/iluma/uploads', 'Uploads'),
+        mylive_admin_asset_media_library_collect(dirname(__DIR__) . '/assets/img', '/assets/img', 'Site Assets')
+    );
+
+    usort($items, static function(array $a, array $b): int {
+        $timeCompare = ((int)$b['mtime']) <=> ((int)$a['mtime']);
+        return $timeCompare !== 0
+            ? $timeCompare
+            : strcasecmp((string)$a['name'], (string)$b['name']);
+    });
+
+    return array_slice($items, 0, 500);
+}
+
+function mylive_admin_resolve_server_asset(string $reference): array {
+    $reference = trim($reference);
+    if ($reference === '' || str_contains($reference, "\0")) {
+        throw new RuntimeException('Επίλεξε έγκυρο αρχείο από το File Manager.');
+    }
+
+    $path = (string)(parse_url($reference, PHP_URL_PATH) ?? '');
+    $path = rawurldecode($path);
+
+    $roots = [
+        '/iluma/uploads/' => __DIR__ . '/uploads',
+        '/assets/img/' => dirname(__DIR__) . '/assets/img',
+    ];
+
+    foreach ($roots as $publicPrefix => $absoluteRoot) {
+        if (!str_starts_with($path, $publicPrefix)) continue;
+
+        $rootReal = realpath($absoluteRoot);
+        if (!$rootReal || !is_dir($rootReal)) break;
+
+        $relative = ltrim(substr($path, strlen($publicPrefix)), '/');
+        if ($relative === '' || str_contains($relative, '..')) {
+            throw new RuntimeException('Το επιλεγμένο server asset δεν είναι έγκυρο.');
+        }
+
+        $candidate = realpath($rootReal . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative));
+        if (
+            !$candidate
+            || !is_file($candidate)
+            || !str_starts_with($candidate, $rootReal . DIRECTORY_SEPARATOR)
+        ) {
+            throw new RuntimeException('Το επιλεγμένο server asset δεν βρέθηκε.');
+        }
+
+        $extension = mylive_admin_asset_extension($candidate);
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav'];
+        if (!in_array($extension, $allowed, true)) {
+            throw new RuntimeException('Επιτρέπονται JPG, PNG, WEBP, PDF, MP3 και WAV.');
+        }
+
+        $size = (int)filesize($candidate);
+        if ($size < 1 || $size > DESEO_MYLive_ASSET_MAX_BYTES) {
+            throw new RuntimeException('Το asset πρέπει να είναι έως 256 MB.');
+        }
+
+        $mime = '';
+        if (class_exists('finfo')) {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = (string)$finfo->file($candidate);
+        }
+
+        return [
+            'absolute' => $candidate,
+            'name' => basename($candidate),
+            'extension' => $extension,
+            'size' => $size,
+            'mime' => $mime,
+        ];
+    }
+
+    throw new RuntimeException('Το αρχείο πρέπει να προέρχεται από ασφαλή φάκελο του File Manager.');
+}
+
 function mylive_admin_remove_tree(string $directory, string $storageRoot): void {
     $storageRootReal = realpath($storageRoot);
     $directoryReal = realpath($directory);
@@ -364,36 +512,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $account = mylive_admin_account($pdo, $accountId);
                 $type = (string)($_POST['asset_type'] ?? 'other');
                 $title = trim((string)($_POST['title'] ?? ''));
+                $serverAssetPath = trim((string)($_POST['server_asset_path'] ?? ''));
+
                 if (!in_array($type, ['artwork', 'dj_spot', 'dj_spot_30', 'other'], true)) $type = 'other';
                 if ($title === '') $title = deseo_mylive_asset_label($type);
 
-                if (!isset($_FILES['asset_file']) || !is_array($_FILES['asset_file'])) {
-                    throw new RuntimeException('Επίλεξε αρχείο asset.');
-                }
-                $file = $_FILES['asset_file'];
-                if ((int)($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                    throw new RuntimeException('Το asset upload δεν ολοκληρώθηκε.');
-                }
-
-                $size = (int)($file['size'] ?? 0);
-                if ($size < 1 || $size > DESEO_MYLive_ASSET_MAX_BYTES) {
-                    throw new RuntimeException('Το asset πρέπει να είναι έως 256 MB.');
-                }
-
-                $originalName = basename((string)($file['name'] ?? ''));
-                $extension = mylive_admin_asset_extension($originalName);
                 $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav'];
-                if (!in_array($extension, $allowed, true)) {
-                    throw new RuntimeException('Επιτρέπονται JPG, PNG, WEBP, PDF, MP3 και WAV.');
-                }
-
-                $tmp = (string)($file['tmp_name'] ?? '');
-                if ($tmp === '' || !is_uploaded_file($tmp)) throw new RuntimeException('Μη έγκυρο upload.');
-
+                $sourceMode = '';
+                $sourceAbsolute = '';
+                $tmp = '';
                 $mime = '';
-                if (class_exists('finfo')) {
-                    $finfo = new finfo(FILEINFO_MIME_TYPE);
-                    $mime = (string)$finfo->file($tmp);
+                $size = 0;
+                $originalName = '';
+                $extension = '';
+
+                $file = isset($_FILES['asset_file']) && is_array($_FILES['asset_file'])
+                    ? $_FILES['asset_file']
+                    : null;
+                $uploadError = is_array($file)
+                    ? (int)($file['error'] ?? UPLOAD_ERR_NO_FILE)
+                    : UPLOAD_ERR_NO_FILE;
+
+                if ($uploadError !== UPLOAD_ERR_NO_FILE) {
+                    if ($uploadError !== UPLOAD_ERR_OK) {
+                        throw new RuntimeException('Το asset upload δεν ολοκληρώθηκε.');
+                    }
+
+                    $size = (int)($file['size'] ?? 0);
+                    if ($size < 1 || $size > DESEO_MYLive_ASSET_MAX_BYTES) {
+                        throw new RuntimeException('Το asset πρέπει να είναι έως 256 MB.');
+                    }
+
+                    $originalName = basename((string)($file['name'] ?? ''));
+                    $extension = mylive_admin_asset_extension($originalName);
+                    if (!in_array($extension, $allowed, true)) {
+                        throw new RuntimeException('Επιτρέπονται JPG, PNG, WEBP, PDF, MP3 και WAV.');
+                    }
+
+                    $tmp = (string)($file['tmp_name'] ?? '');
+                    if ($tmp === '' || !is_uploaded_file($tmp)) {
+                        throw new RuntimeException('Μη έγκυρο upload.');
+                    }
+
+                    if (class_exists('finfo')) {
+                        $finfo = new finfo(FILEINFO_MIME_TYPE);
+                        $mime = (string)$finfo->file($tmp);
+                    }
+
+                    $sourceMode = 'upload';
+                } elseif ($serverAssetPath !== '') {
+                    $serverAsset = mylive_admin_resolve_server_asset($serverAssetPath);
+                    $sourceMode = 'server';
+                    $sourceAbsolute = (string)$serverAsset['absolute'];
+                    $originalName = (string)$serverAsset['name'];
+                    $extension = (string)$serverAsset['extension'];
+                    $size = (int)$serverAsset['size'];
+                    $mime = (string)$serverAsset['mime'];
+                } else {
+                    throw new RuntimeException('Ανέβασε νέο αρχείο ή επίλεξε ένα από το File Manager.');
                 }
 
                 $dir = dirname(__DIR__) . '/mylive/storage/assets/' . $accountId;
@@ -404,7 +580,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $storedName = deseo_mylive_slug((string)$account['artist_name'])
                     . '_' . strtoupper($type) . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(3)) . '.' . $extension;
                 $absolute = $dir . '/' . $storedName;
-                if (!move_uploaded_file($tmp, $absolute)) throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση του asset.');
+
+                if ($sourceMode === 'upload') {
+                    if (!move_uploaded_file($tmp, $absolute)) {
+                        throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση του asset.');
+                    }
+                } else {
+                    if (!copy($sourceAbsolute, $absolute)) {
+                        throw new RuntimeException('Δεν ήταν δυνατή η αντιγραφή του asset από το File Manager.');
+                    }
+                }
 
                 $relative = 'storage/assets/' . $accountId . '/' . $storedName;
                 $stmt = $pdo->prepare(
@@ -412,8 +597,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      (account_id, asset_type, title, original_name, stored_name, file_path, file_size, mime_type)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 );
-                $stmt->execute([$accountId, $type, $title, $originalName, $storedName, $relative, $size, $mime]);
-                $notice = 'Το asset ανέβηκε στο MyLive του ' . (string)$account['artist_name'] . '.';
+
+                try {
+                    $stmt->execute([$accountId, $type, $title, $originalName, $storedName, $relative, $size, $mime]);
+                } catch (Throwable $assetDbError) {
+                    if (is_file($absolute)) @unlink($absolute);
+                    throw $assetDbError;
+                }
+
+                $notice = $sourceMode === 'server'
+                    ? 'Το asset προστέθηκε από το File Manager στο MyLive του ' . (string)$account['artist_name'] . '.'
+                    : 'Το asset ανέβηκε στο MyLive του ' . (string)$account['artist_name'] . '.';
 
             } elseif ($action === 'delete_asset') {
                 $assetId = (int)($_POST['asset_id'] ?? 0);
@@ -501,6 +695,13 @@ $activeAccountCount = count(array_filter(
 $disabledAccountCount = count($managedAccounts) - $activeAccountCount;
 $totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
 $totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
+
+$assetMediaLibrary = mylive_admin_asset_media_library();
+$assetMediaFolders = array_values(array_unique(array_map(
+    static fn(array $item): string => (string)$item['folder'],
+    $assetMediaLibrary
+)));
+usort($assetMediaFolders, 'strnatcasecmp');
 
 admin_page_start('MyLive', 'mylive');
 ?>
@@ -904,8 +1105,11 @@ admin_page_start('MyLive', 'mylive');
                                         <option value="other">Additional Asset</option>
                                     </select>
                                     <input type="text" name="title" placeholder="Optional custom title">
-                                    <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav" required>
-                                    <button class="button button-primary" type="submit">Upload Asset</button>
+                                    <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
+                                    <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
+                                    <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Upload νέο αρχείο ή επίλεξε υπάρχον από τον server.</small>
+                                    <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
                                 <?php if (empty($assetsByAccount[$accountId])): ?>
@@ -941,6 +1145,79 @@ admin_page_start('MyLive', 'mylive');
         </div>
 
         <div class="mylive-no-results" id="myliveNoResults" hidden>Δεν βρέθηκε account με αυτά τα φίλτρα.</div>
+    </section>
+</div>
+
+<div class="schedule-media-modal" id="myliveAssetMediaModal" hidden>
+    <div class="schedule-media-backdrop" data-mylive-media-close></div>
+    <section class="schedule-media-manager" role="dialog" aria-modal="true" aria-labelledby="myliveAssetMediaTitle">
+        <header class="schedule-media-header">
+            <div>
+                <span>SERVER FILE MANAGER</span>
+                <h2 id="myliveAssetMediaTitle">Choose DJ asset</h2>
+                <p><?= count($assetMediaLibrary) ?> διαθέσιμα αρχεία από ασφαλείς φακέλους του Deseo Radio.</p>
+            </div>
+            <button type="button" class="schedule-media-close" data-mylive-media-close aria-label="Close">×</button>
+        </header>
+
+        <div class="schedule-media-layout">
+            <aside class="schedule-media-folders">
+                <button type="button" class="is-active" data-mylive-media-folder="all">
+                    <span>ALL FILES</span><b><?= count($assetMediaLibrary) ?></b>
+                </button>
+                <?php foreach ($assetMediaFolders as $folder): ?>
+                    <?php
+                    $folderCount = count(array_filter(
+                        $assetMediaLibrary,
+                        static fn(array $item): bool => (string)$item['folder'] === $folder
+                    ));
+                    ?>
+                    <button type="button" data-mylive-media-folder="<?= admin_e($folder) ?>">
+                        <span><?= admin_e($folder) ?></span><b><?= $folderCount ?></b>
+                    </button>
+                <?php endforeach; ?>
+            </aside>
+
+            <div class="schedule-media-content">
+                <div class="schedule-media-toolbar">
+                    <label>
+                        <span>SEARCH</span>
+                        <input id="myliveAssetMediaSearch" type="search" placeholder="Filename or folder…" autocomplete="off">
+                    </label>
+                    <small>Click ένα αρχείο για να το προσθέσεις στον συγκεκριμένο DJ.</small>
+                </div>
+
+                <div class="schedule-media-grid" id="myliveAssetMediaGrid">
+                    <?php foreach ($assetMediaLibrary as $media): ?>
+                        <button type="button"
+                                class="schedule-media-item"
+                                data-mylive-media-item
+                                data-mylive-media-url="<?= admin_e((string)$media['url']) ?>"
+                                data-mylive-media-name="<?= admin_e((string)$media['name']) ?>"
+                                data-mylive-media-folder="<?= admin_e((string)$media['folder']) ?>"
+                                data-mylive-media-search="<?= admin_e(strtolower((string)$media['name'] . ' ' . (string)$media['folder'])) ?>">
+                            <span class="schedule-media-thumb">
+                                <?php if (!empty($media['is_image'])): ?>
+                                    <img src="<?= admin_e((string)$media['url']) ?>" alt="" loading="lazy">
+                                <?php else: ?>
+                                    <span style="width:100%;height:100%;display:grid;place-items:center;color:#8b8b90;font-size:13px;font-weight:900;letter-spacing:.12em;">
+                                        <?= !empty($media['is_audio']) ? 'AUDIO' : admin_e(strtoupper((string)$media['extension'])) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </span>
+                            <span class="schedule-media-meta">
+                                <strong><?= admin_e((string)$media['name']) ?></strong>
+                                <small><?= admin_e((string)$media['folder']) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$media['size'])) ?></small>
+                            </span>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="schedule-media-empty" id="myliveAssetMediaEmpty" <?= $assetMediaLibrary ? 'hidden' : '' ?>>
+                    Δεν βρέθηκαν διαθέσιμα αρχεία.
+                </div>
+            </div>
+        </div>
     </section>
 </div>
 
@@ -981,6 +1258,113 @@ admin_page_start('MyLive', 'mylive');
     });
 
     if(search)search.addEventListener('input',apply);
+}());
+
+(function(){
+    var modal=document.getElementById('myliveAssetMediaModal');
+    var search=document.getElementById('myliveAssetMediaSearch');
+    var empty=document.getElementById('myliveAssetMediaEmpty');
+    var items=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-media-item]'));
+    var folders=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-media-folder]'));
+    var activeFolder='all';
+    var activeForm=null;
+
+    function closeBrowser(){
+        if(!modal)return;
+        modal.classList.remove('is-open');
+        document.body.classList.remove('schedule-media-open');
+        window.setTimeout(function(){modal.hidden=true;},160);
+    }
+
+    function openBrowser(form){
+        if(!modal||!form)return;
+        activeForm=form;
+        modal.hidden=false;
+        document.body.classList.add('schedule-media-open');
+        window.requestAnimationFrame(function(){
+            modal.classList.add('is-open');
+            if(search)search.focus();
+        });
+    }
+
+    function applyFilters(){
+        var query=search?search.value.trim().toLowerCase():'';
+        var visible=0;
+
+        items.forEach(function(item){
+            var folder=item.getAttribute('data-mylive-media-folder')||'';
+            var haystack=item.getAttribute('data-mylive-media-search')||'';
+            var folderMatch=activeFolder==='all'||folder===activeFolder;
+            var searchMatch=!query||haystack.indexOf(query)!==-1;
+            var show=folderMatch&&searchMatch;
+            item.hidden=!show;
+            if(show)visible++;
+        });
+
+        if(empty)empty.hidden=visible!==0;
+    }
+
+    document.querySelectorAll('[data-mylive-asset-browser]').forEach(function(button){
+        button.addEventListener('click',function(){
+            openBrowser(button.closest('form'));
+        });
+    });
+
+    document.querySelectorAll('[data-mylive-media-close]').forEach(function(button){
+        button.addEventListener('click',closeBrowser);
+    });
+
+    folders.forEach(function(button){
+        button.addEventListener('click',function(){
+            activeFolder=button.getAttribute('data-mylive-media-folder')||'all';
+            folders.forEach(function(item){item.classList.toggle('is-active',item===button);});
+            applyFilters();
+        });
+    });
+
+    if(search)search.addEventListener('input',applyFilters);
+
+    items.forEach(function(item){
+        item.addEventListener('click',function(){
+            if(!activeForm)return;
+
+            var url=item.getAttribute('data-mylive-media-url')||'';
+            var name=item.getAttribute('data-mylive-media-name')||url;
+            var hidden=activeForm.querySelector('[data-mylive-server-asset-path]');
+            var fileInput=activeForm.querySelector('input[name="asset_file"]');
+            var label=activeForm.querySelector('[data-mylive-server-asset-label]');
+
+            if(hidden)hidden.value=url;
+            if(fileInput)fileInput.value='';
+            if(label){
+                label.textContent='Selected from server: '+name;
+                label.style.color='var(--acid)';
+            }
+
+            closeBrowser();
+        });
+    });
+
+    document.querySelectorAll('.mylive-asset-upload input[name="asset_file"]').forEach(function(input){
+        input.addEventListener('change',function(){
+            var form=input.closest('form');
+            if(!form)return;
+
+            var hidden=form.querySelector('[data-mylive-server-asset-path]');
+            var label=form.querySelector('[data-mylive-server-asset-label]');
+            var file=input.files&&input.files[0];
+
+            if(file&&hidden)hidden.value='';
+            if(label){
+                label.textContent=file?'New upload: '+file.name:'Upload νέο αρχείο ή επίλεξε υπάρχον από τον server.';
+                label.style.color=file?'var(--acid)':'#66666b';
+            }
+        });
+    });
+
+    document.addEventListener('keydown',function(event){
+        if(event.key==='Escape'&&modal&&!modal.hidden)closeBrowser();
+    });
 }());
 </script>
 <?php admin_page_end(); ?>
