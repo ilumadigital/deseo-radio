@@ -122,7 +122,7 @@ admin_page_start('Airplay', 'airplay');
             <h3><?= admin_e($track['track_name']) ?></h3>
             <p>Spotify linked · Position #<?= (int)$track['position'] ?></p>
             <div class="media-card-actions">
-                <form method="post" class="inline-form" onsubmit="return confirm('Να διαγραφεί αυτό το track;')">
+                <form method="post" class="inline-form" data-deseo-confirm="Να διαγραφεί αυτό το track;" data-deseo-confirm-title="Διαγραφή track" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= (int)$track['id'] ?>">
