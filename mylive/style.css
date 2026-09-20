@@ -1338,3 +1338,53 @@ html{scroll-behavior:smooth}
     font-size:40px;
   }
 }
+
+
+/* MYLIVE REFERRAL COPY BUTTON */
+.mylive-referral-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:26px;
+}
+.mylive-referral-buttons .mylive-referral-button{
+  margin-top:0;
+}
+.mylive-referral-copy{
+  min-height:56px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 20px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:#070708;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  transition:transform .2s ease,border-color .2s ease,background .2s ease,color .2s ease;
+}
+.mylive-referral-copy:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.24);
+  background:#111113;
+}
+.mylive-referral-copy.is-copied{
+  border-color:rgba(75,207,126,.28);
+  background:rgba(75,207,126,.08);
+  color:#a8e9c0;
+}
+
+@media(max-width:620px){
+  .mylive-referral-buttons{
+    display:grid;
+    grid-template-columns:1fr;
+    width:100%;
+  }
+  .mylive-referral-buttons .mylive-referral-button,
+  .mylive-referral-copy{
+    width:100%;
+  }
+}
