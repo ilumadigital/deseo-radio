@@ -151,7 +151,7 @@ function admin_can_access(string $resource): bool {
         return false;
     }
 
-    if ($resource === 'audience') {
+    if (in_array($resource, ['audience', 'rewards'], true)) {
         return admin_is_administrator();
     }
 
