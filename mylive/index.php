@@ -808,8 +808,8 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             <p>Ξέρεις μια επιχείρηση που θέλει να ακουστεί στο Deseo Radio; Σύστησέ τη στην ILUMA και κέρδισε <strong>20%</strong> από κάθε νέα διαφημιστική καμπάνια που κλείνει μέσω της δικής σου σύστασης.</p>
 
             <?php
-            $djReferralValue = 'Deseo DJ - ' . trim((string)$account['artist_name']);
-            $djReferralUrl = 'https://iluma.gr/start/?ref=' . rawurlencode($djReferralValue) . '#form';
+            $djReferralValue = 'Deseo Radio DJ - ' . trim((string)$account['artist_name']);
+            $djReferralUrl = 'https://iluma.gr/contact/?myrewards=' . rawurlencode($djReferralValue);
             ?>
             <div class="mylive-referral-buttons">
                 <a href="<?= deseo_mylive_e($djReferralUrl) ?>"
