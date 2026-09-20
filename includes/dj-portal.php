@@ -308,11 +308,6 @@ function deseo_mylive_password_reset_create(PDO $pdo, int $accountId, int $ttlSe
     $rawToken = bin2hex(random_bytes(32));
     $tokenHash = hash('sha256', $rawToken);
 
-    $timezone = new DateTimeZone('Europe/Athens');
-    $expiresAt = (new DateTimeImmutable('now', $timezone))
-        ->modify('+' . $ttlSeconds . ' seconds')
-        ->format('Y-m-d H:i:s');
-
     $pdo->prepare(
         "UPDATE dj_password_resets
          SET used_at = NOW()
@@ -321,8 +316,8 @@ function deseo_mylive_password_reset_create(PDO $pdo, int $accountId, int $ttlSe
 
     $pdo->prepare(
         "INSERT INTO dj_password_resets (account_id, token_hash, expires_at)
-         VALUES (?, ?, ?)"
-    )->execute([$accountId, $tokenHash, $expiresAt]);
+         VALUES (?, ?, DATE_ADD(NOW(), INTERVAL " . $ttlSeconds . " SECOND))"
+    )->execute([$accountId, $tokenHash]);
 
     return $rawToken;
 }
