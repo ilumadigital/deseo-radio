@@ -377,7 +377,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                     </div>
                                 </form>
 
-                                <form method="post" onsubmit="return confirm('Να διαγραφεί οριστικά αυτό το inquiry;');">
+                                <form method="post" data-deseo-confirm="Να διαγραφεί οριστικά αυτό το inquiry;" data-deseo-confirm-title="Οριστική διαγραφή inquiry" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="release_booking">
                                     <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
