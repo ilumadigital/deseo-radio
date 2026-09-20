@@ -302,7 +302,7 @@ admin_page_start('Rewards', 'rewards');
                     </div>
                     <div class="field">
                         <label>Referral date</label>
-                        <input type="date" name="referred_at" value="<?= admin_e((string)($editReward['referred_at'] ?? date('Y-m-d'))) ?>">
+                        <input type="date" name="referred_at" value="<?= admin_e($editReward ? (string)($editReward['referred_at'] ?? '') : date('Y-m-d')) ?>">
                     </div>
                     <div class="field">
                         <label>Contact email</label>
