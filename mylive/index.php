@@ -77,52 +77,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Συμπλήρωσε ένα έγκυρο email.');
             }
 
-            $now = time();
-            $lastResetRequest = (int)($_SESSION['mylive_reset_last_request'] ?? 0);
-            $_SESSION['mylive_reset_last_request'] = $now;
+            $accountStmt = $pdo->prepare(
+                "SELECT id, artist_name, email
+                 FROM dj_portal_accounts
+                 WHERE LOWER(email) = ?
+                   AND is_active = 1
+                 LIMIT 1"
+            );
+            $accountStmt->execute([$resetEmail]);
+            $resetAccount = $accountStmt->fetch(PDO::FETCH_ASSOC);
 
-            if (($now - $lastResetRequest) >= 30) {
-                $accountStmt = $pdo->prepare(
-                    "SELECT id, artist_name, email
-                     FROM dj_portal_accounts
-                     WHERE LOWER(email) = ?
-                       AND is_active = 1
-                       AND account_status = 'active'
-                     LIMIT 1"
-                );
-                $accountStmt->execute([$resetEmail]);
-                $resetAccount = $accountStmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($resetAccount && !deseo_mylive_password_reset_recent($pdo, (int)$resetAccount['id'], 120)) {
-                    $resetToken = deseo_mylive_password_reset_create($pdo, (int)$resetAccount['id'], 3600);
-
-                    try {
-                        $mail = deseo_mylive_password_reset_email($resetAccount, $resetToken);
-                        deseo_send_smtp_mail(
-                            (string)$resetAccount['email'],
-                            (string)$resetAccount['artist_name'],
-                            (string)$mail['subject'],
-                            (string)$mail['html'],
-                            (string)$mail['text'],
-                            true
-                        );
-                    } catch (Throwable $mailError) {
-                        $pdo->prepare(
-                            "UPDATE dj_password_resets
-                             SET used_at = NOW()
-                             WHERE account_id = ? AND used_at IS NULL"
-                        )->execute([(int)$resetAccount['id']]);
-
-                        error_log(
-                            'MyLive password reset email failed for account '
-                            . (int)$resetAccount['id']
-                            . ': '
-                            . $mailError->getMessage()
-                        );
-                    }
-                }
+            if (!$resetAccount) {
+                throw new RuntimeException('Δεν υπάρχει MyLive account με αυτό το email.');
             }
 
+            $now = time();
+            $lastResetRequest = (int)($_SESSION['mylive_reset_last_request'] ?? 0);
+            if (($now - $lastResetRequest) < 30) {
+                throw new RuntimeException('Περίμενε λίγα δευτερόλεπτα πριν ζητήσεις νέο reset link.');
+            }
+
+            if (deseo_mylive_password_reset_recent($pdo, (int)$resetAccount['id'], 120)) {
+                throw new RuntimeException('Έχει ήδη σταλεί πρόσφατα reset link σε αυτό το email. Έλεγξε Inbox και Spam / Junk.');
+            }
+
+            $resetToken = deseo_mylive_password_reset_create($pdo, (int)$resetAccount['id'], 3600);
+
+            try {
+                $mail = deseo_mylive_password_reset_email($resetAccount, $resetToken);
+                deseo_send_smtp_mail(
+                    (string)$resetAccount['email'],
+                    (string)$resetAccount['artist_name'],
+                    (string)$mail['subject'],
+                    (string)$mail['html'],
+                    (string)$mail['text'],
+                    true
+                );
+            } catch (Throwable $mailError) {
+                $pdo->prepare(
+                    "UPDATE dj_password_resets
+                     SET used_at = NOW()
+                     WHERE account_id = ? AND used_at IS NULL"
+                )->execute([(int)$resetAccount['id']]);
+
+                error_log(
+                    'MyLive password reset email failed for account '
+                    . (int)$resetAccount['id']
+                    . ': '
+                    . $mailError->getMessage()
+                );
+
+                throw new RuntimeException(
+                    'Δεν ήταν δυνατή η αποστολή του reset email αυτή τη στιγμή. Δοκίμασε ξανά σε λίγο.'
+                );
+            }
+
+            $_SESSION['mylive_reset_last_request'] = $now;
+            $_SESSION['mylive_reset_sent_email'] = (string)$resetAccount['email'];
             header('Location: /mylive/?forgot=sent');
             exit;
         }
@@ -395,7 +406,10 @@ $isResetMode = $resetParam !== '' && !$isResetDone;
 $resetRecord = $isResetMode ? deseo_mylive_password_reset_lookup($pdo, $resetParam) : null;
 
 if ($forgotState === 'sent') {
-    $notice = 'Αν το email είναι συνδεδεμένο με ενεργό MyLive account, θα λάβεις email με link αλλαγής κωδικού. Έλεγξε και τον φάκελο Spam / Junk.';
+    $sentResetEmail = trim((string)($_SESSION['mylive_reset_sent_email'] ?? ''));
+    $notice = $sentResetEmail !== ''
+        ? 'Στάλθηκε reset link στο ' . $sentResetEmail . '. Έλεγξε και τον φάκελο Spam / Junk.'
+        : 'Το reset link στάλθηκε. Έλεγξε και τον φάκελο Spam / Junk.';
 }
 ?>
 <!doctype html>
