@@ -516,16 +516,16 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                     </a>
                 <?php endif; ?>
                 <a href="#assets" data-mylive-nav>
-                    <i><?= $publicProfile ? '03' : '02' ?></i><span>Assets</span>
+                    <i><?= $publicProfile ? '03' : '02' ?></i><span>My Assets</span>
                 </a>
                 <a href="#sets" data-mylive-nav>
-                    <i><?= $publicProfile ? '04' : '03' ?></i><span>DJ Sets</span>
+                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My DJ Sets</span>
                 </a>
                 <a href="#live" data-mylive-nav>
                     <i><?= $publicProfile ? '05' : '04' ?></i><span>Listen Live</span>
                 </a>
                 <a href="#rewards" data-mylive-nav>
-                    <i><?= $publicProfile ? '06' : '05' ?></i><span>DJ Reward</span>
+                    <i><?= $publicProfile ? '06' : '05' ?></i><span>My Rewards</span>
                 </a>
             </nav>
             <small>Deseo Radio · Season 6</small>
