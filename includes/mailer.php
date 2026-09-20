@@ -713,6 +713,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . $bullet('Το <strong style="color:#fff;">MyLive αριθμεί και μετονομάζει αυτόματα</strong> κάθε επεισόδιο.')
         . $bullet('Στο dashboard βλέπεις <strong style="color:#fff;">πόσοι σε άκουσαν, πόσα episodes έχεις ανεβάσει και πόσα assets έχεις διαθέσιμα</strong>.')
         . $bullet('Artwork και branded DJ spots κατεβαίνουν από το <strong style="color:#fff;">MyLive</strong>.')
+        . $bullet('<strong style="color:#fff;">My Rewards</strong> — έχεις προσωπικό referral link και μπορείς να κερδίζεις <strong style="color:#fff;">20%</strong> από νέα διαφημιστική καμπάνια που κλείνει μέσω της σύστασής σου.')
         . '</table>';
 
     $body = '<tr><td style="padding:0 0 18px;">'
@@ -766,6 +767,12 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '• το Personal DJ Imaging<br>'
         . '• το <strong style="color:#fff;">_30 Imaging</strong><br>'
         . '• οποιοδήποτε πρόσθετο promotional ή on-air asset δημιουργήσει το Deseo Radio / ILUMA Digital Agency.');
+
+    $body .= $section('MY REWARDS', 'Φέρε μια επιχείρηση. Κράτα το 20%.',
+        'Στο <strong style="color:#fff;">My Rewards</strong> θα βρεις το προσωπικό σου referral link. '
+        . 'Αν γνωρίζεις μια επιχείρηση που θέλει να διαφημιστεί στο Deseo Radio, της στέλνεις το link σου.<br><br>'
+        . 'Αν η επιχείρηση προχωρήσει σε νέα διαφημιστική καμπάνια μέσω της σύστασής σου, κερδίζεις <strong style="color:#fff;">20%</strong> από την καμπάνια. '
+        . 'Μέσα στο My Rewards βλέπεις απλά το <strong style="color:#fff;">status</strong>, το <strong style="color:#fff;">ποσό του Reward</strong> και πότε έχει πληρωθεί.');
 
     $body .= $section('SOCIAL MEDIA', 'Η ανακοίνωση της συμμετοχής σου',
         'Το προσωπικό promotional artwork δημιουργείται από το γραφιστικό τμήμα της <strong style="color:#fff;">ILUMA Digital Agency</strong> με Artist Name, ημέρα, ώρα και Deseo Radio branding. '
@@ -832,6 +839,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . "Promo tracks: επιτρέπονται μόνο αν τα έχεις λάβει απευθείας από τον δημιουργό ή νόμιμο δικαιούχο και έχεις άδεια για online / internet radio μετάδοση, αποκλειστικά μέσα στο δικό σου DJ Set.\n"
         . "Exclusive set: Personal DJ Imaging στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
         . "Artwork και branded DJ spots: διαθέσιμα μέσα από το MyLive.\n"
+        . "My Rewards: έχεις προσωπικό referral link. Αν μια επιχείρηση κλείσει νέα διαφημιστική καμπάνια μέσω της σύστασής σου, κερδίζεις 20% και βλέπεις το status, το ποσό και την πληρωμή μέσα στο MyLive.\n"
         . "Social: ανακοίνωση της συμμετοχής, ιδανικά με Collaborator Post / mention Deseo Radio.\n"
         . "Sponsor material: απαιτεί προηγούμενη έγκριση.\n\n"
         . "MYLIVE ACCESS\n"
