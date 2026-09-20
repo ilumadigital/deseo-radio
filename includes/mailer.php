@@ -853,6 +853,61 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 }
 
 
+function deseo_mylive_password_reset_email(array $account, string $resetToken): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $email = trim((string)($account['email'] ?? ''));
+    $resetUrl = 'https://deseoradio.com/mylive/?reset=' . rawurlencode($resetToken);
+
+    $body = '<tr><td style="padding:0 0 20px;">'
+        . '<div style="padding:23px;border-radius:20px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">PASSWORD RESET</div>'
+        . '<div style="margin-top:8px;font:800 28px/1.12 Arial,sans-serif;letter-spacing:-.025em;">Άλλαξε τον κωδικό σου.</div>'
+        . '<div style="margin-top:8px;font:700 13px/1.55 Arial,sans-serif;">Ο σύνδεσμος ισχύει για 60 λεπτά και χρησιμοποιείται μόνο μία φορά.</div>'
+        . '</div></td></tr>';
+
+    $body .= deseo_mylive_email_section(
+        'MYLIVE ACCOUNT',
+        'Το email του account σου',
+        '<strong style="color:#fff;">' . $e($email) . '</strong>'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'SECURITY',
+        'Δεν στέλνουμε temporary password',
+        'Πάτησε το κουμπί παρακάτω και όρισε απευθείας τον νέο προσωπικό σου κωδικό. '
+        . 'Ο παλιός κωδικός θα πάψει να ισχύει μόλις ολοκληρώσεις την αλλαγή.'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'DIDN’T REQUEST THIS?',
+        'Δεν χρειάζεται να κάνεις τίποτα',
+        'Αν δεν ζήτησες αλλαγή κωδικού, αγνόησε αυτό το email. Ο υπάρχων κωδικός σου παραμένει ενεργός.'
+    );
+
+    $subject = 'Deseo Radio MyLive · Reset password';
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · MYLIVE · SECURITY',
+        'Reset your password.',
+        $artist . ', λάβαμε αίτημα αλλαγής κωδικού για το MyLive account σου.',
+        $body,
+        'CHANGE PASSWORD',
+        $resetUrl
+    );
+
+    $text = "DESEO RADIO · MYLIVE · PASSWORD RESET\n\n"
+        . "{$artist}, λάβαμε αίτημα αλλαγής κωδικού για το MyLive account σου.\n\n"
+        . "Email: {$email}\n"
+        . "Το link ισχύει για 60 λεπτά και χρησιμοποιείται μόνο μία φορά.\n\n"
+        . "Change password: {$resetUrl}\n\n"
+        . "Αν δεν ζήτησες αλλαγή κωδικού, αγνόησε αυτό το email.\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
+
 function deseo_mylive_reward_created_email(array $account, array $reward): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
