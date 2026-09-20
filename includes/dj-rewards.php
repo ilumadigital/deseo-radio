@@ -11,7 +11,7 @@ function deseo_rewards_bootstrap(PDO $pdo): void {
         contact_email VARCHAR(254) NOT NULL DEFAULT '',
         contact_phone VARCHAR(80) NOT NULL DEFAULT '',
         campaign_value DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-        reward_percent DECIMAL(5,2) NOT NULL DEFAULT 20.00,
+        reward_percent DECIMAL(5,2) NOT NULL DEFAULT 15.00,
         reward_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
         status VARCHAR(32) NOT NULL DEFAULT 'new',
         dj_note TEXT NOT NULL,
@@ -34,6 +34,18 @@ function deseo_rewards_bootstrap(PDO $pdo): void {
         }
     } catch (Throwable $e) {
         error_log('Rewards notification email column migration failed: ' . $e->getMessage());
+    }
+
+    try {
+        $pdo->exec("ALTER TABLE dj_rewards MODIFY reward_percent DECIMAL(5,2) NOT NULL DEFAULT 15.00");
+        $pdo->exec(
+            "UPDATE dj_rewards
+             SET reward_percent = 15.00,
+                 reward_amount = ROUND(campaign_value * 0.15, 2)
+             WHERE reward_percent = 20.00"
+        );
+    } catch (Throwable $e) {
+        error_log('Rewards 15 percent migration failed: ' . $e->getMessage());
     }
 }
 
