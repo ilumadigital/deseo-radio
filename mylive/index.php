@@ -141,23 +141,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Δημιούργησε πρώτα το προσωπικό σου password.');
             }
 
-            deseo_mylive_save_public_profile_draft($pdo, $accountId, [
-                'bio' => (string)($_POST['bio'] ?? ''),
-                'instagram' => (string)($_POST['instagram'] ?? ''),
-                'tiktok' => (string)($_POST['tiktok'] ?? ''),
-                'soundcloud' => (string)($_POST['soundcloud'] ?? ''),
-                'spotify' => (string)($_POST['spotify'] ?? ''),
-                'website' => (string)($_POST['website'] ?? ''),
-            ]);
-
-            if ($action === 'publish_public_profile') {
-                deseo_mylive_publish_public_profile($pdo, $accountId);
-                $notice = 'Το Public Profile δημοσιεύτηκε. Η σύνδεση με το Radio Program παραμένει κανονικά ενεργή.';
-            } elseif ($action === 'unpublish_public_profile') {
+            if ($action === 'unpublish_public_profile') {
+                // Visibility-only action. Keep drafts, published data and Radio Program linkage untouched.
                 deseo_mylive_unpublish_public_profile($pdo, $accountId);
                 $notice = 'Το Public Profile έγινε Unpublished. Το show σου παραμένει συνδεδεμένο κανονικά με το Radio Program και μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.';
             } else {
-                $notice = 'Το draft του Public Profile αποθηκεύτηκε. Οι αλλαγές δεν είναι ακόμη δημόσιες.';
+                deseo_mylive_save_public_profile_draft($pdo, $accountId, [
+                    'bio' => (string)($_POST['bio'] ?? ''),
+                    'instagram' => (string)($_POST['instagram'] ?? ''),
+                    'tiktok' => (string)($_POST['tiktok'] ?? ''),
+                    'soundcloud' => (string)($_POST['soundcloud'] ?? ''),
+                    'spotify' => (string)($_POST['spotify'] ?? ''),
+                    'website' => (string)($_POST['website'] ?? ''),
+                ]);
+
+                if ($action === 'publish_public_profile') {
+                    deseo_mylive_publish_public_profile($pdo, $accountId);
+                    $notice = 'Το Public Profile δημοσιεύτηκε. Η σύνδεση με το Radio Program παραμένει κανονικά ενεργή.';
+                } else {
+                    $notice = 'Το draft του Public Profile αποθηκεύτηκε. Οι αλλαγές δεν είναι ακόμη δημόσιες.';
+                }
             }
         }
 
