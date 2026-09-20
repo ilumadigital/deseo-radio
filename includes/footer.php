@@ -916,6 +916,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 </script>
 
 <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
+<script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
 
 <script>
 (function () {
