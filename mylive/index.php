@@ -378,6 +378,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (!deseo_mylive_logged_in()):
+$forgotState = strtolower(trim((string)($_GET['forgot'] ?? '')));
+$resetParam = strtolower(trim((string)($_GET['reset'] ?? '')));
+$isForgotMode = $forgotState !== '';
+$isResetDone = $resetParam === 'done';
+$isResetMode = $resetParam !== '' && !$isResetDone;
+$resetRecord = $isResetMode ? deseo_mylive_password_reset_lookup($pdo, $resetParam) : null;
+
+if ($forgotState === 'sent') {
+    $notice = 'Αν το email είναι συνδεδεμένο με ενεργό MyLive account, θα λάβεις email με link αλλαγής κωδικού. Έλεγξε και τον φάκελο Spam / Junk.';
+}
 ?>
 <!doctype html>
 <html lang="el">
@@ -388,12 +398,12 @@ if (!deseo_mylive_logged_in()):
     <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex,notranslate">
     <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-    <title>MyLive · Deseo Radio</title>
+    <title><?= $isForgotMode || $isResetMode || $isResetDone ? 'Reset password' : 'MyLive' ?> · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
     <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
-    <?php if ($turnstileConfigured): ?>
+    <?php if ($turnstileConfigured && ($isForgotMode || (!$isResetMode && !$isResetDone))): ?>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <?php endif; ?>
 </head>
@@ -409,57 +419,163 @@ if (!deseo_mylive_logged_in()):
         <p>DJ Set delivery, personal artwork και branded imaging. Όλα σε ένα απλό, ιδιωτικό workspace.</p>
     </section>
 
-    <section class="login-card">
-        <div class="login-card-head">
-            <span>MYLIVE</span>
-            <h2>Καλώς ήρθες.</h2>
-            <p>Μπες με τα στοιχεία πρόσβασης που έλαβες από το Deseo Radio.</p>
-        </div>
+    <section class="login-card <?= ($isForgotMode || $isResetMode || $isResetDone) ? 'login-card-recovery' : '' ?>">
+        <?php if ($isResetDone): ?>
+            <div class="login-card-head">
+                <span>MYLIVE · SECURITY</span>
+                <h2>Password changed.</h2>
+                <p>Ο νέος κωδικός σου αποθηκεύτηκε. Μπορείς τώρα να μπεις κανονικά στο MyLive.</p>
+            </div>
 
-        <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+            <div class="mylive-reset-success-mark">✓</div>
+            <a class="primary-button mylive-login-action-link" href="/mylive/">BACK TO LOGIN</a>
 
-        <form method="post" autocomplete="on">
-            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
-            <input type="hidden" name="action" value="login">
-            <?php if (strtolower((string)($_GET['section'] ?? '')) === 'rewards'): ?>
-                <input type="hidden" name="section" value="rewards">
-            <?php endif; ?>
-
-            <label>
-                <span>Email</span>
-                <input type="email" name="email" autocomplete="username" inputmode="email" required autofocus>
-            </label>
-
-            <label>
-                <span>Password</span>
-                <div class="password-field">
-                    <input id="loginPassword" type="password" name="password" autocomplete="current-password" required>
-                    <button type="button" class="password-toggle" data-password-toggle="loginPassword">Show</button>
+        <?php elseif ($isResetMode): ?>
+            <?php if ($resetRecord): ?>
+                <div class="login-card-head">
+                    <span>MYLIVE · PASSWORD RESET</span>
+                    <h2>Νέος κωδικός.</h2>
+                    <p>Δημιούργησε νέο password για το MyLive account σου. Το reset link χρησιμοποιείται μόνο μία φορά.</p>
                 </div>
-            </label>
 
-            <?php if ($turnstileConfigured): ?>
-                <div class="turnstile-box">
-                    <div class="cf-turnstile"
-                         data-sitekey="<?= deseo_mylive_e($turnstileSiteKey) ?>"
-                         data-theme="dark"
-                         data-size="flexible"
-                         data-action="mylive_login"></div>
-                </div>
+                <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+
+                <form method="post" autocomplete="on">
+                    <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+                    <input type="hidden" name="action" value="reset_password_link">
+                    <input type="hidden" name="reset_token" value="<?= deseo_mylive_e($resetParam) ?>">
+
+                    <label>
+                        <span>Email</span>
+                        <input type="email"
+                               value="<?= deseo_mylive_e((string)$resetRecord['email']) ?>"
+                               autocomplete="username"
+                               readonly>
+                    </label>
+
+                    <label>
+                        <span>New password</span>
+                        <div class="password-field">
+                            <input id="resetNewPassword" type="password" name="new_password" minlength="8" autocomplete="new-password" required autofocus>
+                            <button type="button" class="password-toggle" data-password-toggle="resetNewPassword">Show</button>
+                        </div>
+                    </label>
+
+                    <label>
+                        <span>Confirm password</span>
+                        <div class="password-field">
+                            <input id="resetConfirmPassword" type="password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                            <button type="button" class="password-toggle" data-password-toggle="resetConfirmPassword">Show</button>
+                        </div>
+                    </label>
+
+                    <small class="mylive-reset-help">Τουλάχιστον 8 χαρακτήρες. Με την αλλαγή, ο προηγούμενος κωδικός παύει να ισχύει.</small>
+                    <button class="primary-button" type="submit">CHANGE PASSWORD</button>
+                </form>
             <?php else: ?>
-                <div class="alert error">Το Cloudflare security δεν είναι ακόμη ρυθμισμένο για το MyLive.</div>
+                <div class="login-card-head">
+                    <span>MYLIVE · PASSWORD RESET</span>
+                    <h2>Το link έληξε.</h2>
+                    <p>Ο σύνδεσμος αλλαγής κωδικού δεν είναι πλέον έγκυρος ή έχει ήδη χρησιμοποιηθεί. Ζήτησε νέο link για να συνεχίσεις.</p>
+                </div>
+
+                <div class="mylive-reset-expired">RESET LINK EXPIRED</div>
+                <a class="primary-button mylive-login-action-link" href="/mylive/?forgot=1">REQUEST NEW LINK</a>
+                <a class="mylive-recovery-back" href="/mylive/">← Back to login</a>
             <?php endif; ?>
 
-            <button class="primary-button" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>Enter MyLive</button>
-        </form>
+        <?php elseif ($isForgotMode): ?>
+            <div class="login-card-head">
+                <span>MYLIVE · PASSWORD RESET</span>
+                <h2>Reset password.</h2>
+                <p>Γράψε το email του MyLive account σου. Αν είναι καταχωρημένο, θα σου στείλουμε ασφαλές link για να ορίσεις νέο κωδικό.</p>
+            </div>
 
-        <small>Private DJ workspace · Deseo Radio / ILUMA Digital Agency</small>
+            <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
+            <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+
+            <form method="post" autocomplete="on">
+                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+                <input type="hidden" name="action" value="request_password_reset">
+
+                <label>
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="username" inputmode="email" required autofocus placeholder="you@example.com">
+                </label>
+
+                <?php if ($turnstileConfigured): ?>
+                    <div class="turnstile-box">
+                        <div class="cf-turnstile"
+                             data-sitekey="<?= deseo_mylive_e($turnstileSiteKey) ?>"
+                             data-theme="dark"
+                             data-size="flexible"
+                             data-action="mylive_password_reset"></div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert error">Το Cloudflare security δεν είναι ακόμη ρυθμισμένο για το MyLive.</div>
+                <?php endif; ?>
+
+                <button class="primary-button" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>SEND RESET LINK</button>
+            </form>
+
+            <a class="mylive-recovery-back" href="/mylive/">← Back to login</a>
+
+        <?php else: ?>
+            <div class="login-card-head">
+                <span>MYLIVE</span>
+                <h2>Καλώς ήρθες.</h2>
+                <p>Μπες με τα στοιχεία πρόσβασης που έλαβες από το Deseo Radio.</p>
+            </div>
+
+            <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
+
+            <form method="post" autocomplete="on">
+                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+                <input type="hidden" name="action" value="login">
+                <?php if (strtolower((string)($_GET['section'] ?? '')) === 'rewards'): ?>
+                    <input type="hidden" name="section" value="rewards">
+                <?php endif; ?>
+
+                <label>
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="username" inputmode="email" required autofocus>
+                </label>
+
+                <label>
+                    <span class="login-field-head">
+                        <b>Password</b>
+                        <a href="/mylive/?forgot=1">Reset password</a>
+                    </span>
+                    <div class="password-field">
+                        <input id="loginPassword" type="password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" data-password-toggle="loginPassword">Show</button>
+                    </div>
+                </label>
+
+                <?php if ($turnstileConfigured): ?>
+                    <div class="turnstile-box">
+                        <div class="cf-turnstile"
+                             data-sitekey="<?= deseo_mylive_e($turnstileSiteKey) ?>"
+                             data-theme="dark"
+                             data-size="flexible"
+                             data-action="mylive_login"></div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert error">Το Cloudflare security δεν είναι ακόμη ρυθμισμένο για το MyLive.</div>
+                <?php endif; ?>
+
+                <button class="primary-button" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>Enter MyLive</button>
+            </form>
+
+            <small>Private DJ workspace · Deseo Radio / ILUMA Digital Agency</small>
+        <?php endif; ?>
     </section>
 </main>
 <script>
 document.querySelectorAll('[data-password-toggle]').forEach(button => {
     button.addEventListener('click', () => {
         const input = document.getElementById(button.dataset.passwordToggle);
+        if (!input) return;
         const visible = input.type === 'text';
         input.type = visible ? 'password' : 'text';
         button.textContent = visible ? 'Show' : 'Hide';
