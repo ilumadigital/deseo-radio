@@ -811,12 +811,21 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
             $djReferralValue = 'Deseo DJ - ' . trim((string)$account['artist_name']);
             $djReferralUrl = 'https://iluma.gr/start/?ref=' . rawurlencode($djReferralValue);
             ?>
-            <a href="<?= deseo_mylive_e($djReferralUrl) ?>"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="mylive-referral-button">
-                ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ ↗
-            </a>
+            <div class="mylive-referral-buttons">
+                <a href="<?= deseo_mylive_e($djReferralUrl) ?>"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="mylive-referral-button">
+                    ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ ↗
+                </a>
+
+                <button type="button"
+                        class="mylive-referral-copy"
+                        data-referral-copy
+                        data-referral-url="<?= deseo_mylive_e($djReferralUrl) ?>">
+                    COPY LINK
+                </button>
+            </div>
         </div>
     </section>
 </main>
@@ -1100,6 +1109,37 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 
     window.addEventListener('pageshow', function (event) {
         if (event.persisted) refreshProgram().finally(scheduleRefresh);
+    });
+}());
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    document.querySelectorAll('[data-referral-copy]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var url = button.getAttribute('data-referral-url') || '';
+            if (!url) return;
+
+            function done() {
+                var original = 'COPY LINK';
+                button.textContent = 'COPIED ✓';
+                button.classList.add('is-copied');
+                window.setTimeout(function () {
+                    button.textContent = original;
+                    button.classList.remove('is-copied');
+                }, 1800);
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(done).catch(function () {
+                    window.prompt('Copy your referral link:', url);
+                });
+            } else {
+                window.prompt('Copy your referral link:', url);
+            }
+        });
     });
 }());
 </script>
