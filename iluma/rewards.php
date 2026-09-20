@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/dj-rewards.php';
+require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/admin-ui.php';
 
 admin_require_access('rewards');
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $accountStmt = $pdo->prepare(
-                "SELECT id, artist_name
+                "SELECT id, artist_name, email
                  FROM dj_portal_accounts
                  WHERE id = ?
                  LIMIT 1"
@@ -157,7 +158,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $paidAtSql,
                 ]);
 
+                $newRewardId = (int)$pdo->lastInsertId();
                 $notice = 'Το νέο DJ Reward καταχωρήθηκε.';
+
+                try {
+                    $rewardMail = deseo_mylive_reward_created_email(
+                        $rewardAccount,
+                        [
+                            'business_name' => $businessName,
+                            'contact_name' => $contactName,
+                            'contact_email' => $contactEmail,
+                            'contact_phone' => $contactPhone,
+                            'campaign_value' => $campaignValue,
+                            'reward_percent' => $rewardPercent,
+                            'reward_amount' => $rewardAmount,
+                            'status' => $status,
+                            'dj_note' => $djNote,
+                            'referred_at' => $referredAt,
+                        ]
+                    );
+
+                    deseo_send_smtp_mail(
+                        (string)$rewardAccount['email'],
+                        (string)$rewardAccount['artist_name'],
+                        (string)$rewardMail['subject'],
+                        (string)$rewardMail['html'],
+                        (string)$rewardMail['text'],
+                        true
+                    );
+
+                    $pdo->prepare(
+                        "UPDATE dj_rewards
+                         SET notification_email_sent_at = NOW()
+                         WHERE id = ?"
+                    )->execute([$newRewardId]);
+
+                    $notice = 'Το νέο DJ Reward καταχωρήθηκε και στάλθηκε email στον '
+                        . (string)$rewardAccount['artist_name']
+                        . '.';
+                } catch (Throwable $mailError) {
+                    error_log(
+                        'DJ Reward notification email failed for reward '
+                        . $newRewardId
+                        . ': '
+                        . $mailError->getMessage()
+                    );
+
+                    $error = 'Το Reward αποθηκεύτηκε κανονικά, αλλά το email προς τον DJ δεν στάλθηκε: '
+                        . $mailError->getMessage();
+                }
             }
         } elseif ($action === 'delete_reward') {
             $rewardId = (int)($_POST['reward_id'] ?? 0);
