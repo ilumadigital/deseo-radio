@@ -820,7 +820,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                 </a>
 
                 <button type="button"
-                        class="mylive-referral-copy"
+                        class="mylive-referral-copy-button"
                         data-referral-copy
                         data-referral-url="<?= deseo_mylive_e($djReferralUrl) ?>">
                     COPY LINK
