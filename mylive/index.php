@@ -480,6 +480,109 @@ $estimatedReach = ($statsVisible && $latestAudience && $audienceMonthKey !== '')
     : 0;
 $dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
 $startTime = deseo_mylive_format_time((string)$account['start_time']);
+
+// NEXT SHOW · calculate the next occurrence from the DJ's recurring weekly slot.
+$nextShowStart = null;
+$nextShowEnd = null;
+$nextShowIsLive = false;
+$nextShowWhen = 'Schedule pending';
+$nextShowDate = '—';
+$nextShowTime = $startTime;
+$nextShowDay = $dayLabel;
+
+$slotDay = (int)($account['day_of_week'] ?? 0);
+$slotStartRaw = trim((string)($account['start_time'] ?? ''));
+$slotEndRaw = trim((string)($account['end_time'] ?? ''));
+
+if ($slotDay >= 1 && $slotDay <= 7 && $slotStartRaw !== '') {
+    $athensTz = new DateTimeZone('Europe/Athens');
+    $nowAthens = new DateTimeImmutable('now', $athensTz);
+    $today = $nowAthens->setTime(0, 0, 0);
+    $dayDelta = $slotDay - (int)$nowAthens->format('N');
+
+    $candidateDate = $today->modify(($dayDelta >= 0 ? '+' : '') . $dayDelta . ' days');
+    [$slotHour, $slotMinute] = array_map('intval', array_pad(explode(':', $slotStartRaw), 2, '0'));
+    $candidateStart = $candidateDate->setTime($slotHour, $slotMinute, 0);
+
+    $candidateEnd = $candidateStart->modify('+1 hour');
+    if ($slotEndRaw !== '') {
+        [$endHour, $endMinute] = array_map('intval', array_pad(explode(':', $slotEndRaw), 2, '0'));
+        $candidateEnd = $candidateDate->setTime($endHour, $endMinute, 0);
+        if ($candidateEnd <= $candidateStart) {
+            $candidateEnd = $candidateEnd->modify('+1 day');
+        }
+    }
+
+    if ($nowAthens >= $candidateEnd) {
+        $candidateStart = $candidateStart->modify('+7 days');
+        $candidateEnd = $candidateEnd->modify('+7 days');
+    }
+
+    $nextShowStart = $candidateStart;
+    $nextShowEnd = $candidateEnd;
+    $nextShowIsLive = $nowAthens >= $candidateStart && $nowAthens < $candidateEnd;
+
+    $todayKey = $nowAthens->format('Y-m-d');
+    $tomorrowKey = $nowAthens->modify('+1 day')->format('Y-m-d');
+    $showKey = $candidateStart->format('Y-m-d');
+
+    if ($nextShowIsLive) {
+        $nextShowWhen = 'LIVE NOW';
+    } elseif ($showKey === $todayKey) {
+        $nextShowWhen = 'Today';
+    } elseif ($showKey === $tomorrowKey) {
+        $nextShowWhen = 'Tomorrow';
+    } else {
+        $daysToShow = (int)$today->diff($candidateStart->setTime(0, 0))->format('%a');
+        $nextShowWhen = 'In ' . $daysToShow . ' days';
+    }
+
+    $nextShowDate = $candidateStart->format('d.m.Y');
+    $nextShowTime = $candidateStart->format('H:i');
+}
+
+$nextShowSet = null;
+foreach ($sets as $setCandidate) {
+    if ((string)($setCandidate['status'] ?? '') !== 'broadcasted') {
+        $nextShowSet = $setCandidate;
+        break;
+    }
+}
+
+$nextShowEpisode = $nextShowSet
+    ? (int)$nextShowSet['episode_no']
+    : $nextEpisode;
+$nextShowSetStatus = $nextShowSet ? (string)$nextShowSet['status'] : 'not_uploaded';
+
+$nextShowStatusLabel = match ($nextShowSetStatus) {
+    'received' => 'SET UPLOADED',
+    'checked' => 'CHECKED',
+    'scheduled' => 'READY FOR AIR',
+    'needs_changes' => 'NEEDS CHANGES',
+    default => 'WAITING FOR SET',
+};
+
+$nextShowStatusClass = match ($nextShowSetStatus) {
+    'scheduled' => 'is-ready',
+    'checked' => 'is-checked',
+    'received' => 'is-uploaded',
+    'needs_changes' => 'is-warning',
+    default => 'is-waiting',
+};
+
+$nextShowUploaded = $nextShowSet !== null;
+$nextShowChecked = in_array($nextShowSetStatus, ['checked', 'scheduled'], true);
+$nextShowScheduled = $nextShowSetStatus === 'scheduled';
+
+$nextShowMessage = match ($nextShowSetStatus) {
+    'received' => 'Το set παραλήφθηκε από το Deseo και περιμένει έλεγχο.',
+    'checked' => 'Το set έχει ελεγχθεί και περιμένει να προγραμματιστεί.',
+    'scheduled' => 'Όλα έτοιμα. Το επόμενο episode είναι προγραμματισμένο για broadcast.',
+    'needs_changes' => trim((string)($nextShowSet['admin_note'] ?? '')) !== ''
+        ? (string)$nextShowSet['admin_note']
+        : 'Το set χρειάζεται αλλαγές πριν μπορέσει να προγραμματιστεί.',
+    default => 'Δεν έχει ανέβει ακόμη set για το επόμενο episode.',
+};
 ?>
 <!doctype html>
 <html lang="el">
@@ -554,6 +657,62 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         <div class="slot-pill">
             <span>YOUR WEEKLY SLOT</span>
             <strong><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+        </div>
+    </section>
+
+    <section class="mylive-next-show <?= $nextShowIsLive ? 'is-live' : '' ?>" aria-label="Next show">
+        <div class="mylive-next-show-main">
+            <div class="mylive-next-show-kicker">
+                <span><i></i> NEXT SHOW</span>
+                <b class="<?= deseo_mylive_e($nextShowStatusClass) ?>"><?= deseo_mylive_e($nextShowStatusLabel) ?></b>
+            </div>
+
+            <div class="mylive-next-show-title">
+                <div>
+                    <strong><?= deseo_mylive_e($nextShowDay) ?> · <?= deseo_mylive_e($nextShowTime) ?></strong>
+                    <span><?= deseo_mylive_e($nextShowDate) ?> · <?= deseo_mylive_e($nextShowWhen) ?></span>
+                </div>
+                <div class="mylive-next-episode">
+                    <span>NEXT EPISODE</span>
+                    <strong>EP<?= str_pad((string)$nextShowEpisode, 3, '0', STR_PAD_LEFT) ?></strong>
+                </div>
+            </div>
+
+            <p class="mylive-next-show-message"><?= deseo_mylive_e($nextShowMessage) ?></p>
+
+            <div class="mylive-next-show-progress" aria-label="Episode delivery progress">
+                <div class="<?= $nextShowUploaded ? 'is-complete' : 'is-pending' ?>">
+                    <i><?= $nextShowUploaded ? '✓' : '1' ?></i>
+                    <span>Uploaded</span>
+                </div>
+                <em></em>
+                <div class="<?= $nextShowSetStatus === 'needs_changes' ? 'is-warning' : ($nextShowChecked ? 'is-complete' : 'is-pending') ?>">
+                    <i><?= $nextShowSetStatus === 'needs_changes' ? '!' : ($nextShowChecked ? '✓' : '2') ?></i>
+                    <span>Checked</span>
+                </div>
+                <em></em>
+                <div class="<?= $nextShowScheduled ? 'is-complete' : 'is-pending' ?>">
+                    <i><?= $nextShowScheduled ? '✓' : '3' ?></i>
+                    <span>Scheduled</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mylive-next-show-action">
+            <span><?= $nextShowIsLive ? 'ON AIR NOW' : 'DESEO RADIO · SEASON 6' ?></span>
+            <?php if ($nextShowSetStatus === 'not_uploaded'): ?>
+                <strong>Your set is next.</strong>
+                <a href="#sets">UPLOAD DJ SET ↓</a>
+            <?php elseif ($nextShowSetStatus === 'needs_changes'): ?>
+                <strong>Action required.</strong>
+                <a href="#sets">VIEW DJ SET ↓</a>
+            <?php elseif ($nextShowSetStatus === 'scheduled'): ?>
+                <strong>Ready for broadcast.</strong>
+                <a href="#sets">VIEW EP<?= str_pad((string)$nextShowEpisode, 3, '0', STR_PAD_LEFT) ?> ↓</a>
+            <?php else: ?>
+                <strong>Delivery in progress.</strong>
+                <a href="#sets">VIEW DJ SET ↓</a>
+            <?php endif; ?>
         </div>
     </section>
 
