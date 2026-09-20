@@ -298,8 +298,9 @@ $partners = [
                    href="https://iluma.gr/"
                    target="_blank"
                    rel="noopener noreferrer"
-                   data-analytics-event="sponsor_click">
-                    <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency">
+                   data-analytics-event="sponsor_click"
+                   data-iluma-signal-slot="hero-sponsor">
+                    <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" data-iluma-signal-image>
                 </a>
             </div>
         </div>
