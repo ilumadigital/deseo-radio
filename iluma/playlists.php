@@ -233,7 +233,7 @@ admin_page_start('Playlists', 'playlists');
             <h3><?= admin_e($playlist['title']) ?></h3>
             <p>Spotify playlist · Position #<?= (int)$playlist['position'] ?></p>
             <div class="media-card-actions">
-                <form method="post" class="inline-form" onsubmit="return confirm('Να διαγραφεί αυτή η playlist;')">
+                <form method="post" class="inline-form" data-deseo-confirm="Να διαγραφεί αυτή η playlist;" data-deseo-confirm-title="Διαγραφή playlist" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= (int)$playlist['id'] ?>">
