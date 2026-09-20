@@ -1340,11 +1340,11 @@ $nextShowMessage = match ($nextShowSetStatus) {
 
         <div class="mylive-referral-copy">
             <span class="mylive-referral-kicker"><i></i> DJ PARTNER REWARD</span>
-            <h2>Φέρε το brand.<br>Κράτα το 20%.</h2>
+            <h2>Φέρε το brand.<br>Κράτα το 15%.</h2>
         </div>
 
         <div class="mylive-referral-action">
-            <p>Ξέρεις μια επιχείρηση που θέλει να ακουστεί στο Deseo Radio; Σύστησέ τη στην ILUMA και κέρδισε <strong>20%</strong> από κάθε νέα διαφημιστική καμπάνια που κλείνει μέσω της δικής σου σύστασης.</p>
+            <p>Ξέρεις μια επιχείρηση που θέλει να ακουστεί στο Deseo Radio; Σύστησέ τη στην ILUMA και κέρδισε <strong>15%</strong> από κάθε νέα διαφημιστική καμπάνια που κλείνει μέσω της δικής σου σύστασης.</p>
 
             <?php
             $djReferralValue = 'Deseo Radio DJ - ' . trim((string)$account['artist_name']);
