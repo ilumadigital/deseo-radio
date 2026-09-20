@@ -335,7 +335,6 @@ function deseo_mylive_password_reset_lookup(PDO $pdo, string $token, bool $forUp
            AND r.used_at IS NULL
            AND r.expires_at > NOW()
            AND a.is_active = 1
-           AND a.account_status = 'active'
          LIMIT 1";
 
     if ($forUpdate) $sql .= " FOR UPDATE";
@@ -363,7 +362,7 @@ function deseo_mylive_password_reset_consume(PDO $pdo, string $token, string $ne
             "UPDATE dj_portal_accounts
              SET password_hash = ?,
                  must_change_password = 0
-             WHERE id = ? AND is_active = 1 AND account_status = 'active'"
+             WHERE id = ? AND is_active = 1"
         )->execute([$newPasswordHash, $accountId]);
 
         $pdo->prepare(
