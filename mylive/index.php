@@ -511,7 +511,7 @@ if ($forgotState === 'sent') {
             <div class="login-card-head">
                 <span>MYLIVE · PASSWORD RESET</span>
                 <h2>Reset password.</h2>
-                <p>Γράψε το email του MyLive account σου. Αν είναι καταχωρημένο, θα σου στείλουμε ασφαλές link για να ορίσεις νέο κωδικό.</p>
+                <p>Γράψε το email του MyLive account σου και θα σου στείλουμε ασφαλές link για να ορίσεις νέο κωδικό.</p>
             </div>
 
             <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
