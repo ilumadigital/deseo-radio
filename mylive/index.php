@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/dj-rewards.php';
 require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
@@ -47,6 +48,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION = [];
             session_regenerate_id(true);
             header('Location: /mylive/');
+            exit;
+        }
+
+        if ($action === 'request_password_reset' && !deseo_mylive_logged_in()) {
+            if (!$turnstileConfigured) {
+                throw new RuntimeException('Η ασφαλής ανάκτηση κωδικού δεν είναι διαθέσιμη αυτή τη στιγμή.');
+            }
+
+            $turnstileToken = trim((string)($_POST['cf-turnstile-response'] ?? ''));
+            $remoteIp = trim((string)($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''));
+            $turnstile = deseo_turnstile_validate($turnstileToken, $remoteIp, 'mylive_password_reset');
+            if (empty($turnstile['success'])) {
+                throw new RuntimeException('Το Cloudflare security check απέτυχε. Δοκίμασε ξανά.');
+            }
+
+            $resetEmail = strtolower(trim((string)($_POST['email'] ?? '')));
+            if (!filter_var($resetEmail, FILTER_VALIDATE_EMAIL)) {
+                throw new RuntimeException('Συμπλήρωσε ένα έγκυρο email.');
+            }
+
+            $now = time();
+            $lastResetRequest = (int)($_SESSION['mylive_reset_last_request'] ?? 0);
+            $_SESSION['mylive_reset_last_request'] = $now;
+
+            if (($now - $lastResetRequest) >= 30) {
+                $accountStmt = $pdo->prepare(
+                    "SELECT id, artist_name, email
+                     FROM dj_portal_accounts
+                     WHERE LOWER(email) = ?
+                       AND is_active = 1
+                       AND account_status = 'active'
+                     LIMIT 1"
+                );
+                $accountStmt->execute([$resetEmail]);
+                $resetAccount = $accountStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($resetAccount && !deseo_mylive_password_reset_recent($pdo, (int)$resetAccount['id'], 120)) {
+                    $resetToken = deseo_mylive_password_reset_create($pdo, (int)$resetAccount['id'], 3600);
+
+                    try {
+                        $mail = deseo_mylive_password_reset_email($resetAccount, $resetToken);
+                        deseo_send_smtp_mail(
+                            (string)$resetAccount['email'],
+                            (string)$resetAccount['artist_name'],
+                            (string)$mail['subject'],
+                            (string)$mail['html'],
+                            (string)$mail['text'],
+                            true
+                        );
+                    } catch (Throwable $mailError) {
+                        $pdo->prepare(
+                            "UPDATE dj_password_resets
+                             SET used_at = NOW()
+                             WHERE account_id = ? AND used_at IS NULL"
+                        )->execute([(int)$resetAccount['id']]);
+
+                        error_log(
+                            'MyLive password reset email failed for account '
+                            . (int)$resetAccount['id']
+                            . ': '
+                            . $mailError->getMessage()
+                        );
+                    }
+                }
+            }
+
+            header('Location: /mylive/?forgot=sent');
+            exit;
+        }
+
+        if ($action === 'reset_password_link' && !deseo_mylive_logged_in()) {
+            $resetToken = strtolower(trim((string)($_POST['reset_token'] ?? '')));
+            $password = (string)($_POST['new_password'] ?? '');
+            $confirm = (string)($_POST['confirm_password'] ?? '');
+
+            if (strlen($password) < 8) {
+                throw new RuntimeException('Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+            }
+            if ($password !== $confirm) {
+                throw new RuntimeException('Οι δύο κωδικοί δεν είναι ίδιοι.');
+            }
+
+            $resetAccount = deseo_mylive_password_reset_consume(
+                $pdo,
+                $resetToken,
+                password_hash($password, PASSWORD_DEFAULT)
+            );
+
+            if (!$resetAccount) {
+                throw new RuntimeException('Ο σύνδεσμος αλλαγής κωδικού δεν είναι πλέον έγκυρος. Ζήτησε νέο reset link.');
+            }
+
+            session_regenerate_id(true);
+            $_SESSION['mylive_reset_last_request'] = 0;
+            header('Location: /mylive/?reset=done');
             exit;
         }
 
