@@ -445,6 +445,11 @@ admin_page_start('Rewards', 'rewards');
                             <span>Campaign <b><?= admin_e(deseo_rewards_money((float)$reward['campaign_value'])) ?></b></span>
                             <span>Reward <b><?= admin_e(number_format((float)$reward['reward_percent'], 2, ',', '.')) ?>%</b></span>
                             <?php if (!empty($reward['contact_name'])): ?><span>Contact <b><?= admin_e((string)$reward['contact_name']) ?></b></span><?php endif; ?>
+                            <?php if (!empty($reward['notification_email_sent_at'])): ?>
+                                <span class="reward-email-state is-sent">Email <b>Sent ✓</b></span>
+                            <?php else: ?>
+                                <span class="reward-email-state is-pending">Email <b>Not sent</b></span>
+                            <?php endif; ?>
                         </div>
 
                         <?php if (!empty($reward['internal_note'])): ?>
