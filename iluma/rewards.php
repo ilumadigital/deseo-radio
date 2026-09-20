@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contactEmail = strtolower(trim((string)($_POST['contact_email'] ?? '')));
             $contactPhone = trim((string)($_POST['contact_phone'] ?? ''));
             $campaignValue = rewards_admin_decimal((string)($_POST['campaign_value'] ?? ''), 'Campaign value');
-            $rewardPercent = rewards_admin_decimal((string)($_POST['reward_percent'] ?? '20'), 'Reward %');
+            $rewardPercent = rewards_admin_decimal((string)($_POST['reward_percent'] ?? '15'), 'Reward %');
             $rewardAmountRaw = trim((string)($_POST['reward_amount'] ?? ''));
             $status = (string)($_POST['status'] ?? 'new');
             $djNote = trim((string)($_POST['dj_note'] ?? ''));
@@ -370,7 +370,7 @@ admin_page_start('Rewards', 'rewards');
                     </div>
                     <div class="field">
                         <label>Reward %</label>
-                        <input type="number" min="0" max="100" step="0.01" name="reward_percent" data-reward-percent value="<?= admin_e(isset($editReward['reward_percent']) ? number_format((float)$editReward['reward_percent'], 2, '.', '') : '20.00') ?>">
+                        <input type="number" min="0" max="100" step="0.01" name="reward_percent" data-reward-percent value="<?= admin_e(isset($editReward['reward_percent']) ? number_format((float)$editReward['reward_percent'], 2, '.', '') : '15.00') ?>">
                     </div>
                     <div class="field">
                         <label>Reward amount (€)</label>
