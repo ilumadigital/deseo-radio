@@ -309,6 +309,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
   background:rgba(75,207,126,.035);
 }
 .public-profile-status.is-published span{color:#9be0b5}
+.public-profile-status.is-unpublished{
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.025);
+}
+.public-profile-status.is-unpublished span{color:#c8c8cd}
+.public-profile-status.is-unpublished small{color:#717178}
 .public-profile-status.is-draft span{color:var(--red)}
 .public-profile-unpublished{
   display:flex;
@@ -425,6 +431,23 @@ button:disabled{opacity:.5;cursor:not-allowed}
   border-color:rgba(255,255,255,.18);
   color:#fff;
 }
+.profile-unpublish-button{
+  min-height:50px;
+  padding:0 18px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:#070708;
+  color:#b8b8be;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+}
+.profile-unpublish-button:hover{
+  border-color:rgba(255,43,54,.34);
+  background:rgba(255,43,54,.055);
+  color:#ff8d94;
+}
 
 @media(max-width:760px){
   .public-profile-head{
@@ -458,7 +481,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   }
   .public-profile-head h2{font-size:29px}
   .public-profile-actions>div:last-child{grid-template-columns:1fr}
-  .profile-draft-button,.public-profile-actions .primary-button{width:100%}
+  .profile-draft-button,.profile-unpublish-button,.public-profile-actions .primary-button{width:100%}
 }
 
 
