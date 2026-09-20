@@ -8,12 +8,16 @@ function admin_page_start(string $title, string $active = 'dashboard'): void {
         'program' => ['program.php', 'Radio Program'],
         'dj-season' => ['dj-season.php', 'Season 6 DJs'],
         'mylive' => ['mylive.php', 'MyLive'],
+        'rewards' => ['rewards.php', 'Rewards'],
         'audience' => ['audience.php', 'Audience'],
         'playlists' => ['playlists.php', 'Playlists'],
     ];
 
     if (!admin_can_access('audience')) {
         unset($nav['audience']);
+    }
+    if (!admin_can_access('rewards')) {
+        unset($nav['rewards']);
     }
 
     $currentCmsEmail = admin_current_email();
