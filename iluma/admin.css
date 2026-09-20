@@ -1555,3 +1555,18 @@ body.schedule-media-open{overflow:hidden}
 @media(max-width:420px){
   .rewards-admin-stats{grid-template-columns:1fr}
 }
+
+
+/* Rewards email delivery state */
+.rewards-admin-meta .reward-email-state.is-sent{
+  border-color:rgba(78,208,128,.15);
+  background:rgba(78,208,128,.045);
+  color:#78b98e;
+}
+.rewards-admin-meta .reward-email-state.is-sent b{color:#9be0b5}
+.rewards-admin-meta .reward-email-state.is-pending{
+  border-color:rgba(255,93,93,.14);
+  background:rgba(255,93,93,.04);
+  color:#a86666;
+}
+.rewards-admin-meta .reward-email-state.is-pending b{color:#db7c7c}
