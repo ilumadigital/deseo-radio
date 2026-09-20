@@ -931,7 +931,7 @@ function deseo_mylive_reward_created_email(array $account, array $reward): array
         $artist . ', προστέθηκε νέο referral στο My Rewards σου. Παρακάτω θα βρεις όλες τις λεπτομέρειες.',
         $body,
         'VIEW MY REWARDS',
-        'https://deseoradio.com/mylive/#rewards'
+        'https://deseoradio.com/mylive/?section=rewards#rewards'
     );
 
     $text = "DESEO RADIO · MYLIVE · MY REWARDS\n\n"
@@ -946,7 +946,7 @@ function deseo_mylive_reward_created_email(array $account, array $reward): array
         . ($contactEmail !== '' ? "Email: {$contactEmail}\n" : '')
         . ($contactPhone !== '' ? "Phone: {$contactPhone}\n" : '')
         . ($djNote !== '' ? "\nUpdate from ILUMA:\n{$djNote}\n" : '')
-        . "\nView My Rewards: https://deseoradio.com/mylive/#rewards\n\n"
+        . "\nView My Rewards: https://deseoradio.com/mylive/?section=rewards#rewards\n\n"
         . "Deseo Radio · Powered by ILUMA Digital Agency";
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
