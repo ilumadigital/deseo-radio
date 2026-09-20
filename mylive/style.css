@@ -895,3 +895,439 @@ button:disabled{opacity:.5;cursor:not-allowed}
     padding:0 16px;
   }
 }
+
+
+/* MYLIVE V4 · STICKY NAVIGATION + PAGE POLISH */
+html{scroll-behavior:smooth}
+.mylive-dashboard-page{
+  background:
+    radial-gradient(circle at 92% 0,rgba(255,43,54,.09),transparent 24%),
+    radial-gradient(circle at 7% 32%,rgba(255,255,255,.018),transparent 22%),
+    #070708;
+}
+.mylive-dashboard-layout{
+  width:min(1510px,calc(100% - 40px));
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:190px minmax(0,1180px);
+  gap:34px;
+  align-items:start;
+  justify-content:center;
+}
+.mylive-dashboard-layout .portal-shell{
+  width:100%;
+  max-width:1180px;
+  margin:0;
+  padding:62px 0 110px;
+  min-width:0;
+}
+.mylive-anchor-section{
+  scroll-margin-top:32px;
+}
+
+/* desktop sticky section navigator */
+.mylive-section-nav{
+  min-width:0;
+  padding-top:62px;
+}
+.mylive-section-nav-inner{
+  position:sticky;
+  top:24px;
+  overflow:hidden;
+  padding:16px 12px 13px;
+  border:1px solid rgba(255,255,255,.085);
+  border-radius:22px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008)),
+    rgba(10,10,12,.90);
+  box-shadow:0 24px 64px rgba(0,0,0,.24);
+  backdrop-filter:blur(20px);
+}
+.mylive-nav-label{
+  display:block;
+  padding:4px 9px 12px;
+  color:var(--red);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.18em;
+}
+.mylive-section-nav nav{
+  display:grid;
+  gap:4px;
+}
+.mylive-section-nav a{
+  position:relative;
+  min-height:43px;
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+  padding:0 10px;
+  border:1px solid transparent;
+  border-radius:12px;
+  color:#68686f;
+}
+.mylive-section-nav a::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  width:2px;
+  height:0;
+  border-radius:99px;
+  background:var(--red);
+  transform:translateY(-50%);
+  box-shadow:0 0 12px rgba(255,43,54,.5);
+  transition:height .2s ease;
+}
+.mylive-section-nav a i{
+  color:#434349;
+  font-size:7px;
+  font-style:normal;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+.mylive-section-nav a span{
+  overflow:hidden;
+  font-size:9px;
+  font-weight:700;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.mylive-section-nav a:hover{
+  color:#d5d5da;
+  background:rgba(255,255,255,.025);
+}
+.mylive-section-nav a.is-active{
+  border-color:rgba(255,43,54,.15);
+  background:rgba(255,43,54,.055);
+  color:#fff;
+}
+.mylive-section-nav a.is-active::before{height:19px}
+.mylive-section-nav a.is-active i{color:var(--red)}
+.mylive-section-nav-inner>small{
+  display:block;
+  margin:13px 8px 2px;
+  padding-top:11px;
+  border-top:1px solid var(--line);
+  color:#414147;
+  font-size:7px;
+  line-height:1.5;
+}
+
+/* stronger dashboard hero */
+.mylive-dashboard-layout .portal-intro{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  align-items:center;
+  margin-bottom:14px;
+  padding:38px 40px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:32px;
+  background:
+    radial-gradient(circle at 92% 22%,rgba(255,43,54,.14),transparent 28%),
+    linear-gradient(145deg,#111113,#0c0c0e);
+  box-shadow:0 28px 78px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.025);
+}
+.mylive-dashboard-layout .portal-intro::after{
+  content:"";
+  position:absolute;
+  right:-9%;
+  bottom:-68%;
+  z-index:-1;
+  width:42%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:rgba(255,43,54,.08);
+  filter:blur(55px);
+}
+.mylive-dashboard-layout .portal-intro h1{
+  max-width:760px;
+  font-size:clamp(50px,5vw,78px);
+}
+.mylive-dashboard-layout .slot-pill{
+  flex:0 0 auto;
+  min-width:235px;
+  padding:17px 19px;
+  border-color:rgba(255,43,54,.27);
+  background:rgba(255,43,54,.07);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.mylive-dashboard-layout .slot-pill span{font-size:8px}
+.mylive-dashboard-layout .slot-pill strong{font-size:16px}
+
+/* cleaner overview metrics */
+.mylive-dashboard-layout .dj-metrics{
+  gap:10px;
+  margin:0 0 72px;
+}
+.mylive-dashboard-layout .dj-metric-card{
+  min-height:126px;
+  padding:22px 23px;
+  border-radius:22px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.006)),
+    #0d0d0f;
+}
+.mylive-dashboard-layout .dj-metric-card>strong{
+  font-size:36px;
+}
+.mylive-dashboard-layout .dj-metric-reach{
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,43,54,.10),transparent 42%),
+    #0d0d0f;
+}
+
+/* consistent premium section surfaces */
+.mylive-dashboard-layout .assets-section,
+.mylive-dashboard-layout .delivery-section{
+  position:relative;
+  margin-bottom:34px;
+  padding:30px;
+  border:1px solid rgba(255,255,255,.075);
+  border-radius:29px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.022),rgba(255,255,255,.006)),
+    #0a0a0c;
+  box-shadow:0 22px 65px rgba(0,0,0,.18);
+}
+.mylive-dashboard-layout .assets-section{
+  margin-bottom:34px;
+}
+.mylive-dashboard-layout .delivery-section{
+  padding-top:30px;
+}
+.mylive-dashboard-layout .section-head{
+  padding-bottom:21px;
+}
+.mylive-dashboard-layout .section-head h2,
+.mylive-dashboard-layout .repository-head h3{
+  font-size:36px;
+}
+.mylive-dashboard-layout .section-head p{
+  color:#78787f;
+  font-size:12px;
+}
+.mylive-dashboard-layout .assets-grid{
+  gap:12px;
+  margin-top:20px;
+}
+.mylive-dashboard-layout .asset-card{
+  border-radius:20px;
+  background:linear-gradient(180deg,#111113,#0b0b0d);
+  box-shadow:0 16px 36px rgba(0,0,0,.12);
+}
+.mylive-dashboard-layout .asset-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,43,54,.20);
+}
+.mylive-dashboard-layout .upload-card{
+  margin-top:3px;
+  border-radius:25px;
+  box-shadow:none;
+}
+.mylive-dashboard-layout .repository{
+  margin-top:40px;
+}
+
+/* Public profile integration */
+.mylive-dashboard-layout .public-profile-editor{
+  margin-bottom:34px;
+  border-radius:29px;
+  box-shadow:0 24px 70px rgba(0,0,0,.18);
+}
+
+/* live section aligns with the rest of the dashboard */
+.mylive-dashboard-layout .mylive-station-section{
+  margin-top:34px;
+  padding:30px;
+  border:1px solid rgba(255,255,255,.075);
+  border-radius:29px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.02),rgba(255,255,255,.005)),
+    #0a0a0c;
+  box-shadow:0 22px 65px rgba(0,0,0,.18);
+}
+.mylive-dashboard-layout .mylive-station-section{
+  border-top:1px solid rgba(255,255,255,.075);
+}
+.mylive-dashboard-layout .mylive-station-grid{
+  margin-top:2px;
+}
+.mylive-dashboard-layout .mylive-player-frame,
+.mylive-dashboard-layout .mylive-station-grid .deseo-panel{
+  border-radius:28px;
+}
+.mylive-dashboard-layout .mylive-player-frame iframe{
+  border-radius:28px!important;
+}
+
+/* reward section gets a cleaner visual hierarchy */
+.mylive-dashboard-layout .mylive-referral-section{
+  margin-top:34px;
+  padding:56px 58px;
+  border-radius:29px;
+}
+.mylive-dashboard-layout .mylive-referral-copy h2{
+  font-size:clamp(48px,5vw,72px);
+}
+.mylive-dashboard-layout .mylive-referral-action p{
+  color:#a0a0a7;
+}
+
+/* footer aligns visually with dashboard content */
+.mylive-dashboard-page .mylive-footer{
+  width:min(1180px,calc(100% - 48px));
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* horizontal sticky navigator for tablets / mobile */
+@media(max-width:1100px){
+  .mylive-dashboard-layout{
+    width:100%;
+    display:block;
+  }
+  .mylive-section-nav{
+    position:sticky;
+    top:0;
+    z-index:80;
+    padding:0;
+    background:rgba(7,7,8,.90);
+    border-top:1px solid rgba(255,255,255,.04);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(18px);
+  }
+  .mylive-section-nav-inner{
+    position:static;
+    width:min(1180px,calc(100% - 32px));
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    overflow:visible;
+    padding:8px 0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    backdrop-filter:none;
+  }
+  .mylive-nav-label,
+  .mylive-section-nav-inner>small{
+    display:none;
+  }
+  .mylive-section-nav nav{
+    width:100%;
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+  }
+  .mylive-section-nav nav::-webkit-scrollbar{display:none}
+  .mylive-section-nav a{
+    min-width:max-content;
+    min-height:38px;
+    display:flex;
+    gap:7px;
+    padding:0 12px;
+    border-radius:999px;
+    scroll-snap-align:center;
+  }
+  .mylive-section-nav a::before{display:none}
+  .mylive-section-nav a i{font-size:7px}
+  .mylive-section-nav a span{font-size:8px}
+  .mylive-section-nav a.is-active{
+    background:linear-gradient(180deg,rgba(255,43,54,.15),rgba(255,43,54,.065));
+  }
+  .mylive-dashboard-layout .portal-shell{
+    width:min(1180px,calc(100% - 48px));
+    margin:0 auto;
+    padding-top:48px;
+  }
+  .mylive-anchor-section{
+    scroll-margin-top:72px;
+  }
+}
+
+@media(max-width:760px){
+  .mylive-dashboard-layout .portal-intro{
+    align-items:flex-start;
+    padding:28px;
+    border-radius:26px;
+  }
+  .mylive-dashboard-layout .portal-intro h1{
+    font-size:48px;
+  }
+  .mylive-dashboard-layout .dj-metrics{
+    margin-bottom:48px;
+  }
+  .mylive-dashboard-layout .assets-section,
+  .mylive-dashboard-layout .delivery-section,
+  .mylive-dashboard-layout .mylive-station-section{
+    padding:22px;
+    border-radius:24px;
+  }
+  .mylive-dashboard-layout .mylive-referral-section{
+    padding:34px 26px;
+    border-radius:24px;
+  }
+  .mylive-dashboard-layout .section-head h2,
+  .mylive-dashboard-layout .repository-head h3{
+    font-size:31px;
+  }
+}
+
+@media(max-width:620px){
+  .mylive-section-nav-inner{
+    width:calc(100% - 20px);
+  }
+  .mylive-dashboard-layout .portal-shell{
+    width:min(100% - 28px,1180px);
+    padding:30px 0 72px;
+  }
+  .mylive-dashboard-layout .portal-intro{
+    gap:20px;
+    padding:24px 21px;
+    margin-bottom:10px;
+  }
+  .mylive-dashboard-layout .portal-intro h1{
+    font-size:44px;
+  }
+  .mylive-dashboard-layout .slot-pill{
+    width:100%;
+    min-width:0;
+  }
+  .mylive-dashboard-layout .dj-metrics{
+    gap:8px;
+  }
+  .mylive-dashboard-layout .assets-section,
+  .mylive-dashboard-layout .delivery-section,
+  .mylive-dashboard-layout .mylive-station-section{
+    padding:19px;
+  }
+  .mylive-dashboard-layout .public-profile-editor{
+    margin-bottom:26px;
+  }
+  .mylive-dashboard-layout .mylive-referral-section{
+    margin-top:26px;
+    padding:30px 21px;
+  }
+  .mylive-dashboard-layout .mylive-referral-copy h2{
+    font-size:43px;
+  }
+}
+
+@media(max-width:420px){
+  .mylive-section-nav a{
+    min-height:36px;
+    padding:0 10px;
+  }
+  .mylive-section-nav a i{display:none}
+  .mylive-dashboard-layout .portal-intro h1{
+    font-size:40px;
+  }
+}
