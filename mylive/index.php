@@ -98,7 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("UPDATE dj_portal_accounts SET last_login_at = NOW() WHERE id = ?")
                 ->execute([(int)$account['id']]);
 
-            header('Location: /mylive/');
+            $loginSection = strtolower(trim((string)($_GET['section'] ?? $_POST['section'] ?? '')));
+            $loginTarget = $loginSection === 'rewards'
+                ? '/mylive/?section=rewards#rewards'
+                : '/mylive/';
+
+            header('Location: ' . $loginTarget);
             exit;
         }
 
@@ -320,6 +325,9 @@ if (!deseo_mylive_logged_in()):
         <form method="post" autocomplete="on">
             <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
             <input type="hidden" name="action" value="login">
+            <?php if (strtolower((string)($_GET['section'] ?? '')) === 'rewards'): ?>
+                <input type="hidden" name="section" value="rewards">
+            <?php endif; ?>
 
             <label>
                 <span>Email</span>
