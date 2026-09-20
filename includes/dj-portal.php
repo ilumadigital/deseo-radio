@@ -694,6 +694,21 @@ function deseo_mylive_publish_public_profile(PDO $pdo, int $accountId): array {
     return deseo_mylive_public_profile_ensure($pdo, $accountId);
 }
 
+function deseo_mylive_unpublish_public_profile(PDO $pdo, int $accountId): array {
+    deseo_mylive_public_profile_ensure($pdo, $accountId);
+
+    // Public visibility only. Do NOT touch program.mylive_account_id,
+    // published content or the DJ account linkage.
+    $stmt = $pdo->prepare(
+        "UPDATE dj_public_profiles
+         SET is_published = 0
+         WHERE account_id = ?"
+    );
+    $stmt->execute([$accountId]);
+
+    return deseo_mylive_public_profile_ensure($pdo, $accountId);
+}
+
 function deseo_mylive_public_profile_has_unpublished_changes(array $profile): bool {
     $fields = ['bio','instagram','tiktok','soundcloud','spotify','website'];
     foreach ($fields as $field) {
