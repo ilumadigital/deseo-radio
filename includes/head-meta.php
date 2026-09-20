@@ -191,7 +191,7 @@ $schema = [
     </script>
 
     <?php if (!$private_page): ?>
-    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.0" data-station="deseo" data-surface="station_website" defer></script>
+    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
     <!-- Google Analytics 4 — consent-aware -->
     <script>
     window.dataLayer = window.dataLayer || [];
