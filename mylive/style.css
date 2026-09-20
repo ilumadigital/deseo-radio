@@ -906,10 +906,10 @@ html{scroll-behavior:smooth}
     #070708;
 }
 .mylive-dashboard-layout{
-  width:min(1510px,calc(100% - 40px));
+  width:min(1540px,calc(100% - 40px));
   margin:0 auto;
   display:grid;
-  grid-template-columns:190px minmax(0,1180px);
+  grid-template-columns:224px minmax(0,1180px);
   gap:34px;
   align-items:start;
   justify-content:center;
@@ -927,92 +927,98 @@ html{scroll-behavior:smooth}
 
 /* desktop sticky section navigator */
 .mylive-section-nav{
-  min-width:0;
-  padding-top:62px;
-}
-.mylive-section-nav-inner{
   position:sticky;
   top:24px;
+  align-self:start;
+  min-width:0;
+  padding-top:62px;
+  z-index:35;
+}
+.mylive-section-nav-inner{
   overflow:hidden;
-  padding:16px 12px 13px;
-  border:1px solid rgba(255,255,255,.085);
-  border-radius:22px;
+  padding:19px 14px 15px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:24px;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008)),
-    rgba(10,10,12,.90);
-  box-shadow:0 24px 64px rgba(0,0,0,.24);
-  backdrop-filter:blur(20px);
+    radial-gradient(circle at 100% 0,rgba(255,43,54,.08),transparent 36%),
+    linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),
+    rgba(10,10,12,.94);
+  box-shadow:0 28px 72px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.025);
+  backdrop-filter:blur(22px);
 }
 .mylive-nav-label{
   display:block;
-  padding:4px 9px 12px;
+  padding:4px 11px 14px;
   color:var(--red);
-  font-size:8px;
+  font-size:10px;
   font-weight:900;
-  letter-spacing:.18em;
+  letter-spacing:.17em;
 }
 .mylive-section-nav nav{
   display:grid;
-  gap:4px;
+  gap:5px;
 }
 .mylive-section-nav a{
   position:relative;
-  min-height:43px;
+  min-height:51px;
   display:grid;
-  grid-template-columns:24px minmax(0,1fr);
-  gap:8px;
+  grid-template-columns:28px minmax(0,1fr);
+  gap:10px;
   align-items:center;
-  padding:0 10px;
+  padding:0 12px;
   border:1px solid transparent;
-  border-radius:12px;
-  color:#68686f;
+  border-radius:14px;
+  color:#929299;
 }
 .mylive-section-nav a::before{
   content:"";
   position:absolute;
   left:0;
   top:50%;
-  width:2px;
+  width:3px;
   height:0;
   border-radius:99px;
   background:var(--red);
   transform:translateY(-50%);
-  box-shadow:0 0 12px rgba(255,43,54,.5);
+  box-shadow:0 0 14px rgba(255,43,54,.58);
   transition:height .2s ease;
 }
 .mylive-section-nav a i{
-  color:#434349;
-  font-size:7px;
+  color:#5b5b62;
+  font-size:9px;
   font-style:normal;
-  font-weight:800;
+  font-weight:900;
   letter-spacing:.06em;
 }
 .mylive-section-nav a span{
   overflow:hidden;
-  font-size:9px;
+  font-size:12px;
   font-weight:700;
+  line-height:1.2;
   white-space:nowrap;
   text-overflow:ellipsis;
 }
 .mylive-section-nav a:hover{
-  color:#d5d5da;
-  background:rgba(255,255,255,.025);
+  color:#fff;
+  border-color:rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
 }
 .mylive-section-nav a.is-active{
-  border-color:rgba(255,43,54,.15);
-  background:rgba(255,43,54,.055);
+  border-color:rgba(255,43,54,.22);
+  background:
+    linear-gradient(90deg,rgba(255,43,54,.11),rgba(255,43,54,.035));
   color:#fff;
 }
-.mylive-section-nav a.is-active::before{height:19px}
+.mylive-section-nav a.is-active::before{height:26px}
 .mylive-section-nav a.is-active i{color:var(--red)}
 .mylive-section-nav-inner>small{
   display:block;
-  margin:13px 8px 2px;
-  padding-top:11px;
+  margin:15px 10px 2px;
+  padding-top:13px;
   border-top:1px solid var(--line);
-  color:#414147;
-  font-size:7px;
-  line-height:1.5;
+  color:#66666d;
+  font-size:9px;
+  line-height:1.55;
 }
 
 /* stronger dashboard hero */
@@ -1194,6 +1200,7 @@ html{scroll-behavior:smooth}
     top:0;
     z-index:80;
     padding:0;
+    align-self:auto;
     background:rgba(7,7,8,.90);
     border-top:1px solid rgba(255,255,255,.04);
     border-bottom:1px solid rgba(255,255,255,.08);
@@ -1238,8 +1245,8 @@ html{scroll-behavior:smooth}
     scroll-snap-align:center;
   }
   .mylive-section-nav a::before{display:none}
-  .mylive-section-nav a i{font-size:7px}
-  .mylive-section-nav a span{font-size:8px}
+  .mylive-section-nav a i{font-size:8px}
+  .mylive-section-nav a span{font-size:10px}
   .mylive-section-nav a.is-active{
     background:linear-gradient(180deg,rgba(255,43,54,.15),rgba(255,43,54,.065));
   }
