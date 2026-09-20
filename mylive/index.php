@@ -502,8 +502,38 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     </div>
 </header>
 
+<div class="mylive-dashboard-layout">
+    <aside class="mylive-section-nav" aria-label="MyLive sections">
+        <div class="mylive-section-nav-inner">
+            <span class="mylive-nav-label">MYLIVE</span>
+            <nav>
+                <a href="#overview" class="is-active" data-mylive-nav>
+                    <i>01</i><span>Overview</span>
+                </a>
+                <?php if ($publicProfile): ?>
+                    <a href="#profile" data-mylive-nav>
+                        <i>02</i><span>Public Profile</span>
+                    </a>
+                <?php endif; ?>
+                <a href="#assets" data-mylive-nav>
+                    <i><?= $publicProfile ? '03' : '02' ?></i><span>Assets</span>
+                </a>
+                <a href="#sets" data-mylive-nav>
+                    <i><?= $publicProfile ? '04' : '03' ?></i><span>DJ Sets</span>
+                </a>
+                <a href="#live" data-mylive-nav>
+                    <i><?= $publicProfile ? '05' : '04' ?></i><span>Listen Live</span>
+                </a>
+                <a href="#rewards" data-mylive-nav>
+                    <i><?= $publicProfile ? '06' : '05' ?></i><span>DJ Reward</span>
+                </a>
+            </nav>
+            <small>Deseo Radio · Season 6</small>
+        </div>
+    </aside>
+
 <main class="portal-shell">
-    <section class="portal-intro">
+    <section class="portal-intro mylive-anchor-section" id="overview">
         <div>
             <span class="eyebrow">DESEO RADIO · MYLIVE</span>
             <h1>Welcome, <?= deseo_mylive_e($account['artist_name']) ?>.</h1>
@@ -542,7 +572,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
 
     <?php if ($publicProfile): ?>
-        <section class="public-profile-editor">
+        <section class="public-profile-editor mylive-anchor-section" id="profile">
             <div class="public-profile-head">
                 <div>
                     <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
@@ -613,7 +643,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         </section>
     <?php endif; ?>
 
-    <section class="assets-section">
+    <section class="assets-section mylive-anchor-section" id="assets">
         <div class="section-head">
             <div>
                 <span class="eyebrow">FROM DESEO RADIO · ILUMA Digital Agency</span>
@@ -656,7 +686,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         <?php endif; ?>
     </section>
 
-    <section class="delivery-section">
+    <section class="delivery-section mylive-anchor-section" id="sets">
         <div class="section-head delivery-head">
             <div>
                 <span class="eyebrow">DJ SET DELIVERY</span>
@@ -734,7 +764,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         </div>
     </section>
 
-    <section class="mylive-station-section" aria-labelledby="mylive-station-title">
+    <section class="mylive-station-section mylive-anchor-section" id="live" aria-labelledby="mylive-station-title">
         <div class="section-head mylive-station-head">
             <div>
                 <span class="eyebrow">DESEO RADIO · LIVE</span>
@@ -747,7 +777,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         <div class="mylive-station-grid">
             <article class="mylive-player-deck">
                 <div class="mylive-player-frame">
-                    <iframe src="https://play.iradios.gr/widget/deseo-radio?autoplay=true"
+                    <iframe src="https://play.iradios.gr/widget/deseo-radio"
                             width="100%"
                             frameborder="0"
                             allow="autoplay; encrypted-media; clipboard-write;"
@@ -768,7 +798,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         </div>
     </section>
 
-    <section class="mylive-referral-section">
+    <section class="mylive-referral-section mylive-anchor-section" id="rewards">
         <div class="mylive-referral-copy">
             <span class="mylive-referral-kicker"><i></i> DJ PARTNER REWARD</span>
             <h2>Φέρε το brand.<br>Κράτα το 20%.</h2>
@@ -786,6 +816,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         </div>
     </section>
 </main>
+</div>
 
 <footer class="mylive-footer">
     <span>Deseo Radio · Season 6</span>
@@ -879,6 +910,54 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
         xhr.send(new FormData(form));
     });
 })();
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    var links = Array.prototype.slice.call(document.querySelectorAll('[data-mylive-nav]'));
+    if (!links.length) return;
+
+    var sections = links.map(function (link) {
+        var target = document.querySelector(link.getAttribute('href'));
+        return { link: link, target: target };
+    }).filter(function (item) {
+        return !!item.target;
+    });
+
+    links.forEach(function (link) {
+        link.addEventListener('click', function () {
+            links.forEach(function (item) { item.classList.remove('is-active'); });
+            link.classList.add('is-active');
+        });
+    });
+
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            var visible = entries
+                .filter(function (entry) { return entry.isIntersecting; })
+                .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+
+            if (!visible.length) return;
+
+            var id = visible[0].target.id;
+            links.forEach(function (link) {
+                link.classList.toggle('is-active', link.getAttribute('href') === '#' + id);
+            });
+
+            var active = document.querySelector('[data-mylive-nav].is-active');
+            if (active && window.innerWidth <= 1100) {
+                active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+        }, {
+            rootMargin: '-18% 0px -58% 0px',
+            threshold: [0.05, 0.2, 0.45]
+        });
+
+        sections.forEach(function (item) { observer.observe(item.target); });
+    }
+}());
 </script>
 
 <script>
