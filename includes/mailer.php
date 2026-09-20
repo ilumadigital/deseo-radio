@@ -843,3 +843,111 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
 }
+
+
+function deseo_mylive_reward_created_email(array $account, array $reward): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $business = trim((string)($reward['business_name'] ?? 'Referral'));
+    $campaignValue = (float)($reward['campaign_value'] ?? 0);
+    $rewardPercent = (float)($reward['reward_percent'] ?? 20);
+    $rewardAmount = (float)($reward['reward_amount'] ?? 0);
+    $status = strtolower(trim((string)($reward['status'] ?? 'new')));
+    $statusLabel = match ($status) {
+        'in_discussion' => 'In Discussion',
+        'confirmed' => 'Confirmed',
+        'reward_ready' => 'Reward Ready',
+        'paid' => 'Paid',
+        'closed' => 'Closed',
+        default => 'New',
+    };
+    $referralDate = trim((string)($reward['referred_at'] ?? ''));
+    $referralDateLabel = $referralDate !== ''
+        ? date('d.m.Y', strtotime($referralDate))
+        : date('d.m.Y');
+    $contactName = trim((string)($reward['contact_name'] ?? ''));
+    $contactEmail = trim((string)($reward['contact_email'] ?? ''));
+    $contactPhone = trim((string)($reward['contact_phone'] ?? ''));
+    $djNote = trim((string)($reward['dj_note'] ?? ''));
+
+    $money = static fn(float $value): string => '€' . number_format($value, 2, ',', '.');
+    $percent = rtrim(rtrim(number_format($rewardPercent, 2, '.', ''), '0'), '.') . '%';
+
+    $body = '<tr><td style="padding:0 0 20px;">'
+        . '<div style="padding:23px;border-radius:20px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">NEW MY REWARD</div>'
+        . '<div style="margin-top:8px;font:800 31px/1.08 Arial,sans-serif;letter-spacing:-.025em;">' . $e($money($rewardAmount)) . '</div>'
+        . '<div style="margin-top:7px;font:700 13px/1.5 Arial,sans-serif;">' . $e($business) . ' · ' . $e($statusLabel) . '</div>'
+        . '</div></td></tr>';
+
+    $body .= '<tr><td style="padding:0 0 22px;">'
+        . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #27272b;border-radius:18px;background:#09090b;">'
+        . '<tr><td style="padding:14px 17px;border-bottom:1px solid #222226;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;width:42%;">Business</td>'
+        . '<td style="padding:14px 17px;border-bottom:1px solid #222226;color:#fff;font:700 14px Arial,sans-serif;">' . $e($business) . '</td></tr>'
+        . '<tr><td style="padding:14px 17px;border-bottom:1px solid #222226;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Referral date</td>'
+        . '<td style="padding:14px 17px;border-bottom:1px solid #222226;color:#fff;font:700 14px Arial,sans-serif;">' . $e($referralDateLabel) . '</td></tr>'
+        . '<tr><td style="padding:14px 17px;border-bottom:1px solid #222226;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Campaign value</td>'
+        . '<td style="padding:14px 17px;border-bottom:1px solid #222226;color:#fff;font:700 14px Arial,sans-serif;">' . $e($money($campaignValue)) . '</td></tr>'
+        . '<tr><td style="padding:14px 17px;border-bottom:1px solid #222226;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Your share</td>'
+        . '<td style="padding:14px 17px;border-bottom:1px solid #222226;color:#fff;font:700 14px Arial,sans-serif;">' . $e($percent) . '</td></tr>'
+        . '<tr><td style="padding:14px 17px;border-bottom:1px solid #222226;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Your reward</td>'
+        . '<td style="padding:14px 17px;border-bottom:1px solid #222226;color:#fff;font:800 16px Arial,sans-serif;">' . $e($money($rewardAmount)) . '</td></tr>'
+        . '<tr><td style="padding:14px 17px;color:#717178;font:800 9px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;">Status</td>'
+        . '<td style="padding:14px 17px;color:#ff5b65;font:800 13px Arial,sans-serif;">' . $e($statusLabel) . '</td></tr>'
+        . '</table></td></tr>';
+
+    if ($contactName !== '' || $contactEmail !== '' || $contactPhone !== '') {
+        $contactLines = [];
+        if ($contactName !== '') $contactLines[] = '<strong style="color:#fff;">' . $e($contactName) . '</strong>';
+        if ($contactEmail !== '') $contactLines[] = $e($contactEmail);
+        if ($contactPhone !== '') $contactLines[] = $e($contactPhone);
+
+        $body .= deseo_mylive_email_section(
+            'REFERRAL CONTACT',
+            'Στοιχεία επικοινωνίας',
+            implode('<br>', $contactLines)
+        );
+    }
+
+    if ($djNote !== '') {
+        $body .= deseo_mylive_email_section(
+            'UPDATE FROM ILUMA',
+            'Σημείωση για το Reward σου',
+            nl2br($e($djNote))
+        );
+    }
+
+    $body .= deseo_mylive_email_section(
+        'MY REWARDS',
+        'Όλα συγκεντρωμένα στο MyLive',
+        'Μέσα από το <strong style="color:#fff;">My Rewards</strong> μπορείς να παρακολουθείς το status κάθε referral, το campaign value, το ποσοστό σου, το Reward amount και την πορεία μέχρι την πληρωμή.'
+    );
+
+    $subject = 'Deseo Radio MyLive · Νέο Reward · ' . $business;
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · MYLIVE · MY REWARDS',
+        'Έχεις νέο Reward.',
+        $artist . ', προστέθηκε νέο referral στο My Rewards σου. Παρακάτω θα βρεις όλες τις λεπτομέρειες.',
+        $body,
+        'VIEW MY REWARDS',
+        'https://deseoradio.com/mylive/#rewards'
+    );
+
+    $text = "DESEO RADIO · MYLIVE · MY REWARDS\n\n"
+        . "{$artist}, έχεις νέο Reward.\n\n"
+        . "Business: {$business}\n"
+        . "Referral date: {$referralDateLabel}\n"
+        . "Campaign value: " . $money($campaignValue) . "\n"
+        . "Your share: {$percent}\n"
+        . "Your reward: " . $money($rewardAmount) . "\n"
+        . "Status: {$statusLabel}\n"
+        . ($contactName !== '' ? "Contact: {$contactName}\n" : '')
+        . ($contactEmail !== '' ? "Email: {$contactEmail}\n" : '')
+        . ($contactPhone !== '' ? "Phone: {$contactPhone}\n" : '')
+        . ($djNote !== '' ? "\nUpdate from ILUMA:\n{$djNote}\n" : '')
+        . "\nView My Rewards: https://deseoradio.com/mylive/#rewards\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
