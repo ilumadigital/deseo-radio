@@ -2,11 +2,13 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/dj-portal.php';
+require_once __DIR__ . '/../includes/dj-rewards.php';
 require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
+deseo_rewards_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
 
 try {
@@ -463,6 +465,8 @@ $publicProfileHasChanges = $publicProfile
 
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
+$rewards = deseo_rewards_for_account($pdo, (int)$account['id']);
+$rewardsSummary = deseo_rewards_summary($rewards);
 $nextEpisode = deseo_mylive_next_episode($pdo, (int)$account['id']);
 $latestAudience = deseo_audience_latest_record($pdo);
 $audienceMonthKey = $latestAudience ? (string)$latestAudience['month_key'] : '';
@@ -521,7 +525,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                 </a>
                 <?php if ($publicProfile): ?>
                     <a href="#profile" data-mylive-nav>
-                        <i>02</i><span>Public Profile</span>
+                        <i>02</i><span>My Profile</span>
                     </a>
                 <?php endif; ?>
                 <a href="#assets" data-mylive-nav>
@@ -822,6 +826,116 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
     </section>
 
     <section class="mylive-referral-section mylive-anchor-section" id="rewards">
+        <div class="mylive-rewards-ledger">
+            <div class="mylive-rewards-head">
+                <div>
+                    <span class="eyebrow">MY REWARDS · LIVE STATUS</span>
+                    <h2>Your referrals.</h2>
+                    <p>Παρακολούθησε τις επιχειρήσεις που έχεις συστήσει, την πορεία κάθε συνεργασίας και τα Rewards σου.</p>
+                </div>
+                <span class="mylive-rewards-count"><?= (int)$rewardsSummary['total'] ?> REFERRAL<?= (int)$rewardsSummary['total'] === 1 ? '' : 'S' ?></span>
+            </div>
+
+            <div class="mylive-rewards-stats">
+                <article>
+                    <span>REFERRALS</span>
+                    <strong><?= (int)$rewardsSummary['total'] ?></strong>
+                    <small>συνολικά</small>
+                </article>
+                <article>
+                    <span>CONFIRMED</span>
+                    <strong><?= (int)$rewardsSummary['confirmed'] ?></strong>
+                    <small>campaigns</small>
+                </article>
+                <article>
+                    <span>PENDING</span>
+                    <strong><?= deseo_mylive_e(deseo_rewards_money((float)$rewardsSummary['pending'])) ?></strong>
+                    <small>reward to be paid</small>
+                </article>
+                <article class="is-paid">
+                    <span>TOTAL PAID</span>
+                    <strong><?= deseo_mylive_e(deseo_rewards_money((float)$rewardsSummary['paid'])) ?></strong>
+                    <small>completed rewards</small>
+                </article>
+            </div>
+
+            <?php if (!$rewards): ?>
+                <div class="mylive-rewards-empty">
+                    <span>NO REFERRALS YET</span>
+                    <strong>Το πρώτο σου Reward ξεκινά από μια σύσταση.</strong>
+                    <p>Χρησιμοποίησε το προσωπικό σου link παρακάτω. Μόλις η ILUMA καταχωρήσει το referral, θα εμφανιστεί εδώ με live status.</p>
+                </div>
+            <?php else: ?>
+                <div class="mylive-rewards-list">
+                    <?php foreach ($rewards as $reward): ?>
+                        <details class="mylive-reward-item">
+                            <summary>
+                                <div class="mylive-reward-business">
+                                    <span class="mylive-reward-status <?= deseo_mylive_e(deseo_rewards_status_class((string)$reward['status'])) ?>">
+                                        <?= deseo_mylive_e(deseo_rewards_status_label((string)$reward['status'])) ?>
+                                    </span>
+                                    <strong><?= deseo_mylive_e((string)$reward['business_name']) ?></strong>
+                                    <small>
+                                        <?= !empty($reward['referred_at'])
+                                            ? 'Referral · ' . deseo_mylive_e(date('d.m.Y', strtotime((string)$reward['referred_at'])))
+                                            : 'Referral recorded' ?>
+                                    </small>
+                                </div>
+                                <div class="mylive-reward-summary">
+                                    <small>YOUR REWARD</small>
+                                    <strong><?= deseo_mylive_e(deseo_rewards_money((float)$reward['reward_amount'])) ?></strong>
+                                    <i>+</i>
+                                </div>
+                            </summary>
+
+                            <div class="mylive-reward-details">
+                                <div class="mylive-reward-detail-grid">
+                                    <div>
+                                        <span>CAMPAIGN VALUE</span>
+                                        <strong><?= deseo_mylive_e(deseo_rewards_money((float)$reward['campaign_value'])) ?></strong>
+                                    </div>
+                                    <div>
+                                        <span>YOUR SHARE</span>
+                                        <strong><?= deseo_mylive_e(number_format((float)$reward['reward_percent'], 2, ',', '.')) ?>%</strong>
+                                    </div>
+                                    <div>
+                                        <span>REWARD</span>
+                                        <strong><?= deseo_mylive_e(deseo_rewards_money((float)$reward['reward_amount'])) ?></strong>
+                                    </div>
+                                    <div>
+                                        <span>STATUS</span>
+                                        <strong><?= deseo_mylive_e(deseo_rewards_status_label((string)$reward['status'])) ?></strong>
+                                    </div>
+                                </div>
+
+                                <?php if (!empty($reward['contact_name']) || !empty($reward['contact_email']) || !empty($reward['contact_phone'])): ?>
+                                    <div class="mylive-reward-contact">
+                                        <span>REFERRAL CONTACT</span>
+                                        <?php if (!empty($reward['contact_name'])): ?><strong><?= deseo_mylive_e((string)$reward['contact_name']) ?></strong><?php endif; ?>
+                                        <?php if (!empty($reward['contact_email'])): ?><a href="mailto:<?= deseo_mylive_e((string)$reward['contact_email']) ?>"><?= deseo_mylive_e((string)$reward['contact_email']) ?></a><?php endif; ?>
+                                        <?php if (!empty($reward['contact_phone'])): ?><small><?= deseo_mylive_e((string)$reward['contact_phone']) ?></small><?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($reward['dj_note'])): ?>
+                                    <div class="mylive-reward-note">
+                                        <span>UPDATE FROM ILUMA</span>
+                                        <p><?= nl2br(deseo_mylive_e((string)$reward['dj_note'])) ?></p>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ((string)$reward['status'] === 'paid' && !empty($reward['paid_at'])): ?>
+                                    <div class="mylive-reward-paid">
+                                        PAID · <?= deseo_mylive_e(date('d.m.Y', strtotime((string)$reward['paid_at']))) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </details>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <div class="mylive-referral-copy">
             <span class="mylive-referral-kicker"><i></i> DJ PARTNER REWARD</span>
             <h2>Φέρε το brand.<br>Κράτα το 20%.</h2>
