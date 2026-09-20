@@ -846,7 +846,7 @@ admin_page_start('Radio Program', 'program');
     <?php if ($totalProgram > 0): ?>
         <form method="post"
               action="program.php?day=<?= $selectedDay ?>"
-              onsubmit="return confirm('ΠΡΟΣΟΧΗ: Να διαγραφεί ΟΛΟ το πρόγραμμα και για τις 7 ημέρες; Η ενέργεια δεν αναιρείται.');">
+              data-deseo-confirm="ΠΡΟΣΟΧΗ: Να διαγραφεί ΟΛΟ το πρόγραμμα και για τις 7 ημέρες; Η ενέργεια δεν αναιρείται." data-deseo-confirm-title="Διαγραφή όλου του προγράμματος" data-deseo-confirm-label="Οριστική διαγραφή" data-deseo-confirm-danger>
             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
             <input type="hidden" name="action" value="delete_all">
             <input type="hidden" name="day" value="<?= $selectedDay ?>">
@@ -1056,7 +1056,7 @@ admin_page_start('Radio Program', 'program');
             <?php if ($program): ?>
                 <form method="post"
                       action="program.php?day=<?= $selectedDay ?>"
-                      onsubmit="return confirm('Να διαγραφεί όλο το πρόγραμμα της <?= admin_e($days[$selectedDay]) ?>;');">
+                      data-deseo-confirm="Να διαγραφεί όλο το πρόγραμμα της <?= admin_e($days[$selectedDay]) ?>;" data-deseo-confirm-title="Διαγραφή ημερήσιου προγράμματος" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                     <input type="hidden" name="action" value="delete_day">
                     <input type="hidden" name="day" value="<?= $selectedDay ?>">
@@ -1095,7 +1095,7 @@ admin_page_start('Radio Program', 'program');
 
                             <form method="post"
                                   action="program.php?day=<?= $selectedDay ?>"
-                                  onsubmit="return confirm('Να διαγραφεί μόνο αυτό το συγκεκριμένο slot;');">
+                                  data-deseo-confirm="Να διαγραφεί μόνο αυτό το συγκεκριμένο slot;" data-deseo-confirm-title="Διαγραφή slot" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                                 <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="day" value="<?= $selectedDay ?>">
