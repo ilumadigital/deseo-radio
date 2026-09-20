@@ -130,7 +130,7 @@ admin_page_start('Audience', 'audience');
         <p>Όρισε την ακροαματικότητα του τρέχοντος μήνα. Το MyLive χρησιμοποιεί το audience του <?= admin_e($currentMonthLabel) ?> μαζί με ημέρα, ώρα και διάρκεια slot για να εμφανίζει εκτιμώμενο reach σε κάθε DJ.</p>
     </div>
 
-    <form method="post" class="audience-test-report-form" onsubmit="return confirm('Να σταλεί test Monthly Audience Report αποκλειστικά στο greg@iluma.gr;');">
+    <form method="post" class="audience-test-report-form" data-deseo-confirm="Να σταλεί test Monthly Audience Report αποκλειστικά στο greg@iluma.gr;" data-deseo-confirm-title="Test audience report" data-deseo-confirm-label="Αποστολή">
         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
         <input type="hidden" name="action" value="send_test_report">
         <button class="button button-secondary" type="submit">Send test report</button>
@@ -234,7 +234,7 @@ admin_page_start('Audience', 'audience');
                 <button class="button button-primary" type="submit">Show stats for all</button>
             </form>
 
-            <form method="post" onsubmit="return confirm('Να κρυφτούν τα audience statistics από όλους τους ενεργούς DJs;');">
+            <form method="post" data-deseo-confirm="Να κρυφτούν τα audience statistics από όλους τους ενεργούς DJs;" data-deseo-confirm-title="Απόκρυψη statistics" data-deseo-confirm-label="Απόκρυψη" data-deseo-confirm-danger>
                 <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                 <input type="hidden" name="action" value="toggle_all_stats">
                 <input type="hidden" name="visible" value="0">
