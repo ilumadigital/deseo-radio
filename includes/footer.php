@@ -1008,5 +1008,9 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
 }());
 </script>
 
+<script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1"
+        data-station="deseo"
+        data-surface="station_website"
+        defer></script>
 </body>
 </html>
