@@ -809,7 +809,7 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 
             <?php
             $djReferralValue = 'Deseo DJ - ' . trim((string)$account['artist_name']);
-            $djReferralUrl = 'https://iluma.gr/start/?ref=' . rawurlencode($djReferralValue);
+            $djReferralUrl = 'https://iluma.gr/start/?ref=' . rawurlencode($djReferralValue) . '#form';
             ?>
             <div class="mylive-referral-buttons">
                 <a href="<?= deseo_mylive_e($djReferralUrl) ?>"
