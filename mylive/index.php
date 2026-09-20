@@ -35,6 +35,15 @@ function mylive_json(bool $ok, string $message, array $extra = []): never {
     exit;
 }
 
+if (
+    $_SERVER['REQUEST_METHOD'] === 'GET'
+    && trim((string)($_GET['reset'] ?? '')) !== ''
+    && deseo_mylive_logged_in()
+) {
+    unset($_SESSION['mylive_account_id']);
+    session_regenerate_id(true);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
     $isAjax = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest';
