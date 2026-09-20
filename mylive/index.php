@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notice = 'Ο προσωπικός σου κωδικός αποθηκεύτηκε.';
         }
 
-        if ($action === 'save_public_profile' || $action === 'publish_public_profile') {
+        if (in_array($action, ['save_public_profile', 'publish_public_profile', 'unpublish_public_profile'], true)) {
             if (!deseo_mylive_logged_in()) {
                 throw new RuntimeException('Η συνεδρία σου έχει λήξει. Κάνε ξανά login.');
             }
@@ -152,7 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($action === 'publish_public_profile') {
                 deseo_mylive_publish_public_profile($pdo, $accountId);
-                $notice = 'Το Public Profile δημοσιεύτηκε. Θα εμφανίζεται στο site όταν το show σου είναι συνδεδεμένο με το MyLive profile.';
+                $notice = 'Το Public Profile δημοσιεύτηκε. Η σύνδεση με το Radio Program παραμένει κανονικά ενεργή.';
+            } elseif ($action === 'unpublish_public_profile') {
+                deseo_mylive_unpublish_public_profile($pdo, $accountId);
+                $notice = 'Το Public Profile έγινε Unpublished. Το show σου παραμένει συνδεδεμένο κανονικά με το Radio Program και μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.';
             } else {
                 $notice = 'Το draft του Public Profile αποθηκεύτηκε. Οι αλλαγές δεν είναι ακόμη δημόσιες.';
             }
@@ -580,10 +583,13 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                     <p>Γράψε το About σου και πρόσθεσε τα socials σου. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
                 </div>
 
-                <div class="public-profile-status <?= !empty($publicProfile['is_published']) ? 'is-published' : 'is-draft' ?>">
-                    <span><?= !empty($publicProfile['is_published']) ? 'PUBLISHED' : 'DRAFT ONLY' ?></span>
+                <?php $publicProfileWasPublished = !empty($publicProfile['published_at']); ?>
+                <div class="public-profile-status <?= !empty($publicProfile['is_published']) ? 'is-published' : ($publicProfileWasPublished ? 'is-unpublished' : 'is-draft') ?>">
+                    <span><?= !empty($publicProfile['is_published']) ? 'PUBLISHED' : ($publicProfileWasPublished ? 'UNPUBLISHED' : 'DRAFT ONLY') ?></span>
                     <?php if (!empty($publicProfile['is_published'])): ?>
                         <small><?= !empty($publicProfile['published_at']) ? deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$publicProfile['published_at']))) : 'Live' ?></small>
+                    <?php elseif ($publicProfileWasPublished): ?>
+                        <small>Hidden from listeners</small>
                     <?php else: ?>
                         <small>Not public yet</small>
                     <?php endif; ?>
@@ -636,7 +642,18 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
                     </div>
                     <div>
                         <button class="profile-draft-button" type="submit" name="action" value="save_public_profile">Save Draft</button>
-                        <button class="primary-button" type="submit" name="action" value="publish_public_profile">Publish Profile</button>
+                        <?php if (!empty($publicProfile['is_published'])): ?>
+                            <button class="profile-unpublish-button"
+                                    type="submit"
+                                    name="action"
+                                    value="unpublish_public_profile"
+                                    data-unpublish-profile>
+                                Unpublish
+                            </button>
+                        <?php endif; ?>
+                        <button class="primary-button" type="submit" name="action" value="publish_public_profile">
+                            <?= !empty($publicProfile['is_published']) ? 'Update Published Profile' : 'Publish Profile' ?>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -837,6 +854,17 @@ $startTime = deseo_mylive_format_time((string)$account['start_time']);
 </footer>
 
 <div class="toast" id="toast" hidden></div>
+
+<script>
+document.querySelectorAll('[data-unpublish-profile]').forEach(button => {
+    button.addEventListener('click', event => {
+        const confirmed = window.confirm(
+            'Unpublish Public Profile;\n\nΤο profile θα κρυφτεί από τους listeners, αλλά το show θα παραμείνει κανονικά συνδεδεμένο με το Radio Program. Μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.'
+        );
+        if (!confirmed) event.preventDefault();
+    });
+});
+</script>
 
 <script>
 (() => {
