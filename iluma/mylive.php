@@ -791,7 +791,7 @@ admin_page_start('MyLive', 'mylive');
                             </div>
                         </div>
 
-                        <form method="post" class="mylive-pending-approve" onsubmit="return confirm('Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email;');">
+                        <form method="post" class="mylive-pending-approve" data-deseo-confirm="Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email;" data-deseo-confirm-title="Ενεργοποίηση MyLive" data-deseo-confirm-label="Ενεργοποίηση">
                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                             <input type="hidden" name="action" value="approve_pending">
                             <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
@@ -1011,7 +1011,7 @@ admin_page_start('MyLive', 'mylive');
                                             <?= !empty($account['public_profile_enabled']) ? 'Disable Public Profile' : 'Enable Public Profile' ?>
                                         </button>
                                     </form>
-                                    <form method="post" onsubmit="return confirm('Να εκδοθεί νέο temporary password και να σταλεί ξανά το onboarding email;');">
+                                    <form method="post" data-deseo-confirm="Να εκδοθεί νέο temporary password και να σταλεί ξανά το onboarding email;" data-deseo-confirm-title="Νέο temporary password" data-deseo-confirm-label="Αποστολή">
                                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                         <input type="hidden" name="action" value="reset_access">
                                         <input type="hidden" name="account_id" value="<?= $accountId ?>">
@@ -1026,7 +1026,7 @@ admin_page_start('MyLive', 'mylive');
                                             <?= !empty($account['is_active']) ? 'Disable Account' : 'Enable Account' ?>
                                         </button>
                                     </form>
-                                    <form method="post" onsubmit="return confirm('ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ: Θα διαγραφούν το MyLive account, όλα τα DJ Sets και όλα τα προσωπικά assets. Συνέχεια;');">
+                                    <form method="post" data-deseo-confirm="ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ: Θα διαγραφούν το MyLive account, όλα τα DJ Sets και όλα τα προσωπικά assets. Συνέχεια;" data-deseo-confirm-title="Οριστική διαγραφή MyLive" data-deseo-confirm-label="Οριστική διαγραφή" data-deseo-confirm-danger>
                                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                         <input type="hidden" name="action" value="delete_account">
                                         <input type="hidden" name="account_id" value="<?= $accountId ?>">
@@ -1050,7 +1050,7 @@ admin_page_start('MyLive', 'mylive');
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
-                                              onsubmit="var s=this.querySelector('select[name=status]'); if(s && s.value==='broadcasted' && !this.dataset.fileRemoved){ return confirm('BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;'); } return true;"
+                                              data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;" data-deseo-confirm-title="BROADCASTED · Διαγραφή audio" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted" data-deseo-confirm-danger
                                               <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                             <input type="hidden" name="action" value="update_set">
@@ -1125,7 +1125,7 @@ admin_page_start('MyLive', 'mylive');
                                             </div>
                                             <div class="mylive-asset-actions">
                                                 <a class="button button-secondary" href="mylive-download.php?type=asset&id=<?= (int)$asset['id'] ?>">Download</a>
-                                                <form method="post" onsubmit="return confirm('Να διαγραφεί αυτό το asset από το MyLive;');">
+                                                <form method="post" data-deseo-confirm="Να διαγραφεί αυτό το asset από το MyLive;" data-deseo-confirm-title="Διαγραφή asset" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
                                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                                     <input type="hidden" name="action" value="delete_asset">
                                                     <input type="hidden" name="asset_id" value="<?= (int)$asset['id'] ?>">
