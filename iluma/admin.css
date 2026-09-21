@@ -2387,3 +2387,45 @@ input[type="password"]{
     grid-template-columns:1fr;
   }
 }
+
+
+/* CMS V8 · final responsive guards */
+.admin-main,
+.admin-content,
+.panel,
+.form-grid,
+.quick-grid,
+.cards-grid,
+.program-list{
+  min-width:0;
+}
+.admin-content img{
+  max-width:100%;
+}
+.admin-content table{
+  max-width:100%;
+}
+.admin-content select,
+.admin-content input,
+.admin-content textarea{
+  max-width:100%;
+}
+.admin-mobile-nav{
+  scrollbar-width:none;
+}
+.admin-mobile-nav::-webkit-scrollbar{
+  display:none;
+}
+@media(max-width:650px){
+  .program-row{
+    overflow:hidden;
+  }
+  .program-row-actions,
+  .media-card-actions,
+  .rewards-admin-actions{
+    flex-wrap:wrap;
+  }
+  .page-heading p{
+    max-width:none;
+  }
+}
