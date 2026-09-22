@@ -1,5 +1,3 @@
-importScripts('https://cdn.webpushr.com/sw-server.min.js');
-
 var MYLIVE_CACHE = 'mylive-app-v1';
 var MYLIVE_STATIC = [
   '/mylive/offline.html',
