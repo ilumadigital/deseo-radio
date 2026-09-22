@@ -6,12 +6,13 @@ require_once __DIR__ . '/../includes/dj-rewards.php';
 require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
 require_once __DIR__ . '/../includes/mailer.php';
-require_once __DIR__ . '/../includes/mylive-push.php';
+require_once __DIR__ . '/../includes/mylive-email-reminders.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
 deseo_rewards_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
+deseo_mylive_maybe_run_email_scheduler($pdo);
 
 try {
     deseo_mylive_cleanup_broadcasted_sets($pdo);
@@ -29,7 +30,6 @@ $error = null;
 $notice = null;
 $turnstileConfigured = deseo_turnstile_configured();
 $turnstileSiteKey = deseo_turnstile_site_key();
-$myliveWebpushrPublicKey = deseo_mylive_push_public_key();
 
 function mylive_json(bool $ok, string $message, array $extra = []): never {
     header('Content-Type: application/json; charset=UTF-8');
@@ -862,11 +862,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
     <script src="/mylive/app.js?v=<?= @filemtime(__DIR__ . '/app.js') ?: 1 ?>" defer></script>
 </head>
-<body class="mylive-dashboard-page"
-      data-mylive-app-bridge
-      data-webpushr-key="<?= deseo_mylive_e($myliveWebpushrPublicKey) ?>"
-      data-account-id="<?= (int)$account['id'] ?>"
-      data-artist-name="<?= deseo_mylive_e((string)$account['artist_name']) ?>">
+<body class="mylive-dashboard-page">
 <header class="portal-header">
     <a href="/mylive/" class="portal-logo mylive-brand-lockup">
         <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
@@ -931,12 +927,10 @@ $nextShowMessage = match ($nextShowSetStatus) {
         <div class="mylive-app-card-copy">
             <span>MYLIVE APP · PWA</span>
             <strong>Το MyLive στο κινητό σου.</strong>
-            <p>Εγκατάστησέ το σαν app και ενεργοποίησε ειδοποιήσεις για το DJ Set σου: reminder 2 ημέρες πριν και “On Air” alert όταν ξεκινά το slot σου.</p>
-            <small data-mylive-notification-status>Έλεγχος κατάστασης ειδοποιήσεων…</small>
+            <p>Εγκατάστησέ το σαν app για γρήγορη πρόσβαση στα DJ Sets, τα assets, το πρόγραμμα και το προσωπικό σου dashboard.</p>
         </div>
         <div class="mylive-app-card-actions">
             <button type="button" class="mylive-app-install-button" data-mylive-install hidden>INSTALL MYLIVE APP</button>
-            <button type="button" class="mylive-app-notification-button" data-mylive-notifications>ENABLE NOTIFICATIONS</button>
         </div>
     </section>
 
