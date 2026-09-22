@@ -1014,3 +1014,110 @@ function deseo_mylive_reward_created_email(array $account, array $reward): array
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
 }
+
+
+function deseo_mylive_set_due_email(array $account, array $context): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $episode = max(1, (int)($context['episode'] ?? 1));
+    $episodeLabel = 'EP' . str_pad((string)$episode, 3, '0', STR_PAD_LEFT);
+    $showDate = trim((string)($context['show_date'] ?? ''));
+    $showTime = trim((string)($context['show_time'] ?? ''));
+
+    $body = '<tr><td style="padding:0 0 25px;">'
+        . '<div style="padding:20px;border-radius:19px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 11px Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;">DJ SET REMINDER</div>'
+        . '<div style="margin-top:7px;font:800 24px/1.15 Arial,sans-serif;">' . $e($episodeLabel) . ' · ' . $e($showDate) . ' · ' . $e($showTime) . '</div>'
+        . '</div></td></tr>';
+
+    $body .= deseo_mylive_email_section(
+        '03 DAYS TO AIR',
+        'Ανέβασε σήμερα το DJ Set σου.',
+        'Η μετάδοσή σου στον Deseo Radio είναι σε <strong style="color:#fff;">3 ημέρες</strong> και δεν έχει ανέβει ακόμη νέο DJ Set στο MyLive. '
+        . 'Ανέβασε σήμερα το <strong style="color:#fff;">' . $e($episodeLabel) . '</strong>, ώστε η ομάδα μας να προλάβει τον έλεγχο και τον προγραμματισμό του εγκαίρως.'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'MYLIVE',
+        'Το επόμενο episode είναι έτοιμο για upload.',
+        'Μπες στο MyLive και ανέβασε το final on-air αρχείο σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>. '
+        . 'Το episode number και το filename δημιουργούνται αυτόματα.'
+    );
+
+    $subject = 'Deseo Radio · ' . $episodeLabel . ' · DJ Set σε 3 ημέρες';
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · MYLIVE',
+        'Το επόμενο DJ Set σου εκκρεμεί.',
+        $artist . ', η επόμενη μετάδοσή σου πλησιάζει. Στείλε μας σήμερα το DJ Set σου μέσα από το MyLive για να είμαστε έτοιμοι εγκαίρως.',
+        $body,
+        'UPLOAD DJ SET',
+        'https://deseoradio.com/mylive/#sets'
+    );
+
+    $text = "DESEO RADIO · MYLIVE\n\n"
+        . $artist . ", η μετάδοσή σου είναι σε 3 ημέρες.\n"
+        . "Επόμενο episode: " . $episodeLabel . "\n"
+        . "Μετάδοση: " . $showDate . " · " . $showTime . "\n\n"
+        . "Δεν έχει ανέβει ακόμη νέο DJ Set. Ανέβασέ το σήμερα στο MyLive ώστε να προλάβουμε τον έλεγχο και τον προγραμματισμό του.\n\n"
+        . "https://deseoradio.com/mylive/#sets\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
+function deseo_mylive_on_air_social_email(array $account, array $context): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $episode = max(1, (int)($context['episode'] ?? 1));
+    $episodeLabel = 'EP' . str_pad((string)$episode, 3, '0', STR_PAD_LEFT);
+    $showTime = trim((string)($context['show_time'] ?? ''));
+
+    $body = '<tr><td style="padding:0 0 25px;">'
+        . '<div style="padding:20px;border-radius:19px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 11px Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;">ON AIR NOW</div>'
+        . '<div style="margin-top:7px;font:800 24px/1.15 Arial,sans-serif;">' . $e($episodeLabel) . ' · ' . $e($showTime) . '</div>'
+        . '</div></td></tr>';
+
+    $body .= deseo_mylive_email_section(
+        'LIVE NOW',
+        'Το show σου παίζει τώρα στον Deseo Radio.',
+        'Ανέβασε τώρα το επίσημο δημιουργικό σου στα social media και ενημέρωσε το κοινό σου ότι είσαι <strong style="color:#fff;">On Air</strong>. '
+        . 'Χρησιμοποίησε το artwork του Deseo Radio, κάνε mention / tag τον σταθμό και πρόσθεσε το live link.'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'LIVE LINK',
+        'Το link που μοιραζόμαστε.',
+        '<a href="https://deseoradio.com" style="color:#fff;font-weight:800;text-decoration:none;">https://deseoradio.com</a>'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'YOUR ASSETS',
+        'Χρειάζεσαι το δημιουργικό σου;',
+        'Τα επίσημα social assets του show σου βρίσκονται στο <strong style="color:#fff;">MyLive → Your Assets</strong>.'
+    );
+
+    $subject = 'Deseo Radio · You are On Air · ' . $artist;
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · ON AIR',
+        'Είσαι στον αέρα.',
+        $artist . ', το show σου μεταδίδεται τώρα στον Deseo Radio. Είναι η στιγμή να το μοιραστείς με το κοινό σου.',
+        $body,
+        'LISTEN & SHARE',
+        'https://deseoradio.com'
+    );
+
+    $text = "DESEO RADIO · ON AIR\n\n"
+        . $artist . ", το show σου παίζει τώρα στον Deseo Radio.\n"
+        . "Episode: " . $episodeLabel . "\n\n"
+        . "Ανέβασε τώρα το επίσημο δημιουργικό σου στα social media, κάνε mention / tag τον Deseo Radio και πρόσθεσε το live link:\n"
+        . "https://deseoradio.com\n\n"
+        . "Τα assets σου: https://deseoradio.com/mylive/#assets\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
