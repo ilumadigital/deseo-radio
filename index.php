@@ -26,6 +26,8 @@ $now = new DateTimeImmutable('now', $tz);
 
 try {
     require_once __DIR__ . '/iluma/connection.php';
+    require_once __DIR__ . '/includes/mylive-email-reminders.php';
+    deseo_mylive_maybe_run_email_scheduler($pdo);
 
     $airplay_tracks = $pdo->query(
         "SELECT id, spotify_url, track_name, artist_name, artwork_url, position
