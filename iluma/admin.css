@@ -2594,3 +2594,509 @@ input[type="password"]{
     min-height:52px;
   }
 }
+
+
+/* CMS V10 · 14/16/18 responsive layout polish */
+.admin-body,
+.admin-body *{
+  box-sizing:border-box;
+}
+.admin-body{
+  overflow-x:hidden;
+}
+.admin-app,
+.admin-main,
+.admin-content,
+.admin-content section,
+.admin-content article,
+.admin-content form,
+.admin-content div{
+  min-width:0;
+}
+.admin-sidebar{
+  min-width:0;
+}
+.admin-nav a,
+.admin-sidebar-bottom a,
+.admin-sidebar-bottom button{
+  height:auto;
+  min-height:50px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.admin-account{
+  min-width:0;
+}
+.admin-account>div{
+  min-width:0;
+}
+.admin-account strong,
+.admin-account span{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.page-heading,
+.dashboard-section-head,
+.schedule-panel-head,
+.mylive-panel-head,
+.rewards-panel-head,
+.season6-panel-head,
+.season6-list-head,
+.mylive-directory-head,
+.form-actions,
+.program-row-actions,
+.media-card-actions,
+.rewards-admin-actions{
+  min-width:0;
+}
+.page-heading,
+.dashboard-section-head,
+.schedule-panel-head,
+.mylive-panel-head,
+.rewards-panel-head,
+.season6-panel-head,
+.season6-list-head,
+.mylive-directory-head{
+  flex-wrap:wrap;
+}
+.page-heading>div,
+.dashboard-section-head>div,
+.schedule-panel-head>div,
+.mylive-panel-head>div,
+.rewards-panel-head>div,
+.season6-panel-head>div,
+.season6-list-head>div,
+.mylive-directory-head>div{
+  min-width:0;
+  flex:1 1 420px;
+}
+.page-heading h1,
+.page-heading h2,
+.dashboard-section-head h2,
+.schedule-panel-head h2,
+.mylive-panel-head h2,
+.rewards-panel-head h2,
+.season6-panel-head h2,
+.season6-list-head h2{
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+.page-heading p,
+.dashboard-section-head p,
+.schedule-panel-head p,
+.mylive-panel-head p,
+.rewards-panel-head p,
+.season6-panel-head p,
+.season6-list-head p{
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+
+.admin-content .button,
+.admin-content button,
+.admin-content .danger-link{
+  max-width:100%;
+  height:auto;
+  padding-top:11px;
+  padding-bottom:11px;
+  white-space:normal;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+.form-actions,
+.program-row-actions,
+.media-card-actions,
+.rewards-admin-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.form-actions>*,
+.program-row-actions>*,
+.media-card-actions>*,
+.rewards-admin-actions>*{
+  min-width:0;
+}
+
+.admin-content input,
+.admin-content select,
+.admin-content textarea{
+  width:100%;
+  min-width:0;
+}
+.admin-content label{
+  min-width:0;
+}
+.form-grid{
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.quick-grid,
+.cards-grid{
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+}
+.stats,
+.season6-stats,
+.rewards-admin-stats{
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+}
+.stat,
+.quick-card,
+.dashboard-metric,
+.mylive-hub-stat,
+.season6-stats article,
+.rewards-admin-stats article{
+  min-width:0;
+  height:auto;
+}
+.stat strong,
+.quick-card strong,
+.dashboard-metric strong,
+.mylive-hub-stat strong,
+.season6-stats strong,
+.rewards-admin-stats strong{
+  overflow-wrap:anywhere;
+}
+
+.admin-content table{
+  width:100%;
+  min-width:0;
+}
+.admin-content th,
+.admin-content td{
+  min-width:0;
+  vertical-align:top;
+}
+.admin-content td,
+.admin-content th,
+.admin-content td a,
+.admin-content td span,
+.admin-content td strong{
+  overflow-wrap:anywhere;
+}
+.table-wrap,
+.admin-table-wrap,
+.audience-table-wrap{
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:thin;
+}
+
+.program-row,
+.media-card,
+.schedule-card,
+.mylive-card,
+.mylive-account-card,
+.reward-card,
+.rewards-admin-card,
+.airplay-card,
+.playlist-card{
+  min-width:0;
+}
+.program-row>*,
+.media-card>*,
+.schedule-card>*,
+.mylive-card>*,
+.mylive-account-card>*,
+.reward-card>*,
+.rewards-admin-card>*{
+  min-width:0;
+}
+.program-row h3,
+.program-row p,
+.media-card h3,
+.media-card p,
+.schedule-card h3,
+.schedule-card p,
+.mylive-card h3,
+.mylive-card p,
+.reward-card h3,
+.reward-card p{
+  overflow-wrap:anywhere;
+}
+
+.season6-application-card,
+.season6-application-card summary,
+.season6-application-body,
+.season6-application-info,
+.season6-decision-panel,
+.season6-summary-main,
+.season6-summary-copy,
+.season6-summary-slot{
+  min-width:0;
+}
+.season6-application-card summary{
+  height:auto;
+}
+.season6-summary-copy h3,
+.season6-summary-copy p,
+.season6-summary-slot strong,
+.season6-summary-slot small,
+.season6-about p,
+.season6-contact-grid strong,
+.season6-contact-grid a,
+.season6-legal-meta span{
+  overflow-wrap:anywhere;
+}
+.season6-summary-main img{
+  flex:0 0 auto;
+}
+.season6-filter-bar{
+  max-width:100%;
+  flex-wrap:wrap;
+}
+.season6-filter-bar button{
+  height:auto;
+  min-height:44px;
+  padding-top:9px;
+  padding-bottom:9px;
+}
+.season6-contact-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.season6-link-actions{
+  flex-wrap:wrap;
+}
+.season6-link-actions .button{
+  min-width:0;
+  flex:0 1 auto;
+}
+.season6-decision-form{
+  min-width:0;
+}
+.season6-time-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.season6-slot-grid{
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+}
+.season6-slot-card{
+  min-width:0;
+  height:auto;
+}
+.season6-slot-card strong,
+.season6-slot-card p{
+  overflow-wrap:anywhere;
+}
+
+.mylive-panel,
+.mylive-subpanel,
+.mylive-directory,
+.mylive-directory-row,
+.mylive-account-row,
+.mylive-set-row,
+.mylive-asset-row{
+  min-width:0;
+}
+.mylive-directory-row,
+.mylive-account-row,
+.mylive-set-row,
+.mylive-asset-row{
+  height:auto;
+}
+.mylive-directory-row strong,
+.mylive-directory-row span,
+.mylive-account-row strong,
+.mylive-account-row span,
+.mylive-set-row strong,
+.mylive-set-row span,
+.mylive-asset-row strong,
+.mylive-asset-row span{
+  overflow-wrap:anywhere;
+}
+
+.notice,
+.empty-admin,
+.admin-content code{
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+.admin-content code{
+  white-space:normal;
+}
+
+@media(max-width:1180px){
+  .admin-content{
+    width:min(100% - 40px,1180px);
+  }
+  .season6-contact-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:980px){
+  .admin-app{
+    display:block;
+  }
+  .admin-main{
+    width:100%;
+  }
+  .admin-mobile-nav{
+    display:flex;
+    max-width:100%;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+  }
+  .admin-mobile-nav a{
+    flex:0 0 auto;
+    height:auto;
+    min-height:46px;
+    white-space:nowrap;
+  }
+  .admin-content{
+    width:min(100% - 28px,980px);
+  }
+  .page-heading,
+  .dashboard-section-head,
+  .schedule-panel-head,
+  .mylive-panel-head,
+  .rewards-panel-head,
+  .season6-panel-head,
+  .season6-list-head{
+    align-items:flex-start;
+  }
+  .stats,
+  .season6-stats,
+  .rewards-admin-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:720px){
+  .admin-content{
+    width:min(100% - 22px,980px);
+  }
+  .panel{
+    padding:18px;
+  }
+  .page-heading{
+    gap:18px;
+  }
+  .page-heading>div,
+  .dashboard-section-head>div,
+  .schedule-panel-head>div,
+  .mylive-panel-head>div,
+  .rewards-panel-head>div,
+  .season6-panel-head>div,
+  .season6-list-head>div{
+    flex-basis:100%;
+  }
+  .page-heading>.button,
+  .page-heading>a.button{
+    width:100%;
+  }
+  .form-grid,
+  .quick-grid,
+  .cards-grid{
+    grid-template-columns:1fr;
+  }
+  .form-actions,
+  .program-row-actions,
+  .media-card-actions,
+  .rewards-admin-actions{
+    width:100%;
+  }
+  .form-actions .button,
+  .form-actions button{
+    flex:1 1 180px;
+  }
+  .program-row,
+  .media-card,
+  .schedule-card,
+  .mylive-account-row,
+  .mylive-set-row,
+  .mylive-asset-row{
+    height:auto;
+  }
+  .season6-application-card summary{
+    padding:14px;
+  }
+  .season6-summary-slot{
+    margin-left:0;
+  }
+  .season6-link-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .season6-link-actions .button{
+    width:100%;
+  }
+}
+
+@media(max-width:560px){
+  .admin-content{
+    padding-top:24px;
+  }
+  .page-heading h1{
+    font-size:clamp(30px,10vw,38px);
+    line-height:1;
+  }
+  .panel{
+    border-radius:18px;
+  }
+  .stats,
+  .season6-stats,
+  .rewards-admin-stats{
+    grid-template-columns:1fr;
+  }
+  .admin-content .button,
+  .admin-content button,
+  .admin-content .danger-link{
+    min-height:48px;
+  }
+  .form-actions{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .form-actions>*{
+    width:100%;
+  }
+  .season6-filter-bar{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+  .season6-filter-bar::-webkit-scrollbar{
+    display:none;
+  }
+  .season6-filter-bar button{
+    flex:0 0 auto;
+  }
+  .season6-link-actions,
+  .season6-time-grid{
+    grid-template-columns:1fr;
+  }
+  .season6-decision-panel{
+    padding:16px;
+  }
+  .season6-slot-grid{
+    grid-template-columns:1fr;
+  }
+  .admin-content table{
+    display:block;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    white-space:nowrap;
+  }
+  .admin-content table td,
+  .admin-content table th{
+    white-space:normal;
+    min-width:140px;
+  }
+}
+
+@media(max-width:390px){
+  .admin-content{
+    width:min(100% - 16px,980px);
+  }
+  .panel{
+    padding:16px;
+  }
+  .season6-application-card summary{
+    grid-template-columns:1fr 30px;
+  }
+}
