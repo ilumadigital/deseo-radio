@@ -2479,6 +2479,10 @@ input[type="password"]{
   font-size:18px!important;
   line-height:1.35;
 }
+.admin-content a,
+.admin-content em{
+  font-size:16px!important;
+}
 .admin-content input,
 .admin-content select,
 .admin-content textarea{
