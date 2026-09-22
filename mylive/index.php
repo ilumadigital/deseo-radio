@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/dj-rewards.php';
 require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/mylive-push.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
@@ -28,6 +29,7 @@ $error = null;
 $notice = null;
 $turnstileConfigured = deseo_turnstile_configured();
 $turnstileSiteKey = deseo_turnstile_site_key();
+$myliveWebpushrPublicKey = deseo_mylive_push_public_key();
 
 function mylive_json(bool $ok, string $message, array $extra = []): never {
     header('Content-Type: application/json; charset=UTF-8');
@@ -423,9 +425,15 @@ if ($forgotState === 'sent') {
     <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title><?= $isForgotMode || $isResetMode || $isResetDone ? 'Reset password' : 'MyLive' ?> · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/img/favicon.png">
+    <link rel="manifest" href="/mylive/manifest.json">
+    <meta name="application-name" content="MyLive App">
+    <meta name="apple-mobile-web-app-title" content="MyLive App">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
     <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
+    <script src="/mylive/app.js?v=<?= @filemtime(__DIR__ . '/app.js') ?: 1 ?>" defer></script>
     <?php if ($turnstileConfigured && ($isForgotMode || (!$isResetMode && !$isResetDone))): ?>
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <?php endif; ?>
@@ -631,9 +639,15 @@ if (!empty($account['must_change_password'])):
     <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title>Create your password · MyLive · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/img/favicon.png">
+    <link rel="manifest" href="/mylive/manifest.json">
+    <meta name="application-name" content="MyLive App">
+    <meta name="apple-mobile-web-app-title" content="MyLive App">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
     <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
+    <script src="/mylive/app.js?v=<?= @filemtime(__DIR__ . '/app.js') ?: 1 ?>" defer></script>
 </head>
 <body class="mylive-password-page">
 <main class="password-shell">
@@ -838,11 +852,21 @@ $nextShowMessage = match ($nextShowSetStatus) {
     <meta name="bingbot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
     <title>MyLive · <?= deseo_mylive_e($account['artist_name']) ?> · Deseo Radio</title>
     <link rel="icon" href="/assets/img/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/img/favicon.png">
+    <link rel="manifest" href="/mylive/manifest.json">
+    <meta name="application-name" content="MyLive App">
+    <meta name="apple-mobile-web-app-title" content="MyLive App">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
     <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
+    <script src="/mylive/app.js?v=<?= @filemtime(__DIR__ . '/app.js') ?: 1 ?>" defer></script>
 </head>
-<body class="mylive-dashboard-page">
+<body class="mylive-dashboard-page"
+      data-mylive-app-bridge
+      data-webpushr-key="<?= deseo_mylive_e($myliveWebpushrPublicKey) ?>"
+      data-account-id="<?= (int)$account['id'] ?>"
+      data-artist-name="<?= deseo_mylive_e((string)$account['artist_name']) ?>">
 <header class="portal-header">
     <a href="/mylive/" class="portal-logo mylive-brand-lockup">
         <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio">
@@ -900,6 +924,19 @@ $nextShowMessage = match ($nextShowSetStatus) {
         <div class="slot-pill">
             <span>YOUR WEEKLY SLOT</span>
             <strong><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+        </div>
+    </section>
+
+    <section class="mylive-app-card" aria-label="MyLive App">
+        <div class="mylive-app-card-copy">
+            <span>MYLIVE APP · PWA</span>
+            <strong>Το MyLive στο κινητό σου.</strong>
+            <p>Εγκατάστησέ το σαν app και ενεργοποίησε ειδοποιήσεις για το DJ Set σου: reminder 2 ημέρες πριν και “On Air” alert όταν ξεκινά το slot σου.</p>
+            <small data-mylive-notification-status>Έλεγχος κατάστασης ειδοποιήσεων…</small>
+        </div>
+        <div class="mylive-app-card-actions">
+            <button type="button" class="mylive-app-install-button" data-mylive-install hidden>INSTALL MYLIVE APP</button>
+            <button type="button" class="mylive-app-notification-button" data-mylive-notifications>ENABLE NOTIFICATIONS</button>
         </div>
     </section>
 
