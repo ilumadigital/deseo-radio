@@ -1012,5 +1012,24 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
         data-station="deseo"
         data-surface="station_website"
         defer></script>
+<script>
+(function () {
+    'use strict';
+
+    /* MyLive email automation tick */
+    function tickMyLiveEmailAutomation() {
+        fetch('/mylive/email-tick.php', {
+            method: 'GET',
+            cache: 'no-store',
+            credentials: 'omit',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).catch(function () {});
+    }
+
+    window.setTimeout(tickMyLiveEmailAutomation, 12000);
+    window.setInterval(tickMyLiveEmailAutomation, 60000);
+}());
+</script>
+
 </body>
 </html>
