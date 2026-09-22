@@ -222,7 +222,7 @@ $stmt = $pdo->prepare(
      FROM dj_season_bookings b
      INNER JOIN dj_season_slots s ON s.id = b.slot_id
      WHERE b.season = ?
-     ORDER BY b.created_at DESC, b.id DESC"
+     ORDER BY s.day_of_week ASC, s.start_time ASC, b.created_at ASC"
 );
 $stmt->execute([DESEO_DJ_SEASON]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -232,26 +232,13 @@ foreach ($slots as $slot) {
     if (!empty($slot['available'])) $availableCount++;
 }
 
-$statusCounts = [
-    'pending' => 0,
-    'approved' => 0,
-    'guest' => 0,
-    'rejected' => 0,
-];
-foreach ($bookings as $booking) {
-    $bookingStatus = (string)($booking['status'] ?? 'pending');
-    if (isset($statusCounts[$bookingStatus])) {
-        $statusCounts[$bookingStatus]++;
-    }
-}
-
 admin_page_start('Season 6 DJs', 'dj-season');
 ?>
-<div class="page-heading season6-page-heading">
+<div class="page-heading">
     <div>
-        <span>Deseo Radio · Season 6</span>
-        <h1>DJ Applications</h1>
-        <p>Οι νεότερες αιτήσεις εμφανίζονται πρώτες. Άνοιξε μόνο όποια θέλεις να αξιολογήσεις και διαχειρίσου slot, status και MyLive flow από ένα σημείο.</p>
+        <span>Deseo Season 6</span>
+        <h1>DJ applications</h1>
+        <p>Διαχείριση inquiries, προτιμήσεων slot και επιλογής DJs για τη Season 6. Καμία ενέργεια εδώ δεν γράφει στο Radio Program.</p>
     </div>
     <a class="button button-secondary" href="/dj" target="_blank" rel="noopener">Open public form ↗</a>
 </div>
@@ -259,248 +246,155 @@ admin_page_start('Season 6 DJs', 'dj-season');
 <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
 <?php if ($error): ?><div class="notice notice-error"><?= admin_e($error) ?></div><?php endif; ?>
 
-<section class="season6-stats">
-    <article>
-        <span>APPLICATIONS</span>
-        <strong><?= count($bookings) ?></strong>
-        <small>Season <?= DESEO_DJ_SEASON ?></small>
-    </article>
-    <article>
-        <span>PENDING</span>
-        <strong><?= (int)$statusCounts['pending'] ?></strong>
-        <small>waiting for review</small>
-    </article>
-    <article>
-        <span>APPROVED</span>
-        <strong><?= (int)$statusCounts['approved'] ?></strong>
-        <small>confirmed DJs</small>
-    </article>
-    <article>
-        <span>AVAILABLE SLOTS</span>
-        <strong><?= $availableCount ?></strong>
-        <small>of <?= count($slots) ?> total</small>
-    </article>
+<section class="stats">
+    <div class="stat"><strong><?= count($bookings) ?></strong><span>Applications</span></div>
+    <div class="stat"><strong><?= $availableCount ?></strong><span>Available slots</span></div>
+    <div class="stat"><strong><?= count($slots) ?></strong><span>Total slots</span></div>
+    <div class="stat"><strong><?= DESEO_DJ_SEASON ?></strong><span>Season</span></div>
 </section>
 
-<section class="season6-applications">
-    <div class="season6-list-head">
+<section class="panel">
+    <div class="page-heading" style="margin-bottom:20px">
         <div>
-            <span>APPLICATION PIPELINE</span>
-            <h2>Latest applications</h2>
-            <p>Newest first · η τελευταία αίτηση που μπήκε εμφανίζεται πάντα επάνω.</p>
-        </div>
-
-        <div class="season6-filter-bar" role="group" aria-label="Filter applications">
-            <button type="button" class="is-active" data-season-filter="all">All <b><?= count($bookings) ?></b></button>
-            <button type="button" data-season-filter="pending">Pending <b><?= (int)$statusCounts['pending'] ?></b></button>
-            <button type="button" data-season-filter="approved">Approved <b><?= (int)$statusCounts['approved'] ?></b></button>
-            <button type="button" data-season-filter="guest">Guest <b><?= (int)$statusCounts['guest'] ?></b></button>
-            <button type="button" data-season-filter="rejected">Rejected <b><?= (int)$statusCounts['rejected'] ?></b></button>
+            <span>Inquiry availability</span>
+            <h1 style="font-size:26px">Requested DJ slots</h1>
+            <p>Τα slots είναι μόνο επιλογές προτίμησης για inquiries. Το Radio Program είναι ξεχωριστό και ενημερώνεται μόνο χειροκίνητα από εσένα.</p>
         </div>
     </div>
 
-    <?php if (!$bookings): ?>
-        <div class="empty-admin">Δεν υπάρχουν ακόμη Season 6 applications.</div>
-    <?php else: ?>
-        <div class="season6-application-list">
-            <?php foreach ($bookings as $index => $booking): ?>
-                <?php
-                $bookingStatus = (string)($booking['status'] ?? 'pending');
-                $statusClass = 'is-pending';
-                if ($bookingStatus === 'approved') {
-                    $statusClass = 'is-approved';
-                } elseif ($bookingStatus === 'guest') {
-                    $statusClass = 'is-guest';
-                } elseif ($bookingStatus === 'rejected') {
-                    $statusClass = 'is-rejected';
-                }
-                $effectiveDay = !empty($booking['final_day_of_week']) ? (int)$booking['final_day_of_week'] : (int)$booking['day_of_week'];
-                $effectiveStart = !empty($booking['final_start_time']) ? dj_season_format_time($booking['final_start_time']) : dj_season_format_time($booking['start_time']);
-                $effectiveEnd = !empty($booking['final_end_time']) ? dj_season_format_time($booking['final_end_time']) : dj_season_format_time($booking['end_time']);
-                $createdAt = !empty($booking['created_at']) ? strtotime((string)$booking['created_at']) : false;
-                $submittedLabel = $createdAt ? date('d.m.Y · H:i', $createdAt) : '—';
-                ?>
-                <details class="season6-application-card" data-season-application data-status="<?= admin_e($bookingStatus) ?>" <?= $index === 0 ? 'open' : '' ?>>
-                    <summary>
-                        <div class="season6-summary-main">
-                            <img src="<?= admin_e((string)$booking['photo_path']) ?>" alt="" loading="lazy">
-                            <div class="season6-summary-copy">
-                                <div class="season6-summary-topline">
-                                    <span class="season6-status <?= admin_e($statusClass) ?>"><?= admin_e(strtoupper($bookingStatus)) ?></span>
-                                    <small><?= admin_e($submittedLabel) ?></small>
-                                </div>
-                                <h3><?= admin_e((string)$booking['artist_name']) ?></h3>
-                                <p><?= admin_e((string)$booking['full_name']) ?> · <?= admin_e((string)$booking['email']) ?></p>
-                            </div>
-                        </div>
-
-                        <div class="season6-summary-slot">
-                            <span>REQUESTED</span>
-                            <strong>
-                                <?= admin_e(dj_season_day_label((int)$booking['day_of_week'])) ?>
-                                · <?= admin_e(dj_season_format_time((string)$booking['start_time'])) ?>
-                            </strong>
-                            <small><?= admin_e(dj_season_format_time((string)$booking['start_time'])) ?>–<?= admin_e(dj_season_format_time((string)$booking['end_time'])) ?></small>
-                        </div>
-
-                        <div class="season6-summary-toggle" aria-hidden="true">+</div>
-                    </summary>
-
-                    <div class="season6-application-body">
-                        <div class="season6-application-info">
-                            <section class="season6-about">
-                                <span>ABOUT / BIO</span>
-                                <p><?= nl2br(admin_e((string)$booking['bio'])) ?></p>
-                            </section>
-
-                            <section class="season6-contact-grid">
-                                <div>
-                                    <span>EMAIL</span>
-                                    <a href="mailto:<?= admin_e((string)$booking['email']) ?>"><?= admin_e((string)$booking['email']) ?></a>
-                                </div>
-                                <div>
-                                    <span>SET TYPE</span>
-                                    <strong><?= admin_e((string)$booking['set_type']) ?></strong>
-                                </div>
-                                <div>
-                                    <span>REQUESTED SLOT</span>
-                                    <strong>
-                                        <?= admin_e(dj_season_day_label((int)$booking['day_of_week'])) ?> ·
-                                        <?= admin_e(dj_season_format_time((string)$booking['start_time'])) ?>–<?= admin_e(dj_season_format_time((string)$booking['end_time'])) ?>
-                                    </strong>
-                                </div>
-                                <div>
-                                    <span>CURRENT FINAL SLOT</span>
-                                    <strong><?= admin_e(dj_season_day_label($effectiveDay)) ?> · <?= admin_e($effectiveStart) ?>–<?= admin_e($effectiveEnd) ?></strong>
-                                </div>
-                            </section>
-
-                            <div class="season6-link-actions">
-                                <a class="button button-primary button-compact" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Photo ↓</a>
-                                <?php if (!empty($booking['work_sample_url'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['work_sample_url']) ?>" target="_blank" rel="noopener noreferrer">Listen / view sample ↗</a>
-                                <?php endif; ?>
-                                <?php if (!empty($booking['instagram'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['instagram']) ?>" target="_blank" rel="noopener">Social ↗</a>
-                                <?php endif; ?>
-                                <?php if (!empty($booking['website'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['website']) ?>" target="_blank" rel="noopener">Website ↗</a>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="season6-legal-meta">
-                                <span>Terms <?= admin_e((string)$booking['terms_version']) ?> · <?= admin_e((string)$booking['terms_accepted_at']) ?></span>
-                                <span>Privacy <?= admin_e((string)$booking['privacy_version']) ?> · <?= admin_e((string)$booking['privacy_acknowledged_at']) ?></span>
-                            </div>
-                        </div>
-
-                        <aside class="season6-decision-panel">
-                            <div class="season6-decision-head">
-                                <span>APPLICATION DECISION</span>
-                                <h4>Schedule & status</h4>
-                                <p>Το final slot χρησιμοποιείται στο email έγκρισης και στο availability check.</p>
-                            </div>
-
-                            <form method="post" class="season6-decision-form">
-                                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="set_status">
-                                <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
-
-                                <label>
-                                    <span>FINAL DAY</span>
-                                    <select name="final_day_of_week">
-                                        <?php foreach ([4,5,6,7] as $day): ?>
-                                            <option value="<?= $day ?>" <?= $effectiveDay === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </label>
-
-                                <div class="season6-time-grid">
-                                    <label>
-                                        <span>START</span>
-                                        <input type="time" name="final_start_time" value="<?= admin_e($effectiveStart) ?>" required>
-                                    </label>
-                                    <label>
-                                        <span>END</span>
-                                        <input type="time" name="final_end_time" value="<?= admin_e($effectiveEnd) ?>" required>
-                                    </label>
-                                </div>
-
-                                <label>
-                                    <span>STATUS</span>
-                                    <select name="status">
-                                        <?php foreach (['pending', 'approved', 'guest', 'rejected'] as $status): ?>
-                                            <option value="<?= $status ?>" <?= $bookingStatus === $status ? 'selected' : '' ?>><?= strtoupper($status) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </label>
-
-                                <button class="button button-primary season6-save-button" type="submit">Save application</button>
-                            </form>
-
-                            <form method="post"
-                                  class="season6-delete-form"
-                                  data-deseo-confirm="Να διαγραφεί οριστικά αυτό το inquiry;"
-                                  data-deseo-confirm-title="Οριστική διαγραφή inquiry"
-                                  data-deseo-confirm-label="Διαγραφή"
-                                  data-deseo-confirm-danger>
-                                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="release_booking">
-                                <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
-                                <button class="button button-danger" type="submit">Delete inquiry</button>
-                            </form>
-                        </aside>
-                    </div>
-                </details>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-</section>
-
-<section class="panel season6-slots-panel">
-    <div class="season6-panel-head">
-        <div>
-            <span>INQUIRY AVAILABILITY</span>
-            <h2>Requested DJ slots</h2>
-            <p>Τα slots αφορούν μόνο τις αιτήσεις. Το Radio Program παραμένει ανεξάρτητο.</p>
-        </div>
-        <strong><?= $availableCount ?> / <?= count($slots) ?></strong>
-    </div>
-
-    <div class="season6-slot-grid">
+    <div class="program-list">
         <?php foreach ($slots as $slot): ?>
-            <?php $isClosed = !empty($slot['approved_booking_id']); ?>
-            <article class="season6-slot-card <?= $isClosed ? 'is-closed' : 'is-open' ?>">
-                <span><?= $isClosed ? 'CLOSED' : 'OPEN' ?></span>
-                <strong><?= admin_e(dj_season_day_label((int)$slot['day_of_week'])) ?></strong>
-                <p><?= admin_e(dj_season_format_time((string)$slot['start_time'])) ?>–<?= admin_e(dj_season_format_time((string)$slot['end_time'])) ?></p>
-            </article>
+            <div class="program-row" style="grid-template-columns:minmax(0,1fr) auto">
+                <div>
+                    <h3><?= admin_e(dj_season_day_label((int)$slot['day_of_week'])) ?> · <?= admin_e(dj_season_format_time($slot['start_time'])) ?>–<?= admin_e(dj_season_format_time($slot['end_time'])) ?></h3>
+                    <p>
+                        <?php if (!empty($slot['approved_booking_id'])): ?>
+                            <span class="day">APPROVED / CLOSED</span>
+                        <?php else: ?>
+                            OPEN FOR INQUIRIES
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <span class="button button-secondary" style="display:inline-flex;align-items:center">
+                    <?= !empty($slot['approved_booking_id']) ? 'Closed' : 'Open' ?>
+                </span>
+            </div>
         <?php endforeach; ?>
     </div>
 </section>
 
-<script>
-(function () {
-    const filters = Array.from(document.querySelectorAll('[data-season-filter]'));
-    const cards = Array.from(document.querySelectorAll('[data-season-application]'));
+<section class="panel">
+    <div class="page-heading" style="margin-bottom:20px">
+        <div>
+            <span>Inquiries</span>
+            <h1 style="font-size:26px">Season 6 inquiries</h1>
+            <p>Μπορεί να υπάρχουν πολλά pending inquiries για το ίδιο slot. Approved κλείνει το weekly slot. Guest και Rejected δεν κλείνουν slot. Καμία επιλογή δεν γράφει αυτόματα στο Radio Program.</p>
+        </div>
+    </div>
 
-    filters.forEach(button => {
-        button.addEventListener('click', () => {
-            const status = button.dataset.seasonFilter || 'all';
+    <?php if (!$bookings): ?>
+        <div class="empty-admin">Δεν υπάρχουν ακόμη Season 6 inquiries.</div>
+    <?php else: ?>
+        <div style="display:grid;gap:14px">
+            <?php foreach ($bookings as $booking): ?>
+                <article class="panel" style="margin:0;background:#0c0c0c">
+                    <div style="display:grid;grid-template-columns:92px minmax(0,1fr);gap:18px;align-items:start">
+                        <img src="<?= admin_e($booking['photo_path']) ?>" alt="" style="width:92px;height:92px;object-fit:cover;border-radius:18px;background:#070707">
+                        <div>
+                            <div style="display:flex;justify-content:space-between;gap:14px;align-items:start;flex-wrap:wrap">
+                                <div>
+                                    <span style="color:#ff3038;font-size:10px;font-weight:800;letter-spacing:.12em">
+                                        REQUESTED · <?= admin_e(dj_season_day_label((int)$booking['day_of_week'])) ?> ·
+                                        <?= admin_e(dj_season_format_time($booking['start_time'])) ?>–<?= admin_e(dj_season_format_time($booking['end_time'])) ?>
+                                    </span>
+                                    <?php if (!empty($booking['final_day_of_week']) && !empty($booking['final_start_time']) && !empty($booking['final_end_time'])): ?>
+                                        <span style="display:block;margin-top:5px;color:#aaa;font-size:10px;font-weight:700;letter-spacing:.08em">
+                                            FINAL · <?= admin_e(dj_season_day_label((int)$booking['final_day_of_week'])) ?> ·
+                                            <?= admin_e(dj_season_format_time($booking['final_start_time'])) ?>–<?= admin_e(dj_season_format_time($booking['final_end_time'])) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <h2 style="margin:5px 0 3px;font-size:22px"><?= admin_e($booking['artist_name']) ?></h2>
+                                    <p style="margin:0;color:#777;font-size:12px"><?= admin_e($booking['full_name']) ?> · <a href="mailto:<?= admin_e($booking['email']) ?>"><?= admin_e($booking['email']) ?></a></p>
+                                </div>
+                                <strong style="font-size:11px;text-transform:uppercase;color:#aaa"><?= admin_e($booking['status']) ?></strong>
+                            </div>
 
-            filters.forEach(item => item.classList.toggle('is-active', item === button));
-            cards.forEach(card => {
-                const visible = status === 'all' || card.dataset.status === status;
-                card.hidden = !visible;
-            });
+                            <p style="margin:14px 0 0;color:#aaa;font-size:12px;line-height:1.65;white-space:pre-wrap"><?= admin_e($booking['bio']) ?></p>
 
-            const firstVisible = cards.find(card => !card.hidden);
-            if (firstVisible && !cards.some(card => !card.hidden && card.open)) {
-                firstVisible.open = true;
-            }
-        });
-    });
-}());
-</script>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
+                                <a class="button button-primary" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Download photo ↓</a>
+                                <?php if (!empty($booking['instagram'])): ?><a class="button button-secondary" href="<?= admin_e($booking['instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
+                                <?php if (!empty($booking['website'])): ?><a class="button button-secondary" href="<?= admin_e($booking['website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
+                                <?php if (!empty($booking['work_sample_url'])): ?><a class="button button-primary" href="<?= admin_e($booking['work_sample_url']) ?>" target="_blank" rel="noopener noreferrer">Listen / view sample ↗</a><?php endif; ?>
+                                <span class="button button-secondary" style="display:inline-flex;align-items:center"><?= admin_e($booking['set_type']) ?></span>
+                            </div>
+
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)">
+                                <form method="post" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end;width:100%">
+                                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="set_status">
+                                    <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
+
+                                    <?php
+                                    $effectiveDay = !empty($booking['final_day_of_week']) ? (int)$booking['final_day_of_week'] : (int)$booking['day_of_week'];
+                                    $effectiveStart = !empty($booking['final_start_time']) ? dj_season_format_time($booking['final_start_time']) : dj_season_format_time($booking['start_time']);
+                                    $effectiveEnd = !empty($booking['final_end_time']) ? dj_season_format_time($booking['final_end_time']) : dj_season_format_time($booking['end_time']);
+                                    ?>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        FINAL DAY
+                                        <select name="final_day_of_week" style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                            <?php foreach ([4,5,6,7] as $day): ?>
+                                                <option value="<?= $day ?>" <?= $effectiveDay === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        START
+                                        <input type="time" name="final_start_time" value="<?= admin_e($effectiveStart) ?>" required
+                                               style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        END
+                                        <input type="time" name="final_end_time" value="<?= admin_e($effectiveEnd) ?>" required
+                                               style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                    </label>
+
+                                    <label style="display:grid;gap:5px;color:#777;font-size:9px;font-weight:800;letter-spacing:.08em">
+                                        STATUS
+                                        <select name="status" style="min-height:42px;border-radius:12px;background:#080808;color:#fff;border:1px solid rgba(255,255,255,.1);padding:0 10px">
+                                            <?php foreach (['pending', 'approved', 'guest', 'rejected'] as $status): ?>
+                                                <option value="<?= $status ?>" <?= $booking['status'] === $status ? 'selected' : '' ?>><?= strtoupper($status) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </label>
+
+                                    <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;align-items:center">
+                                        <span style="margin-right:auto;color:#555;font-size:10px">Το final slot χρησιμοποιείται στο Approved email και στο availability check.</span>
+                                        <button class="button button-primary" type="submit">Save schedule / status</button>
+                                    </div>
+                                </form>
+
+                                <form method="post" data-deseo-confirm="Να διαγραφεί οριστικά αυτό το inquiry;" data-deseo-confirm-title="Οριστική διαγραφή inquiry" data-deseo-confirm-label="Διαγραφή" data-deseo-confirm-danger>
+                                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="release_booking">
+                                    <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>">
+                                    <button class="button button-danger" type="submit">Delete inquiry</button>
+                                </form>
+                            </div>
+
+                            <p style="margin:12px 0 0;color:#505050;font-size:9px">
+                                Terms: <?= admin_e($booking['terms_version']) ?> · <?= admin_e($booking['terms_accepted_at']) ?> ·
+                                Privacy: <?= admin_e($booking['privacy_version']) ?> · <?= admin_e($booking['privacy_acknowledged_at']) ?>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
 
 <?php admin_page_end(); ?>
