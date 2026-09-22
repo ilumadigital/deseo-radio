@@ -1,0 +1,57 @@
+{
+  "id": "/mylive/",
+  "name": "MyLive App",
+  "short_name": "MyLive",
+  "description": "Το προσωπικό DJ workspace του Deseo Radio για sets, assets, πρόγραμμα και ειδοποιήσεις.",
+  "lang": "el",
+  "dir": "ltr",
+  "start_url": "/mylive/?source=pwa",
+  "scope": "/mylive/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#070708",
+  "theme_color": "#070708",
+  "orientation": "any",
+  "categories": [
+    "music",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/assets/img/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My DJ Sets",
+      "short_name": "DJ Sets",
+      "url": "/mylive/#sets",
+      "icons": [
+        {
+          "src": "/assets/img/favicon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Listen Live",
+      "short_name": "Live",
+      "url": "/mylive/#live",
+      "icons": [
+        {
+          "src": "/assets/img/favicon.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}
