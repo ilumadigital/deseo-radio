@@ -306,12 +306,14 @@ admin_page_start('Season 6 DJs', 'dj-season');
             <?php foreach ($bookings as $index => $booking): ?>
                 <?php
                 $bookingStatus = (string)($booking['status'] ?? 'pending');
-                $statusClass = match ($bookingStatus) {
-                    'approved' => 'is-approved',
-                    'guest' => 'is-guest',
-                    'rejected' => 'is-rejected',
-                    default => 'is-pending',
-                };
+                $statusClass = 'is-pending';
+                if ($bookingStatus === 'approved') {
+                    $statusClass = 'is-approved';
+                } elseif ($bookingStatus === 'guest') {
+                    $statusClass = 'is-guest';
+                } elseif ($bookingStatus === 'rejected') {
+                    $statusClass = 'is-rejected';
+                }
                 $effectiveDay = !empty($booking['final_day_of_week']) ? (int)$booking['final_day_of_week'] : (int)$booking['day_of_week'];
                 $effectiveStart = !empty($booking['final_start_time']) ? dj_season_format_time($booking['final_start_time']) : dj_season_format_time($booking['start_time']);
                 $effectiveEnd = !empty($booking['final_end_time']) ? dj_season_format_time($booking['final_end_time']) : dj_season_format_time($booking['end_time']);
