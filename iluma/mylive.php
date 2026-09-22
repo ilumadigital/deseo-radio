@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/mylive-email-reminders.php';
 require_once __DIR__ . '/admin-ui.php';
 
 deseo_mylive_bootstrap($pdo);
@@ -53,6 +54,53 @@ function mylive_admin_account(PDO $pdo, int $id): array {
     $account = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$account) throw new RuntimeException('Το MyLive account δεν βρέθηκε.');
     return $account;
+}
+
+
+function mylive_admin_email_test_context(PDO $pdo, array $account): array {
+    $accountId = (int)($account['id'] ?? 0);
+
+    $programStmt = $pdo->prepare(
+        "SELECT id AS program_id, day_of_week, start_time, end_time
+         FROM program
+         WHERE mylive_account_id = ?
+         ORDER BY day_of_week ASC, start_time ASC
+         LIMIT 1"
+    );
+    $programStmt->execute([$accountId]);
+    $program = $programStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$program) {
+        $program = [
+            'program_id' => 0,
+            'day_of_week' => (int)($account['day_of_week'] ?? 0),
+            'start_time' => (string)($account['start_time'] ?? ''),
+            'end_time' => (string)($account['end_time'] ?? ''),
+        ];
+    }
+
+    $day = (int)($program['day_of_week'] ?? 0);
+    $start = trim((string)($program['start_time'] ?? ''));
+    if ($day < 1 || $day > 7 || $start === '') {
+        throw new RuntimeException('Δεν υπάρχει έγκυρο weekly slot για να δημιουργηθεί το test email.');
+    }
+
+    $now = new DateTimeImmutable('now', new DateTimeZone('Europe/Athens'));
+    [$showStart, $showEnd] = deseo_mylive_email_program_occurrence($program, $now);
+
+    $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
+    $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
+    $episode = $pendingSet
+        ? (int)$pendingSet['episode_no']
+        : max(1, $latestEpisode + 1);
+
+    return [
+        'program_id' => (int)($program['program_id'] ?? 0),
+        'show_start' => $showStart,
+        'show_end' => $showEnd,
+        'episode' => $episode,
+        'pending_set' => $pendingSet,
+    ];
 }
 
 function mylive_admin_asset_extension(string $name): string {
@@ -411,6 +459,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'password' => $temporaryPassword
                 ];
                 $notice = 'Δημιουργήθηκε νέο temporary password και στάλθηκε ξανά το ενιαίο onboarding email.';
+
+            } elseif ($action === 'test_set_reminder_email') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if (!filter_var((string)$account['email'], FILTER_VALIDATE_EMAIL)) {
+                    throw new RuntimeException('Το MyLive account δεν έχει έγκυρο email.');
+                }
+
+                $context = mylive_admin_email_test_context($pdo, $account);
+                $showStart = $context['show_start'];
+
+                $mail = deseo_mylive_set_due_email($account, [
+                    'episode' => (int)$context['episode'],
+                    'show_date' => $showStart->format('d.m.Y'),
+                    'show_time' => $showStart->format('H:i'),
+                ]);
+                $mail['subject'] = '[TEST] ' . (string)$mail['subject'];
+
+                deseo_send_smtp_mail(
+                    (string)$account['email'],
+                    (string)$account['artist_name'],
+                    (string)$mail['subject'],
+                    (string)$mail['html'],
+                    (string)$mail['text'],
+                    true
+                );
+
+                $notice = 'Στάλθηκε TEST Set Reminder email στον '
+                    . (string)$account['artist_name']
+                    . ' · '
+                    . (string)$account['email']
+                    . ' · EP'
+                    . str_pad((string)(int)$context['episode'], 3, '0', STR_PAD_LEFT)
+                    . '. Δεν επηρεάστηκε το automation log.';
+
+            } elseif ($action === 'test_on_air_email') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if (!filter_var((string)$account['email'], FILTER_VALIDATE_EMAIL)) {
+                    throw new RuntimeException('Το MyLive account δεν έχει έγκυρο email.');
+                }
+
+                $context = mylive_admin_email_test_context($pdo, $account);
+                $showStart = $context['show_start'];
+
+                $mail = deseo_mylive_on_air_social_email($account, [
+                    'episode' => (int)$context['episode'],
+                    'show_time' => $showStart->format('H:i'),
+                ]);
+                $mail['subject'] = '[TEST] ' . (string)$mail['subject'];
+
+                deseo_send_smtp_mail(
+                    (string)$account['email'],
+                    (string)$account['artist_name'],
+                    (string)$mail['subject'],
+                    (string)$mail['html'],
+                    (string)$mail['text'],
+                    true
+                );
+
+                $notice = 'Στάλθηκε TEST On Air email στον '
+                    . (string)$account['artist_name']
+                    . ' · '
+                    . (string)$account['email']
+                    . '. Δεν επηρεάστηκε το automation log.';
 
             } elseif ($action === 'toggle_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -1017,6 +1132,27 @@ admin_page_start('MyLive', 'mylive');
                                         <input type="hidden" name="account_id" value="<?= $accountId ?>">
                                         <button class="button button-secondary" type="submit">Reset Access & Resend</button>
                                     </form>
+                                    <div class="mylive-email-test-actions">
+                                        <span>EMAIL TESTS</span>
+                                        <form method="post"
+                                              data-deseo-confirm="Να σταλεί τώρα TEST Set Reminder email στο <?= admin_e((string)$account['email']) ?>; Δεν επηρεάζεται το automation log."
+                                              data-deseo-confirm-title="Test · Set Reminder"
+                                              data-deseo-confirm-label="Send test email">
+                                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="test_set_reminder_email">
+                                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                            <button class="button button-secondary mylive-email-test-button" type="submit">Send Set Reminder</button>
+                                        </form>
+                                        <form method="post"
+                                              data-deseo-confirm="Να σταλεί τώρα TEST On Air / Social email στο <?= admin_e((string)$account['email']) ?>; Δεν επηρεάζεται το automation log."
+                                              data-deseo-confirm-title="Test · On Air Email"
+                                              data-deseo-confirm-label="Send test email">
+                                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="test_on_air_email">
+                                            <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                            <button class="button button-secondary mylive-email-test-button" type="submit">Send On Air Email</button>
+                                        </form>
+                                    </div>
                                     <form method="post">
                                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                         <input type="hidden" name="action" value="toggle_account">
