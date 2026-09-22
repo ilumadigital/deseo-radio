@@ -41,7 +41,9 @@ function deseo_mylive_push_base_url(): string {
 }
 
 function deseo_mylive_push_api_configured(): bool {
-    return deseo_mylive_push_api_key() !== '' && deseo_mylive_push_auth_token() !== '';
+    return deseo_mylive_push_public_key() !== ''
+        && deseo_mylive_push_api_key() !== ''
+        && deseo_mylive_push_auth_token() !== '';
 }
 
 function deseo_mylive_push_bootstrap(PDO $pdo): void {
