@@ -38,7 +38,7 @@ Options -MultiViews
         Header set Service-Worker-Allowed "/mylive/"
     </Files>
 
-    <FilesMatch "\.(css|js)$">
+    <FilesMatch "^(?!sw\.js$|mylive-sw\.js$).*\.(css|js)$">
         Header set Cache-Control "public, max-age=31536000"
     </FilesMatch>
 
