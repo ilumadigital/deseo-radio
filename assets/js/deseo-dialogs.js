@@ -17,21 +17,21 @@
             '.deseo-dialog-card{width:min(100%,520px);overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:radial-gradient(circle at 92% 0,rgba(255,43,54,.12),transparent 32%),linear-gradient(145deg,#151517,#0b0b0d);box-shadow:0 38px 120px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.035);color:#fff;font-family:"Google Sans",Arial,sans-serif;transform:translateY(12px) scale(.985);opacity:0;transition:transform .18s ease,opacity .18s ease}',
             '.deseo-dialog-root.is-visible .deseo-dialog-card{transform:none;opacity:1}',
             '.deseo-dialog-head{padding:27px 28px 0}',
-            '.deseo-dialog-kicker{display:flex;align-items:center;gap:10px;color:#ff2b36;font-size:9px;font-weight:900;letter-spacing:.17em;text-transform:uppercase}',
+            '.deseo-dialog-kicker{display:flex;align-items:center;gap:10px;color:#ff2b36;font-size:16px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}',
             '.deseo-dialog-kicker:before{content:"";width:24px;height:1px;background:#ff2b36}',
             '.deseo-dialog-title{margin:13px 0 0;color:#fff;font-size:28px;font-weight:700;line-height:1.08;letter-spacing:-.035em}',
-            '.deseo-dialog-body{padding:15px 28px 25px;color:#aaaab1;font-size:14px;line-height:1.7;white-space:pre-line}',
-            '.deseo-dialog-input{width:100%;min-height:50px;margin-top:16px;padding:0 14px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#070708;color:#fff;font:500 14px "Google Sans",Arial,sans-serif;outline:none}',
+            '.deseo-dialog-body{padding:17px 28px 27px;color:#aaaab1;font-size:18px;line-height:1.65;white-space:pre-line}',
+            '.deseo-dialog-input{width:100%;min-height:54px;margin-top:16px;padding:0 16px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#070708;color:#fff;font:500 18px "Google Sans",Arial,sans-serif;outline:none}',
             '.deseo-dialog-input:focus{border-color:rgba(255,43,54,.48);box-shadow:0 0 0 3px rgba(255,43,54,.07)}',
             '.deseo-dialog-actions{display:flex;justify-content:flex-end;gap:9px;padding:0 28px 27px}',
-            '.deseo-dialog-button{min-height:46px;padding:0 19px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:#0a0a0c;color:#d4d4d8;font:800 10px "Google Sans",Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:.18s ease}',
+            '.deseo-dialog-button{min-height:52px;padding:0 22px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:#0a0a0c;color:#d4d4d8;font:800 16px "Google Sans",Arial,sans-serif;letter-spacing:.035em;text-transform:uppercase;cursor:pointer;transition:.18s ease}',
             '.deseo-dialog-button:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.22);color:#fff}',
             '.deseo-dialog-button.primary{border-color:transparent;background:linear-gradient(180deg,#ff4350,#d70020);color:#fff;box-shadow:0 12px 30px rgba(215,0,32,.2)}',
             '.deseo-dialog-button.primary:hover{background:#fff;color:#080809}',
             '.deseo-dialog-button.danger{border-color:rgba(255,43,54,.24);background:rgba(255,43,54,.08);color:#ff9299}',
             '.deseo-dialog-button.danger:hover{background:#ff2b36;color:#fff}',
             'body.deseo-dialog-open{overflow:hidden}',
-            '@media(max-width:620px){.deseo-dialog-root{align-items:flex-end;padding:12px}.deseo-dialog-card{border-radius:24px}.deseo-dialog-head{padding:24px 21px 0}.deseo-dialog-title{font-size:25px}.deseo-dialog-body{padding:14px 21px 22px;font-size:13px}.deseo-dialog-actions{display:grid;grid-template-columns:1fr 1fr;padding:0 21px 21px}.deseo-dialog-button{width:100%;padding:0 12px}.deseo-dialog-actions.single{grid-template-columns:1fr}}'
+            '@media(max-width:620px){.deseo-dialog-root{align-items:flex-end;padding:12px}.deseo-dialog-card{border-radius:24px}.deseo-dialog-head{padding:24px 21px 0}.deseo-dialog-title{font-size:28px}.deseo-dialog-body{padding:15px 21px 23px;font-size:17px}.deseo-dialog-actions{display:grid;grid-template-columns:1fr 1fr;padding:0 21px 21px}.deseo-dialog-button{width:100%;padding:0 12px;font-size:16px}.deseo-dialog-actions.single{grid-template-columns:1fr}}'
         ].join('');
 
         root = document.createElement('div');
@@ -204,35 +204,121 @@
         }
     };
 
+    function isAdminWriteForm(form) {
+        if (!document.body || !document.body.classList.contains('admin-body')) return false;
+
+        var method = String(form.getAttribute('method') || 'get').toLowerCase();
+        if (method !== 'post') return false;
+
+        var actionInput = form.querySelector('input[name="action"]');
+        var action = actionInput ? String(actionInput.value || '').toLowerCase() : '';
+
+        if (action === 'login' || action === 'logout') return false;
+        if (action === 'delete_show_week') return false;
+
+        return true;
+    }
+
+    function adminAutoConfirm(form, submitter) {
+        var actionInput = form.querySelector('input[name="action"]');
+        var action = actionInput ? String(actionInput.value || '').toLowerCase() : '';
+        var statusSelect = form.querySelector('select[name="status"]');
+        var label = submitter && submitter.textContent
+            ? submitter.textContent.replace(/\s+/g, ' ').trim()
+            : '';
+
+        if (!label) {
+            var fallbackButton = form.querySelector('button[type="submit"],input[type="submit"]');
+            if (fallbackButton) {
+                label = String(fallbackButton.textContent || fallbackButton.value || '').replace(/\s+/g, ' ').trim();
+            }
+        }
+
+        var message = '';
+        var title = 'Επιβεβαίωση αλλαγής';
+        var confirmLabel = 'Ναι, αποθήκευση';
+        var danger = !!(submitter && submitter.classList && submitter.classList.contains('button-danger'));
+
+        if (statusSelect && statusSelect.value) {
+            var option = statusSelect.options && statusSelect.selectedIndex >= 0
+                ? statusSelect.options[statusSelect.selectedIndex]
+                : null;
+            var statusLabel = option ? String(option.textContent || option.value).trim() : String(statusSelect.value).toUpperCase();
+            message = 'Είστε σίγουροι ότι θέλετε να αλλάξετε το status σε «' + statusLabel + '»; Η αλλαγή θα αποθηκευτεί στο σύστημα.';
+            confirmLabel = 'Ναι, αλλαγή status';
+        } else if (action.indexOf('delete') !== -1 || action.indexOf('release') !== -1) {
+            title = 'Επιβεβαίωση διαγραφής';
+            message = 'Είστε σίγουροι ότι θέλετε να εκτελέσετε την ενέργεια «' + (label || action || 'Διαγραφή') + '»; Η ενέργεια μπορεί να αλλάξει ή να αφαιρέσει αποθηκευμένα δεδομένα.';
+            confirmLabel = 'Ναι, συνέχεια';
+            danger = true;
+        } else if (action.indexOf('toggle') !== -1) {
+            message = 'Είστε σίγουροι ότι θέλετε να εκτελέσετε την ενέργεια «' + (label || action || 'Αλλαγή κατάστασης') + '»; Η νέα κατάσταση θα αποθηκευτεί αμέσως.';
+            confirmLabel = 'Ναι, αλλαγή';
+        } else if (action.indexOf('approve') !== -1 || action.indexOf('create') !== -1) {
+            message = 'Είστε σίγουροι ότι θέλετε να εκτελέσετε την ενέργεια «' + (label || action || 'Δημιουργία') + '»; Θα δημιουργηθούν ή θα ενεργοποιηθούν νέα δεδομένα στο σύστημα.';
+            confirmLabel = 'Ναι, συνέχεια';
+        } else {
+            message = 'Είστε σίγουροι ότι θέλετε να εκτελέσετε την ενέργεια «' + (label || action || 'Αποθήκευση αλλαγών') + '»; Οι αλλαγές θα αποθηκευτούν στο σύστημα.';
+        }
+
+        return {
+            message: message,
+            title: title,
+            confirmLabel: confirmLabel,
+            cancelLabel: 'Ακύρωση',
+            danger: danger
+        };
+    }
+
     function bindConfirmForms() {
         document.addEventListener('submit', function (event) {
             var form = event.target;
-            if (!form || !form.matches || !form.matches('form[data-deseo-confirm]')) return;
+            if (!form || !form.matches) return;
+
+            var hasCustomConfirm = form.matches('form[data-deseo-confirm]');
+            var hasAdminAutoConfirm = isAdminWriteForm(form);
+            if (!hasCustomConfirm && !hasAdminAutoConfirm) return;
 
             if (form.dataset.deseoConfirmBypass === '1') {
                 delete form.dataset.deseoConfirmBypass;
                 return;
             }
 
+            if (!hasCustomConfirm && hasAdminAutoConfirm && event.defaultPrevented) return;
+
+            var submitter = event.submitter || null;
+            var useCustomConfirm = hasCustomConfirm;
             var conditionalStatus = form.getAttribute('data-deseo-confirm-if-status');
-            if (conditionalStatus) {
-                var select = form.querySelector('select[name="status"]');
-                if (!select || select.value !== conditionalStatus) return;
-                if (form.dataset.fileRemoved === '1') return;
+
+            if (useCustomConfirm && conditionalStatus) {
+                var conditionalSelect = form.querySelector('select[name="status"]');
+                var conditionalMatches = !!conditionalSelect && conditionalSelect.value === conditionalStatus;
+                var fileAlreadyRemoved = form.dataset.fileRemoved === '1';
+
+                if (!conditionalMatches || fileAlreadyRemoved) {
+                    useCustomConfirm = false;
+                    if (!hasAdminAutoConfirm) return;
+                }
             }
 
-            event.preventDefault();
-            var submitter = event.submitter || null;
-
-            window.DeseoDialog.confirm(
-                form.getAttribute('data-deseo-confirm') || 'Να συνεχίσουμε;',
-                {
+            var config = useCustomConfirm
+                ? {
+                    message: form.getAttribute('data-deseo-confirm') || 'Να συνεχίσουμε;',
                     title: form.getAttribute('data-deseo-confirm-title') || 'Επιβεβαίωση',
                     confirmLabel: form.getAttribute('data-deseo-confirm-label') || 'Συνέχεια',
                     cancelLabel: form.getAttribute('data-deseo-cancel-label') || 'Ακύρωση',
                     danger: form.hasAttribute('data-deseo-confirm-danger')
                 }
-            ).then(function (confirmed) {
+                : adminAutoConfirm(form, submitter);
+
+            event.preventDefault();
+
+            window.DeseoDialog.confirm(config.message, {
+                title: config.title,
+                confirmLabel: config.confirmLabel,
+                cancelLabel: config.cancelLabel,
+                danger: config.danger
+            }).then(function (confirmed) {
                 if (!confirmed) return;
                 form.dataset.deseoConfirmBypass = '1';
 
@@ -243,7 +329,7 @@
                     form.submit();
                 }
             });
-        }, true);
+        });
     }
 
     if (document.readyState === 'loading') {
