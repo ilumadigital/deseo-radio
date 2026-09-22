@@ -2429,3 +2429,164 @@ input[type="password"]{
     max-width:none;
   }
 }
+
+
+/* CMS V9 · readability, touch targets and safer action UX */
+.admin-body{
+  font-size:18px;
+  line-height:1.55;
+}
+.admin-app{
+  grid-template-columns:280px minmax(0,1fr);
+}
+.admin-content{
+  width:min(1260px,calc(100% - 64px));
+}
+.admin-sidebar{
+  padding:30px 22px;
+}
+.admin-kicker,
+.admin-nav a,
+.admin-sidebar-bottom a,
+.admin-sidebar-bottom button,
+.admin-account span,
+.admin-account strong,
+.admin-mobile-nav a{
+  font-size:16px!important;
+  line-height:1.35;
+}
+.admin-nav a{
+  min-height:50px;
+  padding:13px 14px;
+}
+.admin-sidebar-bottom{
+  gap:14px;
+}
+.admin-content p{
+  font-size:18px!important;
+  line-height:1.65!important;
+}
+.admin-content span,
+.admin-content small,
+.admin-content label,
+.admin-content .field-label,
+.admin-content code{
+  font-size:16px!important;
+  line-height:1.45;
+}
+.admin-content strong,
+.admin-content b{
+  font-size:18px!important;
+  line-height:1.35;
+}
+.admin-content input,
+.admin-content select,
+.admin-content textarea{
+  min-height:54px;
+  font-size:18px!important;
+  line-height:1.35;
+}
+.admin-content textarea{
+  padding:14px 15px;
+}
+.button,
+.danger-link,
+.admin-content button{
+  min-height:50px;
+  font-size:16px!important;
+  line-height:1.25;
+}
+.button{
+  padding:0 22px;
+}
+.panel{
+  padding:28px;
+}
+.page-heading p,
+.quick-card p,
+.schedule-panel-head p,
+.mylive-panel-head p,
+.rewards-panel-head p,
+.season6-panel-head p,
+.dashboard-hero-copy>p,
+.dashboard-section-head p{
+  font-size:18px!important;
+}
+.page-heading span,
+.dashboard-kicker,
+.dashboard-section-head span,
+.dashboard-workspace-head span,
+.schedule-eyebrow,
+.mylive-panel-head span,
+.mylive-subpanel-head span,
+.rewards-panel-head>div>span,
+.season6-panel-head>div>span{
+  font-size:16px!important;
+}
+.stat strong{font-size:36px!important}
+.dashboard-audience-card>strong{font-size:54px!important}
+.dashboard-metric>strong{font-size:32px!important}
+.mylive-hub-stat>strong{font-size:30px!important}
+.mylive-panel-head>strong{font-size:42px!important}
+.mylive-directory-head>strong{font-size:42px!important}
+.schedule-overview strong{font-size:29px!important}
+.schedule-modal-count strong{font-size:32px!important}
+.rewards-admin-stats strong{font-size:29px!important}
+.rewards-panel-head>strong{font-size:34px!important}
+.season6-stats strong{font-size:30px!important}
+.audience-current strong{font-size:31px!important}
+.audience-preview b{font-size:25px!important}
+.login-card>p{
+  font-size:18px!important;
+  line-height:1.6;
+}
+.login-card .field label,
+.login-meta{
+  font-size:16px!important;
+}
+.login-card input{
+  min-height:54px;
+  font-size:18px!important;
+}
+.login-card .button{
+  min-height:52px;
+  font-size:16px!important;
+}
+.notice{
+  font-size:16px!important;
+  line-height:1.5;
+}
+@media(max-width:980px){
+  .admin-content{
+    width:min(100% - 32px,980px);
+  }
+  .admin-mobile-header{
+    padding:14px 16px;
+  }
+  .admin-mobile-nav a{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    padding:9px 13px;
+  }
+}
+@media(max-width:650px){
+  .admin-content{
+    width:min(100% - 22px,980px);
+    padding:28px 0 64px;
+  }
+  .panel{
+    padding:20px;
+    border-radius:20px;
+  }
+  .page-heading h1{
+    font-size:38px;
+  }
+  .form-actions{
+    gap:10px;
+  }
+  .button,
+  .admin-content button{
+    min-height:52px;
+  }
+}
