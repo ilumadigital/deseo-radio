@@ -1058,7 +1058,8 @@ $nextShowMessage = match ($nextShowSetStatus) {
                             <button class="profile-unpublish-button"
                                     type="submit"
                                     name="action"
-                                    value="unpublish_public_profile">
+                                    value="unpublish_public_profile"
+                                    data-unpublish-profile>
                                 Unpublish
                             </button>
                         <?php endif; ?>
@@ -1376,6 +1377,30 @@ $nextShowMessage = match ($nextShowSetStatus) {
 
 <div class="toast" id="toast" hidden></div>
 
+<script>
+document.querySelectorAll('[data-unpublish-profile]').forEach(button => {
+    button.addEventListener('click', event => {
+        event.preventDefault();
+
+        if (!window.DeseoDialog) return;
+
+        window.DeseoDialog.confirm(
+            'Το profile θα κρυφτεί από τους listeners, αλλά το show θα παραμείνει κανονικά συνδεδεμένο με το Radio Program. Μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.',
+            {
+                title: 'Unpublish Public Profile',
+                confirmLabel: 'Unpublish',
+                cancelLabel: 'Cancel',
+                danger: true
+            }
+        ).then(confirmed => {
+            if (!confirmed) return;
+            if (button.form && typeof button.form.requestSubmit === 'function') {
+                button.form.requestSubmit(button);
+            }
+        });
+    });
+});
+</script>
 
 <script>
 (() => {
