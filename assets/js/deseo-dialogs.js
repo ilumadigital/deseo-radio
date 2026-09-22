@@ -17,21 +17,21 @@
             '.deseo-dialog-card{width:min(100%,520px);overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:radial-gradient(circle at 92% 0,rgba(255,43,54,.12),transparent 32%),linear-gradient(145deg,#151517,#0b0b0d);box-shadow:0 38px 120px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.035);color:#fff;font-family:"Google Sans",Arial,sans-serif;transform:translateY(12px) scale(.985);opacity:0;transition:transform .18s ease,opacity .18s ease}',
             '.deseo-dialog-root.is-visible .deseo-dialog-card{transform:none;opacity:1}',
             '.deseo-dialog-head{padding:27px 28px 0}',
-            '.deseo-dialog-kicker{display:flex;align-items:center;gap:10px;color:#ff2b36;font-size:16px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}',
+            '.deseo-dialog-kicker{display:flex;align-items:center;gap:10px;color:#ff2b36;font-size:14px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}',
             '.deseo-dialog-kicker:before{content:"";width:24px;height:1px;background:#ff2b36}',
             '.deseo-dialog-title{margin:13px 0 0;color:#fff;font-size:28px;font-weight:700;line-height:1.08;letter-spacing:-.035em}',
-            '.deseo-dialog-body{padding:17px 28px 27px;color:#aaaab1;font-size:18px;line-height:1.65;white-space:pre-line}',
-            '.deseo-dialog-input{width:100%;min-height:54px;margin-top:16px;padding:0 16px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#070708;color:#fff;font:500 18px "Google Sans",Arial,sans-serif;outline:none}',
+            '.deseo-dialog-body{padding:17px 28px 27px;color:#aaaab1;font-size:16px;line-height:1.65;white-space:pre-line}',
+            '.deseo-dialog-input{width:100%;min-height:54px;margin-top:16px;padding:0 16px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#070708;color:#fff;font:500 16px "Google Sans",Arial,sans-serif;outline:none}',
             '.deseo-dialog-input:focus{border-color:rgba(255,43,54,.48);box-shadow:0 0 0 3px rgba(255,43,54,.07)}',
             '.deseo-dialog-actions{display:flex;justify-content:flex-end;gap:9px;padding:0 28px 27px}',
-            '.deseo-dialog-button{min-height:52px;padding:0 22px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:#0a0a0c;color:#d4d4d8;font:800 16px "Google Sans",Arial,sans-serif;letter-spacing:.035em;text-transform:uppercase;cursor:pointer;transition:.18s ease}',
+            '.deseo-dialog-button{min-height:52px;padding:0 22px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:#0a0a0c;color:#d4d4d8;font:800 14px "Google Sans",Arial,sans-serif;letter-spacing:.035em;text-transform:uppercase;cursor:pointer;transition:.18s ease}',
             '.deseo-dialog-button:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.22);color:#fff}',
             '.deseo-dialog-button.primary{border-color:transparent;background:linear-gradient(180deg,#ff4350,#d70020);color:#fff;box-shadow:0 12px 30px rgba(215,0,32,.2)}',
             '.deseo-dialog-button.primary:hover{background:#fff;color:#080809}',
             '.deseo-dialog-button.danger{border-color:rgba(255,43,54,.24);background:rgba(255,43,54,.08);color:#ff9299}',
             '.deseo-dialog-button.danger:hover{background:#ff2b36;color:#fff}',
             'body.deseo-dialog-open{overflow:hidden}',
-            '@media(max-width:620px){.deseo-dialog-root{align-items:flex-end;padding:12px}.deseo-dialog-card{border-radius:24px}.deseo-dialog-head{padding:24px 21px 0}.deseo-dialog-title{font-size:28px}.deseo-dialog-body{padding:15px 21px 23px;font-size:17px}.deseo-dialog-actions{display:grid;grid-template-columns:1fr 1fr;padding:0 21px 21px}.deseo-dialog-button{width:100%;padding:0 12px;font-size:16px}.deseo-dialog-actions.single{grid-template-columns:1fr}}'
+            '@media(max-width:620px){.deseo-dialog-root{align-items:flex-end;padding:12px}.deseo-dialog-card{border-radius:24px}.deseo-dialog-head{padding:24px 21px 0}.deseo-dialog-title{font-size:28px}.deseo-dialog-body{padding:15px 21px 23px;font-size:17px}.deseo-dialog-actions{display:grid;grid-template-columns:1fr 1fr;padding:0 21px 21px}.deseo-dialog-button{width:100%;padding:0 12px;font-size:14px}.deseo-dialog-actions.single{grid-template-columns:1fr}}'
         ].join('');
 
         root = document.createElement('div');
