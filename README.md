@@ -391,3 +391,5 @@ The application searches for configuration in this order:
 4. `$HOME/.deseo-radio.env` as an additional fallback
 
 After confirming the parent-level `.env` works, remove the copy inside `public_html`. This keeps production credentials outside the web root and outside the Git deployment directory.
+
+<!-- actions-environment-check -->
