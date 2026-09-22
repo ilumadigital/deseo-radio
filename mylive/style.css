@@ -2385,6 +2385,19 @@ body{
   min-height:54px;
   font-size:18px!important;
 }
+.mylive-login-page a,
+.mylive-password-page a,
+.mylive-dashboard-page a{
+  font-size:16px!important;
+}
+.mylive-login-page strong,
+.mylive-password-page strong,
+.mylive-dashboard-page strong,
+.mylive-login-page b,
+.mylive-password-page b,
+.mylive-dashboard-page b{
+  font-size:18px!important;
+}
 .primary-button,
 .logout-button,
 .password-toggle,
@@ -2452,6 +2465,7 @@ body{
 .mylive-next-show-card{
   scroll-margin-top:28px;
 }
+.section-head>strong{font-size:30px!important}
 .dj-metric-card>strong{font-size:38px!important}
 .dj-metric-reach>strong{font-size:42px!important}
 .mylive-rewards-stats strong{font-size:24px!important}
