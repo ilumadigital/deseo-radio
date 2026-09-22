@@ -391,3 +391,56 @@ The application searches for configuration in this order:
 4. `$HOME/.deseo-radio.env` as an additional fallback
 
 After confirming the parent-level `.env` works, remove the copy inside `public_html`. This keeps production credentials outside the web root and outside the Git deployment directory.
+
+
+## MyLive App PWA & Push Notifications
+
+The private `/mylive/` DJ portal is also an independent installable PWA named **MyLive App**.
+
+### PWA files
+
+- `/mylive/manifest.json` — dedicated manifest with `/mylive/` scope.
+- `/mylive-sw.js` — dedicated MyLive service worker, registered with `/mylive/` scope.
+- `/mylive/offline.html` — offline fallback that never caches private DJ dashboard HTML.
+- `/mylive/app.js` — install UI and push-notification subscription flow.
+
+### Push configuration
+
+Set these values in the production `.env`:
+
+```env
+MYLIVE_WEBPUSHR_PUBLIC_KEY=
+MYLIVE_WEBPUSHR_API_KEY=
+MYLIVE_WEBPUSHR_AUTH_TOKEN=
+MYLIVE_PUSH_CRON_TOKEN=
+MYLIVE_BASE_URL=https://deseoradio.com
+```
+
+The browser is tagged with the logged-in DJ's `mylive_account_id`. Scheduled pushes are sent only to the matching DJ.
+
+### Scheduled notifications
+
+`/mylive/push-cron.php` reads the actual Radio Program table and sends:
+
+1. **DJ Set reminder** — exactly two days before the DJ's Program start time, only when there is no active uploaded set. If the current set has `needs_changes`, the reminder becomes an action-required notification.
+2. **On Air** — once when the DJ's actual Program slot starts.
+
+Every notification event is written to `dj_push_notification_log` with a unique event key, so frequent cron execution does not generate duplicate pushes.
+
+### Cron
+
+Recommended frequency: every **5 minutes**.
+
+Preferred server-side CLI cron:
+
+```bash
+*/5 * * * * php /ABSOLUTE/PATH/TO/public_html/mylive/push-cron.php
+```
+
+If the hosting panel only supports URL cron calls, use:
+
+```text
+https://deseoradio.com/mylive/push-cron.php?token=YOUR_MYLIVE_PUSH_CRON_TOKEN
+```
+
+The web endpoint rejects requests unless the configured cron token matches. CLI execution does not require the token.
