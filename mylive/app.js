@@ -163,7 +163,7 @@
     });
 
     if (Notification.permission === 'granted') {
-      setNotificationStatus('Push notifications ενεργές σε αυτή τη συσκευή.', 'enabled');
+      setNotificationStatus('Η άδεια ειδοποιήσεων είναι ενεργή. Συγχρονίζουμε τη συσκευή με το MyLive account σου…', 'pending');
       tagCurrentDj();
     } else if (Notification.permission === 'denied') {
       setNotificationStatus('Οι ειδοποιήσεις είναι μπλοκαρισμένες από το browser. Άλλαξέ το από τα site settings.', 'blocked');
@@ -173,6 +173,12 @@
 
     notificationButtons.forEach(function (button) {
       button.addEventListener('click', function () {
+        if (isIos() && !isStandalone()) {
+          setNotificationStatus('Στο iPhone εγκατέστησε πρώτα το MyLive στην αρχική οθόνη και άνοιξέ το από εκεί για να ενεργοποιήσεις push notifications.', 'ready');
+          showIosInstallHelp();
+          return;
+        }
+
         if (Notification.permission === 'denied') {
           setNotificationStatus('Οι ειδοποιήσεις είναι μπλοκαρισμένες. Άνοιξε τα permissions του deseoradio.com και επίλεξε Allow.', 'blocked');
           return;
