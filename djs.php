@@ -26,6 +26,8 @@ require_once __DIR__ . '/iluma/connection.php';
 require_once __DIR__ . '/includes/dj-season.php';
 require_once __DIR__ . '/includes/turnstile.php';
 require_once __DIR__ . '/includes/mailer.php';
+require_once __DIR__ . '/includes/mylive-email-reminders.php';
+deseo_mylive_maybe_run_email_scheduler($pdo);
 
 function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
