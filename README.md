@@ -393,54 +393,38 @@ The application searches for configuration in this order:
 After confirming the parent-level `.env` works, remove the copy inside `public_html`. This keeps production credentials outside the web root and outside the Git deployment directory.
 
 
-## MyLive App PWA & Push Notifications
+## MyLive App PWA & Email Automation
 
-The private `/mylive/` DJ portal is also an independent installable PWA named **MyLive App**.
+The private `/mylive/` DJ portal is an independent installable PWA named **MyLive App**.
 
 ### PWA files
 
 - `/mylive/manifest.json` — dedicated manifest with `/mylive/` scope.
 - `/mylive-sw.js` — dedicated MyLive service worker, registered with `/mylive/` scope.
 - `/mylive/offline.html` — offline fallback that never caches private DJ dashboard HTML.
-- `/mylive/app.js` — install UI and push-notification subscription flow.
+- `/mylive/app.js` — install UI plus the lightweight email-automation tick while MyLive is open.
 
-### Push configuration
+### Automated DJ emails
 
-Set these values in the production `.env`:
+The reminder engine lives in `/includes/mylive-email-reminders.php` and uses the real `program.mylive_account_id` mapping.
 
-```env
-MYLIVE_WEBPUSHR_PUBLIC_KEY=
-MYLIVE_WEBPUSHR_API_KEY=
-MYLIVE_WEBPUSHR_AUTH_TOKEN=
-MYLIVE_PUSH_CRON_TOKEN=
-MYLIVE_BASE_URL=https://deseoradio.com
-```
+It sends two branded emails:
 
-The browser is tagged with the logged-in DJ's `mylive_account_id`. Scheduled pushes are sent only to the matching DJ.
+1. **DJ Set due** — on the calendar day three days before the next Program slot, only when there is no non-broadcasted DJ Set for that account. Once an episode becomes `broadcasted`, the next weekly occurrence expects the next episode and can trigger a new reminder.
+2. **On Air / Social** — once during the actual live Program slot. The DJ is reminded to publish the official creative on social media and share `https://deseoradio.com`.
 
-### Scheduled notifications
+Every event is deduplicated in `dj_email_automation_log`, keyed by Program slot, broadcast date and episode where relevant.
 
-`/mylive/push-cron.php` reads the actual Radio Program table and sends:
+### No cron
 
-1. **DJ Set reminder** — exactly two days before the DJ's Program start time, only when there is no active uploaded set. If the current set has `needs_changes`, the reminder becomes an action-required notification.
-2. **On Air** — once when the DJ's actual Program slot starts.
+There is no cron job for this automation.
 
-Every notification event is written to `dj_push_notification_log` with a unique event key, so frequent cron execution does not generate duplicate pushes.
+The scheduler is checked:
+- during normal Deseo homepage traffic,
+- during the DJ Call page traffic,
+- when MyLive is used,
+- and through `/mylive/email-tick.php` every 60 seconds while a public Deseo page or MyLive remains open.
 
-### Cron
+The database throttle prevents repeated work and duplicate emails.
 
-Recommended frequency: every **5 minutes**.
-
-Preferred server-side CLI cron:
-
-```bash
-*/5 * * * * php /ABSOLUTE/PATH/TO/public_html/mylive/push-cron.php
-```
-
-If the hosting panel only supports URL cron calls, use:
-
-```text
-https://deseoradio.com/mylive/push-cron.php?token=YOUR_MYLIVE_PUSH_CRON_TOKEN
-```
-
-The web endpoint rejects requests unless the configured cron token matches. CLI execution does not require the token.
+Because there is no always-on background process, the On Air email is sent on the first scheduler tick/request that occurs inside the live slot. With active site traffic this is normally close to the start time, but an exact minute cannot be guaranteed if the site receives no requests during the slot.
