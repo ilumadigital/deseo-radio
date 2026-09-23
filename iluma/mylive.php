@@ -5,9 +5,11 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/mylive-email-reminders.php';
+require_once __DIR__ . '/../includes/mylive-push.php';
 require_once __DIR__ . '/admin-ui.php';
 
 deseo_mylive_bootstrap($pdo);
+deseo_mylive_push_bootstrap($pdo);
 
 try {
     deseo_mylive_cleanup_broadcasted_sets($pdo);
