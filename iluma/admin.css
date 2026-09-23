@@ -3382,6 +3382,37 @@ input[type="password"]{
   gap:14px;
   margin-top:20px
 }
+.communications-field-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-width:0
+}
+.communications-field-head>label{
+  min-width:0
+}
+.communications-variable-picker{
+  width:auto!important;
+  max-width:210px;
+  min-height:32px!important;
+  height:32px;
+  padding:0 30px 0 10px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:999px!important;
+  background:#0b0b0c!important;
+  color:#a2a29d!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.025em;
+  cursor:pointer
+}
+.communications-variable-picker:hover,
+.communications-variable-picker:focus{
+  border-color:rgba(255,48,56,.28)!important;
+  color:#fff!important;
+  box-shadow:none!important
+}
 .communications-form .field textarea{
   width:100%;
   min-height:150px;
@@ -3404,11 +3435,18 @@ input[type="password"]{
   gap:7px
 }
 .communications-placeholders span{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
   padding:6px 9px;
   border:1px solid rgba(255,255,255,.07);
   border-radius:999px;
   background:#0b0b0b;
-  color:#777771;
+  color:#666660;
+  font:700 9px/1.2 Arial,sans-serif
+}
+.communications-placeholders span b{
+  color:#b4b4af;
   font:800 10px/1 monospace
 }
 .communications-directory{
@@ -3678,6 +3716,15 @@ input[type="password"]{
   .communications-section-head>p{text-align:left}
 }
 @media(max-width:620px){
+  .communications-field-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:7px
+  }
+  .communications-variable-picker{
+    width:100%!important;
+    max-width:none
+  }
   .communications-stats{grid-template-columns:1fr 1fr}
   .communications-channel-masters{grid-template-columns:1fr}
   .communications-user-head{padding:15px}
