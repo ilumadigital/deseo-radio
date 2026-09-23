@@ -565,7 +565,7 @@
       button.addEventListener('click', function () {
         if (button.disabled) return;
 
-        var defaultLabel = button.textContent;
+        var defaultLabel = String(button.textContent || 'Share it').replace(/\s+/g, ' ').trim();
         var title = button.getAttribute('data-share-title') || 'Deseo Radio artwork';
 
         button.disabled = true;
