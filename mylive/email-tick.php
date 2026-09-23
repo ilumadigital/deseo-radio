@@ -1,4 +1,5 @@
 <?php
+// MyLive notification automation endpoint.
 declare(strict_types=1);
 
 require_once __DIR__ . '/../iluma/connection.php';
