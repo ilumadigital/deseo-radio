@@ -185,6 +185,14 @@ function deseo_mylive_push_sync_subscription(
         if ($enabled) {
             $uaHash = $userAgent !== '' ? hash('sha256', $userAgent) : '';
 
+            if ($uaHash !== '') {
+                $pdo->prepare(
+                    "UPDATE dj_push_subscriptions
+                     SET is_active = 0
+                     WHERE account_id = ? AND user_agent_hash = ? AND subscriber_id <> ?"
+                )->execute([$accountId, $uaHash, $subscriberId]);
+            }
+
             $stmt = $pdo->prepare(
                 "INSERT INTO dj_push_subscriptions
                  (account_id, subscriber_id, user_agent_hash, is_active, last_seen_at)
@@ -241,6 +249,9 @@ function deseo_mylive_push_send_to_account(
     }
     if (!deseo_mylive_push_account_enabled($pdo, $accountId)) {
         throw new RuntimeException('Push notifications are disabled for this DJ.');
+    }
+    if (deseo_mylive_push_subscription_count($pdo, $accountId) < 1) {
+        throw new RuntimeException('No active push subscription is registered for this DJ.');
     }
 
     $payload = [
