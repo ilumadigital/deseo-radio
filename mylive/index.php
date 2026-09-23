@@ -613,6 +613,7 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
     });
 });
 </script>
+<!-- Webpushr · MyLive manual integration -->
 <!-- start webpushr code -->
 <script>
 (function(w,d,s,id){
@@ -722,6 +723,7 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
     });
 });
 </script>
+<!-- Webpushr · MyLive manual integration -->
 <!-- start webpushr code -->
 <script>
 (function(w,d,s,id){
@@ -1781,6 +1783,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
     });
 }());
 </script>
+<!-- Webpushr · MyLive manual integration -->
 <!-- start webpushr code -->
 <script>
 (function(w,d,s,id){
