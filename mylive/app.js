@@ -464,6 +464,171 @@
       });
   }
 
+  var assetSharePromises = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function showAssetShareMessage(message, title) {
+    if (window.DeseoDialog && typeof window.DeseoDialog.alert === 'function') {
+      window.DeseoDialog.alert(message, {
+        title: title || 'Share artwork',
+        confirmLabel: 'OK'
+      });
+      return;
+    }
+
+    window.alert(message);
+  }
+
+  function fallbackAssetDownload(button) {
+    var card = button.closest ? button.closest('.asset-card') : null;
+    var link = card ? card.querySelector('.asset-download') : null;
+
+    if (link) {
+      link.click();
+    }
+  }
+
+  function prepareAssetShareFile(button) {
+    if (!button) return Promise.reject(new Error('Share button is unavailable.'));
+
+    if (assetSharePromises && assetSharePromises.has(button)) {
+      return assetSharePromises.get(button);
+    }
+
+    var url = button.getAttribute('data-share-url') || '';
+    var filename = button.getAttribute('data-share-name') || 'deseo-radio-artwork.jpg';
+    var mime = button.getAttribute('data-share-mime') || 'image/jpeg';
+
+    var promise = fetch(url, {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        'Accept': 'image/*'
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Artwork could not be loaded.');
+        }
+        return response.blob();
+      })
+      .then(function (blob) {
+        var finalMime = blob.type || mime || 'image/jpeg';
+        return new File([blob], filename, {
+          type: finalMime,
+          lastModified: Date.now()
+        });
+      })
+      .catch(function (error) {
+        if (assetSharePromises) assetSharePromises.delete(button);
+        throw error;
+      });
+
+    if (assetSharePromises) {
+      assetSharePromises.set(button, promise);
+    }
+
+    return promise;
+  }
+
+  function initAssetShareButtons() {
+    var buttons = all('[data-mylive-share-asset]');
+    if (!buttons.length) return;
+
+    function warm(button) {
+      prepareAssetShareFile(button).catch(function () {});
+    }
+
+    if ('IntersectionObserver' in window) {
+      var preloadObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          warm(entry.target);
+          preloadObserver.unobserve(entry.target);
+        });
+      }, {
+        rootMargin: '600px 0px'
+      });
+
+      buttons.forEach(function (button) {
+        preloadObserver.observe(button);
+      });
+    }
+
+    buttons.forEach(function (button) {
+      ['pointerenter', 'touchstart', 'focus'].forEach(function (eventName) {
+        button.addEventListener(eventName, function () {
+          warm(button);
+        }, { passive: true });
+      });
+
+      button.addEventListener('click', function () {
+        if (button.disabled) return;
+
+        var defaultLabel = button.textContent;
+        var title = button.getAttribute('data-share-title') || 'Deseo Radio artwork';
+
+        button.disabled = true;
+        button.classList.add('is-sharing');
+        button.textContent = 'Preparing…';
+
+        prepareAssetShareFile(button)
+          .then(function (file) {
+            if (typeof navigator.share !== 'function') {
+              fallbackAssetDownload(button);
+              showAssetShareMessage(
+                'Η συσκευή ή ο browser σου δεν υποστηρίζει native file sharing. Το artwork κατεβαίνει ώστε να μπορείς να το ανεβάσεις χειροκίνητα.',
+                'Share unavailable'
+              );
+              return null;
+            }
+
+            var shareData = {
+              files: [file],
+              title: title,
+              text: 'Deseo Radio · MyLive'
+            };
+
+            if (typeof navigator.canShare === 'function' && !navigator.canShare({ files: [file] })) {
+              fallbackAssetDownload(button);
+              showAssetShareMessage(
+                'Η συσκευή σου ανοίγει share menu, αλλά ο συγκεκριμένος browser δεν επιτρέπει sharing εικόνων ως αρχείο. Το artwork κατεβαίνει για χειροκίνητο upload.',
+                'File sharing unavailable'
+              );
+              return null;
+            }
+
+            button.textContent = 'Opening share…';
+            return navigator.share(shareData);
+          })
+          .catch(function (error) {
+            if (error && error.name === 'AbortError') {
+              return;
+            }
+
+            if (error && error.name === 'NotAllowedError') {
+              showAssetShareMessage(
+                'Το artwork είναι έτοιμο. Πάτησε ξανά “Share it” για να ανοίξει το share menu της συσκευής.',
+                'Ready to share'
+              );
+              return;
+            }
+
+            fallbackAssetDownload(button);
+            showAssetShareMessage(
+              'Δεν μπόρεσε να ανοίξει το native share menu. Το artwork κατεβαίνει ώστε να μπορείς να το κοινοποιήσεις χειροκίνητα.',
+              'Share unavailable'
+            );
+          })
+          .finally(function () {
+            button.disabled = false;
+            button.classList.remove('is-sharing');
+            button.textContent = defaultLabel;
+          });
+      });
+    });
+  }
+
   function registerMyLiveServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
 
@@ -491,6 +656,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initInstallButtons();
+    initAssetShareButtons();
     registerMyLiveServiceWorker();
     initPushNotifications();
     startEmailAutomationTick();
