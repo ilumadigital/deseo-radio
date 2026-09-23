@@ -6,6 +6,9 @@ require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/mylive-push.php';
 
 function deseo_mylive_communications_bootstrap(PDO $pdo): void {
+    static $bootstrapped = false;
+    if ($bootstrapped) return;
+
     deseo_mylive_push_bootstrap($pdo);
 
     $columns = [
@@ -44,6 +47,7 @@ function deseo_mylive_communications_bootstrap(PDO $pdo): void {
             KEY idx_comm_channel (channel, created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+    $bootstrapped = true;
 }
 
 function deseo_mylive_communication_preferences(PDO $pdo, int $accountId): array {
