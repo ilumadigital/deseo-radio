@@ -200,21 +200,22 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
         )->execute([$now->format('Y-m-d H:i:s')]);
 
         $stmt = $pdo->query(
-            "SELECT p.id AS program_id,
-                    p.day_of_week,
-                    p.start_time,
-                    p.end_time,
+            "SELECT a.id AS program_id,
+                    a.day_of_week,
+                    a.start_time,
+                    a.end_time,
                     a.id AS account_id,
                     a.artist_name,
                     a.full_name,
                     a.email
-             FROM program p
-             INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
-             WHERE p.mylive_account_id IS NOT NULL
-               AND a.is_active = 1
+             FROM dj_portal_accounts a
+             WHERE a.is_active = 1
                AND a.account_status = 'active'
                AND a.email <> ''
-             ORDER BY p.day_of_week ASC, p.start_time ASC"
+               AND a.day_of_week BETWEEN 1 AND 7
+               AND a.start_time IS NOT NULL
+               AND a.start_time <> ''
+             ORDER BY a.day_of_week ASC, a.start_time ASC"
         );
 
         $shows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
