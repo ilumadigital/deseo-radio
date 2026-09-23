@@ -1199,7 +1199,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
                                         data-share-name="<?= deseo_mylive_e((string)$asset['original_name']) ?>"
                                         data-share-title="<?= deseo_mylive_e((string)$asset['title']) ?>"
                                         data-share-mime="<?= deseo_mylive_e((string)$asset['mime_type']) ?>">
-                                        Share it ↗
+                                        Share it
                                     </button>
                                 <?php endif; ?>
                             </div>
