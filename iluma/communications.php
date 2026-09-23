@@ -446,8 +446,11 @@ admin_page_start('Communications', 'communications');
                 <input type="url" name="target_url" value="https://deseoradio.com/mylive/">
             </div>
 
-            <div class="communications-placeholders">
-                <span>{artist}</span><span>{name}</span><span>{email}</span><span>{slot}</span>
+            <div class="communications-placeholders" aria-label="Available variables">
+                <span><b>{artist}</b> Artist</span>
+                <span><b>{name}</b> Full name</span>
+                <span><b>{email}</b> Email</span>
+                <span><b>{slot}</b> Weekly slot</span>
             </div>
 
             <div class="form-actions">
