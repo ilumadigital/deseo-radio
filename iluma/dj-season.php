@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $finalDay = (int)($_POST['final_day_of_week'] ?? 0);
-                if (!in_array($finalDay, [4, 5, 6, 7], true)) {
-                    throw new RuntimeException('Επίλεξε τελική ημέρα από Πέμπτη έως Κυριακή.');
+                if (!in_array($finalDay, [1, 2, 3, 4, 5, 6, 7], true)) {
+                    throw new RuntimeException('Επίλεξε έγκυρη τελική ημέρα.');
                 }
 
                 $finalStart = season6_admin_time((string)($_POST['final_start_time'] ?? ''), 'Start');
@@ -409,7 +409,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                                 <label>
                                     <span>FINAL DAY</span>
                                     <select name="final_day_of_week">
-                                        <?php foreach ([4,5,6,7] as $day): ?>
+                                        <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
                                             <option value="<?= $day ?>" <?= $effectiveDay === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
                                         <?php endforeach; ?>
                                     </select>
