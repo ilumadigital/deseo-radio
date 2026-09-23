@@ -1336,7 +1336,7 @@ admin_page_start('MyLive', 'mylive');
                                 <?php if (!empty($media['is_image'])): ?>
                                     <img src="<?= admin_e((string)$media['url']) ?>" alt="" loading="lazy">
                                 <?php else: ?>
-                                    <span style="width:100%;height:100%;display:grid;place-items:center;color:#8b8b90;font-size:18px;font-weight:900;letter-spacing:.12em;">
+                                    <span style="width:100%;height:100%;display:grid;place-items:center;color:#8b8b90;font-size:16px;font-weight:900;letter-spacing:.12em;">
                                         <?= !empty($media['is_audio']) ? 'AUDIO' : admin_e(strtoupper((string)$media['extension'])) ?>
                                     </span>
                                 <?php endif; ?>
