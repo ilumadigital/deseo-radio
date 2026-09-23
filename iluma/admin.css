@@ -3151,3 +3151,164 @@ input[type="password"]{
     width:100%;
   }
 }
+
+
+/* CMS V11 · zoom/scaling resilient desktop layout */
+.admin-sidebar{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  overflow:hidden;
+}
+.admin-logo,
+.admin-kicker,
+.admin-sidebar-bottom{
+  flex:0 0 auto;
+}
+.admin-nav{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+  padding-right:4px;
+}
+.admin-nav::-webkit-scrollbar{width:5px}
+.admin-nav::-webkit-scrollbar-track{background:transparent}
+.admin-nav::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.14);
+  border-radius:999px;
+}
+.admin-sidebar-bottom{
+  position:relative;
+  z-index:2;
+  margin-top:12px;
+  padding-top:14px;
+  background:linear-gradient(180deg,rgba(8,8,8,0),rgba(8,8,8,.98) 16px);
+}
+.admin-main,
+.admin-content{
+  min-width:0;
+}
+.admin-content{
+  max-width:100%;
+}
+.admin-content img,
+.admin-content video,
+.admin-content iframe{
+  max-width:100%;
+}
+.admin-content .panel,
+.admin-content .quick-card,
+.admin-content .stat,
+.admin-content .dashboard-metric,
+.admin-content .mylive-account-card,
+.admin-content .season6-application-card{
+  min-width:0;
+}
+
+/* Typical 125% scaling on laptops should use the compact application shell. */
+@media(max-width:1180px){
+  .admin-app{
+    display:block!important;
+    min-height:100dvh;
+  }
+  .admin-sidebar{
+    display:none!important;
+  }
+  .admin-main{
+    width:100%;
+  }
+  .admin-mobile-header{
+    display:block!important;
+    position:sticky;
+    top:0;
+    z-index:90;
+    padding:12px 16px;
+    background:rgba(7,7,7,.96);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:blur(18px);
+  }
+  .admin-mobile-header img{
+    width:118px;
+    max-width:38vw;
+  }
+  .admin-mobile-nav{
+    display:flex!important;
+    gap:6px;
+    width:100%;
+    max-width:100%;
+    margin-top:9px;
+    padding:0 0 3px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+    scroll-snap-type:x proximity;
+  }
+  .admin-mobile-nav::-webkit-scrollbar{display:none}
+  .admin-mobile-nav a{
+    flex:0 0 auto;
+    min-height:40px;
+    display:flex;
+    align-items:center;
+    padding:8px 12px;
+    white-space:nowrap;
+    scroll-snap-align:center;
+  }
+  .admin-content{
+    width:min(100% - 32px,1080px)!important;
+    padding-top:36px;
+  }
+  .page-heading{
+    align-items:flex-start;
+  }
+  .stats,
+  .season6-stats,
+  .rewards-admin-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .dashboard-metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .mylive-hub-stats{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .quick-grid,
+  .cards-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .schedule-day-tabs{
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+  }
+  .schedule-day-tabs::-webkit-scrollbar{display:none}
+}
+
+/* Short desktop viewports (zoom / Windows scaling): keep account + logout reachable. */
+@media(min-width:1181px) and (max-height:900px){
+  .admin-sidebar{
+    padding-top:20px;
+    padding-bottom:16px;
+  }
+  .admin-logo img{width:132px}
+  .admin-kicker{margin-top:20px;margin-bottom:8px}
+  .admin-nav{gap:3px}
+  .admin-nav a{
+    min-height:42px;
+    padding-top:9px;
+    padding-bottom:9px;
+  }
+  .admin-sidebar-bottom{
+    gap:8px;
+    padding-top:10px;
+  }
+}
+@media(min-width:1181px) and (max-height:720px){
+  .admin-kicker{display:none}
+  .admin-logo{margin-bottom:12px}
+  .admin-nav a{min-height:38px}
+}
