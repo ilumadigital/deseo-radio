@@ -330,6 +330,16 @@ admin_page_start('Overview', 'dashboard');
                 <i>↗</i>
             </a>
 
+            <a class="dashboard-workspace-row" href="communications.php">
+                <div>
+                    <span>Email & Push messaging</span>
+                    <strong>Communications</strong>
+                    <small>Preferences, manual emails, manual pushes και delivery log.</small>
+                </div>
+                <b>↗</b>
+                <i>↗</i>
+            </a>
+
             <?php if (admin_can_access('audience')): ?>
                 <a class="dashboard-workspace-row" href="audience.php">
                     <div>
