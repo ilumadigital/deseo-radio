@@ -221,6 +221,8 @@
     var enableButton = panel.querySelector('[data-mylive-push-enable]');
     var disableButton = panel.querySelector('[data-mylive-push-disable]');
     var help = panel.querySelector('[data-mylive-push-help]');
+    var quickCard = document.querySelector('[data-mylive-push-quick]');
+    var quickButton = quickCard ? quickCard.querySelector('[data-mylive-push-quick-enable]') : null;
     var state = {
       configured: false,
       enabled: false,
@@ -236,6 +238,14 @@
     function render() {
       var permission = permissionState();
 
+      if (quickCard) {
+        quickCard.hidden = !!state.enabled;
+      }
+      if (quickButton) {
+        quickButton.disabled = false;
+        quickButton.textContent = 'ENABLE PUSH ALERTS';
+      }
+
       if (!state.configured) {
         status.textContent = 'API NOT CONFIGURED';
         status.dataset.state = 'error';
@@ -243,6 +253,10 @@
         enableButton.textContent = 'PUSH UNAVAILABLE';
         disableButton.hidden = true;
         help.textContent = 'Το Webpushr API δεν είναι διαθέσιμο στον server.';
+        if (quickButton) {
+          quickButton.disabled = true;
+          quickButton.textContent = 'PUSH UNAVAILABLE';
+        }
         return;
       }
 
@@ -253,6 +267,10 @@
         enableButton.textContent = 'NOT SUPPORTED';
         disableButton.hidden = !state.enabled;
         help.textContent = 'Ο συγκεκριμένος browser δεν υποστηρίζει web push notifications.';
+        if (quickButton) {
+          quickButton.disabled = true;
+          quickButton.textContent = 'NOT SUPPORTED';
+        }
         return;
       }
 
@@ -263,6 +281,10 @@
         enableButton.textContent = 'BLOCKED IN BROWSER';
         disableButton.hidden = !state.enabled;
         help.textContent = 'Οι ειδοποιήσεις έχουν αποκλειστεί από τον browser. Άλλαξε την άδεια του deseoradio.com σε Allow.';
+        if (quickButton) {
+          quickButton.disabled = true;
+          quickButton.textContent = 'BLOCKED IN BROWSER';
+        }
         return;
       }
 
@@ -318,6 +340,10 @@
     function syncSubscription() {
       enableButton.disabled = true;
       enableButton.textContent = 'CONNECTING…';
+      if (quickButton) {
+        quickButton.disabled = true;
+        quickButton.textContent = 'CONNECTING…';
+      }
       status.textContent = 'CONNECTING…';
       status.dataset.state = 'ready';
 
@@ -347,6 +373,14 @@
             : 'Δεν ήταν δυνατή η ενεργοποίηση των push notifications.';
           render();
         });
+    }
+
+    if (quickButton) {
+      quickButton.addEventListener('click', function () {
+        if (!state.enabled) {
+          enableButton.click();
+        }
+      });
     }
 
     enableButton.addEventListener('click', function () {
