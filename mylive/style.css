@@ -4319,3 +4319,68 @@ body{
     width:100%;
   }
 }
+
+
+/* MYLIVE · native artwork sharing */
+.asset-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.asset-actions .asset-download,
+.asset-share{
+  flex:1 1 120px;
+  min-width:0;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  font:700 13px/1.2 inherit;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  text-align:center;
+  text-decoration:none;
+  white-space:normal;
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,color .18s ease,opacity .18s ease;
+}
+.asset-share{
+  appearance:none;
+  -webkit-appearance:none;
+  border-color:rgba(255,43,54,.22);
+  background:linear-gradient(180deg,#ff4250,#dd001e);
+  color:#fff;
+  box-shadow:0 10px 26px rgba(215,0,32,.16);
+}
+.asset-share:hover{
+  transform:translateY(-1px);
+  border-color:transparent;
+  background:#fff;
+  color:#09090b;
+}
+.asset-share:disabled{
+  cursor:wait;
+  opacity:.68;
+  transform:none;
+}
+.asset-share.is-sharing{
+  border-color:rgba(255,255,255,.12);
+  background:#151517;
+  color:#d5d5d9;
+  box-shadow:none;
+}
+@media(max-width:420px){
+  .asset-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .asset-actions .asset-download,
+  .asset-share{
+    width:100%;
+  }
+}
