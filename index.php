@@ -196,6 +196,7 @@ if (isset($_GET['program_feed']) && $_GET['program_feed'] === '1') {
         return [
             'id' => (int)($show['id'] ?? 0),
             'dj_name' => (string)($show['dj_name'] ?? ''),
+            'mylive_account_id' => (int)($show['mylive_account_id'] ?? 0),
             'photo_path' => (string)($show['photo_path'] ?? ''),
             'start_time' => (string)($show['start_time'] ?? ''),
             'end_time' => (string)($show['end_time'] ?? ''),
