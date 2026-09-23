@@ -948,19 +948,16 @@ $nextShowMessage = match ($nextShowSetStatus) {
             <span class="eyebrow">DESEO RADIO · MYLIVE</span>
             <h1>Welcome, <?= deseo_mylive_e($account['artist_name']) ?>.</h1>
         </div>
-        <div class="slot-pill <?= $nextShowIsLive ? 'is-live-now' : '' ?>"
+        <div class="slot-pill"
              data-mylive-own-status
              data-account-id="<?= (int)$account['id'] ?>"
-             data-weekly-slot="<?= deseo_mylive_e(deseo_mylive_slot($account)) ?>"
-             data-slot-day="<?= (int)$slotDay ?>"
-             data-slot-start="<?= deseo_mylive_e(substr($slotStartRaw, 0, 5)) ?>"
-             data-slot-end="<?= deseo_mylive_e(substr($slotEndRaw !== '' ? $slotEndRaw : (string)$nextShowEnd?->format('H:i:s'), 0, 5)) ?>">
+             data-weekly-slot="<?= deseo_mylive_e(deseo_mylive_slot($account)) ?>">
             <span class="slot-pill-kicker">
                 <i class="slot-live-bullet" aria-hidden="true"></i>
-                <b data-mylive-own-label><?= $nextShowIsLive ? 'ON AIR NOW' : 'YOUR WEEKLY SLOT' ?></b>
+                <b data-mylive-own-label>YOUR WEEKLY SLOT</b>
             </span>
-            <strong data-mylive-own-main><?= $nextShowIsLive ? 'Είσαι LIVE Τώρα!' : deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
-            <small data-mylive-own-slot <?= $nextShowIsLive ? '' : 'hidden' ?>><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></small>
+            <strong data-mylive-own-main><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+            <small data-mylive-own-slot hidden><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></small>
         </div>
     </section>
 
@@ -1738,9 +1735,6 @@ $nextShowMessage = match ($nextShowSetStatus) {
     var ownStatusSlot = ownStatus ? ownStatus.querySelector('[data-mylive-own-slot]') : null;
     var ownAccountId = ownStatus ? Number(ownStatus.getAttribute('data-account-id') || 0) : 0;
     var ownWeeklySlot = ownStatus ? (ownStatus.getAttribute('data-weekly-slot') || '') : '';
-    var ownSlotDay = ownStatus ? Number(ownStatus.getAttribute('data-slot-day') || 0) : 0;
-    var ownSlotStart = ownStatus ? (ownStatus.getAttribute('data-slot-start') || '') : '';
-    var ownSlotEnd = ownStatus ? (ownStatus.getAttribute('data-slot-end') || '') : '';
     var refreshTimer = null;
     var refreshMinute = Math.floor(Date.now() / 60000);
 
@@ -1748,64 +1742,13 @@ $nextShowMessage = match ($nextShowSetStatus) {
         return value && typeof value === 'string' ? value.slice(0, 5) : '--:--';
     }
 
-    function athensClockParts() {
-        try {
-            var formatter = new Intl.DateTimeFormat('en-GB', {
-                timeZone: 'Europe/Athens',
-                weekday: 'short',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            });
-            var parts = formatter.formatToParts(new Date());
-            var values = {};
-            parts.forEach(function (part) {
-                if (part.type !== 'literal') values[part.type] = part.value;
-            });
-            var dayMap = { Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6, Sun:7 };
-            return {
-                day: dayMap[values.weekday] || 0,
-                minutes: (Number(values.hour || 0) * 60) + Number(values.minute || 0)
-            };
-        } catch (e) {
-            var now = new Date();
-            var jsDay = now.getDay();
-            return {
-                day: jsDay === 0 ? 7 : jsDay,
-                minutes: (now.getHours() * 60) + now.getMinutes()
-            };
-        }
-    }
-
-    function slotMinutes(value) {
-        if (!value || value.indexOf(':') === -1) return null;
-        var pieces = value.split(':');
-        return (Number(pieces[0] || 0) * 60) + Number(pieces[1] || 0);
-    }
-
-    function ownSlotIsLiveNow() {
-        if (!ownStatus || ownSlotDay < 1 || ownSlotDay > 7) return false;
-
-        var start = slotMinutes(ownSlotStart);
-        var end = slotMinutes(ownSlotEnd);
-        if (start === null) return false;
-        if (end === null) end = start + 60;
-
-        var clock = athensClockParts();
-
-        if (end > start) {
-            return clock.day === ownSlotDay && clock.minutes >= start && clock.minutes < end;
-        }
-
-        var nextDay = ownSlotDay === 7 ? 1 : ownSlotDay + 1;
-        return (clock.day === ownSlotDay && clock.minutes >= start)
-            || (clock.day === nextDay && clock.minutes < end);
-    }
-
-    function renderOwnLiveState() {
+    function renderOwnLiveState(show) {
         if (!ownStatus) return;
 
-        var isOwnLive = ownSlotIsLiveNow();
+        var isOwnLive = !!show
+            && ownAccountId > 0
+            && Number(show.mylive_account_id || 0) === ownAccountId;
+
         ownStatus.classList.toggle('is-live-now', isOwnLive);
 
         if (ownStatusLabel) {
@@ -1831,11 +1774,11 @@ $nextShowMessage = match ($nextShowSetStatus) {
             name.textContent = show.dj_name || 'Deseo Radio';
             time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
             if (dot) dot.classList.remove('is-muted');
-            renderOwnLiveState();
+            renderOwnLiveState(show);
             return;
         }
 
-        renderOwnLiveState();
+        renderOwnLiveState(null);
         card.classList.add('is-nonstop');
         image.src = '/assets/img/bg.png';
         image.alt = 'Deseo Radio Non-Stop Mix';
@@ -1867,7 +1810,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
             refreshMinute = Math.floor(Date.now() / 60000);
         })
         .catch(function () {
-            renderOwnLiveState();
+            renderOwnLiveState(null);
             card.classList.remove('is-loading');
             label.textContent = 'LIVE BROADCAST';
             name.textContent = 'DESEO RADIO';
@@ -1881,7 +1824,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
         var delay = minute - (Date.now() % minute) + 800;
 
         refreshTimer = window.setTimeout(function () {
-            renderOwnLiveState();
+            renderOwnLiveState(null);
     refreshOnAir().finally(scheduleRefresh);
         }, delay);
     }
