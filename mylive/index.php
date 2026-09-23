@@ -972,6 +972,19 @@ $nextShowMessage = match ($nextShowSetStatus) {
         </div>
     </section>
 
+    <?php if (empty($communicationPrefs['push_enabled'])): ?>
+        <section class="mylive-quick-push-card" data-mylive-push-quick>
+            <div class="mylive-quick-push-copy">
+                <span>PUSH NOTIFICATIONS</span>
+                <strong>Μείνε ενημερωμένος για το show σου.</strong>
+                <p>Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.</p>
+            </div>
+            <button type="button" class="mylive-quick-push-button" data-mylive-push-quick-enable>
+                ENABLE PUSH ALERTS
+            </button>
+        </section>
+    <?php endif; ?>
+
     <section class="mylive-next-show <?= $nextShowIsLive ? 'is-live' : '' ?>" aria-label="Next show">
         <div class="mylive-next-show-main">
             <div class="mylive-next-show-kicker">
