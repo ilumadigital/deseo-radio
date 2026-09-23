@@ -3732,3 +3732,378 @@ input[type="password"]{
   .communications-log-row{grid-template-columns:1fr}
   .communications-log-row small{white-space:normal}
 }
+
+
+/* DJ CALENDAR · Season 6 approved weekly view */
+.dj-calendar-page-heading{
+  margin-bottom:22px;
+}
+.dj-calendar-page-heading .button{
+  flex:0 0 auto;
+}
+.dj-calendar-stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:22px;
+}
+.dj-calendar-stats article{
+  min-width:0;
+  padding:20px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 90% 0,rgba(255,43,54,.08),transparent 38%),
+    linear-gradient(145deg,#101012,#09090a);
+}
+.dj-calendar-stats span,
+.dj-calendar-stats strong,
+.dj-calendar-stats small{
+  display:block;
+}
+.dj-calendar-stats span{
+  color:#74747a;
+  font-size:11px!important;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.dj-calendar-stats strong{
+  margin-top:9px;
+  color:#f3f3f5;
+  font-size:32px!important;
+  line-height:1!important;
+  letter-spacing:-.05em;
+}
+.dj-calendar-stats small{
+  margin-top:7px;
+  color:#64646a;
+  font-size:12px!important;
+}
+.dj-calendar-panel{
+  padding:0!important;
+  overflow:hidden;
+}
+.dj-calendar-panel-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  padding:26px 28px 22px;
+  border-bottom:1px solid rgba(255,255,255,.065);
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,43,54,.08),transparent 36%),
+    #0d0d0f;
+}
+.dj-calendar-panel-head>div:first-child{
+  min-width:0;
+  flex:1 1 auto;
+}
+.dj-calendar-panel-head>div:first-child>span{
+  display:block;
+  color:#ff404b;
+  font-size:11px!important;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.dj-calendar-panel-head h2{
+  margin:7px 0 0;
+  color:#f5f5f6;
+  font-size:24px;
+  line-height:1.1;
+  letter-spacing:-.035em;
+}
+.dj-calendar-panel-head p{
+  margin:8px 0 0;
+  color:#77777e;
+  font-size:13px!important;
+}
+.dj-calendar-legend{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:8px;
+}
+.dj-calendar-legend span{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  padding:7px 11px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:999px;
+  background:#09090a;
+  color:#8e8e95;
+  font-size:11px!important;
+  font-weight:800;
+}
+.dj-calendar-legend i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#ff303c;
+  box-shadow:0 0 16px rgba(255,48,60,.45);
+}
+.dj-calendar-legend .has-overlap i{
+  background:#f4b45f;
+  box-shadow:0 0 16px rgba(244,180,95,.38);
+}
+.dj-calendar-scroll{
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+  background:#080809;
+}
+.dj-calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(190px,1fr));
+  gap:10px;
+  min-width:1420px;
+  padding:14px;
+}
+.dj-calendar-day{
+  min-width:0;
+  min-height:500px;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.018),transparent 42%),
+    #0b0b0d;
+  overflow:hidden;
+}
+.dj-calendar-day.has-sets{
+  border-color:rgba(255,255,255,.09);
+}
+.dj-calendar-day-head{
+  position:sticky;
+  top:0;
+  z-index:2;
+  padding:16px 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:rgba(13,13,15,.96);
+  backdrop-filter:blur(12px);
+}
+.dj-calendar-day-head span,
+.dj-calendar-day-head strong,
+.dj-calendar-day-head small{
+  display:block;
+}
+.dj-calendar-day-head span{
+  color:#ff424d;
+  font-size:10px!important;
+  font-weight:900;
+  letter-spacing:.15em;
+}
+.dj-calendar-day-head strong{
+  margin-top:6px;
+  color:#ededf0;
+  font-size:18px!important;
+  letter-spacing:-.025em;
+}
+.dj-calendar-day-head small{
+  margin-top:4px;
+  color:#66666c;
+  font-size:11px!important;
+}
+.dj-calendar-day-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:10px;
+}
+.dj-calendar-day-empty{
+  min-height:390px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#3f3f44;
+}
+.dj-calendar-day-empty span{
+  font-size:24px!important;
+}
+.dj-calendar-day-empty p{
+  margin:7px 0 0;
+  color:#4a4a50;
+  font-size:12px!important;
+}
+.dj-calendar-set{
+  position:relative;
+  min-width:0;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,47,58,.075),transparent 36%),
+    #111113;
+  box-shadow:0 13px 34px rgba(0,0,0,.16);
+  transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+.dj-calendar-set:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.15);
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,47,58,.11),transparent 38%),
+    #141416;
+}
+.dj-calendar-set.has-overlap{
+  border-color:rgba(244,180,95,.27);
+  background:
+    radial-gradient(circle at 100% 0,rgba(244,180,95,.10),transparent 40%),
+    #121112;
+}
+.dj-calendar-set-time{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+}
+.dj-calendar-set-time strong{
+  color:#fff;
+  font-size:21px!important;
+  line-height:1!important;
+  letter-spacing:-.04em;
+}
+.dj-calendar-set-time span{
+  color:#73737a;
+  font-size:12px!important;
+}
+.dj-calendar-set-person{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.055);
+}
+.dj-calendar-set-person img{
+  width:42px;
+  height:42px;
+  object-fit:cover;
+  border-radius:12px;
+  background:#050506;
+}
+.dj-calendar-set-person>div{
+  min-width:0;
+}
+.dj-calendar-set-person strong,
+.dj-calendar-set-person small{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.dj-calendar-set-person strong{
+  color:#e7e7ea;
+  font-size:14px!important;
+}
+.dj-calendar-set-person small{
+  margin-top:3px;
+  color:#65656c;
+  font-size:11px!important;
+}
+.dj-calendar-set-footer{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-top:12px;
+}
+.dj-calendar-set-footer span,
+.dj-calendar-set-footer b{
+  min-height:24px;
+  display:inline-flex;
+  align-items:center;
+  padding:4px 7px;
+  border-radius:999px;
+  font-size:9px!important;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.dj-calendar-set-footer span{
+  color:#ff6972;
+  background:rgba(255,43,54,.08);
+  border:1px solid rgba(255,43,54,.12);
+}
+.dj-calendar-set-footer b{
+  color:#efbd79;
+  background:rgba(244,180,95,.08);
+  border:1px solid rgba(244,180,95,.16);
+}
+.dj-calendar-set-footer a{
+  margin-left:auto;
+  color:#8b8b92;
+  font-size:11px!important;
+  font-weight:800;
+  text-decoration:none;
+}
+.dj-calendar-set-footer a:hover{
+  color:#fff;
+}
+.dj-calendar-empty{
+  min-height:360px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:36px;
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(255,43,54,.08),transparent 32%),
+    #09090a;
+}
+.dj-calendar-empty strong{
+  color:#efeff1;
+  font-size:22px!important;
+}
+.dj-calendar-empty p{
+  max-width:440px;
+  margin:8px 0 20px;
+  color:#727278;
+}
+
+@media(max-width:1180px){
+  .dj-calendar-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .dj-calendar-panel-head{
+    align-items:flex-start;
+  }
+}
+@media(max-width:720px){
+  .dj-calendar-stats{
+    grid-template-columns:1fr 1fr;
+  }
+  .dj-calendar-stats article{
+    padding:16px;
+  }
+  .dj-calendar-stats strong{
+    font-size:27px!important;
+  }
+  .dj-calendar-panel-head{
+    flex-direction:column;
+    padding:21px 18px 18px;
+  }
+  .dj-calendar-legend{
+    justify-content:flex-start;
+  }
+  .dj-calendar-grid{
+    grid-template-columns:repeat(7,minmax(220px,1fr));
+    min-width:1610px;
+    padding:10px;
+  }
+  .dj-calendar-day{
+    min-height:430px;
+    scroll-snap-align:start;
+  }
+  .dj-calendar-scroll{
+    scroll-snap-type:x proximity;
+  }
+}
+@media(max-width:480px){
+  .dj-calendar-stats{
+    grid-template-columns:1fr;
+  }
+}
