@@ -3312,3 +3312,376 @@ input[type="password"]{
   .admin-logo{margin-bottom:12px}
   .admin-nav a{min-height:38px}
 }
+
+
+/* COMMUNICATIONS · MYLIVE MESSAGING */
+.communications-heading{margin-bottom:24px}
+.communications-stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:20px
+}
+.communications-stats article{
+  min-width:0;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:linear-gradient(145deg,#111,#0c0c0c)
+}
+.communications-stats span{
+  display:block;
+  color:#6e6e68;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em
+}
+.communications-stats strong{
+  display:block;
+  margin-top:8px;
+  color:#fff;
+  font-size:32px;
+  letter-spacing:-.05em
+}
+.communications-stats small{
+  display:block;
+  margin-top:3px;
+  color:#565650;
+  font-size:10px
+}
+.communications-compose-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  margin-bottom:24px
+}
+.communications-compose-card{min-width:0}
+.communications-card-head>span,
+.communications-section-head>div>span{
+  color:var(--acid);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.13em
+}
+.communications-card-head h2,
+.communications-section-head h2{
+  margin:6px 0 7px;
+  color:#fff;
+  font-size:22px;
+  letter-spacing:-.03em
+}
+.communications-card-head p,
+.communications-section-head p{
+  margin:0;
+  color:#707069;
+  font-size:12px;
+  line-height:1.6
+}
+.communications-form{
+  display:grid;
+  gap:14px;
+  margin-top:20px
+}
+.communications-form .field textarea{
+  width:100%;
+  min-height:150px;
+  resize:vertical;
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#080808;
+  color:#fff;
+  font:inherit;
+  outline:none
+}
+.communications-form .field textarea:focus{
+  border-color:rgba(255,48,56,.5);
+  box-shadow:0 0 0 3px rgba(255,48,56,.06)
+}
+.communications-placeholders{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px
+}
+.communications-placeholders span{
+  padding:6px 9px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:999px;
+  background:#0b0b0b;
+  color:#777771;
+  font:800 10px/1 monospace
+}
+.communications-directory{
+  margin:26px 0
+}
+.communications-section-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:15px
+}
+.communications-section-head>p{
+  max-width:520px;
+  text-align:right
+}
+.communications-users{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px
+}
+.communications-user-card{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:#0e0e0f
+}
+.communications-user-card.is-disabled{opacity:.62}
+.communications-user-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:19px 20px;
+  border-bottom:1px solid rgba(255,255,255,.055);
+  background:linear-gradient(145deg,rgba(255,255,255,.025),transparent)
+}
+.communications-user-head>div:first-child{min-width:0}
+.communications-user-head>div:first-child>span{
+  color:var(--acid);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em
+}
+.communications-user-head h3{
+  margin:5px 0 4px;
+  color:#fff;
+  font-size:19px;
+  overflow-wrap:anywhere
+}
+.communications-user-head p{
+  margin:0;
+  color:#696963;
+  font-size:11px;
+  overflow-wrap:anywhere
+}
+.communications-user-devices{
+  flex:0 0 auto;
+  min-width:76px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;
+  text-align:center;
+  background:#090909
+}
+.communications-user-devices strong{
+  display:block;
+  font-size:20px
+}
+.communications-user-devices span{
+  display:block;
+  margin-top:3px;
+  color:#5f5f59;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.09em
+}
+.communications-pref-form{padding:17px 20px 20px}
+.communications-channel-masters{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:13px
+}
+.communications-switch{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:15px;
+  background:#0a0a0a;
+  cursor:pointer
+}
+.communications-switch>input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none
+}
+.communications-switch>span{
+  position:relative;
+  flex:0 0 auto;
+  width:42px;
+  height:24px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:#171717;
+  transition:.18s ease
+}
+.communications-switch>span:after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#70706b;
+  transition:.18s ease
+}
+.communications-switch>input:checked+span{
+  border-color:rgba(255,48,56,.28);
+  background:rgba(255,48,56,.12)
+}
+.communications-switch>input:checked+span:after{
+  left:21px;
+  background:var(--acid)
+}
+.communications-switch>div{
+  min-width:0;
+  display:flex;
+  flex-direction:column
+}
+.communications-switch>div strong{font-size:12px}
+.communications-switch>div small{
+  margin-top:2px;
+  color:#5e5e58;
+  font-size:9px;
+  overflow-wrap:anywhere
+}
+.communications-pref-matrix{
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:15px
+}
+.communications-pref-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 58px 58px;
+  gap:8px;
+  align-items:center;
+  min-height:58px;
+  padding:9px 11px;
+  border-top:1px solid rgba(255,255,255,.05)
+}
+.communications-pref-row:first-child{border-top:0}
+.communications-pref-row.is-head{
+  min-height:35px;
+  background:rgba(255,255,255,.018);
+  color:#62625c
+}
+.communications-pref-row.is-head strong,
+.communications-pref-row.is-head span{
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.1em
+}
+.communications-pref-row.is-head span{text-align:center}
+.communications-pref-row>div strong{
+  display:block;
+  color:#dededb;
+  font-size:11px
+}
+.communications-pref-row>div small{
+  display:block;
+  margin-top:2px;
+  color:#5f5f59;
+  font-size:9px
+}
+.communications-pref-row>label{
+  position:relative;
+  display:grid;
+  place-items:center;
+  cursor:pointer
+}
+.communications-pref-row>label input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none
+}
+.communications-pref-row>label span{
+  position:relative;
+  width:38px;
+  height:22px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:999px;
+  background:#171717
+}
+.communications-pref-row>label span:after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#666660;
+  transition:.18s ease
+}
+.communications-pref-row>label input:checked+span{
+  border-color:rgba(255,48,56,.28);
+  background:rgba(255,48,56,.12)
+}
+.communications-pref-row>label input:checked+span:after{
+  left:19px;
+  background:var(--acid)
+}
+.communications-log-panel{margin-bottom:24px}
+.communications-log-list{display:grid;gap:8px}
+.communications-log-row{
+  display:grid;
+  grid-template-columns:120px minmax(0,1fr) auto;
+  gap:13px;
+  align-items:center;
+  padding:11px 12px;
+  border:1px solid rgba(255,255,255,.055);
+  border-radius:14px;
+  background:#0a0a0a
+}
+.communications-log-row>span{
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#8a8a84
+}
+.communications-log-row>span.is-sent{color:#83dca2}
+.communications-log-row>span.is-failed{color:#ff8585}
+.communications-log-row div{min-width:0}
+.communications-log-row strong{
+  display:block;
+  color:#e8e8e5;
+  font-size:11px
+}
+.communications-log-row p{
+  margin:3px 0 0;
+  color:#64645e;
+  font-size:10px;
+  overflow-wrap:anywhere
+}
+.communications-log-row small{
+  color:#565650;
+  font-size:9px;
+  white-space:nowrap
+}
+@media(max-width:1180px){
+  .communications-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .communications-users{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  .communications-compose-grid{grid-template-columns:1fr}
+  .communications-section-head{
+    align-items:flex-start;
+    flex-direction:column
+  }
+  .communications-section-head>p{text-align:left}
+}
+@media(max-width:620px){
+  .communications-stats{grid-template-columns:1fr 1fr}
+  .communications-channel-masters{grid-template-columns:1fr}
+  .communications-user-head{padding:15px}
+  .communications-pref-form{padding:13px 15px 15px}
+  .communications-log-row{grid-template-columns:1fr}
+  .communications-log-row small{white-space:normal}
+}
