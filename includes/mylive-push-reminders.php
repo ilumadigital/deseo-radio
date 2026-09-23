@@ -126,7 +126,10 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
             if ($now->format('Y-m-d') === $reminderDay && !$pendingSet) {
                 $eventKey = 'set-due:' . $programId . ':' . $showStart->format('Y-m-d') . ':ep' . $nextEpisode;
 
-                if (!deseo_mylive_communication_allows($pdo, $accountId, 'set_reminder', 'push')) {
+                if (
+                    !deseo_mylive_communication_allows($pdo, $accountId, 'set_reminder', 'push')
+                    || deseo_mylive_push_subscription_count($pdo, $accountId) < 1
+                ) {
                     $summary['skipped']++;
                 } elseif (deseo_mylive_push_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
@@ -189,7 +192,10 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
 
                 $eventKey = 'on-air-social:' . $programId . ':' . $showStart->format('Y-m-d');
 
-                if (!deseo_mylive_communication_allows($pdo, $accountId, 'on_air', 'push')) {
+                if (
+                    !deseo_mylive_communication_allows($pdo, $accountId, 'on_air', 'push')
+                    || deseo_mylive_push_subscription_count($pdo, $accountId) < 1
+                ) {
                     $summary['skipped']++;
                 } elseif (deseo_mylive_push_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
