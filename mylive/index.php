@@ -948,9 +948,16 @@ $nextShowMessage = match ($nextShowSetStatus) {
             <span class="eyebrow">DESEO RADIO · MYLIVE</span>
             <h1>Welcome, <?= deseo_mylive_e($account['artist_name']) ?>.</h1>
         </div>
-        <div class="slot-pill">
-            <span>YOUR WEEKLY SLOT</span>
-            <strong><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+        <div class="slot-pill <?= $nextShowIsLive ? 'is-live-now' : '' ?>"
+             data-mylive-own-status
+             data-account-id="<?= (int)$account['id'] ?>"
+             data-weekly-slot="<?= deseo_mylive_e(deseo_mylive_slot($account)) ?>">
+            <span class="slot-pill-kicker">
+                <i class="slot-live-bullet" aria-hidden="true"></i>
+                <b data-mylive-own-label><?= $nextShowIsLive ? 'ON AIR NOW' : 'YOUR WEEKLY SLOT' ?></b>
+            </span>
+            <strong data-mylive-own-main><?= $nextShowIsLive ? 'Είσαι LIVE Τώρα!' : deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
+            <small data-mylive-own-slot <?= $nextShowIsLive ? '' : 'hidden' ?>><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></small>
         </div>
     </section>
 
@@ -1709,11 +1716,38 @@ $nextShowMessage = match ($nextShowSetStatus) {
     var name = card.querySelector('[data-mylive-onair-name]');
     var time = card.querySelector('[data-mylive-onair-time]');
     var dot = document.querySelector('[data-mylive-onair-dot]');
+    var ownStatus = document.querySelector('[data-mylive-own-status]');
+    var ownStatusLabel = ownStatus ? ownStatus.querySelector('[data-mylive-own-label]') : null;
+    var ownStatusMain = ownStatus ? ownStatus.querySelector('[data-mylive-own-main]') : null;
+    var ownStatusSlot = ownStatus ? ownStatus.querySelector('[data-mylive-own-slot]') : null;
+    var ownAccountId = ownStatus ? Number(ownStatus.getAttribute('data-account-id') || 0) : 0;
+    var ownWeeklySlot = ownStatus ? (ownStatus.getAttribute('data-weekly-slot') || '') : '';
     var refreshTimer = null;
-    var refreshHour = Math.floor(Date.now() / 3600000);
+    var refreshMinute = Math.floor(Date.now() / 60000);
 
     function programTime(value) {
         return value && typeof value === 'string' ? value.slice(0, 5) : '--:--';
+    }
+
+    function renderOwnLiveState(show) {
+        if (!ownStatus) return;
+
+        var isOwnLive = !!show
+            && ownAccountId > 0
+            && Number(show.mylive_account_id || 0) === ownAccountId;
+
+        ownStatus.classList.toggle('is-live-now', isOwnLive);
+
+        if (ownStatusLabel) {
+            ownStatusLabel.textContent = isOwnLive ? 'ON AIR NOW' : 'YOUR WEEKLY SLOT';
+        }
+        if (ownStatusMain) {
+            ownStatusMain.textContent = isOwnLive ? 'Είσαι LIVE Τώρα!' : ownWeeklySlot;
+        }
+        if (ownStatusSlot) {
+            ownStatusSlot.textContent = ownWeeklySlot;
+            ownStatusSlot.hidden = !isOwnLive;
+        }
     }
 
     function renderOnAir(show) {
@@ -1727,9 +1761,11 @@ $nextShowMessage = match ($nextShowSetStatus) {
             name.textContent = show.dj_name || 'Deseo Radio';
             time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
             if (dot) dot.classList.remove('is-muted');
+            renderOwnLiveState(show);
             return;
         }
 
+        renderOwnLiveState(null);
         card.classList.add('is-nonstop');
         image.src = '/assets/img/bg.png';
         image.alt = 'Deseo Radio Non-Stop Mix';
@@ -1758,7 +1794,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
         .then(function (payload) {
             if (!payload) return;
             renderOnAir(payload.live || null);
-            refreshHour = Math.floor(Date.now() / 3600000);
+            refreshMinute = Math.floor(Date.now() / 60000);
         })
         .catch(function () {
             card.classList.remove('is-loading');
@@ -1770,8 +1806,8 @@ $nextShowMessage = match ($nextShowSetStatus) {
 
     function scheduleRefresh() {
         if (refreshTimer) window.clearTimeout(refreshTimer);
-        var hour = 60 * 60 * 1000;
-        var delay = hour - (Date.now() % hour) + 1200;
+        var minute = 60 * 1000;
+        var delay = minute - (Date.now() % minute) + 800;
 
         refreshTimer = window.setTimeout(function () {
             refreshOnAir().finally(scheduleRefresh);
@@ -1782,8 +1818,8 @@ $nextShowMessage = match ($nextShowSetStatus) {
 
     document.addEventListener('visibilitychange', function () {
         if (document.visibilityState !== 'visible') return;
-        var currentHour = Math.floor(Date.now() / 3600000);
-        if (currentHour !== refreshHour) {
+        var currentMinute = Math.floor(Date.now() / 60000);
+        if (currentMinute !== refreshMinute) {
             refreshOnAir().finally(scheduleRefresh);
         }
     });
