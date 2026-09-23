@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'configured' => deseo_mylive_push_configured(),
         'enabled' => deseo_mylive_push_account_enabled($pdo, $accountId),
         'subscriptions' => deseo_mylive_push_subscription_count($pdo, $accountId),
+        'account_id' => $accountId,
     ]);
     exit;
 }
