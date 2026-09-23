@@ -95,6 +95,7 @@
   function registerMyLiveServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
 
+    // Webpushr owns the /mylive/ push scope; its worker also loads the existing MyLive PWA worker.
     navigator.serviceWorker.register('/mylive/webpushr-sw.js', {
       scope: '/mylive/'
     }).catch(function () {});
