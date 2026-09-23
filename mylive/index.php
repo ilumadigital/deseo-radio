@@ -7,11 +7,13 @@ require_once __DIR__ . '/../includes/audience.php';
 require_once __DIR__ . '/../includes/turnstile.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/mylive-email-reminders.php';
+require_once __DIR__ . '/../includes/mylive-communications.php';
 
 deseo_mylive_session_start();
 deseo_mylive_bootstrap($pdo);
 deseo_rewards_bootstrap($pdo);
 deseo_audience_bootstrap($pdo);
+deseo_mylive_communications_bootstrap($pdo);
 deseo_mylive_maybe_run_email_scheduler($pdo);
 
 try {
@@ -250,6 +252,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             session_regenerate_id(true);
             $notice = 'Ο προσωπικός σου κωδικός αποθηκεύτηκε.';
+        }
+
+        if ($action === 'save_notification_preferences') {
+            if (!deseo_mylive_logged_in()) {
+                throw new RuntimeException('Η συνεδρία σου έχει λήξει. Κάνε ξανά login.');
+            }
+
+            $accountId = deseo_mylive_account_id();
+            $currentPreferences = deseo_mylive_communication_preferences($pdo, $accountId);
+
+            deseo_mylive_save_communication_preferences($pdo, $accountId, [
+                'email_enabled' => isset($_POST['email_enabled']),
+                'push_enabled' => !empty($currentPreferences['push_enabled']),
+                'set_reminder_email' => isset($_POST['set_reminder_email']),
+                'set_reminder_push' => isset($_POST['set_reminder_push']),
+                'on_air_email' => isset($_POST['on_air_email']),
+                'on_air_push' => isset($_POST['on_air_push']),
+                'announcements_email' => isset($_POST['announcements_email']),
+                'announcements_push' => isset($_POST['announcements_push']),
+            ]);
+
+            $notice = 'Οι ρυθμίσεις επικοινωνίας αποθηκεύτηκαν.';
         }
 
         if (in_array($action, ['save_public_profile', 'publish_public_profile', 'unpublish_public_profile'], true)) {
@@ -713,6 +737,8 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
 exit;
 endif;
 
+$communicationPrefs = deseo_mylive_communication_preferences($pdo, (int)$account['id']);
+
 $publicProfile = !empty($account['public_profile_enabled'])
     ? deseo_mylive_public_profile($pdo, (int)$account['id'])
     : null;
@@ -889,22 +915,25 @@ $nextShowMessage = match ($nextShowSetStatus) {
                 <a href="#overview" class="is-active" data-mylive-nav>
                     <i>01</i><span>Overview</span>
                 </a>
+                <a href="#settings" data-mylive-nav>
+                    <i>02</i><span>MySettings</span>
+                </a>
                 <?php if ($publicProfile): ?>
                     <a href="#profile" data-mylive-nav>
-                        <i>02</i><span>My Profile</span>
+                        <i>03</i><span>My Profile</span>
                     </a>
                 <?php endif; ?>
                 <a href="#assets" data-mylive-nav>
-                    <i><?= $publicProfile ? '03' : '02' ?></i><span>My Assets</span>
+                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My Assets</span>
                 </a>
                 <a href="#sets" data-mylive-nav>
-                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My DJ Sets</span>
+                    <i><?= $publicProfile ? '05' : '04' ?></i><span>My DJ Sets</span>
                 </a>
                 <a href="#live" data-mylive-nav>
-                    <i><?= $publicProfile ? '05' : '04' ?></i><span>Listen Live</span>
+                    <i><?= $publicProfile ? '06' : '05' ?></i><span>Listen Live</span>
                 </a>
                 <a href="#rewards" data-mylive-nav>
-                    <i><?= $publicProfile ? '06' : '05' ?></i><span>My Rewards</span>
+                    <i><?= $publicProfile ? '07' : '06' ?></i><span>My Rewards</span>
                 </a>
             </nav>
             <small>Deseo Radio · Season 6</small>
@@ -932,6 +961,95 @@ $nextShowMessage = match ($nextShowSetStatus) {
         <div class="mylive-app-card-actions">
             <button type="button" class="mylive-app-install-button" data-mylive-install hidden>INSTALL MYLIVE APP</button>
         </div>
+    </section>
+
+    <section class="mylive-settings-section mylive-anchor-section" id="settings" aria-labelledby="mylive-settings-title">
+        <div class="mylive-settings-head">
+            <div>
+                <span class="eyebrow">MYSETTINGS · COMMUNICATIONS</span>
+                <h2 id="mylive-settings-title">Choose how Deseo reaches you.</h2>
+                <p>Ρύθμισε ποια operational reminders και ανακοινώσεις θέλεις να λαμβάνεις μέσω Email και Push Notifications.</p>
+            </div>
+            <span class="mylive-settings-state">PERSONAL PREFERENCES</span>
+        </div>
+
+        <div data-mylive-push-mount></div>
+
+        <form method="post" class="mylive-settings-form">
+            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+            <input type="hidden" name="action" value="save_notification_preferences">
+
+            <div class="mylive-settings-master">
+                <div>
+                    <span>EMAIL CHANNEL</span>
+                    <strong>Email notifications</strong>
+                    <small><?= deseo_mylive_e((string)$account['email']) ?></small>
+                </div>
+                <label class="mylive-switch">
+                    <input type="checkbox" name="email_enabled" value="1" <?= !empty($communicationPrefs['email_enabled']) ? 'checked' : '' ?>>
+                    <span aria-hidden="true"></span>
+                    <b><?= !empty($communicationPrefs['email_enabled']) ? 'ON' : 'OFF' ?></b>
+                </label>
+            </div>
+
+            <div class="mylive-settings-matrix">
+                <div class="mylive-settings-row is-head">
+                    <strong>NOTIFICATION TYPE</strong>
+                    <span>EMAIL</span>
+                    <span>PUSH</span>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>DJ Set Reminder</strong>
+                        <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>On Air Now</strong>
+                        <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>Deseo Announcements</strong>
+                        <small>Γενικές ενημερώσεις της ομάδας του Deseo Radio προς τους DJs.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="announcements_email" value="1" <?= !empty($communicationPrefs['announcements_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="announcements_push" value="1" <?= !empty($communicationPrefs['announcements_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mylive-settings-actions">
+                <p>Τα Push χρειάζονται μία ενεργή συσκευή. Η άδεια του browser εμφανίζεται μόνο όταν πατήσεις Enable Push Alerts.</p>
+                <button type="submit">SAVE MY SETTINGS</button>
+            </div>
+        </form>
     </section>
 
     <section class="mylive-next-show <?= $nextShowIsLive ? 'is-live' : '' ?>" aria-label="Next show">
