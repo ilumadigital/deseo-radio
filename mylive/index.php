@@ -625,6 +625,95 @@ if ($forgotState === 'sent') {
             <small>Private DJ workspace · Deseo Radio / ILUMA Digital Agency</small>
         <?php endif; ?>
     </section>
+
+    <section class="mylive-settings-section mylive-anchor-section" id="settings" aria-labelledby="mylive-settings-title">
+        <div class="mylive-settings-head">
+            <div>
+                <span class="eyebrow">MYSETTINGS · COMMUNICATIONS</span>
+                <h2 id="mylive-settings-title">Choose how Deseo reaches you.</h2>
+                <p>Ρύθμισε ποια operational reminders και ανακοινώσεις θέλεις να λαμβάνεις μέσω Email και Push Notifications.</p>
+            </div>
+            <span class="mylive-settings-state">PERSONAL PREFERENCES</span>
+        </div>
+
+        <div data-mylive-push-mount></div>
+
+        <form method="post" action="/mylive/#settings" class="mylive-settings-form">
+            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+            <input type="hidden" name="action" value="save_notification_preferences">
+
+            <div class="mylive-settings-master">
+                <div>
+                    <span>EMAIL CHANNEL</span>
+                    <strong>Email notifications</strong>
+                    <small><?= deseo_mylive_e((string)$account['email']) ?></small>
+                </div>
+                <label class="mylive-switch">
+                    <input type="checkbox" name="email_enabled" value="1" <?= !empty($communicationPrefs['email_enabled']) ? 'checked' : '' ?>>
+                    <span aria-hidden="true"></span>
+                    <b><?= !empty($communicationPrefs['email_enabled']) ? 'ON' : 'OFF' ?></b>
+                </label>
+            </div>
+
+            <div class="mylive-settings-matrix">
+                <div class="mylive-settings-row is-head">
+                    <strong>NOTIFICATION TYPE</strong>
+                    <span>EMAIL</span>
+                    <span>PUSH</span>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>DJ Set Reminder</strong>
+                        <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>On Air Now</strong>
+                        <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="mylive-settings-row">
+                    <div>
+                        <strong>Deseo Announcements</strong>
+                        <small>Γενικές ενημερώσεις της ομάδας του Deseo Radio προς τους DJs.</small>
+                    </div>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="announcements_email" value="1" <?= !empty($communicationPrefs['announcements_email']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                    <label class="mylive-switch is-compact">
+                        <input type="checkbox" name="announcements_push" value="1" <?= !empty($communicationPrefs['announcements_push']) ? 'checked' : '' ?>>
+                        <span aria-hidden="true"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mylive-settings-actions">
+                <p>Τα Push χρειάζονται μία ενεργή συσκευή. Η άδεια του browser εμφανίζεται μόνο όταν πατήσεις Enable Push Alerts.</p>
+                <button type="submit">SAVE MY SETTINGS</button>
+            </div>
+        </form>
+    </section>
 </main>
 <script>
 document.querySelectorAll('[data-password-toggle]').forEach(button => {
@@ -915,25 +1004,25 @@ $nextShowMessage = match ($nextShowSetStatus) {
                 <a href="#overview" class="is-active" data-mylive-nav>
                     <i>01</i><span>Overview</span>
                 </a>
-                <a href="#settings" data-mylive-nav>
-                    <i>02</i><span>MySettings</span>
-                </a>
                 <?php if ($publicProfile): ?>
                     <a href="#profile" data-mylive-nav>
-                        <i>03</i><span>My Profile</span>
+                        <i>02</i><span>My Profile</span>
                     </a>
                 <?php endif; ?>
                 <a href="#assets" data-mylive-nav>
-                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My Assets</span>
+                    <i><?= $publicProfile ? '03' : '02' ?></i><span>My Assets</span>
                 </a>
                 <a href="#sets" data-mylive-nav>
-                    <i><?= $publicProfile ? '05' : '04' ?></i><span>My DJ Sets</span>
+                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My DJ Sets</span>
                 </a>
                 <a href="#live" data-mylive-nav>
-                    <i><?= $publicProfile ? '06' : '05' ?></i><span>Listen Live</span>
+                    <i><?= $publicProfile ? '05' : '04' ?></i><span>Listen Live</span>
                 </a>
                 <a href="#rewards" data-mylive-nav>
-                    <i><?= $publicProfile ? '07' : '06' ?></i><span>My Rewards</span>
+                    <i><?= $publicProfile ? '06' : '05' ?></i><span>My Rewards</span>
+                </a>
+                <a href="#settings" data-mylive-nav>
+                    <i><?= $publicProfile ? '07' : '06' ?></i><span>MySettings</span>
                 </a>
             </nav>
             <small>Deseo Radio · Season 6</small>
@@ -961,95 +1050,6 @@ $nextShowMessage = match ($nextShowSetStatus) {
         <div class="mylive-app-card-actions">
             <button type="button" class="mylive-app-install-button" data-mylive-install hidden>INSTALL MYLIVE APP</button>
         </div>
-    </section>
-
-    <section class="mylive-settings-section mylive-anchor-section" id="settings" aria-labelledby="mylive-settings-title">
-        <div class="mylive-settings-head">
-            <div>
-                <span class="eyebrow">MYSETTINGS · COMMUNICATIONS</span>
-                <h2 id="mylive-settings-title">Choose how Deseo reaches you.</h2>
-                <p>Ρύθμισε ποια operational reminders και ανακοινώσεις θέλεις να λαμβάνεις μέσω Email και Push Notifications.</p>
-            </div>
-            <span class="mylive-settings-state">PERSONAL PREFERENCES</span>
-        </div>
-
-        <div data-mylive-push-mount></div>
-
-        <form method="post" action="/mylive/#settings" class="mylive-settings-form">
-            <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
-            <input type="hidden" name="action" value="save_notification_preferences">
-
-            <div class="mylive-settings-master">
-                <div>
-                    <span>EMAIL CHANNEL</span>
-                    <strong>Email notifications</strong>
-                    <small><?= deseo_mylive_e((string)$account['email']) ?></small>
-                </div>
-                <label class="mylive-switch">
-                    <input type="checkbox" name="email_enabled" value="1" <?= !empty($communicationPrefs['email_enabled']) ? 'checked' : '' ?>>
-                    <span aria-hidden="true"></span>
-                    <b><?= !empty($communicationPrefs['email_enabled']) ? 'ON' : 'OFF' ?></b>
-                </label>
-            </div>
-
-            <div class="mylive-settings-matrix">
-                <div class="mylive-settings-row is-head">
-                    <strong>NOTIFICATION TYPE</strong>
-                    <span>EMAIL</span>
-                    <span>PUSH</span>
-                </div>
-
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>DJ Set Reminder</strong>
-                        <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
-                    </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
-
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>On Air Now</strong>
-                        <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
-                    </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
-
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>Deseo Announcements</strong>
-                        <small>Γενικές ενημερώσεις της ομάδας του Deseo Radio προς τους DJs.</small>
-                    </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="announcements_email" value="1" <?= !empty($communicationPrefs['announcements_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="announcements_push" value="1" <?= !empty($communicationPrefs['announcements_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="mylive-settings-actions">
-                <p>Τα Push χρειάζονται μία ενεργή συσκευή. Η άδεια του browser εμφανίζεται μόνο όταν πατήσεις Enable Push Alerts.</p>
-                <button type="submit">SAVE MY SETTINGS</button>
-            </div>
-        </form>
     </section>
 
     <section class="mylive-next-show <?= $nextShowIsLive ? 'is-live' : '' ?>" aria-label="Next show">
@@ -1346,13 +1346,17 @@ $nextShowMessage = match ($nextShowSetStatus) {
             <div>
                 <span class="eyebrow">DESEO RADIO · LIVE</span>
                 <h2 id="mylive-station-title">Listen to the station.</h2>
-                <p>Άκου live τον σταθμό και δες το σημερινό πρόγραμμα όπως ακριβώς εμφανίζεται στο Deseo Radio.</p>
+                <p>Άκου live τον Deseo Radio και δες ποιος βρίσκεται αυτή τη στιγμή στον αέρα.</p>
             </div>
             <span class="mylive-live-state"><i></i> LIVE 24/7</span>
         </div>
 
         <div class="mylive-station-grid">
             <article class="mylive-player-deck">
+                <div class="mylive-station-label">
+                    <i class="mylive-live-dot" aria-hidden="true"></i>
+                    <span>NOW PLAYING</span>
+                </div>
                 <div class="mylive-player-frame">
                     <iframe src="https://play.iradios.gr/widget/deseo-radio"
                             width="100%"
@@ -1362,14 +1366,19 @@ $nextShowMessage = match ($nextShowSetStatus) {
                 </div>
             </article>
 
-            <article class="deseo-panel mylive-program-panel" id="mylive-program">
-                <header class="deseo-panel-header">
-                    <h3>PROGRAM</h3>
-                    <span>DESEO RADIO</span>
-                </header>
+            <article class="mylive-onair-deck">
+                <div class="mylive-station-label">
+                    <i class="mylive-live-dot is-muted" data-mylive-onair-dot aria-hidden="true"></i>
+                    <span>NOW ON AIR</span>
+                </div>
 
-                <div class="deseo-panel-body" id="mylive-program-body" aria-live="polite">
-                    <div class="deseo-panel-empty">Loading today’s program…</div>
+                <div class="mylive-onair-card is-loading" id="mylive-onair-card" aria-live="polite">
+                    <img src="/assets/img/bg.png" alt="Deseo Radio" data-mylive-onair-image>
+                    <div class="mylive-onair-overlay">
+                        <span data-mylive-onair-label>LIVE BROADCAST</span>
+                        <h3 data-mylive-onair-name>Loading…</h3>
+                        <p data-mylive-onair-time>—</p>
+                    </div>
                 </div>
             </article>
         </div>
@@ -1690,9 +1699,14 @@ $nextShowMessage = match ($nextShowSetStatus) {
 (function () {
     'use strict';
 
-    var body = document.getElementById('mylive-program-body');
-    if (!body) return;
+    var card = document.getElementById('mylive-onair-card');
+    if (!card) return;
 
+    var image = card.querySelector('[data-mylive-onair-image]');
+    var label = card.querySelector('[data-mylive-onair-label]');
+    var name = card.querySelector('[data-mylive-onair-name]');
+    var time = card.querySelector('[data-mylive-onair-time]');
+    var dot = document.querySelector('[data-mylive-onair-dot]');
     var refreshTimer = null;
     var refreshHour = Math.floor(Date.now() / 3600000);
 
@@ -1700,85 +1714,36 @@ $nextShowMessage = match ($nextShowSetStatus) {
         return value && typeof value === 'string' ? value.slice(0, 5) : '--:--';
     }
 
-    function createImage(show) {
-        var image = document.createElement('img');
-        image.className = 'deseo-row-cover';
-        image.src = show.photo_path || '/assets/img/bg.png';
-        image.alt = show.dj_name || 'Deseo Radio';
-        image.addEventListener('error', function () {
-            if (this.getAttribute('src') !== '/assets/img/bg.png') {
-                this.setAttribute('src', '/assets/img/bg.png');
-            }
-        });
-        return image;
-    }
+    function renderOnAir(show) {
+        card.classList.remove('is-loading');
 
-    function renderProgram(today, nextShow) {
-        body.textContent = '';
-
-        if (!Array.isArray(today) || !today.length) {
-            var empty = document.createElement('div');
-            empty.className = 'deseo-panel-empty';
-            empty.textContent = 'Δεν υπάρχει καταχωρημένο πρόγραμμα για σήμερα.';
-            body.appendChild(empty);
+        if (show) {
+            card.classList.remove('is-nonstop');
+            image.src = show.photo_path || '/assets/img/bg.png';
+            image.alt = show.dj_name || 'Deseo Radio';
+            label.textContent = 'LIVE BROADCAST';
+            name.textContent = show.dj_name || 'Deseo Radio';
+            time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
+            if (dot) dot.classList.remove('is-muted');
             return;
         }
 
-        today.forEach(function (show) {
-            var row = document.createElement('div');
-            row.className = 'deseo-panel-row deseo-program-row' + (show.is_live ? ' is-live' : '');
-
-            row.appendChild(createImage(show));
-
-            var copy = document.createElement('span');
-            copy.className = 'deseo-row-copy';
-
-            var time = document.createElement('small');
-            time.textContent = programTime(show.start_time) + ' — ' + programTime(show.end_time);
-
-            var name = document.createElement('strong');
-            name.textContent = show.dj_name || 'Deseo Radio';
-
-            copy.appendChild(time);
-            copy.appendChild(name);
-            row.appendChild(copy);
-
-            if (show.is_live) {
-                var live = document.createElement('span');
-                live.className = 'deseo-live-tag';
-                live.textContent = 'LIVE';
-                row.appendChild(live);
-            } else if (show.profile) {
-                var profile = document.createElement('span');
-                profile.className = 'deseo-profile-tag';
-                profile.textContent = 'PROFILE';
-                row.appendChild(profile);
-            }
-
-            body.appendChild(row);
-        });
-
-        if (nextShow) {
-            var next = document.createElement('div');
-            next.className = 'deseo-next-pill';
-
-            var label = document.createElement('span');
-            label.textContent = 'Next:';
-
-            var name = document.createElement('strong');
-            name.textContent = nextShow.dj_name || 'Deseo Radio';
-
-            var time = document.createElement('small');
-            time.textContent = '· ' + programTime(nextShow.start_time);
-
-            next.appendChild(label);
-            next.appendChild(name);
-            next.appendChild(time);
-            body.appendChild(next);
-        }
+        card.classList.add('is-nonstop');
+        image.src = '/assets/img/bg.png';
+        image.alt = 'Deseo Radio Non-Stop Mix';
+        label.textContent = 'NON-STOP MIX';
+        name.textContent = 'DESEO RADIO';
+        time.textContent = '24/7';
+        if (dot) dot.classList.add('is-muted');
     }
 
-    function refreshProgram() {
+    image.addEventListener('error', function () {
+        if (this.getAttribute('src') !== '/assets/img/bg.png') {
+            this.setAttribute('src', '/assets/img/bg.png');
+        }
+    });
+
+    function refreshOnAir() {
         return fetch('/?program_feed=1&_=' + Date.now(), {
             method: 'GET',
             cache: 'no-store',
@@ -1789,14 +1754,15 @@ $nextShowMessage = match ($nextShowSetStatus) {
             return response.json();
         })
         .then(function (payload) {
-            if (!payload || !Array.isArray(payload.today)) return;
-            renderProgram(payload.today, payload.next || null);
+            if (!payload) return;
+            renderOnAir(payload.live || null);
             refreshHour = Math.floor(Date.now() / 3600000);
         })
         .catch(function () {
-            if (!body.children.length || body.querySelector('.deseo-panel-empty')) {
-                body.innerHTML = '<div class="deseo-panel-empty">Το πρόγραμμα δεν είναι διαθέσιμο αυτή τη στιγμή.</div>';
-            }
+            card.classList.remove('is-loading');
+            label.textContent = 'LIVE BROADCAST';
+            name.textContent = 'DESEO RADIO';
+            time.textContent = 'Live status temporarily unavailable';
         });
     }
 
@@ -1806,22 +1772,22 @@ $nextShowMessage = match ($nextShowSetStatus) {
         var delay = hour - (Date.now() % hour) + 1200;
 
         refreshTimer = window.setTimeout(function () {
-            refreshProgram().finally(scheduleRefresh);
+            refreshOnAir().finally(scheduleRefresh);
         }, delay);
     }
 
-    refreshProgram().finally(scheduleRefresh);
+    refreshOnAir().finally(scheduleRefresh);
 
     document.addEventListener('visibilitychange', function () {
         if (document.visibilityState !== 'visible') return;
         var currentHour = Math.floor(Date.now() / 3600000);
         if (currentHour !== refreshHour) {
-            refreshProgram().finally(scheduleRefresh);
+            refreshOnAir().finally(scheduleRefresh);
         }
     });
 
     window.addEventListener('pageshow', function (event) {
-        if (event.persisted) refreshProgram().finally(scheduleRefresh);
+        if (event.persisted) refreshOnAir().finally(scheduleRefresh);
     });
 }());
 </script>
