@@ -975,7 +975,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
 
         <div data-mylive-push-mount></div>
 
-        <form method="post" class="mylive-settings-form">
+        <form method="post" action="/mylive/#settings" class="mylive-settings-form">
             <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
             <input type="hidden" name="action" value="save_notification_preferences">
 
