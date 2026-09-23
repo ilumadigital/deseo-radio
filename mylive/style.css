@@ -4340,7 +4340,10 @@ body{
   padding:10px 14px;
   border:1px solid var(--line);
   border-radius:999px;
-  font:700 13px/1.2 inherit;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
   letter-spacing:.05em;
   text-transform:uppercase;
   text-align:center;
