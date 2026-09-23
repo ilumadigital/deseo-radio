@@ -529,6 +529,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     . (string)$account['email']
                     . '. Δεν επηρεάστηκε το automation log.';
 
+            } elseif ($action === 'test_set_reminder_push') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if (!deseo_mylive_push_account_enabled($pdo, $accountId)) {
+                    throw new RuntimeException('Ο DJ δεν έχει ενεργοποιήσει Push Notifications στο MyLive.');
+                }
+                if (deseo_mylive_push_subscription_count($pdo, $accountId) < 1) {
+                    throw new RuntimeException('Δεν υπάρχει ενεργή συσκευή push για αυτό το MyLive account.');
+                }
+
+                $context = mylive_admin_email_test_context($pdo, $account);
+                $showStart = $context['show_start'];
+                $episode = (int)$context['episode'];
+
+                deseo_mylive_push_send_to_account(
+                    $pdo,
+                    $accountId,
+                    '[TEST] DJ Set Reminder · Deseo Radio',
+                    (string)$account['artist_name'] . ', σε 3 ημέρες είναι το επόμενο show σου. Ανέβασε το EP'
+                        . str_pad((string)$episode, 3, '0', STR_PAD_LEFT)
+                        . ' στο MyLive.',
+                    'https://deseoradio.com/mylive/#sets',
+                    [
+                        'name' => 'TEST · Set Reminder · ' . (string)$account['artist_name'],
+                        'expire_push' => '30m',
+                        'auto_hide' => 1,
+                    ]
+                );
+
+                $notice = 'Στάλθηκε TEST Set Reminder push στον '
+                    . (string)$account['artist_name']
+                    . ' · '
+                    . deseo_mylive_push_subscription_count($pdo, $accountId)
+                    . ' ενεργή συσκευή/ές. Δεν επηρεάστηκε το automation log.';
+
+            } elseif ($action === 'test_on_air_push') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+
+                if (!deseo_mylive_push_account_enabled($pdo, $accountId)) {
+                    throw new RuntimeException('Ο DJ δεν έχει ενεργοποιήσει Push Notifications στο MyLive.');
+                }
+                if (deseo_mylive_push_subscription_count($pdo, $accountId) < 1) {
+                    throw new RuntimeException('Δεν υπάρχει ενεργή συσκευή push για αυτό το MyLive account.');
+                }
+
+                deseo_mylive_push_send_to_account(
+                    $pdo,
+                    $accountId,
+                    '[TEST] Είσαι τώρα στον αέρα · Deseo Radio',
+                    (string)$account['artist_name']
+                        . ', το show σου είναι live τώρα. Ανέβασε το δημιουργικό σου στα social media και κάνε tag το Deseo Radio.',
+                    'https://deseoradio.com',
+                    [
+                        'name' => 'TEST · On Air · ' . (string)$account['artist_name'],
+                        'expire_push' => '30m',
+                        'auto_hide' => 0,
+                    ]
+                );
+
+                $notice = 'Στάλθηκε TEST On Air push στον '
+                    . (string)$account['artist_name']
+                    . ' · '
+                    . deseo_mylive_push_subscription_count($pdo, $accountId)
+                    . ' ενεργή συσκευή/ές. Δεν επηρεάστηκε το automation log.';
+
             } elseif ($action === 'toggle_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $active = (int)($_POST['active'] ?? 0) === 1 ? 1 : 0;
