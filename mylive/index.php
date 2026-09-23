@@ -1188,7 +1188,21 @@ $nextShowMessage = match ($nextShowSetStatus) {
                             <span><?= deseo_mylive_e(deseo_mylive_asset_label((string)$asset['asset_type'])) ?></span>
                             <h3><?= deseo_mylive_e($asset['title']) ?></h3>
                             <p><?= deseo_mylive_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?> · <?= deseo_mylive_e(date('d.m.Y', strtotime((string)$asset['created_at']))) ?></p>
-                            <a href="/mylive/asset.php?id=<?= (int)$asset['id'] ?>" class="asset-download">Download ↓</a>
+                            <div class="asset-actions">
+                                <a href="/mylive/asset.php?id=<?= (int)$asset['id'] ?>" class="asset-download">Download ↓</a>
+                                <?php if ($isImage): ?>
+                                    <button
+                                        type="button"
+                                        class="asset-share"
+                                        data-mylive-share-asset
+                                        data-share-url="/mylive/asset.php?id=<?= (int)$asset['id'] ?>&view=1"
+                                        data-share-name="<?= deseo_mylive_e((string)$asset['original_name']) ?>"
+                                        data-share-title="<?= deseo_mylive_e((string)$asset['title']) ?>"
+                                        data-share-mime="<?= deseo_mylive_e((string)$asset['mime_type']) ?>">
+                                        Share it ↗
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; ?>
