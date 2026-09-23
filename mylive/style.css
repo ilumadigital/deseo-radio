@@ -3203,3 +3203,224 @@ body{
   }
   .mylive-app-install-button{width:100%}
 }
+
+
+/* MYLIVE V11 · zoom/scaling resilient layout */
+.mylive-dashboard-page,
+.mylive-login-page,
+.mylive-password-page{
+  min-width:0;
+  overflow-x:hidden;
+}
+.portal-header,
+.portal-shell,
+.mylive-dashboard-layout,
+.mylive-dashboard-layout .portal-shell{
+  min-width:0;
+  max-width:100%;
+}
+.portal-header{
+  padding-left:0;
+  padding-right:0;
+}
+.portal-user{
+  min-width:0;
+}
+.portal-user>div{
+  min-width:0;
+}
+.mylive-section-nav{
+  max-height:calc(100vh - 48px);
+  max-height:calc(100dvh - 48px);
+}
+.mylive-section-nav-inner{
+  max-height:calc(100vh - 134px);
+  max-height:calc(100dvh - 134px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.14) transparent;
+}
+.mylive-section-nav-inner::-webkit-scrollbar{width:5px}
+.mylive-section-nav-inner::-webkit-scrollbar-track{background:transparent}
+.mylive-section-nav-inner::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.14);
+  border-radius:999px;
+}
+.mylive-dashboard-layout .portal-shell img,
+.mylive-dashboard-layout .portal-shell video,
+.mylive-dashboard-layout .portal-shell iframe{
+  max-width:100%;
+}
+.mylive-dashboard-layout .portal-shell>*,
+.mylive-dashboard-layout .portal-shell section,
+.mylive-dashboard-layout .portal-shell article{
+  min-width:0;
+}
+
+/* Intermediate desktop width: switch before zoom makes the side navigation cramped. */
+@media(max-width:1320px){
+  .mylive-dashboard-layout{
+    width:100%!important;
+    display:block!important;
+  }
+  .mylive-section-nav{
+    position:sticky;
+    top:0;
+    z-index:100;
+    max-height:none;
+    padding:0!important;
+    align-self:auto;
+    background:rgba(7,7,8,.94);
+    border-top:1px solid rgba(255,255,255,.04);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(18px);
+  }
+  .mylive-section-nav-inner{
+    position:static;
+    width:min(1180px,calc(100% - 32px))!important;
+    max-height:none;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0!important;
+    overflow:visible;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    backdrop-filter:none;
+  }
+  .mylive-nav-label,
+  .mylive-section-nav-inner>small{
+    display:none!important;
+  }
+  .mylive-section-nav nav{
+    width:100%;
+    display:flex!important;
+    gap:6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+    scroll-snap-type:x proximity;
+  }
+  .mylive-section-nav nav::-webkit-scrollbar{display:none}
+  .mylive-section-nav a{
+    flex:0 0 auto;
+    min-width:max-content;
+    min-height:40px!important;
+    display:flex!important;
+    align-items:center;
+    gap:7px;
+    padding:8px 12px!important;
+    border-radius:999px;
+    white-space:nowrap!important;
+    scroll-snap-align:center;
+  }
+  .mylive-section-nav a::before{display:none!important}
+  .mylive-section-nav a span{
+    white-space:nowrap!important;
+    overflow:visible!important;
+  }
+  .mylive-dashboard-layout .portal-shell{
+    width:min(1180px,calc(100% - 40px))!important;
+    margin:0 auto!important;
+    padding-top:44px;
+  }
+  .mylive-anchor-section{
+    scroll-margin-top:72px;
+  }
+  .portal-intro{
+    gap:28px;
+  }
+  .dj-metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .mylive-rewards-stats,
+  .mylive-reward-detail-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+/* Zoomed laptop widths: keep cards comfortable instead of squeezing columns. */
+@media(max-width:1040px){
+  .portal-header{
+    width:min(100% - 28px,1180px);
+  }
+  .mylive-dashboard-layout .portal-shell{
+    width:min(100% - 28px,1180px)!important;
+  }
+  .portal-intro{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .slot-pill{
+    width:100%;
+    flex-basis:auto;
+  }
+  .mylive-next-show{
+    grid-template-columns:1fr;
+  }
+  .assets-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .mylive-station-grid{
+    grid-template-columns:1fr;
+  }
+  .mylive-station-grid .deseo-panel{
+    aspect-ratio:auto;
+    min-height:500px;
+  }
+  .upload-card{
+    grid-template-columns:1fr;
+  }
+  .public-profile-actions{
+    flex-direction:column;
+  }
+  .public-profile-actions>div:last-child{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
+@media(max-width:760px){
+  .dj-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:560px){
+  .portal-header{
+    width:min(100% - 20px,1180px);
+  }
+  .mylive-dashboard-layout .portal-shell{
+    width:min(100% - 20px,1180px)!important;
+  }
+  .portal-user>div{display:none}
+  .assets-grid,
+  .dj-metrics,
+  .mylive-rewards-stats,
+  .mylive-reward-detail-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Short desktop viewports: the side navigation remains fully reachable. */
+@media(min-width:1321px) and (max-height:820px){
+  .mylive-section-nav{
+    top:12px;
+    padding-top:34px;
+    max-height:calc(100dvh - 24px);
+  }
+  .mylive-section-nav-inner{
+    padding-top:12px;
+    padding-bottom:12px;
+    max-height:calc(100dvh - 70px);
+  }
+  .mylive-section-nav a{
+    min-height:44px;
+    padding-top:8px;
+    padding-bottom:8px;
+  }
+}
