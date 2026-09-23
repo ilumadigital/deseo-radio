@@ -613,6 +613,21 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
     });
 });
 </script>
+<!-- start webpushr code -->
+<script>
+(function(w,d,s,id){
+    if(typeof(w.webpushr)!=='undefined') return;
+    w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
+    var js, fjs=d.getElementsByTagName(s)[0];
+    js=d.createElement(s);
+    js.id=id;
+    js.async=1;
+    js.src="https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);
+}(window,document,'script','webpushr-jssdk'));
+webpushr('setup',{'key':'BBFQF4QEleCIF57CoJnUQRFeh6iQaAxCWSQoVibx6rYFQpavi8Z_2flBoHsn6r6SXV4udR__JwYH7ahY4-m4Lek'});
+</script>
+<!-- end webpushr code -->
 </body>
 </html>
 <?php
@@ -707,6 +722,21 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
     });
 });
 </script>
+<!-- start webpushr code -->
+<script>
+(function(w,d,s,id){
+    if(typeof(w.webpushr)!=='undefined') return;
+    w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
+    var js, fjs=d.getElementsByTagName(s)[0];
+    js=d.createElement(s);
+    js.id=id;
+    js.async=1;
+    js.src="https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);
+}(window,document,'script','webpushr-jssdk'));
+webpushr('setup',{'key':'BBFQF4QEleCIF57CoJnUQRFeh6iQaAxCWSQoVibx6rYFQpavi8Z_2flBoHsn6r6SXV4udR__JwYH7ahY4-m4Lek'});
+</script>
+<!-- end webpushr code -->
 </body>
 </html>
 <?php
@@ -1751,5 +1781,20 @@ $nextShowMessage = match ($nextShowSetStatus) {
     });
 }());
 </script>
+<!-- start webpushr code -->
+<script>
+(function(w,d,s,id){
+    if(typeof(w.webpushr)!=='undefined') return;
+    w.webpushr=w.webpushr||function(){(w.webpushr.q=w.webpushr.q||[]).push(arguments)};
+    var js, fjs=d.getElementsByTagName(s)[0];
+    js=d.createElement(s);
+    js.id=id;
+    js.async=1;
+    js.src="https://cdn.webpushr.com/app.min.js";
+    fjs.parentNode.appendChild(js);
+}(window,document,'script','webpushr-jssdk'));
+webpushr('setup',{'key':'BBFQF4QEleCIF57CoJnUQRFeh6iQaAxCWSQoVibx6rYFQpavi8Z_2flBoHsn6r6SXV4udR__JwYH7ahY4-m4Lek'});
+</script>
+<!-- end webpushr code -->
 </body>
 </html>
