@@ -464,7 +464,7 @@ require_once __DIR__ . '/includes/header.php';
                         <p class="dj-field-note" data-i18n="dj.slot.note"><?= deseo_e(deseo_t('dj.slot.note')) ?></p>
 
                         <div class="dj-slot-days">
-                            <?php foreach ([4, 5, 6, 7] as $day): ?>
+                            <?php foreach ([3, 4, 5, 6, 7] as $day): ?>
                                 <section class="dj-slot-day">
                                     <h3 data-i18n="day.<?= (int)$day ?>"><?= deseo_e(deseo_t_day($day)) ?></h3>
                                     <div class="dj-slot-grid">
