@@ -4116,3 +4116,116 @@ body{
     margin-top:26px;
   }
 }
+
+
+/* MYLIVE V14 · Live-now overview state + white on-air show name */
+.mylive-onair-overlay h3{
+  color:#fff!important;
+  background:none!important;
+  background-image:none!important;
+  -webkit-background-clip:border-box!important;
+  background-clip:border-box!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.58)!important;
+}
+
+.slot-pill{
+  position:relative;
+  overflow:hidden;
+  transition:border-color .22s ease,background .22s ease,box-shadow .22s ease,transform .22s ease;
+}
+.slot-pill-kicker{
+  display:flex!important;
+  align-items:center;
+  gap:8px;
+}
+.slot-pill-kicker b{
+  color:var(--red);
+  font-size:8px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:.14em;
+}
+.slot-live-bullet{
+  display:none;
+  width:8px;
+  height:8px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:var(--red);
+}
+.slot-pill>small{
+  display:block;
+  margin-top:6px;
+  color:#9b9ba2;
+  font-size:11px!important;
+  line-height:1.3!important;
+}
+.slot-pill.is-live-now{
+  border-color:rgba(255,43,54,.62);
+  background:
+    radial-gradient(circle at 90% 10%,rgba(255,43,54,.18),transparent 42%),
+    linear-gradient(145deg,rgba(255,43,54,.12),rgba(255,43,54,.045));
+  box-shadow:
+    0 0 0 1px rgba(255,43,54,.08),
+    0 0 28px rgba(255,43,54,.16),
+    inset 0 1px 0 rgba(255,255,255,.035);
+  animation:mylive-slot-live-glow 1.7s ease-in-out infinite;
+}
+.slot-pill.is-live-now::after{
+  content:"";
+  position:absolute;
+  inset:auto -30% -60% auto;
+  width:150px;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:rgba(255,43,54,.13);
+  filter:blur(34px);
+  pointer-events:none;
+}
+.slot-pill.is-live-now .slot-live-bullet{
+  display:inline-block;
+  box-shadow:0 0 0 0 rgba(255,43,54,.55);
+  animation:mylive-slot-bullet 1.25s ease-out infinite;
+}
+.slot-pill.is-live-now .slot-pill-kicker b{
+  color:#ff6670!important;
+}
+.slot-pill.is-live-now>strong{
+  position:relative;
+  z-index:1;
+  color:#fff!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  letter-spacing:-.015em;
+}
+.slot-pill.is-live-now>small{
+  position:relative;
+  z-index:1;
+  color:#b8b8be;
+}
+@keyframes mylive-slot-bullet{
+  0%{box-shadow:0 0 0 0 rgba(255,43,54,.52)}
+  70%{box-shadow:0 0 0 9px rgba(255,43,54,0)}
+  100%{box-shadow:0 0 0 0 rgba(255,43,54,0)}
+}
+@keyframes mylive-slot-live-glow{
+  0%,100%{
+    box-shadow:
+      0 0 0 1px rgba(255,43,54,.06),
+      0 0 18px rgba(255,43,54,.10),
+      inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  50%{
+    box-shadow:
+      0 0 0 1px rgba(255,43,54,.12),
+      0 0 34px rgba(255,43,54,.24),
+      inset 0 1px 0 rgba(255,255,255,.04);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .slot-pill.is-live-now,
+  .slot-pill.is-live-now .slot-live-bullet{
+    animation:none!important;
+  }
+}
