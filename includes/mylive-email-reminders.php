@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/dj-portal.php';
 require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/mylive-communications.php';
 
 function deseo_mylive_email_scheduler_bootstrap(PDO $pdo): void {
+    deseo_mylive_communications_bootstrap($pdo);
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_email_automation_log (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         account_id BIGINT NOT NULL,
@@ -236,6 +239,8 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
 
                 if ($pendingSet) {
                     $summary['skipped']++;
+                } elseif (!deseo_mylive_communication_allows($pdo, $accountId, 'set_reminder', 'email')) {
+                    $summary['skipped']++;
                 } elseif (deseo_mylive_email_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
                 } else {
@@ -292,7 +297,9 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
 
                 $eventKey = 'on-air-social:' . $programId . ':' . $showStart->format('Y-m-d');
 
-                if (deseo_mylive_email_event_sent($pdo, $eventKey)) {
+                if (!deseo_mylive_communication_allows($pdo, $accountId, 'on_air', 'email')) {
+                    $summary['skipped']++;
+                } elseif (deseo_mylive_email_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
                 } else {
                     $mail = deseo_mylive_on_air_social_email($show, [
