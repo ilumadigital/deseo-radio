@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/mylive-email-reminders.php';
 require_once __DIR__ . '/mylive-push.php';
+require_once __DIR__ . '/mylive-communications.php';
 
 function deseo_mylive_push_scheduler_bootstrap(PDO $pdo): void {
-    deseo_mylive_push_bootstrap($pdo);
+    deseo_mylive_communications_bootstrap($pdo);
 
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS dj_push_automation_state (
@@ -125,7 +126,9 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
             if ($now->format('Y-m-d') === $reminderDay && !$pendingSet) {
                 $eventKey = 'set-due:' . $programId . ':' . $showStart->format('Y-m-d') . ':ep' . $nextEpisode;
 
-                if (deseo_mylive_push_event_sent($pdo, $eventKey)) {
+                if (!deseo_mylive_communication_allows($pdo, $accountId, 'set_reminder', 'push')) {
+                    $summary['skipped']++;
+                } elseif (deseo_mylive_push_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
                 } else {
                     $artistName = trim((string)($show['artist_name'] ?? ''));
@@ -186,7 +189,9 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
 
                 $eventKey = 'on-air-social:' . $programId . ':' . $showStart->format('Y-m-d');
 
-                if (deseo_mylive_push_event_sent($pdo, $eventKey)) {
+                if (!deseo_mylive_communication_allows($pdo, $accountId, 'on_air', 'push')) {
+                    $summary['skipped']++;
+                } elseif (deseo_mylive_push_event_sent($pdo, $eventKey)) {
                     $summary['skipped']++;
                 } else {
                     $artistName = trim((string)($show['artist_name'] ?? ''));
