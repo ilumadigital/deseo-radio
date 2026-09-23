@@ -3857,9 +3857,10 @@ input[type="password"]{
 }
 .dj-calendar-grid{
   display:grid;
-  grid-template-columns:repeat(5,minmax(190px,1fr));
+  grid-template-columns:repeat(5,minmax(0,1fr));
   gap:10px;
-  min-width:1000px;
+  width:100%;
+  min-width:0;
   padding:14px;
 }
 .dj-calendar-day{
@@ -4091,6 +4092,7 @@ input[type="password"]{
   }
   .dj-calendar-grid{
     grid-template-columns:repeat(5,minmax(220px,1fr));
+    width:max-content;
     min-width:1150px;
     padding:10px;
   }
