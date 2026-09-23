@@ -160,6 +160,19 @@ function deseo_mylive_communication_accounts(PDO $pdo): array {
     return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 }
 
+function deseo_mylive_personalize_communication(array $account, string $value): string {
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $name = trim((string)($account['full_name'] ?? ''));
+    $slot = deseo_mylive_slot($account);
+
+    return strtr($value, [
+        '{artist}' => $artist,
+        '{name}' => $name !== '' ? $name : $artist,
+        '{email}' => trim((string)($account['email'] ?? '')),
+        '{slot}' => $slot,
+    ]);
+}
+
 function deseo_mylive_manual_email(array $account, string $subject, string $message, string $ctaLabel = '', string $ctaUrl = ''): array {
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
     $subject = trim($subject);
