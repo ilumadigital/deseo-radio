@@ -34,8 +34,6 @@ $stmt->execute([DESEO_DJ_SEASON]);
 $approvedSets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $dayLabels = [
-    1 => 'Δευτέρα',
-    2 => 'Τρίτη',
     3 => 'Τετάρτη',
     4 => 'Πέμπτη',
     5 => 'Παρασκευή',
@@ -43,8 +41,6 @@ $dayLabels = [
     7 => 'Κυριακή',
 ];
 $dayShort = [
-    1 => 'ΔΕΥ',
-    2 => 'ΤΡΙ',
     3 => 'ΤΕΤ',
     4 => 'ΠΕΜ',
     5 => 'ΠΑΡ',
@@ -52,7 +48,13 @@ $dayShort = [
     7 => 'ΚΥΡ',
 ];
 
-$calendarDays = array_fill(1, 7, []);
+$calendarDays = [
+    3 => [],
+    4 => [],
+    5 => [],
+    6 => [],
+    7 => [],
+];
 $totalMinutes = 0;
 
 foreach ($approvedSets as $set) {
@@ -139,7 +141,7 @@ admin_page_start('DJ Calendar', 'dj-calendar');
     <article>
         <span>ACTIVE DAYS</span>
         <strong><?= $activeDays ?></strong>
-        <small>of 7 weekdays</small>
+        <small>Wednesday to Sunday</small>
     </article>
     <article>
         <span>WEEKLY HOURS</span>
