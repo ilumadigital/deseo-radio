@@ -95,7 +95,7 @@
   function registerMyLiveServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
 
-    navigator.serviceWorker.register('/mylive-sw.js', {
+    navigator.serviceWorker.register('/mylive/webpushr-sw.js', {
       scope: '/mylive/'
     }).catch(function () {});
   }
