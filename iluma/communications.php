@@ -28,6 +28,26 @@ function communications_admin_account(PDO $pdo, int $accountId): array {
     return $account;
 }
 
+function communications_variable_picker(string $targetId): void {
+    $variables = [
+        '{artist}' => 'DJ / Artist name',
+        '{name}' => 'Full name',
+        '{email}' => 'MyLive email',
+        '{slot}' => 'Weekly slot',
+    ];
+    ?>
+    <select class="communications-variable-picker"
+            data-variable-picker
+            data-variable-target="<?= admin_e($targetId) ?>"
+            aria-label="Insert variable into <?= admin_e($targetId) ?>">
+        <option value="">+ Insert variable</option>
+        <?php foreach ($variables as $token => $label): ?>
+            <option value="<?= admin_e($token) ?>"><?= admin_e($token) ?> · <?= admin_e($label) ?></option>
+        <?php endforeach; ?>
+    </select>
+    <?php
+}
+
 function communications_admin_targets(PDO $pdo, string $target): array {
     $sql =
         "SELECT *
@@ -340,19 +360,28 @@ admin_page_start('Communications', 'communications');
             </div>
 
             <div class="field">
-                <label>Subject</label>
-                <input type="text" name="subject" required maxlength="190" placeholder="Deseo Radio · Νέα ενημέρωση για {artist}">
+                <div class="communications-field-head">
+                    <label for="manual-email-subject">Subject</label>
+                    <?php communications_variable_picker('manual-email-subject'); ?>
+                </div>
+                <input id="manual-email-subject" type="text" name="subject" required maxlength="190" placeholder="Deseo Radio · Νέα ενημέρωση για {artist}">
             </div>
 
             <div class="field">
-                <label>Message</label>
-                <textarea name="message" required rows="7" placeholder="{artist}, γράψε εδώ το μήνυμα που θέλεις να λάβει ο DJ."></textarea>
+                <div class="communications-field-head">
+                    <label for="manual-email-message">Message</label>
+                    <?php communications_variable_picker('manual-email-message'); ?>
+                </div>
+                <textarea id="manual-email-message" name="message" required rows="7" placeholder="{artist}, γράψε εδώ το μήνυμα που θέλεις να λάβει ο DJ."></textarea>
             </div>
 
             <div class="form-grid">
                 <div class="field">
-                    <label>CTA Label</label>
-                    <input type="text" name="cta_label" placeholder="OPEN MYLIVE">
+                    <div class="communications-field-head">
+                        <label for="manual-email-cta-label">CTA Label</label>
+                        <?php communications_variable_picker('manual-email-cta-label'); ?>
+                    </div>
+                    <input id="manual-email-cta-label" type="text" name="cta_label" placeholder="OPEN MYLIVE">
                 </div>
                 <div class="field">
                     <label>CTA URL</label>
@@ -360,8 +389,11 @@ admin_page_start('Communications', 'communications');
                 </div>
             </div>
 
-            <div class="communications-placeholders">
-                <span>{artist}</span><span>{name}</span><span>{email}</span><span>{slot}</span>
+            <div class="communications-placeholders" aria-label="Available variables">
+                <span><b>{artist}</b> Artist</span>
+                <span><b>{name}</b> Full name</span>
+                <span><b>{email}</b> Email</span>
+                <span><b>{slot}</b> Weekly slot</span>
             </div>
 
             <div class="form-actions">
@@ -394,13 +426,19 @@ admin_page_start('Communications', 'communications');
             </div>
 
             <div class="field">
-                <label>Push Title</label>
-                <input type="text" name="title" required maxlength="100" placeholder="Deseo Radio · Update for {artist}">
+                <div class="communications-field-head">
+                    <label for="manual-push-title">Push Title</label>
+                    <?php communications_variable_picker('manual-push-title'); ?>
+                </div>
+                <input id="manual-push-title" type="text" name="title" required maxlength="100" placeholder="Deseo Radio · Update for {artist}">
             </div>
 
             <div class="field">
-                <label>Push Message</label>
-                <textarea name="message" required rows="7" maxlength="255" placeholder="{artist}, γράψε εδώ το σύντομο push message."></textarea>
+                <div class="communications-field-head">
+                    <label for="manual-push-message">Push Message</label>
+                    <?php communications_variable_picker('manual-push-message'); ?>
+                </div>
+                <textarea id="manual-push-message" name="message" required rows="7" maxlength="255" placeholder="{artist}, γράψε εδώ το σύντομο push message."></textarea>
             </div>
 
             <div class="field">
@@ -525,5 +563,39 @@ admin_page_start('Communications', 'communications');
         </div>
     <?php endif; ?>
 </section>
+
+<script>
+(function(){
+  function insertVariable(select) {
+    var token = select.value;
+    if (!token) return;
+
+    var targetId = select.getAttribute('data-variable-target');
+    var field = targetId ? document.getElementById(targetId) : null;
+    select.value = '';
+    if (!field) return;
+
+    var value = field.value || '';
+    var start = typeof field.selectionStart === 'number' ? field.selectionStart : value.length;
+    var end = typeof field.selectionEnd === 'number' ? field.selectionEnd : start;
+
+    field.value = value.slice(0, start) + token + value.slice(end);
+    var caret = start + token.length;
+
+    field.focus();
+    if (typeof field.setSelectionRange === 'function') {
+      field.setSelectionRange(caret, caret);
+    }
+
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  document.querySelectorAll('[data-variable-picker]').forEach(function(select){
+    select.addEventListener('change', function(){
+      insertVariable(select);
+    });
+  });
+}());
+</script>
 
 <?php admin_page_end(); ?>
