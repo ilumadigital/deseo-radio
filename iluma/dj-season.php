@@ -74,32 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new RuntimeException('Το slot της αίτησης δεν βρέθηκε.');
                 }
 
-                if ($status === 'approved') {
-                    $check = $pdo->prepare(
-                        "SELECT b.id
-                         FROM dj_season_bookings b
-                         INNER JOIN dj_season_slots requested_slot ON requested_slot.id = b.slot_id
-                         WHERE b.season = ?
-                           AND b.status = 'approved'
-                           AND b.id <> ?
-                           AND COALESCE(b.final_day_of_week, requested_slot.day_of_week) = ?
-                           AND ? < COALESCE(b.final_end_time, requested_slot.end_time)
-                           AND ? > COALESCE(b.final_start_time, requested_slot.start_time)
-                         LIMIT 1
-                         FOR UPDATE"
-                    );
-                    $check->execute([
-                        DESEO_DJ_SEASON,
-                        $bookingId,
-                        $finalDay,
-                        $finalStart,
-                        $finalEnd,
-                    ]);
-                    if ($check->fetchColumn()) {
-                        throw new RuntimeException('Υπάρχει ήδη εγκεκριμένος DJ σε ώρα που επικαλύπτεται με αυτό το final slot.');
-                    }
-                }
-
                 $update = $pdo->prepare(
                     "UPDATE dj_season_bookings
                      SET status = ?, final_day_of_week = ?, final_start_time = ?, final_end_time = ?
@@ -227,6 +201,27 @@ $stmt = $pdo->prepare(
 $stmt->execute([DESEO_DJ_SEASON]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$approvedSchedule = [];
+foreach ($bookings as $scheduleBooking) {
+    if ((string)($scheduleBooking['status'] ?? '') !== 'approved') {
+        continue;
+    }
+
+    $approvedSchedule[] = [
+        'id' => (int)$scheduleBooking['id'],
+        'artist' => (string)$scheduleBooking['artist_name'],
+        'day' => !empty($scheduleBooking['final_day_of_week'])
+            ? (int)$scheduleBooking['final_day_of_week']
+            : (int)$scheduleBooking['day_of_week'],
+        'start' => !empty($scheduleBooking['final_start_time'])
+            ? dj_season_format_time((string)$scheduleBooking['final_start_time'])
+            : dj_season_format_time((string)$scheduleBooking['start_time']),
+        'end' => !empty($scheduleBooking['final_end_time'])
+            ? dj_season_format_time((string)$scheduleBooking['final_end_time'])
+            : dj_season_format_time((string)$scheduleBooking['end_time']),
+    ];
+}
+
 $availableCount = 0;
 foreach ($slots as $slot) {
     if (!empty($slot['available'])) $availableCount++;
@@ -320,7 +315,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                 $createdAt = !empty($booking['created_at']) ? strtotime((string)$booking['created_at']) : false;
                 $submittedLabel = $createdAt ? date('d.m.Y · H:i', $createdAt) : '—';
                 ?>
-                <details class="season6-application-card" data-season-application data-status="<?= admin_e($bookingStatus) ?>" <?= $index === 0 ? 'open' : '' ?>>
+                <details id="application-<?= (int)$booking['id'] ?>" class="season6-application-card" data-season-application data-status="<?= admin_e($bookingStatus) ?>" <?= $index === 0 ? 'open' : '' ?>>
                     <summary>
                         <div class="season6-summary-main">
                             <img src="<?= admin_e((string)$booking['photo_path']) ?>" alt="" loading="lazy">
@@ -398,7 +393,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             <div class="season6-decision-head">
                                 <span>APPLICATION DECISION</span>
                                 <h4>Schedule & status</h4>
-                                <p>Το final slot χρησιμοποιείται στο email έγκρισης και στο availability check.</p>
+                                <p>Το final slot χρησιμοποιείται στο email έγκρισης. Αν επικαλύπτεται με άλλο approved set, το CMS θα σε προειδοποιήσει πριν την αποθήκευση χωρίς να σε αναγκάσει να αλλάξεις ώρα.</p>
                             </div>
 
                             <form method="post" class="season6-decision-form">
@@ -483,6 +478,51 @@ admin_page_start('Season 6 DJs', 'dj-season');
 (function () {
     const filters = Array.from(document.querySelectorAll('[data-season-filter]'));
     const cards = Array.from(document.querySelectorAll('[data-season-application]'));
+    const approvedSchedule = <?= json_encode($approvedSchedule, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '[]' ?>;
+    const dayLabels = {
+        1: 'Δευτέρα',
+        2: 'Τρίτη',
+        3: 'Τετάρτη',
+        4: 'Πέμπτη',
+        5: 'Παρασκευή',
+        6: 'Σάββατο',
+        7: 'Κυριακή'
+    };
+
+    function toMinutes(value) {
+        const parts = String(value || '').split(':');
+        if (parts.length < 2) return null;
+        const hours = Number(parts[0]);
+        const minutes = Number(parts[1]);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+        return (hours * 60) + minutes;
+    }
+
+    function findConflicts(bookingId, day, start, end) {
+        const startMinutes = toMinutes(start);
+        const endMinutes = toMinutes(end);
+        if (startMinutes === null || endMinutes === null) return [];
+
+        return approvedSchedule.filter(item => {
+            if (Number(item.id) === bookingId || Number(item.day) !== day) return false;
+            const itemStart = toMinutes(item.start);
+            const itemEnd = toMinutes(item.end);
+            if (itemStart === null || itemEnd === null) return false;
+            return startMinutes < itemEnd && endMinutes > itemStart;
+        });
+    }
+
+    function continueSubmit(form, submitter) {
+        form.dataset.seasonConflictBypass = '1';
+        form.dataset.deseoConfirmBypass = '1';
+
+        if (typeof form.requestSubmit === 'function') {
+            if (submitter) form.requestSubmit(submitter);
+            else form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    }
 
     filters.forEach(button => {
         button.addEventListener('click', () => {
@@ -500,6 +540,64 @@ admin_page_start('Season 6 DJs', 'dj-season');
             }
         });
     });
+
+    document.querySelectorAll('.season6-decision-form').forEach(form => {
+        form.addEventListener('submit', event => {
+            if (form.dataset.seasonConflictBypass === '1') {
+                delete form.dataset.seasonConflictBypass;
+                return;
+            }
+
+            const status = form.querySelector('select[name="status"]');
+            if (!status || status.value !== 'approved') return;
+
+            const bookingInput = form.querySelector('input[name="booking_id"]');
+            const dayInput = form.querySelector('select[name="final_day_of_week"]');
+            const startInput = form.querySelector('input[name="final_start_time"]');
+            const endInput = form.querySelector('input[name="final_end_time"]');
+            const bookingId = Number(bookingInput ? bookingInput.value : 0);
+            const day = Number(dayInput ? dayInput.value : 0);
+            const start = startInput ? startInput.value : '';
+            const end = endInput ? endInput.value : '';
+            const conflicts = findConflicts(bookingId, day, start, end);
+
+            if (!conflicts.length) return;
+
+            event.preventDefault();
+            const submitter = event.submitter || null;
+            const names = conflicts.map(item => item.artist).join(', ');
+            const message =
+                'Το ' + (dayLabels[day] || 'επιλεγμένο') + ' slot ' + start + '–' + end +
+                ' έχει ήδη approved DJ' + (conflicts.length > 1 ? 's' : '') + ': ' + names + '.\n\n' +
+                'Μπορείς να συνεχίσεις με το ίδιο slot. Το CMS δεν θα σε αναγκάσει να αλλάξεις ημέρα ή ώρα.';
+
+            if (!window.DeseoDialog || typeof window.DeseoDialog.confirm !== 'function') {
+                if (window.confirm(message)) {
+                    continueSubmit(form, submitter);
+                }
+                return;
+            }
+
+            window.DeseoDialog.confirm(message, {
+                title: 'Το slot είναι ήδη κλεισμένο',
+                confirmLabel: 'Συνέχεια με ίδιο slot',
+                cancelLabel: 'Επιστροφή'
+            }).then(confirmed => {
+                if (confirmed) {
+                    continueSubmit(form, submitter);
+                }
+            });
+        });
+    });
+
+    if (window.location.hash) {
+        const target = document.querySelector(window.location.hash);
+        if (target && target.matches('[data-season-application]')) {
+            target.hidden = false;
+            target.open = true;
+            window.setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+        }
+    }
 }());
 </script>
 
