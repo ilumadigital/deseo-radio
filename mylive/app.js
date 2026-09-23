@@ -185,12 +185,12 @@
   }
 
   function createPushPanel() {
+    var mount = document.querySelector('[data-mylive-push-mount]');
     var installCard = document.querySelector('.mylive-app-card');
-    if (!installCard || document.querySelector('[data-mylive-push-panel]')) return null;
+    if ((!mount && !installCard) || document.querySelector('[data-mylive-push-panel]')) return null;
 
-    var panel = document.createElement('section');
-    panel.className = 'mylive-push-card mylive-anchor-section';
-    panel.id = 'notifications';
+    var panel = document.createElement('div');
+    panel.className = 'mylive-push-card';
     panel.setAttribute('data-mylive-push-panel', '');
     panel.innerHTML =
       '<div class="mylive-push-card-copy">' +
@@ -205,7 +205,11 @@
       '</div>' +
       '<small class="mylive-push-help" data-mylive-push-help>Δεν εμφανίζεται κανένα Webpushr popup. Η άδεια ζητείται μόνο όταν πατήσεις Enable.</small>';
 
-    installCard.insertAdjacentElement('afterend', panel);
+    if (mount) {
+      mount.appendChild(panel);
+    } else {
+      installCard.insertAdjacentElement('afterend', panel);
+    }
     return panel;
   }
 
