@@ -8,6 +8,37 @@ declare(strict_types=1);
  * Never expose WEBPUSHR_AUTH_TOKEN to browser-side code.
  */
 
+function deseo_mylive_push_bootstrap(PDO $pdo): void {
+    $columnStmt = $pdo->prepare("SHOW COLUMNS FROM dj_portal_accounts LIKE ?");
+    $columnStmt->execute(['push_notifications_enabled']);
+    if (!$columnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $pdo->exec(
+            "ALTER TABLE dj_portal_accounts
+             ADD COLUMN push_notifications_enabled TINYINT(1) NOT NULL DEFAULT 0
+             AFTER public_profile_enabled"
+        );
+    }
+
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS dj_push_subscriptions (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            account_id BIGINT NOT NULL,
+            subscriber_id VARCHAR(190) NOT NULL,
+            user_agent_hash CHAR(64) NOT NULL DEFAULT '',
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            last_seen_at DATETIME NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uniq_push_subscriber (subscriber_id),
+            KEY idx_push_account_active (account_id, is_active),
+            CONSTRAINT fk_push_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
+                ON UPDATE CASCADE ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
+    deseo_mylive_push_automation_bootstrap($pdo);
+}
+
 function deseo_mylive_push_configured(): bool {
     return trim((string)(getenv('WEBPUSHR_KEY') ?: '')) !== ''
         && trim((string)(getenv('WEBPUSHR_AUTH_TOKEN') ?: '')) !== '';
