@@ -437,7 +437,7 @@
 
   function startEmailAutomationTick() {
     function tick() {
-      fetch('/mylive/email-tick.php', {
+      fetch('/mylive/notification-tick.php', {
         method: 'GET',
         cache: 'no-store',
         credentials: 'same-origin',
