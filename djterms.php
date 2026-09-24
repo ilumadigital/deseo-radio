@@ -12,8 +12,10 @@ function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-$meta_title = 'Όροι Συμμετοχής DJ · Deseo Radio Season 6';
-$meta_desc = 'Όροι συμμετοχής και συνεργασίας για DJs και producers στη Season 6 του Deseo Radio.';
+$meta_title = deseo_lang() === 'en' ? 'DJ Participation Terms · Deseo Radio Season 6' : 'Όροι Συμμετοχής DJ · Deseo Radio Season 6';
+$meta_desc = deseo_lang() === 'en'
+    ? 'Participation and collaboration terms for DJs and producers in Deseo Radio Season 6.'
+    : 'Όροι συμμετοχής και συνεργασίας για DJs και producers στη Season 6 του Deseo Radio.';
 $meta_canonical = 'https://deseoradio.com/djterms';
 $meta_robots = 'noindex,nofollow,noarchive,nosnippet,noimageindex';
 $private_page = true;
@@ -23,6 +25,7 @@ require_once __DIR__ . '/includes/head-meta.php';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
+<?php if (deseo_lang() !== 'en'): ?>
 <main id="main-content" class="dj-legal-page">
     <div class="dj-legal-shell">
         <header class="dj-legal-head">
@@ -307,5 +310,163 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 </main>
+<?php else: ?>
+<main id="main-content" class="dj-legal-page">
+    <div class="dj-legal-shell">
+        <header class="dj-legal-head">
+            <span class="kicker">DESEO RADIO · SEASON 6</span>
+            <h1 class="metal-title">DJ Participation<br>& Collaboration Terms</h1>
+            <p>
+                These terms govern the participation of DJs and producers in “Deseo Radio Season 6 · DJ Sets”.
+                By electronically submitting the form at <a href="/dj?lang=en">/dj</a>, the participant confirms that
+                they have read, understood and accepted these terms.
+            </p>
+            <div class="dj-legal-meta">
+                <span>Season 6</span>
+                <span>Version <?= deseo_e(DESEO_DJ_TERMS_VERSION) ?></span>
+                <span>15 September 2026</span>
+            </div>
+        </header>
+
+        <div class="dj-legal-content">
+            <section class="dj-legal-section">
+                <h2>1. Organizer and scope</h2>
+                <p>Deseo Radio is a digital radio brand of ILUMA Digital Agency. Season 6 includes scheduled broadcasts of DJ Sets by selected DJs / producers in weekly slots. Participation is non-exclusive and relates only to the programming, promotion and archival presentation of this specific collaboration.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>2. No monetary compensation</h2>
+                <p>Participation is voluntary and does not include salary, fee, royalties from Deseo Radio, reimbursement of expenses or any other monetary payment to the DJ, unless otherwise agreed in writing for a specific case.</p>
+                <p>The absence of monetary compensation does not mean that no services or benefits are provided to participating DJs. The non-monetary support provided by Deseo Radio / ILUMA is described in detail in Section 10 and may include exposure to the Deseo Radio audience, promotional support, sponsored promotion and graphic / creative services relating to the participation.</p>
+                <p>Participation does not in itself create an employment relationship, partnership, agency relationship or exclusivity. The actual nature of any relationship is always determined by applicable law and the relevant facts.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>3. Eligibility requirements</h2>
+                <ul>
+                    <li>The participant must be 18 years of age or older.</li>
+                    <li>The submitted details, artist name, email, photo and bio must be accurate and lawful.</li>
+                    <li>The photo must depict the DJ or be lawfully licensed for their use.</li>
+                    <li>The bio must not contain misleading, offensive or defamatory information.</li>
+                </ul>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>4. Inquiry and preferred day / time</h2>
+                <p>The form at /dj is solely an expression-of-interest inquiry. The DJ states a preferred slot, but submission does not constitute a booking, acceptance, participation confirmation or automatic placement in the Deseo Radio schedule.</p>
+                <p>Multiple DJs may submit an inquiry for the same slot. The Deseo / ILUMA team reviews applications manually and decides which DJ to approve. A slot stops accepting new inquiries only after a DJ has manually been given “Approved” status for that slot.</p>
+                <p>Final inclusion in the regular Radio Program is not performed by the inquiry form or inquiry system. It is handled separately and manually by Deseo Radio management.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>5. Permitted DJ Sets</h2>
+                <p>The set may be new, previously recorded, or created specifically for Deseo Radio. The DJ remains free to distribute or broadcast the same set elsewhere unless otherwise agreed in writing for a specific production.</p>
+                <p>Technical specifications, delivery method, final duration and delivery deadline may be communicated separately by the ILUMA / Deseo team after selection. Late or non-compliant delivery may result in withdrawal of approval.</p>
+            </section>
+
+            <section class="dj-legal-section dj-legal-callout">
+                <h2>6. Strict prohibition of AI-generated music</h2>
+                <p>The DJ Set must not include musical works, songs or recordings created wholly or partly using generative artificial intelligence in relation to composition, lyrics, vocals, core musical parts or the principal recording.</p>
+                <p>Tools used exclusively for technical mastering, noise reduction, restoration, loudness matching or similar post-production functions are not, by themselves, treated as creating AI-generated music, provided they do not generate the material creative content.</p>
+                <p>The DJ confirms that, to the best of their knowledge and after reasonable checking, the set complies with this policy. Deseo Radio may request replacement of a track or set where there is a reasonable indication of non-compliance.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>7. Copyright and related rights</h2>
+                <p>The DJ confirms that they have the right to deliver the specific file / DJ mix to Deseo Radio and will not knowingly include illegal bootlegs, leaked recordings, unauthorized releases or other material whose possession or distribution is unlawful.</p>
+                <p>This statement does not mean that the DJ transfers to Deseo Radio rights belonging to third parties. Any licenses or payments imposed on the radio operator by applicable law or collective management organizations are handled separately by Deseo Radio where and to the extent required.</p>
+                <p>For original music, edits, intros, voiceovers or other material created or controlled by the DJ, the DJ grants Deseo Radio a non-exclusive license only to the extent necessary for broadcasting, technical adaptation and promotion of the specific participation.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>8. Work sample and set information</h2>
+                <p>When submitting an inquiry, the DJ must provide a working link to a representative DJ set, mix or radio show. The link is used solely to evaluate the inquiry by the Deseo / ILUMA team and must remain accessible without requiring an undisclosed login.</p>
+                <p>A tracklist or additional information about the final set may be requested later by Deseo / ILUMA after the DJ has been selected and before broadcast.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>9. Content that is not accepted</h2>
+                <p>Deseo Radio may refuse or stop a broadcast that includes, among other things:</p>
+                <ul>
+                    <li>illegal, defamatory or misleading content,</li>
+                    <li>hate speech, threats or targeting of persons / groups,</li>
+                    <li>unauthorized commercial advertising, sponsor messages or paid placement,</li>
+                    <li>content creating serious legal or reputational risk for Deseo Radio / ILUMA,</li>
+                    <li>material that breaches these terms or the AI policy.</li>
+                </ul>
+                <p>Any explicit content should be disclosed before delivery where editorial or scheduling restrictions may be required.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>10. DJ benefits, promotion and promotional assets</h2>
+                <p>As part of Season 6, Deseo Radio and ILUMA Digital Agency provide selected DJs with non-monetary services and promotional support directly connected to their participation. This support may include:</p>
+                <ul>
+                    <li>scheduled radio broadcast of the DJ set and exposure to Deseo Radio’s existing audience,</li>
+                    <li>promotion through the official digital channels, social media and other owned media of Deseo Radio / ILUMA Radios,</li>
+                    <li>promotion through the ILUMA Digital Agency newsletter where included in the relevant editorial and promotional plan,</li>
+                    <li>sponsored / paid promotion of selected posts, stories or other promotional activity within the applicable campaign and available media plan,</li>
+                    <li>graphic design and creative services by ILUMA for posters, stories, social posts, covers and other promotional assets relating to the participation,</li>
+                    <li>editorial and promotional support for the presentation of the DJ, artist name and scheduled slot.</li>
+                </ul>
+                <p>These benefits form part of the overall support for participation and do not guarantee any specific number of listeners, impressions, clicks, followers or other measurable outcome.</p>
+                <p>To enable this promotion, the DJ grants Deseo Radio and ILUMA Digital Agency a non-exclusive, royalty-free license to use the artist name, photo, bio and slot information for:</p>
+                <ul>
+                    <li>presentation of the participation on deseoradio.com,</li>
+                    <li>creation and distribution of Season 6 posters, stories, posts and other promotional assets,</li>
+                    <li>publication, reposting and sponsored promotion on official Deseo Radio / ILUMA Radios social media,</li>
+                    <li>archival presentation of the specific Season 6 participation.</li>
+                </ul>
+                <p>This license does not permit unrelated commercial exploitation of the DJ’s image for third-party products or campaigns without a separate agreement.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>11. Promotional material from ILUMA</h2>
+                <p>ILUMA Digital Agency may prepare promotional assets featuring the artist name and broadcast day / time. These assets are supplied for sharing or reposting by the DJ. Unless otherwise agreed, sharing by the DJ is encouraged but does not constitute a paid advertising obligation.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>12. Editorial and technical management</h2>
+                <p>Deseo Radio may apply technical normalization, fades, station IDs, metadata or other reasonable technical adjustments required for smooth radio broadcasting, provided the artistic identity of the set is not materially altered.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>13. Cancellation and termination of participation</h2>
+                <p>The DJ may request cancellation by contacting <a href="mailto:radio@iluma.gr">radio@iluma.gr</a> in good time. Deseo Radio may cancel or suspend participation where the terms are breached, the set is not delivered on time, or a material technical / legal issue exists.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>14. Liability</h2>
+                <p>Each party is responsible for its own acts and obligations. The DJ is responsible for inaccurate statements or for material delivered in breach of their obligations under these terms. To the extent permitted by law, the DJ must reasonably cooperate in resolving any third-party claim arising directly from their proven breach.</p>
+                <p>Nothing in these terms limits liability that cannot lawfully be limited under mandatory law.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>15. Personal data</h2>
+                <p>The processing of information submitted through the form is described in the <a href="/privacy?lang=en">Privacy Policy</a>. Acceptance of the collaboration terms and acknowledgment of personal-data processing are recorded with a version and timestamp.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>16. Electronic acceptance and records</h2>
+                <p>Selecting the relevant checkbox and successfully submitting the form constitutes electronic acceptance of the specific version of these terms. The system retains the terms version and date / time of acceptance together with the application.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>17. Amendments</h2>
+                <p>ILUMA / Deseo may update these terms for future applications. A material change affecting an already submitted participation will not be applied retroactively without appropriate notice and, where required, renewed acceptance.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>18. Governing law</h2>
+                <p>These terms are governed by Greek law. Disputes that cannot be resolved amicably are subject to the courts determined by applicable Greek procedural law. Any reference to a specific local jurisdiction does not override mandatory rules of law.</p>
+            </section>
+
+            <section class="dj-legal-section dj-legal-callout">
+                <h2>Important legal note</h2>
+                <p>These terms are designed to provide a clear operational framework for Season 6. Final legal compliance of the radio project — particularly in relation to music licensing, collective rights management, tax / corporate identity and ILUMA’s specific obligations — should be verified by a qualified professional based on the station’s actual operation.</p>
+            </section>
+        </div>
+    </div>
+</main>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
