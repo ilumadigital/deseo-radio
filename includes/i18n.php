@@ -103,6 +103,10 @@ function deseo_t(string $key): string {
             'djcall.title' => 'Γίνε το Soundtrack της ζωής τους.',
             'djcall.text' => 'Το Deseo Radio ανοίγει τη Season 6 σε DJs που έχουν δικό τους ήχο. Στείλε το profile και ένα set που σε αντιπροσωπεύει, διάλεξε το slot που προτιμάς και μπες στο νέο πρόγραμμα του Deseo.',
             'djcall.cta' => 'Γίνε ο DJ του Deseo',
+            'countdown.remaining' => 'ΑΠΟΜΕΝΟΥΝ',
+            'countdown.days' => 'ΜΕΡΕΣ',
+            'countdown.hours' => 'ΩΡΕΣ',
+            'countdown.minutes' => 'ΛΕΠΤΑ',
 
             'faq.kicker' => 'DESEO RADIO · FAQ',
             'faq.title' => 'Ό,τι αξίζει να ξέρεις.',
@@ -272,6 +276,10 @@ function deseo_t(string $key): string {
             'djcall.title' => 'Become the soundtrack of their lives.',
             'djcall.text' => 'Deseo Radio is opening Season 6 to DJs with a sound of their own. Send your profile and a set that represents you, choose your preferred slot and join the new Deseo schedule.',
             'djcall.cta' => 'Become a Deseo DJ',
+            'countdown.remaining' => 'TIME LEFT',
+            'countdown.days' => 'DAYS',
+            'countdown.hours' => 'HOURS',
+            'countdown.minutes' => 'MINUTES',
 
             'faq.kicker' => 'DESEO RADIO · FAQ',
             'faq.title' => 'Everything worth knowing.',
