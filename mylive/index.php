@@ -917,20 +917,20 @@ $nextShowMessage = match ($nextShowSetStatus) {
                 <a href="#overview" class="is-active" data-mylive-nav>
                     <i>01</i><span>Overview</span>
                 </a>
-                <?php if ($publicProfile): ?>
-                    <a href="#profile" data-mylive-nav>
-                        <i>02</i><span>My Profile</span>
-                    </a>
-                <?php endif; ?>
                 <a href="#assets" data-mylive-nav>
-                    <i><?= $publicProfile ? '03' : '02' ?></i><span>My Assets</span>
+                    <i>02</i><span>My Assets</span>
                 </a>
                 <a href="#sets" data-mylive-nav>
-                    <i><?= $publicProfile ? '04' : '03' ?></i><span>My DJ Sets</span>
+                    <i>03</i><span>My DJ Sets</span>
                 </a>
                 <a href="#live" data-mylive-nav>
-                    <i><?= $publicProfile ? '05' : '04' ?></i><span>Listen Live</span>
+                    <i>04</i><span>Listen Live</span>
                 </a>
+                <?php if ($publicProfile): ?>
+                    <a href="#profile" data-mylive-nav>
+                        <i>05</i><span>My Profile</span>
+                    </a>
+                <?php endif; ?>
                 <a href="#rewards" data-mylive-nav>
                     <i><?= $publicProfile ? '06' : '05' ?></i><span>My Rewards</span>
                 </a>
