@@ -344,13 +344,13 @@ require_once __DIR__ . '/includes/header.php';
                 <h1 class="metal-title">Bring your sound.<br>Join Season 6.</h1>
                 <p class="dj-season-lead" data-i18n="dj.hero.lead"><?= deseo_e(deseo_t('dj.hero.lead')) ?></p>
                 <div class="dj-call-countdown dj-season-countdown" id="dj-season-countdown" data-deadline="2026-10-10T23:55:00+03:00" aria-live="polite">
-                    <span class="dj-call-countdown-label">ΑΠΟΜΕΝΟΥΝ</span>
+                    <span class="dj-call-countdown-label" data-i18n="countdown.remaining"><?= deseo_e(deseo_t('countdown.remaining')) ?></span>
                     <strong class="dj-call-countdown-value">
-                        <span data-countdown-days>--</span> <small>ΜΕΡΕΣ</small>
+                        <span data-countdown-days>--</span> <small data-i18n="countdown.days"><?= deseo_e(deseo_t('countdown.days')) ?></small>
                         <i aria-hidden="true">—</i>
-                        <span data-countdown-hours>--</span> <small>ΩΡΕΣ</small>
+                        <span data-countdown-hours>--</span> <small data-i18n="countdown.hours"><?= deseo_e(deseo_t('countdown.hours')) ?></small>
                         <i aria-hidden="true">—</i>
-                        <span data-countdown-minutes>--</span> <small>ΛΕΠΤΑ</small>
+                        <span data-countdown-minutes>--</span> <small data-i18n="countdown.minutes"><?= deseo_e(deseo_t('countdown.minutes')) ?></small>
                     </strong>
                 </div>
             </div>
