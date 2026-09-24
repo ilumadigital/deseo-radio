@@ -2239,10 +2239,50 @@ h2,
 }
 .dj-call-copy>p{
   max-width:590px;
-  margin:28px 0 30px;
+  margin:28px 0 24px;
   color:#8a8a90;
   font-size:14px;
   line-height:1.85;
+}
+.dj-call-countdown{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  margin:0 0 28px;
+}
+.dj-call-countdown-label{
+  color:var(--red);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.18em;
+}
+.dj-call-countdown-value{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:7px;
+  color:#fff;
+  font-size:clamp(24px,2.2vw,36px);
+  line-height:1;
+  letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;
+}
+.dj-call-countdown-value small{
+  margin-left:-2px;
+  color:#77777d;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.13em;
+}
+.dj-call-countdown-value i{
+  color:rgba(255,255,255,.22);
+  font-size:.5em;
+  font-style:normal;
+  font-weight:400;
+}
+.dj-call-countdown.is-ended{
+  opacity:.55;
 }
 .dj-call-cta{
   min-width:190px;
@@ -2273,8 +2313,19 @@ h2,
     border-radius:24px;
   }
   .dj-call-copy>p{
-    margin:22px 0 26px;
+    margin:22px 0 22px;
     font-size:13px;
+  }
+  .dj-call-countdown{
+    gap:7px;
+    margin-bottom:24px;
+  }
+  .dj-call-countdown-value{
+    gap:6px;
+    font-size:clamp(22px,8vw,30px);
+  }
+  .dj-call-countdown-value small{
+    font-size:8px;
   }
   .dj-call-cta{
     width:100%;
