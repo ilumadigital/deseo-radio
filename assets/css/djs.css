@@ -421,3 +421,85 @@ linear-gradient(180deg,#090909,#050505)}
     order:4!important;
     width:100%;
 }
+
+
+/* Season 6 · live slot availability */
+.dj-slot-day-head{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px;
+}
+.dj-slot-day-head h3{
+  width:100%;
+}
+.dj-slot-day-state{
+  display:inline-flex;
+  min-height:22px;
+  align-items:center;
+  padding:0 8px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  background:#0b0b0d;
+  color:#74747b;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.dj-slot-day-state.is-open{
+  border-color:rgba(74,205,124,.16);
+  background:rgba(74,205,124,.045);
+  color:#94dbae;
+}
+.dj-slot-day-state.is-reserved{
+  border-color:rgba(255,74,84,.15);
+  background:rgba(255,43,54,.04);
+  color:#b87479;
+}
+.dj-slot-day.is-fully-reserved{
+  border-color:rgba(255,255,255,.055);
+  background:rgba(5,5,7,.42);
+}
+.dj-slot.is-unavailable span{
+  position:relative;
+  opacity:1;
+  border-color:rgba(255,255,255,.055);
+  background:#09090b;
+  color:#5d5d63;
+  box-shadow:none;
+}
+.dj-slot.is-unavailable strong{
+  color:#66666c;
+}
+.dj-slot.is-unavailable small{
+  color:#a26469;
+  font-weight:800;
+}
+.dj-slot.is-unavailable span:after{
+  content:"";
+  position:absolute;
+  left:12px;
+  right:12px;
+  top:50%;
+  height:1px;
+  background:rgba(255,79,89,.28);
+  transform:rotate(-7deg);
+  pointer-events:none;
+}
+.dj-slot.is-unavailable input:disabled+span{
+  cursor:not-allowed;
+}
+@media(max-width:720px){
+  .dj-slot-day-head{
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .dj-slot-day-state{
+    flex:0 0 auto;
+  }
+}
