@@ -343,10 +343,15 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
                 <h1 class="metal-title">Bring your sound.<br>Join Season 6.</h1>
                 <p class="dj-season-lead" data-i18n="dj.hero.lead"><?= deseo_e(deseo_t('dj.hero.lead')) ?></p>
-                <div class="dj-season-pills" aria-label="Season 6 highlights">
-                    <span>Weekly DJ Sets</span>
-                    <span>Selected by Deseo</span>
-                    <span>Season 6 · Athens</span>
+                <div class="dj-call-countdown dj-season-countdown" id="dj-season-countdown" data-deadline="2026-10-10T23:55:00+03:00" aria-live="polite">
+                    <span class="dj-call-countdown-label">ΑΠΟΜΕΝΟΥΝ</span>
+                    <strong class="dj-call-countdown-value">
+                        <span data-countdown-days>--</span> <small>ΜΕΡΕΣ</small>
+                        <i aria-hidden="true">—</i>
+                        <span data-countdown-hours>--</span> <small>ΩΡΕΣ</small>
+                        <i aria-hidden="true">—</i>
+                        <span data-countdown-minutes>--</span> <small>ΛΕΠΤΑ</small>
+                    </strong>
                 </div>
             </div>
 
@@ -531,6 +536,8 @@ require_once __DIR__ . '/includes/header.php';
     var slots = form ? form.querySelectorAll('input[name="slot_id"]') : [];
     var bio = document.getElementById('dj-bio');
     var bioCount = document.getElementById('bio-count');
+    var countdown = document.getElementById('dj-season-countdown');
+    var countdownTimer = null;
 
     function updateTerms() {
         if (!terms) return;
@@ -549,8 +556,38 @@ require_once __DIR__ . '/includes/header.php';
 
     if (bio) bio.addEventListener('input', updateBioCount);
 
+    function updateCountdown() {
+        if (!countdown) return;
+
+        var deadline = new Date(countdown.getAttribute('data-deadline')).getTime();
+        var remaining = Math.max(0, deadline - Date.now());
+        var totalMinutes = Math.floor(remaining / 60000);
+        var days = Math.floor(totalMinutes / 1440);
+        var hours = Math.floor((totalMinutes % 1440) / 60);
+        var minutes = totalMinutes % 60;
+        var pad = function (value) { return String(value).padStart(2, '0'); };
+
+        var daysEl = countdown.querySelector('[data-countdown-days]');
+        var hoursEl = countdown.querySelector('[data-countdown-hours]');
+        var minutesEl = countdown.querySelector('[data-countdown-minutes]');
+
+        if (daysEl) daysEl.textContent = pad(days);
+        if (hoursEl) hoursEl.textContent = pad(hours);
+        if (minutesEl) minutesEl.textContent = pad(minutes);
+
+        if (remaining <= 0) {
+            countdown.classList.add('is-ended');
+            if (countdownTimer) clearInterval(countdownTimer);
+        }
+    }
+
     updateTerms();
     updateBioCount();
+    updateCountdown();
+
+    if (countdown) {
+        countdownTimer = setInterval(updateCountdown, 1000);
+    }
 }());
 </script>
 
