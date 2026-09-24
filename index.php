@@ -501,6 +501,17 @@ $partners = [
                     <h2 class="metal-title section-title" data-i18n="djcall.title"><?= deseo_e(deseo_t('djcall.title')) ?></h2>
                     <p data-i18n="djcall.text"><?= deseo_e(deseo_t('djcall.text')) ?></p>
 
+                    <div class="dj-call-countdown" id="dj-call-countdown" data-deadline="2026-10-10T23:55:00+03:00" aria-live="polite">
+                        <span class="dj-call-countdown-label">ΑΠΟΜΕΝΟΥΝ</span>
+                        <strong class="dj-call-countdown-value">
+                            <span data-countdown-days>--</span> <small>ΜΕΡΕΣ</small>
+                            <i aria-hidden="true">—</i>
+                            <span data-countdown-hours>--</span> <small>ΩΡΕΣ</small>
+                            <i aria-hidden="true">—</i>
+                            <span data-countdown-minutes>--</span> <small>ΛΕΠΤΑ</small>
+                        </strong>
+                    </div>
+
                     <a class="button button-red dj-call-cta"
                        href="/dj"
                        target="_blank"
@@ -579,5 +590,39 @@ $partners = [
         </div>
     </section>
 </div>
+
+<script>
+(() => {
+    const countdown = document.getElementById('dj-call-countdown');
+    if (!countdown) return;
+
+    const deadline = new Date(countdown.dataset.deadline).getTime();
+    const daysEl = countdown.querySelector('[data-countdown-days]');
+    const hoursEl = countdown.querySelector('[data-countdown-hours]');
+    const minutesEl = countdown.querySelector('[data-countdown-minutes]');
+
+    const pad = (value) => String(value).padStart(2, '0');
+
+    const render = () => {
+        const remaining = Math.max(0, deadline - Date.now());
+        const totalMinutes = Math.floor(remaining / 60000);
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+
+        daysEl.textContent = pad(days);
+        hoursEl.textContent = pad(hours);
+        minutesEl.textContent = pad(minutes);
+
+        if (remaining <= 0) {
+            countdown.classList.add('is-ended');
+            clearInterval(timer);
+        }
+    };
+
+    render();
+    const timer = setInterval(render, 1000);
+})();
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
