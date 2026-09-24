@@ -201,6 +201,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException(deseo_t('dj.error.slot_unavailable'));
             }
 
+            $approvedStmt = $pdo->prepare(
+                "SELECT b.id
+                 FROM dj_season_bookings b
+                 INNER JOIN dj_season_slots requested_slot ON requested_slot.id = b.slot_id
+                 WHERE b.season = ?
+                   AND b.status = 'approved'
+                   AND COALESCE(b.final_day_of_week, requested_slot.day_of_week) = ?
+                   AND ? < COALESCE(b.final_end_time, requested_slot.end_time)
+                   AND ? > COALESCE(b.final_start_time, requested_slot.start_time)
+                 LIMIT 1
+                 FOR UPDATE"
+            );
+            $approvedStmt->execute([
+                DESEO_DJ_SEASON,
+                (int)$slot['day_of_week'],
+                (string)$slot['start_time'],
+                (string)$slot['end_time'],
+            ]);
+
+            if ($approvedStmt->fetchColumn()) {
+                throw new RuntimeException(deseo_t('dj.error.slot_unavailable'));
+            }
+
             $uploadDir = __DIR__ . '/iluma/uploads/djs';
             if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
                 throw new RuntimeException(deseo_t('dj.error.photo_save'));
@@ -319,8 +342,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $slots = dj_season_slots($pdo);
 $slotsByDay = [];
+$slotDayAvailability = [];
+
 foreach ($slots as $slot) {
-    $slotsByDay[(int)$slot['day_of_week']][] = $slot;
+    $day = (int)$slot['day_of_week'];
+    $slotsByDay[$day][] = $slot;
+
+    if (!isset($slotDayAvailability[$day])) {
+        $slotDayAvailability[$day] = ['total' => 0, 'available' => 0, 'reserved' => 0];
+    }
+
+    $slotDayAvailability[$day]['total']++;
+    if (!empty($slot['available'])) {
+        $slotDayAvailability[$day]['available']++;
+    } else {
+        $slotDayAvailability[$day]['reserved']++;
+    }
 }
 
 $meta_title = deseo_t('dj.meta.title');
@@ -470,20 +507,40 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="dj-slot-days">
                             <?php foreach ([3, 4, 5, 6, 7] as $day): ?>
-                                <section class="dj-slot-day">
-                                    <h3 data-i18n="day.<?= (int)$day ?>"><?= deseo_e(deseo_t_day($day)) ?></h3>
+                                <?php
+                                $dayStats = $slotDayAvailability[$day] ?? ['total' => 0, 'available' => 0, 'reserved' => 0];
+                                $dayFullyReserved = $dayStats['total'] > 0 && $dayStats['available'] === 0;
+                                ?>
+                                <section class="dj-slot-day <?= $dayFullyReserved ? 'is-fully-reserved' : '' ?>">
+                                    <div class="dj-slot-day-head">
+                                        <h3 data-i18n="day.<?= (int)$day ?>"><?= deseo_e(deseo_t_day($day)) ?></h3>
+                                        <span class="dj-slot-day-state <?= $dayFullyReserved ? 'is-reserved' : 'is-open' ?>">
+                                            <?php if ($dayFullyReserved): ?>
+                                                <?= deseo_e(deseo_t('dj.slot.day_full')) ?>
+                                            <?php else: ?>
+                                                <?= (int)$dayStats['available'] ?> <?= deseo_e(deseo_t('dj.slot.available_count')) ?>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+
                                     <div class="dj-slot-grid">
                                         <?php foreach ($slotsByDay[$day] ?? [] as $slot): ?>
-                                            <label class="dj-slot">
+                                            <?php $slotAvailable = !empty($slot['available']); ?>
+                                            <label class="dj-slot <?= $slotAvailable ? '' : 'is-unavailable' ?>">
                                                 <input
                                                     type="radio"
                                                     name="slot_id"
                                                     value="<?= (int)$slot['id'] ?>"
-                                                    <?= ((string)$slot['id'] === $old['slot_id']) ? 'checked' : '' ?>
+                                                    <?= ($slotAvailable && (string)$slot['id'] === $old['slot_id']) ? 'checked' : '' ?>
+                                                    <?= $slotAvailable ? '' : 'disabled' ?>
                                                     required>
                                                 <span>
                                                     <strong><?= deseo_e(dj_season_format_time($slot['start_time'])) ?></strong>
-                                                    <small data-i18n="dj.slot.available"><?= deseo_e(deseo_t('dj.slot.available')) ?></small>
+                                                    <small>
+                                                        <?= $slotAvailable
+                                                            ? deseo_e(deseo_t('dj.slot.available'))
+                                                            : deseo_e(deseo_t('dj.slot.reserved')) ?>
+                                                    </small>
                                                 </span>
                                             </label>
                                         <?php endforeach; ?>
