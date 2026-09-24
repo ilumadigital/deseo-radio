@@ -8,8 +8,10 @@ function deseo_e(?string $value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-$meta_title = 'Πολιτική Απορρήτου · Deseo Radio';
-$meta_desc = 'Πολιτική απορρήτου του Deseo Radio και ενημέρωση για τα προσωπικά δεδομένα της Season 6 DJ application.';
+$meta_title = deseo_lang() === 'en' ? 'Privacy Policy · Deseo Radio' : 'Πολιτική Απορρήτου · Deseo Radio';
+$meta_desc = deseo_lang() === 'en'
+    ? 'Deseo Radio privacy policy and information about personal data for the Season 6 DJ application.'
+    : 'Πολιτική απορρήτου του Deseo Radio και ενημέρωση για τα προσωπικά δεδομένα της Season 6 DJ application.';
 $meta_canonical = 'https://deseoradio.com/privacy';
 $extra_styles = ['/assets/css/djs.css'];
 
@@ -17,6 +19,7 @@ require_once __DIR__ . '/includes/head-meta.php';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
+<?php if (deseo_lang() !== 'en'): ?>
 <main id="main-content" class="dj-legal-page">
     <div class="dj-legal-shell">
         <header class="dj-legal-head">
@@ -204,5 +207,117 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 </main>
+<?php else: ?>
+<main id="main-content" class="dj-legal-page">
+    <div class="dj-legal-shell">
+        <header class="dj-legal-head">
+            <span class="kicker">DESEO RADIO · PRIVACY</span>
+            <h1 class="metal-title">Privacy<br>Policy</h1>
+            <p>
+                This notice explains how Deseo Radio / ILUMA Digital Agency processes personal data through the website,
+                and specifically through the “Season 6 · DJ Sets” application form.
+            </p>
+            <div class="dj-legal-meta">
+                <span>Version <?= deseo_e(DESEO_DJ_PRIVACY_VERSION) ?></span>
+                <span>14 September 2026</span>
+            </div>
+        </header>
+
+        <div class="dj-legal-content">
+            <section class="dj-legal-section">
+                <h2>1. Data controller and contact details</h2>
+                <p>For the operation of Deseo Radio and Season 6, ILUMA Digital Agency acts as the controller of the relevant personal data as the operator of Deseo Radio.</p>
+                <ul>
+                    <li>Contact email: <a href="mailto:radio@iluma.gr">radio@iluma.gr</a></li>
+                    <li>Telephone: <a href="tel:+302103000825">+30 210 300 0825</a></li>
+                    <li>Address shown on the website: 1st Moschonision st., Egaleo, 12242, Greece</li>
+                </ul>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>2. Data collected from DJs / producers</h2>
+                <p>The Season 6 form may collect:</p>
+                <ul>
+                    <li>full name, DJ / artist name and email,</li>
+                    <li>Instagram / social link and optional website, SoundCloud or Mixcloud,</li>
+                    <li>photo and a short biography of up to 1,000 characters,</li>
+                    <li>selected slot, DJ set type and a required link to a work sample (DJ set, mix or radio show),</li>
+                    <li>the version and timestamp of acceptance of the terms and this privacy notice.</li>
+                </ul>
+                <p>We do not request special categories of personal data. Please do not include such information in your bio or other free-text fields.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>3. Purposes of processing</h2>
+                <p>The information is used to:</p>
+                <ul>
+                    <li>manage the inquiry and preferred Season 6 slot,</li>
+                    <li>communicate about set delivery, technical instructions, schedule changes or compliance issues,</li>
+                    <li>create and publish profile / promotional assets relating to participation,</li>
+                    <li>review work samples, handle rights reporting and manage potential claims,</li>
+                    <li>support security, record manual selection / approval and document acceptance of the terms.</li>
+                </ul>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>4. Legal bases</h2>
+                <p>Depending on the processing activity, the legal basis may include taking steps at the participant’s request and performing the participation agreement, compliance with legal obligations, and legitimate interests in secure operation, record-keeping and the establishment or defence of legal claims.</p>
+                <p>Where consent is required for a separate purpose — for example future marketing that is not necessary for Season 6 — it will be requested separately and on an optional basis.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>5. Publication of photo, artist name and bio</h2>
+                <p>For DJs participating in Season 6, the artist name, photo, bio and schedule may be used on deseoradio.com and in official social media / promotional assets of Deseo Radio and ILUMA, in accordance with the <a href="/djterms?lang=en">Participation Terms</a>.</p>
+                <p>Personal email addresses and full legal names are not published as part of the public slot interface, unless the DJ has already made them public as professional contact information and there is a specific reason to use them.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>6. Who has access</h2>
+                <p>Season 6 data may be accessed by authorized ILUMA / Deseo team members who need the information for production, scheduling, communication, design assets or technical support. Data may also be processed by technical providers for hosting, email, analytics or other infrastructure, only as necessary and subject to the applicable contractual and legal obligations.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>7. Retention period</h2>
+                <p>Season 6 application data is retained for as long as necessary to organize and complete the season and, as a general rule, for up to 24 months after the end of the season for operational records, potential claims and documentation of the collaboration.</p>
+                <p>Public promotional posts or archival references may remain available for longer as part of the historical record of the radio season where this is reasonable and lawful. Removal requests are reviewed case by case, taking into account any mandatory legal or archival requirements.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>8. Security and slot privacy</h2>
+                <p>The public inquiry interface only indicates whether a slot is open for inquiries or has been closed following manual DJ approval. Pending inquiries are not published and do not lock a slot. The regular Radio Program is a separate system and is not updated automatically from the Season 6 form.</p>
+                <p>The Season 6 form is also protected by Cloudflare Turnstile to reduce automated spam and malicious submissions. Turnstile verification is checked server-side before an inquiry is accepted.</p>
+                <p>Applications are accessed through the protected ILUMA CMS. Although appropriate technical and organizational measures are used, no online service can guarantee absolute security.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>9. Cookies, analytics and traffic measurement</h2>
+                <p>The website uses essential local storage / cookies for core functionality. Cloudflare Web Analytics is used for aggregated traffic and technical performance measurement. It is used as a privacy-focused analytics service for data such as page views, visits and performance metrics and is not used by Deseo Radio to create advertising profiles of visitors.</p>
+                <p>Any additional analytics, push or marketing tools are subject to the choices provided in the website’s cookie / privacy interface where required.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>10. International transfers</h2>
+                <p>If a technical provider processes data outside the European Economic Area, ILUMA seeks to use the appropriate safeguards provided by applicable law where required.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>11. Your rights</h2>
+                <p>Depending on the circumstances, you may request access, correction, deletion, restriction of processing, portability, or object to certain processing. Where processing is based on consent, you may withdraw that consent for the future.</p>
+                <p>For requests relating to your personal data, contact <a href="mailto:radio@iluma.gr">radio@iluma.gr</a>. Reasonable identity verification may be requested in order to handle the request securely.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>12. Complaint to a supervisory authority</h2>
+                <p>You have the right to contact the Hellenic Data Protection Authority if you believe that the processing of your personal data infringes applicable data protection law.</p>
+            </section>
+
+            <section class="dj-legal-section">
+                <h2>13. Changes to this policy</h2>
+                <p>This policy may be updated when the website, Season 6, or the legal / technical framework changes. The current version and date are shown at the top of this page. For Season 6, the version disclosed at the time of submission is stored with the application.</p>
+            </section>
+        </div>
+    </div>
+</main>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
