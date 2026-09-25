@@ -261,14 +261,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $accountId = deseo_mylive_account_id();
             $currentPreferences = deseo_mylive_communication_preferences($pdo, $accountId);
+            $preferenceAccount = deseo_mylive_account($pdo, $accountId);
+            $guestPreferences = $preferenceAccount
+                ? deseo_mylive_is_guest_account($preferenceAccount)
+                : false;
 
             deseo_mylive_save_communication_preferences($pdo, $accountId, [
                 'email_enabled' => isset($_POST['email_enabled']),
                 'push_enabled' => !empty($currentPreferences['push_enabled']),
-                'set_reminder_email' => isset($_POST['set_reminder_email']),
-                'set_reminder_push' => isset($_POST['set_reminder_push']),
-                'on_air_email' => isset($_POST['on_air_email']),
-                'on_air_push' => isset($_POST['on_air_push']),
+                // Guest accounts do not expose recurring controls. Preserve their
+                // existing values instead of silently turning them off on save.
+                'set_reminder_email' => $guestPreferences
+                    ? !empty($currentPreferences['set_reminder_email'])
+                    : isset($_POST['set_reminder_email']),
+                'set_reminder_push' => $guestPreferences
+                    ? !empty($currentPreferences['set_reminder_push'])
+                    : isset($_POST['set_reminder_push']),
+                'on_air_email' => $guestPreferences
+                    ? !empty($currentPreferences['on_air_email'])
+                    : isset($_POST['on_air_email']),
+                'on_air_push' => $guestPreferences
+                    ? !empty($currentPreferences['on_air_push'])
+                    : isset($_POST['on_air_push']),
                 'announcements_email' => isset($_POST['announcements_email']),
                 'announcements_push' => isset($_POST['announcements_push']),
             ]);
@@ -739,6 +753,8 @@ document.querySelectorAll('[data-password-toggle]').forEach(button => {
 exit;
 endif;
 
+$isGuestAccount = deseo_mylive_is_guest_account($account);
+
 $communicationPrefs = deseo_mylive_communication_preferences($pdo, (int)$account['id']);
 
 $publicProfile = !empty($account['public_profile_enabled'])
@@ -763,10 +779,21 @@ $monthlyAudience = $latestAudience ? (int)$latestAudience['monthly_listeners'] :
 $estimatedReach = ($statsVisible && $latestAudience && $audienceMonthKey !== '')
     ? deseo_audience_estimated_reach_for_month($pdo, $account, $audienceMonthKey, $monthlyAudience)
     : 0;
-$dayLabel = deseo_mylive_day_label(isset($account['day_of_week']) ? (int)$account['day_of_week'] : null);
+$accountDay = isset($account['day_of_week']) ? (int)$account['day_of_week'] : 0;
+$dayLabel = deseo_mylive_day_label($accountDay > 0 ? $accountDay : null);
 $startTime = deseo_mylive_format_time((string)$account['start_time']);
+$myliveSlotLabel = deseo_mylive_slot($account);
 
-// NEXT SHOW · calculate the next occurrence from the DJ's recurring weekly slot.
+if ($isGuestAccount && dj_season_is_guest_zone_slot($accountDay, (string)$account['start_time'])) {
+    $displayDay = dj_season_slot_display_day($accountDay, (string)$account['start_time']);
+    $dayLabel = dj_season_day_label($displayDay);
+    $myliveSlotLabel = 'Guest DJ Zone · ' . $dayLabel . ' · ' . $startTime;
+} elseif ($isGuestAccount) {
+    $myliveSlotLabel = 'Guest DJ · ' . $myliveSlotLabel;
+}
+
+// NEXT SHOW · residents keep the existing recurring weekly calculation.
+// Guest accounts are deliberately one-off and must never roll forward by +7 days.
 $nextShowStart = null;
 $nextShowEnd = null;
 $nextShowIsLive = false;
@@ -775,11 +802,17 @@ $nextShowDate = '—';
 $nextShowTime = $startTime;
 $nextShowDay = $dayLabel;
 
+if ($isGuestAccount) {
+    $nextShowWhen = 'One-time appearance';
+    $nextShowDate = 'Date to be confirmed';
+    $nextShowDay = 'Guest DJ Zone';
+}
+
 $slotDay = (int)($account['day_of_week'] ?? 0);
 $slotStartRaw = trim((string)($account['start_time'] ?? ''));
 $slotEndRaw = trim((string)($account['end_time'] ?? ''));
 
-if ($slotDay >= 1 && $slotDay <= 7 && $slotStartRaw !== '') {
+if (!$isGuestAccount && $slotDay >= 1 && $slotDay <= 7 && $slotStartRaw !== '') {
     $athensTz = new DateTimeZone('Europe/Athens');
     $nowAthens = new DateTimeImmutable('now', $athensTz);
     $today = $nowAthens->setTime(0, 0, 0);
@@ -866,7 +899,9 @@ $nextShowMessage = match ($nextShowSetStatus) {
     'needs_changes' => trim((string)($nextShowSet['admin_note'] ?? '')) !== ''
         ? (string)$nextShowSet['admin_note']
         : 'Το set χρειάζεται αλλαγές πριν μπορέσει να προγραμματιστεί.',
-    default => 'Δεν έχει ανέβει ακόμη set για το επόμενο episode.',
+    default => $isGuestAccount
+        ? 'Η Guest εμφάνισή σου είναι one-off. Η ομάδα του Deseo θα επιβεβαιώσει ξεχωριστά την ημερομηνία μετάδοσης.'
+        : 'Δεν έχει ανέβει ακόμη set για το επόμενο episode.',
 };
 ?>
 <!doctype html>
@@ -951,13 +986,14 @@ $nextShowMessage = match ($nextShowSetStatus) {
         <div class="slot-pill"
              data-mylive-own-status
              data-account-id="<?= (int)$account['id'] ?>"
-             data-weekly-slot="<?= deseo_mylive_e(deseo_mylive_slot($account)) ?>">
+             data-account-mode="<?= $isGuestAccount ? 'guest' : 'resident' ?>"
+             data-weekly-slot="<?= deseo_mylive_e($myliveSlotLabel) ?>">
             <span class="slot-pill-kicker">
                 <i class="slot-live-bullet" aria-hidden="true"></i>
-                <b data-mylive-own-label>YOUR WEEKLY SLOT</b>
+                <b data-mylive-own-label><?= $isGuestAccount ? 'GUEST DJ ACCESS' : 'YOUR WEEKLY SLOT' ?></b>
             </span>
-            <strong data-mylive-own-main><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></strong>
-            <small data-mylive-own-slot hidden><?= deseo_mylive_e(deseo_mylive_slot($account)) ?></small>
+            <strong data-mylive-own-main><?= deseo_mylive_e($myliveSlotLabel) ?></strong>
+            <small data-mylive-own-slot hidden><?= deseo_mylive_e($myliveSlotLabel) ?></small>
         </div>
     </section>
 
@@ -977,7 +1013,9 @@ $nextShowMessage = match ($nextShowSetStatus) {
             <div class="mylive-quick-push-copy">
                 <span>PUSH NOTIFICATIONS</span>
                 <strong>Μείνε ενημερωμένος για το show σου.</strong>
-                <p>Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.</p>
+                <p><?= $isGuestAccount
+                    ? 'Ενεργοποίησε push alerts για ανακοινώσεις και ενημερώσεις του MyLive. Τα Guest accounts δεν έχουν weekly recurrence.'
+                    : 'Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.' ?></p>
             </div>
             <button type="button" class="mylive-quick-push-button" data-mylive-push-quick-enable>
                 ENABLE PUSH ALERTS
@@ -988,7 +1026,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
     <section class="mylive-next-show <?= $nextShowIsLive ? 'is-live' : '' ?>" aria-label="Next show">
         <div class="mylive-next-show-main">
             <div class="mylive-next-show-kicker">
-                <span><i></i> NEXT SHOW</span>
+                <span><i></i> <?= $isGuestAccount ? 'GUEST APPEARANCE' : 'NEXT SHOW' ?></span>
                 <b class="<?= deseo_mylive_e($nextShowStatusClass) ?>"><?= deseo_mylive_e($nextShowStatusLabel) ?></b>
             </div>
 
@@ -1508,35 +1546,46 @@ $nextShowMessage = match ($nextShowSetStatus) {
                     <span>PUSH</span>
                 </div>
 
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>DJ Set Reminder</strong>
-                        <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                <?php if ($isGuestAccount): ?>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>Guest DJ notifications</strong>
+                            <small>Το Guest access είναι one-off. Δεν δημιουργείται αυτόματα νέο show ή reminder κάθε εβδομάδα.</small>
+                        </div>
+                        <span>—</span>
+                        <span>—</span>
                     </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
+                <?php else: ?>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>DJ Set Reminder</strong>
+                            <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                        </div>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                    </div>
 
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>On Air Now</strong>
-                        <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>On Air Now</strong>
+                            <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                        </div>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
                     </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
+                <?php endif; ?>
 
                 <div class="mylive-settings-row">
                     <div>
@@ -1748,7 +1797,9 @@ $nextShowMessage = match ($nextShowSetStatus) {
     var ownStatusMain = ownStatus ? ownStatus.querySelector('[data-mylive-own-main]') : null;
     var ownStatusSlot = ownStatus ? ownStatus.querySelector('[data-mylive-own-slot]') : null;
     var ownAccountId = ownStatus ? Number(ownStatus.getAttribute('data-account-id') || 0) : 0;
+    var ownAccountMode = ownStatus ? (ownStatus.getAttribute('data-account-mode') || 'resident') : 'resident';
     var ownWeeklySlot = ownStatus ? (ownStatus.getAttribute('data-weekly-slot') || '') : '';
+    var ownDefaultLabel = ownAccountMode === 'guest' ? 'GUEST DJ ACCESS' : 'YOUR WEEKLY SLOT';
     var refreshTimer = null;
     var refreshMinute = Math.floor(Date.now() / 60000);
 
@@ -1766,7 +1817,7 @@ $nextShowMessage = match ($nextShowSetStatus) {
         ownStatus.classList.toggle('is-live-now', isOwnLive);
 
         if (ownStatusLabel) {
-            ownStatusLabel.textContent = isOwnLive ? 'ON AIR NOW' : 'YOUR WEEKLY SLOT';
+            ownStatusLabel.textContent = isOwnLive ? 'ON AIR NOW' : ownDefaultLabel;
         }
         if (ownStatusMain) {
             ownStatusMain.textContent = isOwnLive ? 'Είσαι LIVE Τώρα!' : ownWeeklySlot;

@@ -51,7 +51,13 @@ function mylive_admin_time(string $value, string $label): string {
 }
 
 function mylive_admin_account(PDO $pdo, int $id): array {
-    $stmt = $pdo->prepare("SELECT * FROM dj_portal_accounts WHERE id = ? LIMIT 1");
+    $stmt = $pdo->prepare(
+        "SELECT a.*, b.status AS application_status
+         FROM dj_portal_accounts a
+         LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+         WHERE a.id = ?
+         LIMIT 1"
+    );
     $stmt->execute([$id]);
     $account = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$account) throw new RuntimeException('Το MyLive account δεν βρέθηκε.');

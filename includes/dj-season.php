@@ -13,8 +13,11 @@ function dj_season_strict_slot_definitions(): array {
         3 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
         4 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
         5 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
-        6 => ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
-        7 => ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        // 00:00 slots are the rotating Guest DJ Zone. They are stored on the
+        // real broadcast day (Saturday/Sunday), while the public form presents
+        // them under the preceding Friday/Saturday nightlife day.
+        6 => ['00:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        7 => ['00:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
     ];
 
     foreach ($dayStarts as $day => $starts) {
@@ -187,6 +190,10 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
     }));
 
     foreach ($slots as &$slot) {
+        $slotDay = (int)$slot['day_of_week'];
+        $slotStart = (string)$slot['start_time'];
+        $slot['is_guest_zone'] = dj_season_is_guest_zone_slot($slotDay, $slotStart);
+        $slot['display_day_of_week'] = dj_season_slot_display_day($slotDay, $slotStart);
         $slot['program_conflict'] = false;
         $slot['available'] =
             (int)$slot['is_active'] === 1
@@ -195,6 +202,15 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
     unset($slot);
 
     return $slots;
+}
+
+function dj_season_is_guest_zone_slot(int $day, ?string $startTime): bool {
+    $start = substr((string)$startTime, 0, 8);
+    return in_array($day, [6, 7], true) && $start === '00:00:00';
+}
+
+function dj_season_slot_display_day(int $day, ?string $startTime): int {
+    return dj_season_is_guest_zone_slot($day, $startTime) ? $day - 1 : $day;
 }
 
 function dj_season_day_label(int $day): string {

@@ -210,9 +210,11 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
                     a.email
              FROM program p
              INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
+             LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
              WHERE p.mylive_account_id IS NOT NULL
                AND a.is_active = 1
                AND a.account_status = 'active'
+               AND (a.booking_id IS NULL OR b.status IS NULL OR b.status <> 'guest')
                AND a.email <> ''
              ORDER BY p.day_of_week ASC, p.start_time ASC"
         );
