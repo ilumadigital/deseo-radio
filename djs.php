@@ -345,7 +345,11 @@ $slotsByDay = [];
 $slotDayAvailability = [];
 
 foreach ($slots as $slot) {
-    $day = (int)$slot['day_of_week'];
+    // Guest Zone 00:00 broadcasts are stored on the real calendar day,
+    // but intentionally appear under the preceding nightlife day in /dj.
+    $day = isset($slot['display_day_of_week'])
+        ? (int)$slot['display_day_of_week']
+        : (int)$slot['day_of_week'];
     $slotsByDay[$day][] = $slot;
 
     if (!isset($slotDayAvailability[$day])) {
@@ -525,8 +529,11 @@ require_once __DIR__ . '/includes/header.php';
 
                                     <div class="dj-slot-grid">
                                         <?php foreach ($slotsByDay[$day] ?? [] as $slot): ?>
-                                            <?php $slotAvailable = !empty($slot['available']); ?>
-                                            <label class="dj-slot <?= $slotAvailable ? '' : 'is-unavailable' ?>">
+                                            <?php
+                                            $slotAvailable = !empty($slot['available']);
+                                            $isGuestZone = !empty($slot['is_guest_zone']);
+                                            ?>
+                                            <label class="dj-slot <?= $slotAvailable ? '' : 'is-unavailable' ?><?= $isGuestZone ? ' is-guest-zone' : '' ?>">
                                                 <input
                                                     type="radio"
                                                     name="slot_id"
@@ -537,9 +544,15 @@ require_once __DIR__ . '/includes/header.php';
                                                 <span>
                                                     <strong><?= deseo_e(dj_season_format_time($slot['start_time'])) ?></strong>
                                                     <small>
-                                                        <?= $slotAvailable
-                                                            ? deseo_e(deseo_t('dj.slot.available'))
-                                                            : deseo_e(deseo_t('dj.slot.reserved')) ?>
+                                                        <?php if ($isGuestZone): ?>
+                                                            Guest DJ Zone · <?= $slotAvailable
+                                                                ? deseo_e(deseo_t('dj.slot.available'))
+                                                                : deseo_e(deseo_t('dj.slot.reserved')) ?>
+                                                        <?php else: ?>
+                                                            <?= $slotAvailable
+                                                                ? deseo_e(deseo_t('dj.slot.available'))
+                                                                : deseo_e(deseo_t('dj.slot.reserved')) ?>
+                                                        <?php endif; ?>
                                                     </small>
                                                 </span>
                                             </label>
