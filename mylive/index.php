@@ -999,7 +999,9 @@ $nextShowMessage = match ($nextShowSetStatus) {
             <div class="mylive-quick-push-copy">
                 <span>PUSH NOTIFICATIONS</span>
                 <strong>Μείνε ενημερωμένος για το show σου.</strong>
-                <p>Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.</p>
+                <p><?= $isGuestAccount
+                    ? 'Ενεργοποίησε push alerts για ανακοινώσεις και ενημερώσεις του MyLive. Τα Guest accounts δεν έχουν weekly recurrence.'
+                    : 'Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.' ?></p>
             </div>
             <button type="button" class="mylive-quick-push-button" data-mylive-push-quick-enable>
                 ENABLE PUSH ALERTS
@@ -1530,35 +1532,46 @@ $nextShowMessage = match ($nextShowSetStatus) {
                     <span>PUSH</span>
                 </div>
 
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>DJ Set Reminder</strong>
-                        <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                <?php if ($isGuestAccount): ?>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>Guest DJ notifications</strong>
+                            <small>Το Guest access είναι one-off. Δεν δημιουργείται αυτόματα νέο show ή reminder κάθε εβδομάδα.</small>
+                        </div>
+                        <span>—</span>
+                        <span>—</span>
                     </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
+                <?php else: ?>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>DJ Set Reminder</strong>
+                            <small>3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.</small>
+                        </div>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="set_reminder_email" value="1" <?= !empty($communicationPrefs['set_reminder_email']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="set_reminder_push" value="1" <?= !empty($communicationPrefs['set_reminder_push']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                    </div>
 
-                <div class="mylive-settings-row">
-                    <div>
-                        <strong>On Air Now</strong>
-                        <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                    <div class="mylive-settings-row">
+                        <div>
+                            <strong>On Air Now</strong>
+                            <small>Τη στιγμή που το weekly slot σου γίνεται live.</small>
+                        </div>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
+                        <label class="mylive-switch is-compact">
+                            <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
+                            <span aria-hidden="true"></span>
+                        </label>
                     </div>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_email" value="1" <?= !empty($communicationPrefs['on_air_email']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                    <label class="mylive-switch is-compact">
-                        <input type="checkbox" name="on_air_push" value="1" <?= !empty($communicationPrefs['on_air_push']) ? 'checked' : '' ?>>
-                        <span aria-hidden="true"></span>
-                    </label>
-                </div>
+                <?php endif; ?>
 
                 <div class="mylive-settings-row">
                     <div>
