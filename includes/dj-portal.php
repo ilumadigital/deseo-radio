@@ -381,16 +381,22 @@ function deseo_mylive_password_reset_consume(PDO $pdo, string $token, string $ne
 
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
-        "SELECT id, booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
-                must_change_password, is_active, account_status, show_audience_stats, public_profile_enabled, onboarding_email_sent_at, access_email_sent_at,
-                last_login_at, created_at, updated_at
-         FROM dj_portal_accounts
-         WHERE id = ? AND is_active = 1
+        "SELECT a.id, a.booking_id, a.artist_name, a.full_name, a.email, a.day_of_week, a.start_time, a.end_time,
+                a.must_change_password, a.is_active, a.account_status, a.show_audience_stats, a.public_profile_enabled, a.onboarding_email_sent_at, a.access_email_sent_at,
+                a.last_login_at, a.created_at, a.updated_at,
+                b.status AS application_status
+         FROM dj_portal_accounts a
+         LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+         WHERE a.id = ? AND a.is_active = 1
          LIMIT 1"
     );
     $stmt->execute([$accountId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     return $row ?: null;
+}
+
+function deseo_mylive_is_guest_account(array $account): bool {
+    return strtolower(trim((string)($account['application_status'] ?? ''))) === 'guest';
 }
 
 function deseo_mylive_sets(PDO $pdo, int $accountId): array {
