@@ -12,12 +12,12 @@ function dj_season_strict_slot_definitions(): array {
     $dayStarts = [
         3 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
         4 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
-        5 => ['20:00:00', '21:00:00', '22:00:00', '23:00:00'],
         // 00:00 slots are the rotating Guest DJ Zone. They are stored on the
-        // real broadcast day (Saturday/Sunday), while the public form presents
-        // them under the preceding Friday/Saturday nightlife day.
+        // real broadcast day (Friday/Saturday), while the public form presents
+        // them under the preceding Thursday/Friday nightlife day.
+        5 => ['00:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
         6 => ['00:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
-        7 => ['00:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
+        7 => ['18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00'],
     ];
 
     foreach ($dayStarts as $day => $starts) {
@@ -206,7 +206,11 @@ function dj_season_slots(PDO $pdo, bool $includeInactive = false): array {
 
 function dj_season_is_guest_zone_slot(int $day, ?string $startTime): bool {
     $start = substr((string)$startTime, 0, 8);
-    return in_array($day, [6, 7], true) && $start === '00:00:00';
+
+    // Current Guest Zone broadcasts are Friday/Saturday 00:00 (shown publicly
+    // as Thursday/Friday). Keep Sunday 00:00 recognized only for historical
+    // records created before the schedule correction; it is no longer active.
+    return in_array($day, [5, 6, 7], true) && $start === '00:00:00';
 }
 
 function dj_season_slot_display_day(int $day, ?string $startTime): int {
