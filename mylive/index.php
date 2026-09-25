@@ -261,14 +261,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $accountId = deseo_mylive_account_id();
             $currentPreferences = deseo_mylive_communication_preferences($pdo, $accountId);
+            $preferenceAccount = deseo_mylive_account($pdo, $accountId);
+            $guestPreferences = $preferenceAccount
+                ? deseo_mylive_is_guest_account($preferenceAccount)
+                : false;
 
             deseo_mylive_save_communication_preferences($pdo, $accountId, [
                 'email_enabled' => isset($_POST['email_enabled']),
                 'push_enabled' => !empty($currentPreferences['push_enabled']),
-                'set_reminder_email' => isset($_POST['set_reminder_email']),
-                'set_reminder_push' => isset($_POST['set_reminder_push']),
-                'on_air_email' => isset($_POST['on_air_email']),
-                'on_air_push' => isset($_POST['on_air_push']),
+                // Guest accounts do not expose recurring controls. Preserve their
+                // existing values instead of silently turning them off on save.
+                'set_reminder_email' => $guestPreferences
+                    ? !empty($currentPreferences['set_reminder_email'])
+                    : isset($_POST['set_reminder_email']),
+                'set_reminder_push' => $guestPreferences
+                    ? !empty($currentPreferences['set_reminder_push'])
+                    : isset($_POST['set_reminder_push']),
+                'on_air_email' => $guestPreferences
+                    ? !empty($currentPreferences['on_air_email'])
+                    : isset($_POST['on_air_email']),
+                'on_air_push' => $guestPreferences
+                    ? !empty($currentPreferences['on_air_push'])
+                    : isset($_POST['on_air_push']),
                 'announcements_email' => isset($_POST['announcements_email']),
                 'announcements_push' => isset($_POST['announcements_push']),
             ]);
