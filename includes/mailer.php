@@ -178,9 +178,14 @@ function deseo_dj_mail_context(array $booking, bool $preferFinalSchedule = true)
         $endValue = (string)$booking['final_end_time'];
     }
 
-    $day = dj_season_day_label($dayValue);
+    $isGuestZone = dj_season_is_guest_zone_slot($dayValue, $startValue);
+    $displayDayValue = $isGuestZone
+        ? dj_season_slot_display_day($dayValue, $startValue)
+        : $dayValue;
+    $day = dj_season_day_label($displayDayValue);
     $start = dj_season_format_time($startValue);
     $end = dj_season_format_time($endValue);
+    $slotPrefix = $isGuestZone ? 'Guest DJ Zone · ' : '';
 
     return [
         'artist' => trim((string)($booking['artist_name'] ?? 'DJ')),
@@ -194,7 +199,7 @@ function deseo_dj_mail_context(array $booking, bool $preferFinalSchedule = true)
         'day' => $day,
         'start' => $start,
         'end' => $end,
-        'slot' => trim($day . ' · ' . $start . '–' . $end, " ·–"),
+        'slot' => $slotPrefix . trim($day . ' · ' . $start . '–' . $end, " ·–"),
     ];
 }
 
