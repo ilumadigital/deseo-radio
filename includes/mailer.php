@@ -693,7 +693,20 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
     $email = trim((string)($account['email'] ?? ''));
+    $isGuest = strtolower(trim((string)($account['application_status'] ?? ''))) === 'guest';
     $slot = deseo_mylive_slot($account);
+
+    if ($isGuest) {
+        $accountDay = (int)($account['day_of_week'] ?? 0);
+        $accountStart = (string)($account['start_time'] ?? '');
+        if (dj_season_is_guest_zone_slot($accountDay, $accountStart)) {
+            $displayDay = dj_season_slot_display_day($accountDay, $accountStart);
+            $slot = 'Guest DJ Zone · ' . dj_season_day_label($displayDay) . ' · ' . deseo_mylive_format_time($accountStart);
+        } else {
+            $slot = 'Guest DJ · ' . $slot;
+        }
+    }
+
     $artistSlug = deseo_mylive_slug($artist);
 
     $section = static function(string $kicker, string $title, string $content) use ($e): string {
@@ -723,7 +736,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $body = '<tr><td style="padding:0 0 18px;">'
         . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
-        . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">Παίζεις στον Deseo κάθε:</div>'
+        . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">' . ($isGuest ? 'Guest DJ εμφάνιση:' : 'Παίζεις στον Deseo κάθε:') . '</div>'
         . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($slot) . '</div>'
         . '</div></td></tr>';
 
@@ -811,7 +824,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '<td class="d-credential-value" style="padding:15px 16px;color:#fff;font:800 19px Arial,sans-serif;letter-spacing:.03em;">' . $e($temporaryPassword) . '</td></tr>'
         . '</table>'
         . '<div style="margin-top:17px;color:#c9aeb1;font:400 12px/1.65 Arial,sans-serif;">'
-        . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> δημιούργησε τον δικό σου password και αποθήκευσέ τον στον browser / password manager μαζί με το email σου, ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.'
+        . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> δημιούργησε τον δικό σου password και αποθήκευσέ τον στον browser / password manager μαζί με το email σου, ' . ($isGuest ? 'ώστε να έχεις εύκολη πρόσβαση στο MyLive για τη Guest συνεργασία σου.' : 'ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.')
         . '</div>'
         . '<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:18px;"><tr><td style="border-radius:999px;background:#ff2b36;">'
         . '<a href="https://deseoradio.com/mylive/" style="display:inline-block;padding:14px 23px;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;">OPEN MYLIVE</a>'
@@ -835,7 +848,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
         . "Artist: {$artist}\n"
-        . "Weekly slot: {$slot}\n\n"
+        . ($isGuest ? "Guest selection: {$slot}\n\n" : "Weekly slot: {$slot}\n\n")
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
