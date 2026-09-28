@@ -742,6 +742,16 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
 
+    if (!$isGuest) {
+        $body .= $section(
+            'WEEKLY BROADCAST',
+            'Η μετάδοση είναι εβδομαδιαία — το DJ Set δεν χρειάζεται να είναι νέο κάθε εβδομάδα',
+            'Όταν αναφερόμαστε σε <strong style="color:#fff;">weekly DJ Sets / weekly slot</strong>, εννοούμε την εβδομαδιαία μετάδοση του show σου. '
+            . 'Δεν χρειάζεται να ανεβάζεις νέο DJ Set κάθε εβδομάδα. Αν δεν έχεις στείλει νέο set, θα μεταδοθεί ξανά το <strong style="color:#fff;">DJ Set της προηγούμενης εβδομάδας</strong>, δηλαδή το πιο πρόσφατο διαθέσιμο set σου.<br><br>'
+            . 'Μπορείς να ανεβάζεις ακόμη και <strong style="color:#fff;">1 νέο DJ Set τον μήνα</strong>. Για να παραμένει όμως το show σου φρέσκο, προτείνουμε <strong style="color:#fff;">τουλάχιστον 2 νέα DJ Sets τον μήνα</strong>.'
+        );
+    }
+
     $dashboard = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
         . $bullet('<strong style="color:#fff;">Σε άκουσαν</strong> — βλέπεις την εκτιμώμενη απήχηση του show σου για τον τελευταίο ολοκληρωμένο μήνα, όταν τα στοιχεία είναι διαθέσιμα.')
         . $bullet('<strong style="color:#fff;">Episodes</strong> — βλέπεις πόσα DJ Sets έχεις ήδη ανεβάσει στο MyLive.')
@@ -816,7 +826,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '<div style="padding:23px;border:1px solid #5a171e;border-radius:20px;background:#160b0d;">'
         . '<div style="color:#ff4650;font:800 9px Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;">MYLIVE ACCESS</div>'
         . '<div style="margin:8px 0 7px;color:#fff;font:800 23px/1.24 Arial,sans-serif;">Τα προσωρινά στοιχεία πρόσβασής σου</div>'
-        . '<div style="margin-bottom:19px;color:#b1b1b7;font:400 14px/1.7 Arial,sans-serif;">Χρησιμοποίησέ τα για την πρώτη σύνδεση. Αμέσως μετά, το MyLive θα σου ζητήσει να δημιουργήσεις τον δικό σου προσωπικό κωδικό πρόσβασης.</div>'
+        . '<div style="margin-bottom:19px;color:#b1b1b7;font:400 14px/1.7 Arial,sans-serif;"><strong style="color:#fff;">Ο προσωρινός κωδικός χρησιμοποιείται μόνο μία φορά</strong>, αποκλειστικά για την πρώτη σύνδεση. Αμέσως μετά, το MyLive θα σου ζητήσει να δημιουργήσεις τον δικό σου προσωπικό κωδικό πρόσβασης, τον οποίο θα χρησιμοποιείς από εκεί και πέρα.</div>'
         . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="d-credentials" style="border:1px solid #2c2c31;border-radius:15px;background:#0b0b0d;">'
         . '<tr><td style="padding:15px 16px;border-bottom:1px solid #252529;color:#7f7f86;font:800 10px Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;width:34%;">Email</td>'
         . '<td class="d-credential-value" style="padding:15px 16px;border-bottom:1px solid #252529;color:#fff;font:700 17px Arial,sans-serif;">' . $e($email) . '</td></tr>'
@@ -824,7 +834,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '<td class="d-credential-value" style="padding:15px 16px;color:#fff;font:800 19px Arial,sans-serif;letter-spacing:.03em;">' . $e($temporaryPassword) . '</td></tr>'
         . '</table>'
         . '<div style="margin-top:17px;color:#c9aeb1;font:400 12px/1.65 Arial,sans-serif;">'
-        . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> δημιούργησε τον δικό σου password και αποθήκευσέ τον στον browser / password manager μαζί με το email σου, ' . ($isGuest ? 'ώστε να έχεις εύκολη πρόσβαση στο MyLive για τη Guest συνεργασία σου.' : 'ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.')
+        . '<strong style="color:#fff;">Στην πρώτη σύνδεση:</strong> χρησιμοποίησε το temporary password μία φορά και αμέσως μετά όρισε τον δικό σου προσωπικό κωδικό, αυτόν που θα θυμάσαι και θα χρησιμοποιείς στις επόμενες συνδέσεις. Αποθήκευσέ τον με ασφάλεια μαζί με το email σου, ' . ($isGuest ? 'ώστε να έχεις εύκολη πρόσβαση στο MyLive για τη Guest συνεργασία σου.' : 'ώστε να έχεις εύκολη πρόσβαση στο MyLive κάθε εβδομάδα.')
         . '</div>'
         . '<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:18px;"><tr><td style="border-radius:999px;background:#ff2b36;">'
         . '<a href="https://deseoradio.com/mylive/" style="display:inline-block;padding:14px 23px;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;">OPEN MYLIVE</a>'
@@ -849,6 +859,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
         . "Artist: {$artist}\n"
         . ($isGuest ? "Guest selection: {$slot}\n\n" : "Weekly slot: {$slot}\n\n")
+        . ($isGuest ? "" : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n")
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
@@ -863,8 +874,8 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . "MYLIVE ACCESS\n"
         . "URL: https://deseoradio.com/mylive/\n"
         . "Email: {$email}\n"
-        . "Temporary password: {$temporaryPassword}\n\n"
-        . "Με την πρώτη σύνδεση θα δημιουργήσεις τον προσωπικό σου κωδικό. Αποθήκευσέ τον μαζί με το email σου στον browser / password manager.\n\n"
+        . "Temporary password: {$temporaryPassword} (χρησιμοποιείται μόνο μία φορά, στην πρώτη σύνδεση)\n\n"
+        . "Με την πρώτη σύνδεση θα δημιουργήσεις τον προσωπικό σου κωδικό, τον οποίο θα χρησιμοποιείς από εκεί και πέρα. Αποθήκευσέ τον με ασφάλεια μαζί με το email σου.\n\n"
         . "Deseo Radio · Powered by ILUMA Digital Agency";
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
