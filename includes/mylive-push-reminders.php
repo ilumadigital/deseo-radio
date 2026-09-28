@@ -116,7 +116,12 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
 
             $accountId = (int)$show['account_id'];
             $programId = (int)$show['program_id'];
-            [$showStart, $showEnd] = deseo_mylive_email_program_occurrence($show, $now);
+            $occurrence = deseo_mylive_email_program_occurrence($show, $now);
+            if ($occurrence === null) {
+                $summary['skipped']++;
+                continue;
+            }
+            [$showStart, $showEnd] = $occurrence;
 
             $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
             $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
