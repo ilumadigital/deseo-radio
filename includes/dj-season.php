@@ -5,6 +5,86 @@ const DESEO_DJ_SEASON = 6;
 const DESEO_DJ_TERMS_VERSION = 'season-6-2026-09-15-v4';
 const DESEO_DJ_PRIVACY_VERSION = '2026-09-14-v4';
 const DESEO_DJ_DECISION_DEADLINE = '10/10/2026';
+const DESEO_DJ_SEASON_START_DATE = '2026-10-14';
+const DESEO_DJ_SEASON_SCHEDULE_VISIBLE_FROM_DATE = '2026-10-13';
+const DESEO_DJ_SEASON_END_DATE = '2027-05-30';
+
+function dj_season_athens_timezone(): DateTimeZone {
+    return new DateTimeZone('Europe/Athens');
+}
+
+function dj_season_start_at(): DateTimeImmutable {
+    return new DateTimeImmutable(DESEO_DJ_SEASON_START_DATE . ' 00:00:00', dj_season_athens_timezone());
+}
+
+function dj_season_schedule_visible_from(): DateTimeImmutable {
+    return new DateTimeImmutable(DESEO_DJ_SEASON_SCHEDULE_VISIBLE_FROM_DATE . ' 00:00:00', dj_season_athens_timezone());
+}
+
+function dj_season_end_at(): DateTimeImmutable {
+    return new DateTimeImmutable(DESEO_DJ_SEASON_END_DATE . ' 23:59:59', dj_season_athens_timezone());
+}
+
+function dj_season_schedule_visible(?DateTimeImmutable $at = null): bool {
+    $at = ($at ?? new DateTimeImmutable('now', dj_season_athens_timezone()))
+        ->setTimezone(dj_season_athens_timezone());
+
+    return $at >= dj_season_schedule_visible_from();
+}
+
+function dj_season_weekly_occurrence(
+    int $dayOfWeek,
+    string $startTime,
+    string $endTime,
+    DateTimeImmutable $now
+): ?array {
+    if ($dayOfWeek < 1 || $dayOfWeek > 7 || trim($startTime) === '') {
+        return null;
+    }
+
+    $tz = dj_season_athens_timezone();
+    $now = $now->setTimezone($tz);
+    $seasonStart = dj_season_start_at();
+    $seasonEnd = dj_season_end_at();
+
+    if ($now > $seasonEnd) {
+        return null;
+    }
+
+    $anchor = $now < $seasonStart ? $seasonStart : $now;
+    $anchorDate = $anchor->setTime(0, 0, 0);
+    $daysAhead = ($dayOfWeek - (int)$anchorDate->format('N') + 7) % 7;
+    $candidateDate = $anchorDate->modify('+' . $daysAhead . ' days');
+
+    [$startHour, $startMinute] = array_map(
+        'intval',
+        array_pad(explode(':', trim($startTime)), 2, '0')
+    );
+    $start = $candidateDate->setTime($startHour, $startMinute, 0);
+
+    $end = $start->modify('+1 hour');
+    if (trim($endTime) !== '') {
+        [$endHour, $endMinute] = array_map(
+            'intval',
+            array_pad(explode(':', trim($endTime)), 2, '0')
+        );
+        $end = $candidateDate->setTime($endHour, $endMinute, 0);
+        if ($end <= $start) {
+            $end = $end->modify('+1 day');
+        }
+    }
+
+    if ($now >= $end) {
+        $start = $start->modify('+7 days');
+        $end = $end->modify('+7 days');
+    }
+
+    if ($start < $seasonStart || $start > $seasonEnd) {
+        return null;
+    }
+
+    return [$start, $end];
+}
 
 function dj_season_strict_slot_definitions(): array {
     $definitions = [];
