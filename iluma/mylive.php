@@ -133,6 +133,20 @@ function mylive_admin_asset_media_folder_label(string $rootLabel, string $relati
     return $rootLabel . ' / ' . implode(' / ', $mapped);
 }
 
+function mylive_admin_asset_media_folder_display(string $folder): string {
+    $folder = trim(str_replace('\\', '/', $folder), " /\t\n\r\0\x0B");
+    if ($folder === '') return '';
+
+    $parts = array_values(array_filter(
+        array_map('trim', explode('/', $folder)),
+        static fn(string $part): bool => $part !== ''
+    ));
+
+    if (!$parts) return $folder;
+
+    return (string)end($parts);
+}
+
 function mylive_admin_asset_media_library_collect(string $absoluteRoot, string $publicBase, string $rootLabel): array {
     $rootReal = realpath($absoluteRoot);
     if (!$rootReal || !is_dir($rootReal)) return [];
@@ -1388,7 +1402,7 @@ admin_page_start('MyLive', 'mylive');
                     ));
                     ?>
                     <button type="button" data-mylive-media-folder="<?= admin_e($folder) ?>">
-                        <span><?= admin_e($folder) ?></span><b><?= $folderCount ?></b>
+                        <span><?= admin_e(mylive_admin_asset_media_folder_display($folder)) ?></span><b><?= $folderCount ?></b>
                     </button>
                 <?php endforeach; ?>
             </aside>
@@ -1422,7 +1436,7 @@ admin_page_start('MyLive', 'mylive');
                             </span>
                             <span class="schedule-media-meta">
                                 <strong><?= admin_e((string)$media['name']) ?></strong>
-                                <small><?= admin_e((string)$media['folder']) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$media['size'])) ?></small>
+                                <small><?= admin_e(mylive_admin_asset_media_folder_display((string)$media['folder'])) ?> · <?= admin_e(deseo_mylive_format_bytes((int)$media['size'])) ?></small>
                             </span>
                         </button>
                     <?php endforeach; ?>
