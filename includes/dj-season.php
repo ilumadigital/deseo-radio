@@ -56,19 +56,19 @@ function dj_season_weekly_occurrence(
     $daysAhead = ($dayOfWeek - (int)$anchorDate->format('N') + 7) % 7;
     $candidateDate = $anchorDate->modify('+' . $daysAhead . ' days');
 
-    [$startHour, $startMinute] = array_map(
+    [$startHour, $startMinute, $startSecond] = array_map(
         'intval',
-        array_pad(explode(':', trim($startTime)), 2, '0')
+        array_pad(explode(':', trim($startTime)), 3, '0')
     );
-    $start = $candidateDate->setTime($startHour, $startMinute, 0);
+    $start = $candidateDate->setTime($startHour, $startMinute, $startSecond);
 
     $end = $start->modify('+1 hour');
     if (trim($endTime) !== '') {
-        [$endHour, $endMinute] = array_map(
+        [$endHour, $endMinute, $endSecond] = array_map(
             'intval',
-            array_pad(explode(':', trim($endTime)), 2, '0')
+            array_pad(explode(':', trim($endTime)), 3, '0')
         );
-        $end = $candidateDate->setTime($endHour, $endMinute, 0);
+        $end = $candidateDate->setTime($endHour, $endMinute, $endSecond);
         if ($end <= $start) {
             $end = $end->modify('+1 day');
         }
