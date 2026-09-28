@@ -93,30 +93,13 @@ function deseo_mylive_email_event_log(
     ]);
 }
 
-function deseo_mylive_email_program_occurrence(array $show, DateTimeImmutable $now): array {
-    $tz = new DateTimeZone('Europe/Athens');
-    $now = $now->setTimezone($tz);
-
-    $day = max(1, min(7, (int)($show['day_of_week'] ?? 1)));
-    $daysAhead = ($day - (int)$now->format('N') + 7) % 7;
-    $date = $now->setTime(0, 0)->modify('+' . $daysAhead . ' days');
-
-    $startRaw = substr((string)($show['start_time'] ?? '00:00:00'), 0, 8);
-    $endRaw = substr((string)($show['end_time'] ?? '00:00:00'), 0, 8);
-
-    $start = new DateTimeImmutable($date->format('Y-m-d') . ' ' . $startRaw, $tz);
-    $end = new DateTimeImmutable($date->format('Y-m-d') . ' ' . $endRaw, $tz);
-
-    if ($end <= $start) {
-        $end = $end->modify('+1 day');
-    }
-
-    if ($now >= $end) {
-        $start = $start->modify('+7 days');
-        $end = $end->modify('+7 days');
-    }
-
-    return [$start, $end];
+function deseo_mylive_email_program_occurrence(array $show, DateTimeImmutable $now): ?array {
+    return dj_season_weekly_occurrence(
+        (int)($show['day_of_week'] ?? 0),
+        substr((string)($show['start_time'] ?? ''), 0, 8),
+        substr((string)($show['end_time'] ?? ''), 0, 8),
+        $now
+    );
 }
 
 function deseo_mylive_email_pending_set(PDO $pdo, int $accountId): ?array {
@@ -226,7 +209,12 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
 
             $accountId = (int)$show['account_id'];
             $programId = (int)$show['program_id'];
-            [$showStart, $showEnd] = deseo_mylive_email_program_occurrence($show, $now);
+            $occurrence = deseo_mylive_email_program_occurrence($show, $now);
+            if ($occurrence === null) {
+                $summary['skipped']++;
+                continue;
+            }
+            [$showStart, $showEnd] = $occurrence;
 
             $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
             $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
