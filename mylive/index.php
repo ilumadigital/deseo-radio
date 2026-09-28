@@ -425,6 +425,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw $dbError;
             }
 
+            try {
+                $uploadNotification = deseo_mylive_set_uploaded_internal_email(
+                    $account,
+                    $episode,
+                    $storedName,
+                    $originalName
+                );
+
+                foreach (deseo_mylive_internal_notification_recipients() as $recipient) {
+                    try {
+                        deseo_send_smtp_mail(
+                            (string)$recipient['email'],
+                            (string)$recipient['name'],
+                            (string)$uploadNotification['subject'],
+                            (string)$uploadNotification['html'],
+                            (string)$uploadNotification['text'],
+                            true
+                        );
+                    } catch (Throwable $notificationRecipientError) {
+                        error_log(
+                            'MyLive DJ set upload notification failed for '
+                            . (string)$recipient['email']
+                            . ' · account '
+                            . $accountId
+                            . ' · EP'
+                            . str_pad((string)$episode, 3, '0', STR_PAD_LEFT)
+                            . ': '
+                            . $notificationRecipientError->getMessage()
+                        );
+                    }
+                }
+            } catch (Throwable $notificationError) {
+                error_log(
+                    'MyLive DJ set upload notification build failed for account '
+                    . $accountId
+                    . ' · EP'
+                    . str_pad((string)$episode, 3, '0', STR_PAD_LEFT)
+                    . ': '
+                    . $notificationError->getMessage()
+                );
+            }
+
             $message = sprintf('Το EP%03d ανέβηκε επιτυχώς.', $episode);
             if ($isAjax) mylive_json(true, $message, ['episode' => $episode, 'filename' => $storedName]);
             $notice = $message;
