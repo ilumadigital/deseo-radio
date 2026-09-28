@@ -892,6 +892,98 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 }
 
 
+function deseo_mylive_internal_notification_recipients(): array {
+    $recipients = [
+        [
+            'email' => deseo_env('MYLIVE_ADMIN_EMAIL', 'greg@iluma.gr'),
+            'name' => 'Deseo Radio Admin',
+        ],
+        [
+            'email' => deseo_env('MYLIVE_MANAGER_EMAIL', 'radio@iluma.gr'),
+            'name' => 'Deseo Radio Manager',
+        ],
+    ];
+
+    $unique = [];
+    foreach ($recipients as $recipient) {
+        $email = strtolower(trim((string)($recipient['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || isset($unique[$email])) {
+            continue;
+        }
+
+        $unique[$email] = [
+            'email' => $email,
+            'name' => trim((string)($recipient['name'] ?? 'Deseo Radio')),
+        ];
+    }
+
+    return array_values($unique);
+}
+
+function deseo_mylive_set_uploaded_internal_email(
+    array $account,
+    int $episode,
+    string $storedName,
+    string $originalName = ''
+): array {
+    $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+    $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $slot = deseo_mylive_slot($account);
+    $episodeLabel = 'EP' . str_pad((string)max(1, $episode), 3, '0', STR_PAD_LEFT);
+
+    $body = '<tr><td style="padding:0 0 22px;">'
+        . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+        . '<div style="font:800 9px Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;">NEW DJ SET UPLOAD</div>'
+        . '<div style="margin-top:7px;font:800 28px/1.15 Arial,sans-serif;">' . $e($artist) . ' · ' . $e($episodeLabel) . '</div>'
+        . '</div></td></tr>';
+
+    $body .= deseo_mylive_email_section(
+        'ACTION REQUIRED',
+        'Νέο DJ Set για προγραμματισμό',
+        'Ο <strong style="color:#fff;">' . $e($artist) . '</strong> ανέβασε το <strong style="color:#fff;">' . $e($episodeLabel) . '</strong> μέσω του MyLive. '
+        . 'Το set βρίσκεται πλέον σε κατάσταση <strong style="color:#fff;">RECEIVED</strong> και είναι έτοιμο για έλεγχο και προγραμματισμό στο Deseo Radio.'
+    );
+
+    $body .= deseo_mylive_email_section(
+        'SHOW',
+        'Στοιχεία μετάδοσης',
+        '<strong style="color:#fff;">DJ:</strong> ' . $e($artist) . '<br>'
+        . '<strong style="color:#fff;">Weekly slot:</strong> ' . $e($slot) . '<br>'
+        . '<strong style="color:#fff;">Episode:</strong> ' . $e($episodeLabel) . '<br>'
+        . '<strong style="color:#fff;">Stored file:</strong> ' . $e($storedName)
+        . ($originalName !== '' ? '<br><strong style="color:#fff;">Original file:</strong> ' . $e($originalName) : '')
+    );
+
+    $body .= deseo_mylive_email_section(
+        'NEXT STEP',
+        'Άνοιξε το MyLive Management',
+        'Έλεγξε το αρχείο και προχώρησε στο scheduling / status update του episode από το ILUMA CMS.'
+    );
+
+    $subject = 'New DJ Set Upload · ' . $artist . ' · ' . $episodeLabel;
+
+    $html = deseo_mylive_email_shell(
+        'DESEO RADIO · MYLIVE',
+        'Νέο DJ Set ανέβηκε.',
+        $artist . ' ανέβασε νέο episode μέσω του MyLive και χρειάζεται προγραμματισμό στο Deseo Radio.',
+        $body,
+        'OPEN MYLIVE MANAGEMENT',
+        'https://deseoradio.com/iluma/mylive.php'
+    );
+
+    $text = "DESEO RADIO · MYLIVE · NEW DJ SET UPLOAD\n\n"
+        . "DJ: {$artist}\n"
+        . "Weekly slot: {$slot}\n"
+        . "Episode: {$episodeLabel}\n"
+        . "Stored file: {$storedName}\n"
+        . ($originalName !== '' ? "Original file: {$originalName}\n" : '')
+        . "\nΤο DJ Set ανέβηκε επιτυχώς και είναι έτοιμο για έλεγχο και προγραμματισμό στο Deseo Radio.\n"
+        . "MyLive Management: https://deseoradio.com/iluma/mylive.php\n\n"
+        . "Deseo Radio · Powered by ILUMA Digital Agency";
+
+    return ['subject' => $subject, 'html' => $html, 'text' => $text];
+}
+
 function deseo_mylive_password_reset_email(array $account, string $resetToken): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
