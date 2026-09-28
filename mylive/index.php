@@ -1094,7 +1094,7 @@ if ($nextShowScheduleHidden) {
             <?php if ($nextShowSeasonComplete): ?>
                 <strong>Season 6 complete.</strong>
             <?php elseif ($nextShowScheduleHidden): ?>
-                <strong>Next Show: TBA έως 12.10.2026.</strong>
+                <strong>Next Show: TBA</strong>
                 <a href="#sets">MY DJ SETS ↓</a>
             <?php elseif ($nextShowSetStatus === 'not_uploaded'): ?>
                 <strong>Your set is next.</strong>
