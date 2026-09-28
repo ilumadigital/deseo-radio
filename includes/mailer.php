@@ -748,6 +748,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
             'Η μετάδοση είναι εβδομαδιαία — το DJ Set δεν χρειάζεται να είναι νέο κάθε εβδομάδα',
             'Όταν αναφερόμαστε σε <strong style="color:#fff;">weekly DJ Sets / weekly slot</strong>, εννοούμε την εβδομαδιαία μετάδοση του show σου. '
             . 'Δεν χρειάζεται να ανεβάζεις νέο DJ Set κάθε εβδομάδα. Αν δεν έχεις στείλει νέο set, θα μεταδοθεί ξανά το <strong style="color:#fff;">DJ Set της προηγούμενης εβδομάδας</strong>, δηλαδή το πιο πρόσφατο διαθέσιμο set σου.<br><br>'
+            . 'Οι εβδομαδιαίες μεταδόσεις της <strong style="color:#fff;">Season 6</strong> ξεκινούν την <strong style="color:#fff;">Τετάρτη 14.10.2026</strong> και ολοκληρώνονται στις <strong style="color:#fff;">30.05.2027</strong>.<br><br>'
             . 'Μπορείς να ανεβάζεις ακόμη και <strong style="color:#fff;">1 νέο DJ Set τον μήνα</strong>. Για να παραμένει όμως το show σου φρέσκο, προτείνουμε <strong style="color:#fff;">τουλάχιστον 2 νέα DJ Sets τον μήνα</strong>.'
         );
     }
@@ -859,7 +860,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
         . "Artist: {$artist}\n"
         . ($isGuest ? "Guest selection: {$slot}\n\n" : "Weekly slot: {$slot}\n\n")
-        . ($isGuest ? "" : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n")
+        . ($isGuest ? "" : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Η Season 6 ξεκινά 14.10.2026 και ολοκληρώνεται 30.05.2027. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n")
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
