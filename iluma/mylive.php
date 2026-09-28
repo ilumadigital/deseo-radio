@@ -94,7 +94,11 @@ function mylive_admin_email_test_context(PDO $pdo, array $account): array {
     }
 
     $now = new DateTimeImmutable('now', new DateTimeZone('Europe/Athens'));
-    [$showStart, $showEnd] = deseo_mylive_email_program_occurrence($program, $now);
+    $occurrence = deseo_mylive_email_program_occurrence($program, $now);
+    if ($occurrence === null) {
+        throw new RuntimeException('Δεν υπάρχει επόμενη μετάδοση για αυτό το weekly slot μέσα στη Season 6 (14/10/2026–30/05/2027).');
+    }
+    [$showStart, $showEnd] = $occurrence;
 
     $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
     $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
