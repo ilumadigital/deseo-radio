@@ -740,6 +740,14 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($slot) . '</div>'
         . '</div></td></tr>';
 
+    if (!$isGuest) {
+        $body .= '<tr><td style="padding:0 0 18px;">'
+            . '<div style="padding:18px 20px;border:1px solid #3a3a3f;border-radius:17px;background:#101012;color:#bdbdc2;font:400 14px/1.7 Arial,sans-serif;">'
+            . '<strong style="display:block;margin-bottom:6px;color:#fff;">Season 6 ξεκινά στις 14.10.2026</strong>'
+            . 'Το πρώτο σου DJ Set πρέπει να έχει σταλεί <strong style="color:#fff;">έως τις 14.10.2026</strong> μέσω του <strong style="color:#fff;">MyLive</strong>, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.'
+            . '</div></td></tr>';
+    }
+
     $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
 
     if (!$isGuest) {
@@ -860,6 +868,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
         . "Artist: {$artist}\n"
         . ($isGuest ? "Guest selection: {$slot}\n\n" : "Weekly slot: {$slot}\n\n")
+        . ($isGuest ? "" : "SEASON 6 START: Η Season 6 ξεκινά στις 14.10.2026. Το πρώτο σου DJ Set πρέπει να έχει σταλεί έως τις 14.10.2026 μέσω του MyLive, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.\n\n")
         . ($isGuest ? "" : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Η Season 6 ξεκινά 14.10.2026 και ολοκληρώνεται 30.05.2027. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n")
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
