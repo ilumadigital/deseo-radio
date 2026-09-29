@@ -482,44 +482,28 @@ $partners = [
     </section>
 
 
-    <section class="content-section dj-call-section" id="dj-call">
-        <div class="wide-shell">
-            <div class="dj-call-grid reveal">
-                <a class="dj-call-visual"
-                   href="/dj"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   aria-label="<?= deseo_e(deseo_t('djcall.cta')) ?>"
-                   data-analytics-event="dj_call_image_click">
-                    <img src="/assets/img/deseoradio-djcallwebsite.png?v=<?= $assetVersion ?>"
-                         data-fallback="/assets/img/bg.png?v=<?= $assetVersion ?>"
-                         alt="Deseo Radio DJs Call">
-                </a>
+    <section class="content-section season-lineup-section" id="season-6">
+        <div class="wide-shell season-lineup-shell">
+            <header class="season-lineup-head reveal">
+                <span class="kicker" data-i18n="lineup.kicker"><?= deseo_e(deseo_t('lineup.kicker')) ?></span>
+                <h2 class="metal-title section-title" data-i18n="lineup.title"><?= deseo_e(deseo_t('lineup.title')) ?></h2>
+                <p class="season-lineup-tagline" data-i18n="lineup.tagline"><?= deseo_e(deseo_t('lineup.tagline')) ?></p>
+                <span class="season-lineup-meta" data-i18n="lineup.schedule"><?= deseo_e(deseo_t('lineup.schedule')) ?></span>
+            </header>
 
-                <div class="dj-call-copy">
-                    <span class="kicker" data-i18n="djcall.kicker"><?= deseo_e(deseo_t('djcall.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="djcall.title"><?= deseo_e(deseo_t('djcall.title')) ?></h2>
-                    <p data-i18n="djcall.text"><?= deseo_e(deseo_t('djcall.text')) ?></p>
-
-                    <div class="dj-call-countdown" id="dj-call-countdown" data-deadline="2026-10-10T23:55:00+03:00" aria-live="polite">
-                        <span class="dj-call-countdown-label" data-i18n="countdown.remaining"><?= deseo_e(deseo_t('countdown.remaining')) ?></span>
-                        <strong class="dj-call-countdown-value">
-                            <span data-countdown-days>--</span> <small data-i18n="countdown.days"><?= deseo_e(deseo_t('countdown.days')) ?></small>
-                            <i aria-hidden="true">—</i>
-                            <span data-countdown-hours>--</span> <small data-i18n="countdown.hours"><?= deseo_e(deseo_t('countdown.hours')) ?></small>
-                            <i aria-hidden="true">—</i>
-                            <span data-countdown-minutes>--</span> <small data-i18n="countdown.minutes"><?= deseo_e(deseo_t('countdown.minutes')) ?></small>
-                        </strong>
-                    </div>
-
-                    <a class="button button-red dj-call-cta"
-                       href="/dj"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       data-i18n="djcall.cta"
-                       data-analytics-event="dj_call_cta_click"><?= deseo_e(deseo_t('djcall.cta')) ?></a>
-                </div>
-            </div>
+            <button class="season-lineup-poster reveal"
+                    type="button"
+                    data-lineup-open
+                    data-i18n-aria="lineup.zoom"
+                    aria-label="<?= deseo_e(deseo_t('lineup.zoom')) ?>">
+                <span class="season-lineup-poster-frame">
+                    <img src="/assets/img/season6%20lineup.png?v=<?= $assetVersion ?>"
+                         alt="Deseo Radio Season 6 Line Up"
+                         width="1500"
+                         height="1000">
+                </span>
+                <span class="season-lineup-poster-action" data-i18n="lineup.open"><?= deseo_e(deseo_t('lineup.open')) ?></span>
+            </button>
         </div>
     </section>
 
@@ -567,6 +551,20 @@ $partners = [
     </section>
 </main>
 
+<div class="lineup-lightbox" id="lineup-lightbox" hidden role="dialog" aria-modal="true" aria-label="<?= deseo_e(deseo_t('lineup.zoom')) ?>">
+    <button class="lineup-lightbox-close"
+            type="button"
+            data-lineup-close
+            data-i18n-aria="lineup.close"
+            aria-label="<?= deseo_e(deseo_t('lineup.close')) ?>">×</button>
+    <div class="lineup-lightbox-scroll" data-lineup-scroll>
+        <div class="lineup-lightbox-canvas">
+            <img src="/assets/img/season6%20lineup.png?v=<?= $assetVersion ?>"
+                 alt="Deseo Radio Season 6 Line Up">
+        </div>
+    </div>
+</div>
+
 <div class="dj-profile-modal" id="dj-profile-modal" hidden>
     <div class="dj-profile-modal-backdrop" data-dj-profile-close></div>
     <section class="dj-profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="dj-profile-name">
@@ -593,35 +591,44 @@ $partners = [
 
 <script>
 (() => {
-    const countdown = document.getElementById('dj-call-countdown');
-    if (!countdown) return;
+    const modal = document.getElementById('lineup-lightbox');
+    const openers = document.querySelectorAll('[data-lineup-open]');
+    const closer = modal ? modal.querySelector('[data-lineup-close]') : null;
+    const scrollArea = modal ? modal.querySelector('[data-lineup-scroll]') : null;
 
-    const deadline = new Date(countdown.dataset.deadline).getTime();
-    const daysEl = countdown.querySelector('[data-countdown-days]');
-    const hoursEl = countdown.querySelector('[data-countdown-hours]');
-    const minutesEl = countdown.querySelector('[data-countdown-minutes]');
+    if (!modal || !openers.length) return;
 
-    const pad = (value) => String(value).padStart(2, '0');
-
-    const render = () => {
-        const remaining = Math.max(0, deadline - Date.now());
-        const totalMinutes = Math.floor(remaining / 60000);
-        const days = Math.floor(totalMinutes / 1440);
-        const hours = Math.floor((totalMinutes % 1440) / 60);
-        const minutes = totalMinutes % 60;
-
-        daysEl.textContent = pad(days);
-        hoursEl.textContent = pad(hours);
-        minutesEl.textContent = pad(minutes);
-
-        if (remaining <= 0) {
-            countdown.classList.add('is-ended');
-            clearInterval(timer);
-        }
+    const closeLineup = () => {
+        modal.classList.remove('is-open');
+        document.body.classList.remove('lineup-lightbox-open');
+        window.setTimeout(() => {
+            modal.hidden = true;
+        }, 180);
     };
 
-    render();
-    const timer = setInterval(render, 1000);
+    const openLineup = () => {
+        modal.hidden = false;
+        document.body.classList.add('lineup-lightbox-open');
+        if (scrollArea) {
+            scrollArea.scrollTop = 0;
+            scrollArea.scrollLeft = 0;
+        }
+        window.requestAnimationFrame(() => {
+            modal.classList.add('is-open');
+            if (closer) closer.focus({ preventScroll: true });
+        });
+    };
+
+    openers.forEach((opener) => opener.addEventListener('click', openLineup));
+    if (closer) closer.addEventListener('click', closeLineup);
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal || event.target === scrollArea) closeLineup();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.hidden) closeLineup();
+    });
 })();
 </script>
 
