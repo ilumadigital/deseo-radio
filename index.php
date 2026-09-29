@@ -442,15 +442,32 @@ $partners = [
         </div>
     </section>
 
-    <section class="about-strip">
-        <div class="wide-shell about-grid">
-            <div class="reveal">
-                <span class="kicker" data-i18n="about.kicker"><?= deseo_e(deseo_t('about.kicker')) ?></span>
-                <h2 class="metal-title section-title" data-i18n="about.title"><?= deseo_e(deseo_t('about.title')) ?></h2>
-            </div>
-            <div class="about-copy reveal">
-                <p data-i18n="about.text"><?= deseo_e(deseo_t('about.text')) ?></p>
-                <a href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-i18n="about.iluma" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('about.iluma')) ?></a>
+    <section class="content-section season-lineup-section" id="season-6">
+        <div class="wide-shell season-lineup-shell">
+            <div class="season-lineup-grid">
+                <header class="season-lineup-copy reveal">
+                    <span class="kicker" data-i18n="lineup.kicker"><?= deseo_e(deseo_t('lineup.kicker')) ?></span>
+                    <h2 class="metal-title section-title" data-i18n="lineup.title"><?= deseo_e(deseo_t('lineup.title')) ?></h2>
+                    <p class="season-lineup-tagline" data-i18n="lineup.tagline"><?= deseo_e(deseo_t('lineup.tagline')) ?></p>
+                    <span class="season-lineup-meta" data-i18n="lineup.schedule"><?= deseo_e(deseo_t('lineup.schedule')) ?></span>
+                </header>
+
+                <button class="season-lineup-poster reveal"
+                        type="button"
+                        data-lineup-open
+                        data-i18n-aria="lineup.zoom"
+                        aria-label="<?= deseo_e(deseo_t('lineup.zoom')) ?>">
+                    <span class="season-lineup-poster-frame">
+                        <picture>
+                            <source media="(max-width: 700px)" srcset="/assets/img/s6lineup_mobile.png?v=<?= $assetVersion ?>">
+                            <img src="/assets/img/season6%20lineup.png?v=<?= $assetVersion ?>"
+                                 alt="Deseo Radio Season 6 Line Up"
+                                 width="1500"
+                                 height="1000">
+                        </picture>
+                    </span>
+                    <span class="season-lineup-poster-action" data-i18n="lineup.open"><?= deseo_e(deseo_t('lineup.open')) ?></span>
+                </button>
             </div>
         </div>
     </section>
@@ -482,32 +499,15 @@ $partners = [
     </section>
 
 
-    <section class="content-section season-lineup-section" id="season-6">
-        <div class="wide-shell season-lineup-shell">
-            <div class="season-lineup-grid">
-                <header class="season-lineup-copy reveal">
-                    <span class="kicker" data-i18n="lineup.kicker"><?= deseo_e(deseo_t('lineup.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="lineup.title"><?= deseo_e(deseo_t('lineup.title')) ?></h2>
-                    <p class="season-lineup-tagline" data-i18n="lineup.tagline"><?= deseo_e(deseo_t('lineup.tagline')) ?></p>
-                    <span class="season-lineup-meta" data-i18n="lineup.schedule"><?= deseo_e(deseo_t('lineup.schedule')) ?></span>
-                </header>
-
-                <button class="season-lineup-poster reveal"
-                        type="button"
-                        data-lineup-open
-                        data-i18n-aria="lineup.zoom"
-                        aria-label="<?= deseo_e(deseo_t('lineup.zoom')) ?>">
-                    <span class="season-lineup-poster-frame">
-                        <picture>
-                            <source media="(max-width: 700px)" srcset="/assets/img/s6lineup_mobile.png?v=<?= $assetVersion ?>">
-                            <img src="/assets/img/season6%20lineup.png?v=<?= $assetVersion ?>"
-                                 alt="Deseo Radio Season 6 Line Up"
-                                 width="1500"
-                                 height="1000">
-                        </picture>
-                    </span>
-                    <span class="season-lineup-poster-action" data-i18n="lineup.open"><?= deseo_e(deseo_t('lineup.open')) ?></span>
-                </button>
+    <section class="about-strip">
+        <div class="wide-shell about-grid">
+            <div class="reveal">
+                <span class="kicker" data-i18n="about.kicker"><?= deseo_e(deseo_t('about.kicker')) ?></span>
+                <h2 class="metal-title section-title" data-i18n="about.title"><?= deseo_e(deseo_t('about.title')) ?></h2>
+            </div>
+            <div class="about-copy reveal">
+                <p data-i18n="about.text"><?= deseo_e(deseo_t('about.text')) ?></p>
+                <a href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-i18n="about.iluma" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('about.iluma')) ?></a>
             </div>
         </div>
     </section>
