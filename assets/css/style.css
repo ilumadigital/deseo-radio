@@ -2189,149 +2189,249 @@ h2,
 }
 
 
-/* DJs Call */
-.dj-call-section{
+/* Season 6 Line Up */
+.season-lineup-section{
   overflow:hidden;
+  padding-top:108px;
+  padding-bottom:112px;
   background:
-    radial-gradient(circle at 12% 50%,rgba(255,43,54,.08),transparent 34%),
-    #070708;
+    radial-gradient(circle at 50% 42%,rgba(255,43,54,.10),transparent 34%),
+    radial-gradient(circle at 8% 70%,rgba(173,0,20,.08),transparent 28%),
+    #050506;
+  border-top:1px solid rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.05);
 }
-.dj-call-grid{
-  display:grid;
-  grid-template-columns:minmax(320px,.88fr) minmax(0,1.12fr);
-  align-items:center;
-  gap:clamp(48px,7vw,104px);
+.season-lineup-shell{
+  max-width:1500px;
 }
-.dj-call-visual{
-  position:relative;
+.season-lineup-head{
+  max-width:960px;
+  margin:0 auto;
+  text-align:center;
+}
+.season-lineup-head .kicker{
+  justify-content:center;
+}
+.season-lineup-head .kicker:before{
+  display:none;
+}
+.season-lineup-head .section-title{
+  margin-top:16px;
+  font-size:clamp(48px,6vw,88px);
+  line-height:.9;
+}
+.season-lineup-tagline{
+  margin:22px auto 0;
+  color:#f0f0f2;
+  font-size:clamp(19px,2vw,28px);
+  font-weight:500;
+  letter-spacing:-.035em;
+}
+.season-lineup-meta{
   display:block;
-  overflow:hidden;
-  aspect-ratio:1/1;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:30px;
-  background:#0d0d0f;
-  box-shadow:0 38px 100px rgba(0,0,0,.48);
-}
-.dj-call-visual:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  border-radius:inherit;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
-}
-.dj-call-visual img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-  transition:transform .6s cubic-bezier(.2,.7,.2,1),filter .6s ease;
-}
-.dj-call-visual:hover img{
-  transform:scale(1.025);
-  filter:brightness(1.04);
-}
-.dj-call-copy{
-  max-width:720px;
-}
-.dj-call-copy .section-title{
-  max-width:690px;
-}
-.dj-call-copy>p{
-  max-width:590px;
-  margin:28px 0 24px;
-  color:#8a8a90;
-  font-size:14px;
-  line-height:1.85;
-}
-.dj-call-countdown{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:8px;
-  margin:0 0 28px;
-}
-.dj-call-countdown-label{
-  color:var(--red);
-  font-size:8px;
-  font-weight:800;
-  letter-spacing:.18em;
-}
-.dj-call-countdown-value{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:baseline;
-  gap:7px;
-  color:#fff;
-  font-size:clamp(24px,2.2vw,36px);
-  line-height:1;
-  letter-spacing:-.045em;
-  font-variant-numeric:tabular-nums;
-}
-.dj-call-countdown-value small{
-  margin-left:-2px;
-  color:#77777d;
+  margin-top:12px;
+  color:#717177;
   font-size:9px;
   font-weight:700;
-  letter-spacing:.13em;
+  letter-spacing:.18em;
+  text-transform:uppercase;
 }
-.dj-call-countdown-value i{
-  color:rgba(255,255,255,.22);
-  font-size:.5em;
-  font-style:normal;
-  font-weight:400;
+.season-lineup-poster{
+  position:relative;
+  width:100%;
+  display:block;
+  margin:46px auto 0;
+  padding:8px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:32px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018));
+  box-shadow:
+    0 44px 120px rgba(0,0,0,.56),
+    0 0 72px rgba(214,0,32,.08);
+  color:#fff;
+  appearance:none;
+  cursor:zoom-in;
+  text-align:initial;
+  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
 }
-.dj-call-countdown.is-ended{
-  opacity:.55;
+.season-lineup-poster:before{
+  content:"";
+  position:absolute;
+  inset:-18%;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(255,43,54,.12),transparent 48%);
+  opacity:.7;
 }
-.dj-call-cta{
-  min-width:190px;
+.season-lineup-poster:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,43,54,.34);
+  box-shadow:
+    0 50px 135px rgba(0,0,0,.62),
+    0 0 90px rgba(214,0,32,.12);
+}
+.season-lineup-poster-frame{
+  position:relative;
+  z-index:1;
+  display:block;
+  overflow:hidden;
+  border-radius:24px;
+  background:#080808;
+}
+.season-lineup-poster img{
+  width:100%;
+  height:auto;
+  display:block;
+  transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .5s ease;
+}
+.season-lineup-poster:hover img{
+  transform:scale(1.008);
+  filter:brightness(1.035);
+}
+.season-lineup-poster-action{
+  position:absolute;
+  z-index:2;
+  right:26px;
+  bottom:26px;
+  min-height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 13px;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+  background:rgba(5,5,6,.72);
+  color:#fff;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  box-shadow:0 10px 30px rgba(0,0,0,.36);
+  backdrop-filter:blur(12px);
+}
+.lineup-lightbox{
+  position:fixed;
+  inset:0;
+  z-index:2600;
+  background:rgba(0,0,0,.96);
+  opacity:0;
+  transition:opacity .18s ease;
+}
+.lineup-lightbox.is-open{
+  opacity:1;
+}
+body.lineup-lightbox-open{
+  overflow:hidden;
+}
+.lineup-lightbox-close{
+  position:fixed;
+  z-index:2;
+  top:calc(18px + var(--safe-top));
+  right:calc(18px + var(--safe-right));
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:50%;
+  background:rgba(15,15,17,.82);
+  color:#fff;
+  font-size:27px;
+  font-weight:300;
+  line-height:1;
+  backdrop-filter:blur(14px);
+}
+.lineup-lightbox-close:hover{
+  border-color:rgba(255,43,54,.48);
+  background:rgba(255,43,54,.12);
+}
+.lineup-lightbox-scroll{
+  width:100%;
+  height:100%;
+  overflow:auto;
+  padding:78px 24px 28px;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.lineup-lightbox-canvas{
+  width:max-content;
+  min-width:100%;
+  min-height:100%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+.lineup-lightbox img{
+  width:min(1500px,calc(100vw - 48px));
+  max-width:none;
+  height:auto;
+  display:block;
+  border-radius:18px;
+  box-shadow:0 34px 120px rgba(0,0,0,.72);
 }
 
-@media (max-width:900px){
-  .dj-call-grid{
-    grid-template-columns:1fr;
-    gap:36px;
-  }
-  .dj-call-visual{
-    width:min(100%,620px);
-  }
-  .dj-call-copy{
-    max-width:680px;
-  }
-}
-
-@media (max-width:640px){
-  .dj-call-section{
-    padding-top:82px;
+@media (max-width:700px){
+  .season-lineup-section{
+    padding-top:78px;
     padding-bottom:82px;
   }
-  .dj-call-grid{
-    gap:30px;
+  .season-lineup-section .wide-shell{
+    width:calc(100% - 24px);
   }
-  .dj-call-visual{
-    border-radius:24px;
+  .season-lineup-head .section-title{
+    font-size:clamp(42px,14vw,64px);
   }
-  .dj-call-copy>p{
-    margin:22px 0 22px;
-    font-size:13px;
+  .season-lineup-tagline{
+    max-width:340px;
+    margin-top:18px;
+    font-size:clamp(18px,5.7vw,23px);
+    line-height:1.16;
   }
-  .dj-call-countdown{
-    gap:7px;
-    margin-bottom:24px;
-  }
-  .dj-call-countdown-value{
-    gap:6px;
-    font-size:clamp(22px,8vw,30px);
-  }
-  .dj-call-countdown-value small{
+  .season-lineup-meta{
+    margin-top:11px;
     font-size:8px;
+    letter-spacing:.13em;
   }
-  .dj-call-cta{
-    width:100%;
+  .season-lineup-poster{
+    margin-top:32px;
+    padding:4px;
+    border-radius:20px;
+  }
+  .season-lineup-poster-frame{
+    border-radius:16px;
+  }
+  .season-lineup-poster-action{
+    right:13px;
+    bottom:13px;
+    min-height:30px;
+    padding:0 10px;
+    font-size:7px;
+    letter-spacing:.11em;
+  }
+  .lineup-lightbox-scroll{
+    padding:74px 0 22px;
+  }
+  .lineup-lightbox-canvas{
+    justify-content:flex-start;
+  }
+  .lineup-lightbox img{
+    width:880px;
+    border-radius:0;
   }
 }
 
+@media (prefers-reduced-motion:reduce){
+  .season-lineup-poster,
+  .season-lineup-poster img,
+  .lineup-lightbox{
+    transition:none;
+  }
+  .season-lineup-poster:hover{
+    transform:none;
+  }
+}
 
 /* DJ PUBLIC PROFILE MODAL */
 .hero-cms-card.has-dj-profile,
