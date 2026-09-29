@@ -450,6 +450,11 @@ $partners = [
                     <h2 class="metal-title section-title" data-i18n="lineup.title"><?= deseo_e(deseo_t('lineup.title')) ?></h2>
                     <p class="season-lineup-tagline" data-i18n="lineup.tagline"><?= deseo_e(deseo_t('lineup.tagline')) ?></p>
                     <span class="season-lineup-meta" data-i18n="lineup.schedule"><?= deseo_e(deseo_t('lineup.schedule')) ?></span>
+
+                    <div class="season-lineup-start" aria-label="<?= deseo_e(deseo_t('lineup.start_label') . ': ' . deseo_t('lineup.start_value')) ?>">
+                        <span data-i18n="lineup.start_label"><?= deseo_e(deseo_t('lineup.start_label')) ?></span>
+                        <strong data-i18n="lineup.start_value"><?= deseo_e(deseo_t('lineup.start_value')) ?></strong>
+                    </div>
                 </header>
 
                 <button class="season-lineup-poster reveal"
