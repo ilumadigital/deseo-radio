@@ -145,7 +145,7 @@ $clientKeys = [
     'playlists.kicker','playlists.title','playlists.text','playlists.open','playlists.empty',
     'about.kicker','about.title','about.text','about.iluma',
     'partners.kicker','partners.title','partners.text',
-    'lineup.kicker','lineup.title','lineup.tagline','lineup.schedule','lineup.zoom','lineup.open','lineup.close',
+    'lineup.kicker','lineup.title','lineup.tagline','lineup.schedule','lineup.start_label','lineup.start_value','lineup.zoom','lineup.open','lineup.close',
     'faq.kicker','faq.title','faq.text',
     'faq.q1','faq.a1','faq.q2','faq.a2','faq.q3','faq.a3','faq.q4','faq.a4','faq.q5','faq.a5',
     'advertise.kicker','advertise.title','advertise.text','advertise.cta',
