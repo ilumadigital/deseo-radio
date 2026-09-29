@@ -2204,32 +2204,32 @@ h2,
 .season-lineup-shell{
   max-width:1500px;
 }
-.season-lineup-head{
-  max-width:960px;
-  margin:0 auto;
-  text-align:center;
+.season-lineup-grid{
+  display:grid;
+  grid-template-columns:minmax(340px,.82fr) minmax(0,1.18fr);
+  align-items:center;
+  gap:clamp(48px,7vw,104px);
 }
-.season-lineup-head .kicker{
-  justify-content:center;
+.season-lineup-copy{
+  max-width:620px;
 }
-.season-lineup-head .kicker:before{
-  display:none;
-}
-.season-lineup-head .section-title{
+.season-lineup-copy .section-title{
   margin-top:16px;
-  font-size:clamp(48px,6vw,88px);
+  font-size:clamp(48px,5.4vw,82px);
   line-height:.9;
 }
 .season-lineup-tagline{
-  margin:22px auto 0;
+  max-width:560px;
+  margin:24px 0 0;
   color:#f0f0f2;
-  font-size:clamp(19px,2vw,28px);
+  font-size:clamp(20px,2vw,28px);
   font-weight:500;
+  line-height:1.18;
   letter-spacing:-.035em;
 }
 .season-lineup-meta{
   display:block;
-  margin-top:12px;
+  margin-top:15px;
   color:#717177;
   font-size:9px;
   font-weight:700;
@@ -2240,7 +2240,7 @@ h2,
   position:relative;
   width:100%;
   display:block;
-  margin:46px auto 0;
+  margin:0;
   padding:8px;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.12);
@@ -2279,10 +2279,13 @@ h2,
   border-radius:24px;
   background:#080808;
 }
+.season-lineup-poster picture,
 .season-lineup-poster img{
   width:100%;
   height:auto;
   display:block;
+}
+.season-lineup-poster img{
   transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .5s ease;
 }
 .season-lineup-poster:hover img{
@@ -2372,6 +2375,16 @@ body.lineup-lightbox-open{
   box-shadow:0 34px 120px rgba(0,0,0,.72);
 }
 
+@media (max-width:900px){
+  .season-lineup-grid{
+    grid-template-columns:1fr;
+    gap:36px;
+  }
+  .season-lineup-copy{
+    max-width:680px;
+  }
+}
+
 @media (max-width:700px){
   .season-lineup-section{
     padding-top:78px;
@@ -2380,7 +2393,10 @@ body.lineup-lightbox-open{
   .season-lineup-section .wide-shell{
     width:calc(100% - 24px);
   }
-  .season-lineup-head .section-title{
+  .season-lineup-grid{
+    gap:30px;
+  }
+  .season-lineup-copy .section-title{
     font-size:clamp(42px,14vw,64px);
   }
   .season-lineup-tagline{
@@ -2395,7 +2411,6 @@ body.lineup-lightbox-open{
     letter-spacing:.13em;
   }
   .season-lineup-poster{
-    margin-top:32px;
     padding:4px;
     border-radius:20px;
   }
