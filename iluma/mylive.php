@@ -630,6 +630,107 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )->execute([$active, $active ? 'active' : 'disabled', $accountId]);
                 $notice = $active ? 'Το MyLive account ενεργοποιήθηκε.' : 'Το MyLive account απενεργοποιήθηκε.';
 
+            } elseif ($action === 'bulk_toggle_public_profiles') {
+                $enabled = (int)($_POST['enabled'] ?? 0) === 1 ? 1 : 0;
+
+                $bulkStmt = $pdo->query(
+                    "SELECT id, artist_name, email, public_profile_enabled, account_status
+                     FROM dj_portal_accounts
+                     WHERE account_status <> 'pending'
+                     ORDER BY artist_name ASC, id ASC"
+                );
+                $bulkAccounts = $bulkStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!$bulkAccounts) {
+                    throw new RuntimeException('Δεν υπάρχουν MyLive accounts διαθέσιμα για μαζική αλλαγή Public Profile.');
+                }
+
+                if ($enabled) {
+                    $enabledCount = 0;
+                    $alreadyEnabledCount = 0;
+                    $failedProfiles = [];
+
+                    foreach ($bulkAccounts as $bulkAccount) {
+                        $bulkAccountId = (int)$bulkAccount['id'];
+
+                        if (!empty($bulkAccount['public_profile_enabled'])) {
+                            $alreadyEnabledCount++;
+                            continue;
+                        }
+
+                        deseo_mylive_public_profile_ensure($pdo, $bulkAccountId);
+                        $pdo->prepare(
+                            "UPDATE dj_portal_accounts
+                             SET public_profile_enabled = 1
+                             WHERE id = ? AND account_status <> 'pending'"
+                        )->execute([$bulkAccountId]);
+
+                        try {
+                            $mail = deseo_mylive_public_profile_enabled_email($bulkAccount);
+                            deseo_send_smtp_mail(
+                                (string)$bulkAccount['email'],
+                                (string)$bulkAccount['artist_name'],
+                                $mail['subject'],
+                                $mail['html'],
+                                $mail['text']
+                            );
+                            $enabledCount++;
+                        } catch (Throwable $mailError) {
+                            $pdo->prepare(
+                                "UPDATE dj_portal_accounts
+                                 SET public_profile_enabled = 0
+                                 WHERE id = ?"
+                            )->execute([$bulkAccountId]);
+
+                            $failedProfiles[] = (string)$bulkAccount['artist_name'];
+                            error_log(
+                                'MyLive bulk Public Profile activation email failed for account '
+                                . $bulkAccountId
+                                . ': '
+                                . $mailError->getMessage()
+                            );
+                        }
+                    }
+
+                    $notice = 'Public Profiles ενεργοποιήθηκαν για '
+                        . $enabledCount
+                        . ' DJ'
+                        . ($enabledCount === 1 ? '' : 's')
+                        . '.';
+
+                    if ($alreadyEnabledCount > 0) {
+                        $notice .= ' ' . $alreadyEnabledCount . ' ήταν ήδη ενεργά.';
+                    }
+
+                    if ($failedProfiles) {
+                        $visibleFailures = array_slice($failedProfiles, 0, 5);
+                        $moreFailures = count($failedProfiles) - count($visibleFailures);
+                        $error = 'Δεν ενεργοποιήθηκαν '
+                            . count($failedProfiles)
+                            . ' Public Profile'
+                            . (count($failedProfiles) === 1 ? '' : 's')
+                            . ' επειδή απέτυχε η αποστολή email: '
+                            . implode(', ', $visibleFailures)
+                            . ($moreFailures > 0 ? ' +' . $moreFailures . ' ακόμη' : '')
+                            . '.';
+                    }
+                } else {
+                    $disableStmt = $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET public_profile_enabled = 0
+                         WHERE account_status <> 'pending'
+                           AND public_profile_enabled = 1"
+                    );
+                    $disableStmt->execute();
+                    $disabledCount = $disableStmt->rowCount();
+
+                    $notice = 'Public Profiles απενεργοποιήθηκαν για '
+                        . $disabledCount
+                        . ' DJ'
+                        . ($disabledCount === 1 ? '' : 's')
+                        . '. Τα αποθηκευμένα bios, drafts και social links διατηρήθηκαν.';
+                }
+
             } elseif ($action === 'toggle_public_profile') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $enabled = (int)($_POST['enabled'] ?? 0) === 1 ? 1 : 0;
@@ -903,6 +1004,13 @@ $activeAccountCount = count(array_filter(
 $disabledAccountCount = count($managedAccounts) - $activeAccountCount;
 $totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
 $totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
+$publicProfileEnabledCount = count(array_filter(
+    $managedAccounts,
+    static fn(array $account): bool => !empty($account['public_profile_enabled'])
+));
+$allPublicProfilesEnabled = count($managedAccounts) > 0
+    && $publicProfileEnabledCount === count($managedAccounts);
+$bulkPublicProfileTarget = $allPublicProfilesEnabled ? 0 : 1;
 
 $assetMediaLibrary = mylive_admin_asset_media_library();
 $assetMediaFolders = array_values(array_unique(array_map(
@@ -920,7 +1028,25 @@ admin_page_start('MyLive', 'mylive');
             <h1>MyLive management</h1>
             <p>Ένα καθαρό σημείο για access, DJ Sets και προσωπικά assets. Τα βασικά φαίνονται άμεσα και οι λεπτομέρειες ανοίγουν μόνο όταν τις χρειάζεσαι.</p>
         </div>
-        <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
+        <div class="mylive-hub-heading-actions">
+            <?php if ($managedAccounts): ?>
+                <form method="post"
+                      data-deseo-confirm="<?= $bulkPublicProfileTarget
+                          ? admin_e('Να ενεργοποιηθεί το Public Profile σε όλους τους ' . count($managedAccounts) . ' DJs; Θα σταλεί ενημερωτικό email μόνο σε όσους ενεργοποιούνται τώρα.')
+                          : admin_e('Να απενεργοποιηθεί το Public Profile σε όλους τους ' . count($managedAccounts) . ' DJs; Τα bios, drafts και social links θα διατηρηθούν.') ?>"
+                      data-deseo-confirm-title="<?= $bulkPublicProfileTarget ? 'Enable all Public Profiles' : 'Disable all Public Profiles' ?>"
+                      data-deseo-confirm-label="<?= $bulkPublicProfileTarget ? 'Enable all' : 'Disable all' ?>"
+                      <?= $bulkPublicProfileTarget ? '' : 'data-deseo-confirm-danger' ?>>
+                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                    <input type="hidden" name="action" value="bulk_toggle_public_profiles">
+                    <input type="hidden" name="enabled" value="<?= $bulkPublicProfileTarget ?>">
+                    <button class="button <?= $bulkPublicProfileTarget ? 'button-primary' : 'button-danger' ?>" type="submit">
+                        <?= $bulkPublicProfileTarget ? 'Enable All Public Profiles' : 'Disable All Public Profiles' ?>
+                    </button>
+                </form>
+            <?php endif; ?>
+            <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
+        </div>
     </div>
 
     <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
