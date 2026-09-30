@@ -1181,103 +1181,6 @@ if ($nextShowScheduleHidden) {
     <?php if ($notice): ?><div class="alert success"><?= deseo_mylive_e($notice) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert error"><?= deseo_mylive_e($error) ?></div><?php endif; ?>
 
-    <?php if ($publicProfile): ?>
-        <section class="public-profile-editor mylive-anchor-section" id="profile">
-            <div class="public-profile-head">
-                <div>
-                    <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
-                    <h2>What listeners see.</h2>
-                    <p>Το bio που έδωσες στην αίτησή σου εμφανίζεται ήδη εδώ και δεν χάνεται. Μπορείς να το κρατήσεις όπως είναι ή να το επεξεργαστείς. Για δημόσια παρουσίαση προτείνεται επαγγελματικό bio στα Αγγλικά. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
-                </div>
-
-                <?php $publicProfileWasPublished = !empty($publicProfile['published_at']); ?>
-                <div class="public-profile-status <?= !empty($publicProfile['is_published']) ? 'is-published' : ($publicProfileWasPublished ? 'is-unpublished' : 'is-draft') ?>">
-                    <span><?= !empty($publicProfile['is_published']) ? 'PUBLISHED' : ($publicProfileWasPublished ? 'UNPUBLISHED' : 'DRAFT ONLY') ?></span>
-                    <?php if (!empty($publicProfile['is_published'])): ?>
-                        <small><?= !empty($publicProfile['published_at']) ? deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$publicProfile['published_at']))) : 'Live' ?></small>
-                    <?php elseif ($publicProfileWasPublished): ?>
-                        <small>Hidden from listeners</small>
-                    <?php else: ?>
-                        <small>Not public yet</small>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="public-profile-bio-guide">
-                <div>
-                    <span>PUBLIC BIO · ENGLISH RECOMMENDED</span>
-                    <p><?= deseo_mylive_e(deseo_mylive_dj_bio_guidance_text()) ?></p>
-                </div>
-                <a href="<?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_url()) ?>"
-                   target="_blank"
-                   rel="noopener noreferrer">
-                    <?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_cta()) ?>
-                </a>
-            </div>
-
-            <?php if (!empty($publicProfile['is_published']) && $publicProfileHasChanges): ?>
-                <div class="public-profile-unpublished">
-                    <strong>You have unpublished changes.</strong>
-                    <span>Το site συνεχίζει να δείχνει την προηγούμενη published έκδοση μέχρι να πατήσεις Publish Profile.</span>
-                </div>
-            <?php endif; ?>
-
-            <form method="post" class="public-profile-form">
-                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
-
-                <label class="public-profile-about">
-                    <span>BIO</span>
-                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Your bio from the Season 6 application will appear here…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
-                    <small>Έως 1.600 χαρακτήρες · το bio της αίτησής σου διατηρείται και εμφανίζεται εδώ. Μπορείς προαιρετικά να το βελτιώσεις ή να το μετατρέψεις σε επαγγελματικό αγγλικό bio με το ChatGPT.</small>
-                </label>
-
-                <div class="public-profile-links">
-                    <label>
-                        <span>Instagram</span>
-                        <input type="url" name="instagram" value="<?= deseo_mylive_e((string)($publicProfile['draft_instagram'] ?? '')) ?>" placeholder="https://instagram.com/...">
-                    </label>
-                    <label>
-                        <span>TikTok</span>
-                        <input type="url" name="tiktok" value="<?= deseo_mylive_e((string)($publicProfile['draft_tiktok'] ?? '')) ?>" placeholder="https://tiktok.com/@...">
-                    </label>
-                    <label>
-                        <span>SoundCloud</span>
-                        <input type="url" name="soundcloud" value="<?= deseo_mylive_e((string)($publicProfile['draft_soundcloud'] ?? '')) ?>" placeholder="https://soundcloud.com/...">
-                    </label>
-                    <label>
-                        <span>Spotify</span>
-                        <input type="url" name="spotify" value="<?= deseo_mylive_e((string)($publicProfile['draft_spotify'] ?? '')) ?>" placeholder="https://open.spotify.com/...">
-                    </label>
-                    <label class="public-profile-wide">
-                        <span>Website</span>
-                        <input type="url" name="website" value="<?= deseo_mylive_e((string)($publicProfile['draft_website'] ?? '')) ?>" placeholder="https://...">
-                    </label>
-                </div>
-
-                <div class="public-profile-actions">
-                    <div>
-                        <strong>No photo upload here.</strong>
-                        <span>Το public modal χρησιμοποιεί πάντα τη φωτογραφία που έχει ορίσει το Deseo Radio στο πρόγραμμα.</span>
-                    </div>
-                    <div>
-                        <button class="profile-draft-button" type="submit" name="action" value="save_public_profile">Save Draft</button>
-                        <?php if (!empty($publicProfile['is_published'])): ?>
-                            <button class="profile-unpublish-button"
-                                    type="submit"
-                                    name="action"
-                                    value="unpublish_public_profile">
-                                Unpublish
-                            </button>
-                        <?php endif; ?>
-                        <button class="primary-button" type="submit" name="action" value="publish_public_profile">
-                            <?= !empty($publicProfile['is_published']) ? 'Update Published Profile' : 'Publish Profile' ?>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </section>
-    <?php endif; ?>
-
     <section class="assets-section mylive-anchor-section" id="assets">
         <div class="section-head">
             <div>
@@ -1455,6 +1358,103 @@ if ($nextShowScheduleHidden) {
             </article>
         </div>
     </section>
+
+    <?php if ($publicProfile): ?>
+        <section class="public-profile-editor mylive-anchor-section" id="profile">
+            <div class="public-profile-head">
+                <div>
+                    <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
+                    <h2>What listeners see.</h2>
+                    <p>Το bio που έδωσες στην αίτησή σου εμφανίζεται ήδη εδώ και δεν χάνεται. Μπορείς να το κρατήσεις όπως είναι ή να το επεξεργαστείς. Για δημόσια παρουσίαση προτείνεται επαγγελματικό bio στα Αγγλικά. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
+                </div>
+
+                <?php $publicProfileWasPublished = !empty($publicProfile['published_at']); ?>
+                <div class="public-profile-status <?= !empty($publicProfile['is_published']) ? 'is-published' : ($publicProfileWasPublished ? 'is-unpublished' : 'is-draft') ?>">
+                    <span><?= !empty($publicProfile['is_published']) ? 'PUBLISHED' : ($publicProfileWasPublished ? 'UNPUBLISHED' : 'DRAFT ONLY') ?></span>
+                    <?php if (!empty($publicProfile['is_published'])): ?>
+                        <small><?= !empty($publicProfile['published_at']) ? deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$publicProfile['published_at']))) : 'Live' ?></small>
+                    <?php elseif ($publicProfileWasPublished): ?>
+                        <small>Hidden from listeners</small>
+                    <?php else: ?>
+                        <small>Not public yet</small>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="public-profile-bio-guide">
+                <div>
+                    <span>PUBLIC BIO · ENGLISH RECOMMENDED</span>
+                    <p><?= deseo_mylive_e(deseo_mylive_dj_bio_guidance_text()) ?></p>
+                </div>
+                <a href="<?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_url()) ?>"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_cta()) ?>
+                </a>
+            </div>
+
+            <?php if (!empty($publicProfile['is_published']) && $publicProfileHasChanges): ?>
+                <div class="public-profile-unpublished">
+                    <strong>You have unpublished changes.</strong>
+                    <span>Το site συνεχίζει να δείχνει την προηγούμενη published έκδοση μέχρι να πατήσεις Publish Profile.</span>
+                </div>
+            <?php endif; ?>
+
+            <form method="post" class="public-profile-form">
+                <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
+
+                <label class="public-profile-about">
+                    <span>BIO</span>
+                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Your bio from the Season 6 application will appear here…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
+                    <small>Έως 1.600 χαρακτήρες · το bio της αίτησής σου διατηρείται και εμφανίζεται εδώ. Μπορείς προαιρετικά να το βελτιώσεις ή να το μετατρέψεις σε επαγγελματικό αγγλικό bio με το ChatGPT.</small>
+                </label>
+
+                <div class="public-profile-links">
+                    <label>
+                        <span>Instagram</span>
+                        <input type="url" name="instagram" value="<?= deseo_mylive_e((string)($publicProfile['draft_instagram'] ?? '')) ?>" placeholder="https://instagram.com/...">
+                    </label>
+                    <label>
+                        <span>TikTok</span>
+                        <input type="url" name="tiktok" value="<?= deseo_mylive_e((string)($publicProfile['draft_tiktok'] ?? '')) ?>" placeholder="https://tiktok.com/@...">
+                    </label>
+                    <label>
+                        <span>SoundCloud</span>
+                        <input type="url" name="soundcloud" value="<?= deseo_mylive_e((string)($publicProfile['draft_soundcloud'] ?? '')) ?>" placeholder="https://soundcloud.com/...">
+                    </label>
+                    <label>
+                        <span>Spotify</span>
+                        <input type="url" name="spotify" value="<?= deseo_mylive_e((string)($publicProfile['draft_spotify'] ?? '')) ?>" placeholder="https://open.spotify.com/...">
+                    </label>
+                    <label class="public-profile-wide">
+                        <span>Website</span>
+                        <input type="url" name="website" value="<?= deseo_mylive_e((string)($publicProfile['draft_website'] ?? '')) ?>" placeholder="https://...">
+                    </label>
+                </div>
+
+                <div class="public-profile-actions">
+                    <div>
+                        <strong>No photo upload here.</strong>
+                        <span>Το public modal χρησιμοποιεί πάντα τη φωτογραφία που έχει ορίσει το Deseo Radio στο πρόγραμμα.</span>
+                    </div>
+                    <div>
+                        <button class="profile-draft-button" type="submit" name="action" value="save_public_profile">Save Draft</button>
+                        <?php if (!empty($publicProfile['is_published'])): ?>
+                            <button class="profile-unpublish-button"
+                                    type="submit"
+                                    name="action"
+                                    value="unpublish_public_profile">
+                                Unpublish
+                            </button>
+                        <?php endif; ?>
+                        <button class="primary-button" type="submit" name="action" value="publish_public_profile">
+                            <?= !empty($publicProfile['is_published']) ? 'Update Published Profile' : 'Publish Profile' ?>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    <?php endif; ?>
 
     <section class="mylive-referral-section mylive-anchor-section" id="rewards">
         <div class="mylive-rewards-ledger">
