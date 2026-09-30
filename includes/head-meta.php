@@ -115,6 +115,7 @@ $schema = [
     ],
 ];
 
+if (isset($program) && is_array($program)) {
 $season6Lineup = [
     ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '20:00:00', 'dj' => 'Katty Belle'],
     ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '21:00:00', 'dj' => 'DemiX Music'],
@@ -274,6 +275,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     }
 
     $schema['@graph'][] = $liveBroadcastNode;
+}
 }
 ?>
 <!DOCTYPE html>
