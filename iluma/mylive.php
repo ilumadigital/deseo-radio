@@ -636,7 +636,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $bulkStmt = $pdo->query(
                     "SELECT id, artist_name, email, public_profile_enabled, account_status
                      FROM dj_portal_accounts
-                     WHERE account_status <> 'pending'
+                     WHERE account_status = 'active'
+                       AND is_active = 1
                      ORDER BY artist_name ASC, id ASC"
                 );
                 $bulkAccounts = $bulkStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -662,7 +663,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $pdo->prepare(
                             "UPDATE dj_portal_accounts
                              SET public_profile_enabled = 1
-                             WHERE id = ? AND account_status <> 'pending'"
+                             WHERE id = ?
+                               AND account_status = 'active'
+                               AND is_active = 1"
                         )->execute([$bulkAccountId]);
 
                         try {
@@ -718,7 +721,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $disableStmt = $pdo->prepare(
                         "UPDATE dj_portal_accounts
                          SET public_profile_enabled = 0
-                         WHERE account_status <> 'pending'
+                         WHERE account_status = 'active'
+                           AND is_active = 1
                            AND public_profile_enabled = 1"
                     );
                     $disableStmt->execute();
@@ -1004,12 +1008,18 @@ $activeAccountCount = count(array_filter(
 $disabledAccountCount = count($managedAccounts) - $activeAccountCount;
 $totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
 $totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
-$publicProfileEnabledCount = count(array_filter(
+$publicProfileBulkAccounts = array_values(array_filter(
     $managedAccounts,
+    static fn(array $account): bool =>
+        (string)($account['account_status'] ?? '') === 'active'
+        && !empty($account['is_active'])
+));
+$publicProfileEnabledCount = count(array_filter(
+    $publicProfileBulkAccounts,
     static fn(array $account): bool => !empty($account['public_profile_enabled'])
 ));
-$allPublicProfilesEnabled = count($managedAccounts) > 0
-    && $publicProfileEnabledCount === count($managedAccounts);
+$allPublicProfilesEnabled = count($publicProfileBulkAccounts) > 0
+    && $publicProfileEnabledCount === count($publicProfileBulkAccounts);
 $bulkPublicProfileTarget = $allPublicProfilesEnabled ? 0 : 1;
 
 $assetMediaLibrary = mylive_admin_asset_media_library();
@@ -1029,11 +1039,11 @@ admin_page_start('MyLive', 'mylive');
             <p>Ένα καθαρό σημείο για access, DJ Sets και προσωπικά assets. Τα βασικά φαίνονται άμεσα και οι λεπτομέρειες ανοίγουν μόνο όταν τις χρειάζεσαι.</p>
         </div>
         <div class="mylive-hub-heading-actions">
-            <?php if ($managedAccounts): ?>
+            <?php if ($publicProfileBulkAccounts): ?>
                 <form method="post"
                       data-deseo-confirm="<?= $bulkPublicProfileTarget
-                          ? admin_e('Να ενεργοποιηθεί το Public Profile σε όλους τους ' . count($managedAccounts) . ' DJs; Θα σταλεί ενημερωτικό email μόνο σε όσους ενεργοποιούνται τώρα.')
-                          : admin_e('Να απενεργοποιηθεί το Public Profile σε όλους τους ' . count($managedAccounts) . ' DJs; Τα bios, drafts και social links θα διατηρηθούν.') ?>"
+                          ? admin_e('Να ενεργοποιηθεί το Public Profile σε όλους τους ' . count($publicProfileBulkAccounts) . ' ενεργούς DJs; Θα σταλεί ενημερωτικό email μόνο σε όσους ενεργοποιούνται τώρα.')
+                          : admin_e('Να απενεργοποιηθεί το Public Profile σε όλους τους ' . count($publicProfileBulkAccounts) . ' ενεργούς DJs; Τα bios, drafts και social links θα διατηρηθούν.') ?>"
                       data-deseo-confirm-title="<?= $bulkPublicProfileTarget ? 'Enable all Public Profiles' : 'Disable all Public Profiles' ?>"
                       data-deseo-confirm-label="<?= $bulkPublicProfileTarget ? 'Enable all' : 'Disable all' ?>"
                       <?= $bulkPublicProfileTarget ? '' : 'data-deseo-confirm-danger' ?>>
