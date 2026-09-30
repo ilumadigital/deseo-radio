@@ -114,6 +114,167 @@ $schema = [
         ],
     ],
 ];
+
+$season6Lineup = [
+    ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '20:00:00', 'dj' => 'Katty Belle'],
+    ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '21:00:00', 'dj' => 'DemiX Music'],
+    ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '22:00:00', 'dj' => 'Harris Gabriel (GR)'],
+    ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '23:00:00', 'dj' => 'VGRENADE'],
+
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '20:00:00', 'dj' => 'Dj pmelgidis'],
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '21:00:00', 'dj' => 'Lena'],
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '22:00:00', 'dj' => 'TWEEK UC'],
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '23:00:00', 'dj' => 'Dj Kyriakos Gavakis'],
+
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '18:00:00', 'dj' => 'Evripos F'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '19:00:00', 'dj' => 'Greg Lef'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '20:00:00', 'dj' => 'ANDØR'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '21:00:00', 'dj' => 'Coup(GR)'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '22:00:00', 'dj' => 'Johnny Mak'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '23:00:00', 'dj' => 'Cobo B'],
+
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '18:00:00', 'dj' => 'Valentino_S'],
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '19:00:00', 'dj' => 'ANSS'],
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '20:00:00', 'dj' => 'DeepK'],
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '21:00:00', 'dj' => 'Oblivion'],
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '22:00:00', 'dj' => 'Cross Mit'],
+    ['day' => 'Saturday', 'schema_day' => 'https://schema.org/Saturday', 'start' => '23:00:00', 'dj' => 'Monorism'],
+
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '18:00:00', 'dj' => 'Michael Poulidis'],
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '19:00:00', 'dj' => 'Kremasia'],
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '20:00:00', 'dj' => 'loco (GR)'],
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '21:00:00', 'dj' => 'WHATABOUT'],
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '22:00:00', 'dj' => 'g spice'],
+    ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '23:00:00', 'dj' => 'Rokhai'],
+];
+
+$season6SeriesId = 'https://deseoradio.com/#season-6-lineup';
+$schema['@graph'][] = [
+    '@type' => 'EventSeries',
+    '@id' => $season6SeriesId,
+    'name' => 'Deseo Radio Season 6 — Weekly DJ Sets',
+    'description' => 'Official announced Season 6 weekly DJ lineup for Deseo Radio. Weekly sets run Wednesday through Sunday in Europe/Athens time. DJ sets start date is TBA.',
+    'url' => 'https://deseoradio.com/#season-6',
+    'image' => 'https://deseoradio.com/assets/img/season6%20lineup.png',
+    'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
+    'location' => [
+        '@type' => 'VirtualLocation',
+        'url' => 'https://deseoradio.com/#player',
+    ],
+    'organizer' => [
+        '@id' => 'https://iluma.gr/#organization',
+    ],
+    'about' => [
+        '@id' => 'https://deseoradio.com/#radio',
+    ],
+];
+
+foreach ($season6Lineup as $slotIndex => $slot) {
+    $slotId = sprintf(
+        'https://deseoradio.com/#season-6-slot-%02d',
+        $slotIndex + 1
+    );
+
+    $schema['@graph'][] = [
+        '@type' => 'MusicEvent',
+        '@id' => $slotId,
+        'name' => $slot['dj'] . ' — Deseo Radio Season 6',
+        'description' => 'Weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6.',
+        'url' => 'https://deseoradio.com/#season-6',
+        'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
+        'location' => [
+            '@type' => 'VirtualLocation',
+            'url' => 'https://deseoradio.com/#player',
+        ],
+        'organizer' => [
+            '@id' => 'https://iluma.gr/#organization',
+        ],
+        'superEvent' => [
+            '@id' => $season6SeriesId,
+        ],
+        'about' => [
+            '@id' => 'https://deseoradio.com/#radio',
+        ],
+        'performer' => [
+            '@type' => 'Person',
+            'name' => $slot['dj'],
+        ],
+        'eventSchedule' => [
+            '@type' => 'Schedule',
+            'repeatFrequency' => 'P1W',
+            'byDay' => $slot['schema_day'],
+            'startTime' => $slot['start'],
+            'scheduleTimezone' => 'Europe/Athens',
+        ],
+    ];
+}
+
+if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?? '')) !== '') {
+    $livePublicProfile = is_array($live_dj['public_profile'] ?? null)
+        ? $live_dj['public_profile']
+        : null;
+
+    $liveArtistName = trim((string)($livePublicProfile['artist_name'] ?? $live_dj['dj_name'] ?? ''));
+    $liveAccountId = (int)($live_dj['mylive_account_id'] ?? 0);
+    $livePersonId = $liveAccountId > 0
+        ? 'https://deseoradio.com/#dj-profile-' . $liveAccountId
+        : 'https://deseoradio.com/#current-live-dj';
+
+    $livePersonNode = [
+        '@type' => 'Person',
+        '@id' => $livePersonId,
+        'name' => $liveArtistName !== '' ? $liveArtistName : (string)$live_dj['dj_name'],
+        'url' => 'https://deseoradio.com/#live',
+    ];
+
+    if ($livePublicProfile) {
+        $liveBio = trim((string)($livePublicProfile['bio'] ?? ''));
+        if ($liveBio !== '') {
+            $livePersonNode['description'] = $liveBio;
+        }
+
+        $liveSameAs = [];
+        foreach (['instagram', 'tiktok', 'soundcloud', 'spotify', 'website'] as $profileLinkKey) {
+            $profileLink = trim((string)($livePublicProfile[$profileLinkKey] ?? ''));
+            if ($profileLink !== '' && filter_var($profileLink, FILTER_VALIDATE_URL)) {
+                $liveSameAs[] = $profileLink;
+            }
+        }
+        if ($liveSameAs) {
+            $livePersonNode['sameAs'] = array_values(array_unique($liveSameAs));
+        }
+    }
+
+    $schema['@graph'][] = $livePersonNode;
+
+    $liveBroadcastNode = [
+        '@type' => 'BroadcastEvent',
+        '@id' => 'https://deseoradio.com/#current-broadcast',
+        'name' => (string)$live_dj['dj_name'] . ' live on Deseo Radio',
+        'url' => 'https://deseoradio.com/#live',
+        'isLiveBroadcast' => true,
+        'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
+        'location' => [
+            '@type' => 'VirtualLocation',
+            'url' => 'https://deseoradio.com/#player',
+        ],
+        'performer' => [
+            '@id' => $livePersonId,
+        ],
+        'about' => [
+            '@id' => 'https://deseoradio.com/#radio',
+        ],
+    ];
+
+    if (($live_dj['_start'] ?? null) instanceof DateTimeInterface) {
+        $liveBroadcastNode['startDate'] = $live_dj['_start']->format(DATE_ATOM);
+    }
+    if (($live_dj['_end'] ?? null) instanceof DateTimeInterface) {
+        $liveBroadcastNode['endDate'] = $live_dj['_end']->format(DATE_ATOM);
+    }
+
+    $schema['@graph'][] = $liveBroadcastNode;
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= deseo_e(deseo_lang()) ?>" class="no-js">
