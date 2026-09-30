@@ -964,10 +964,19 @@
     if (!compact) return text;
 
     for (var i = 0; i < pairs.length; i += 1) {
-      var en = pairs[i][0];
-      var el = pairs[i][1];
-      if (compact === en || compact === el) {
-        return target === 'en' ? en : el;
+      var first = pairs[i][0];
+      var second = pairs[i][1];
+      if (compact === first || compact === second) {
+        var firstGreek = (first.match(/[Α-ΩΆ-Ώα-ωά-ώ]/g) || []).length;
+        var secondGreek = (second.match(/[Α-ΩΆ-Ώα-ωά-ώ]/g) || []).length;
+
+        if (firstGreek === secondGreek) {
+          return first;
+        }
+
+        var english = firstGreek < secondGreek ? first : second;
+        var greek = firstGreek > secondGreek ? first : second;
+        return target === 'en' ? english : greek;
       }
     }
 
