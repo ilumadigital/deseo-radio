@@ -428,7 +428,257 @@ fieldset:disabled{opacity:.55}
 .mylive-create-drawer[open]>summary>b{transform:rotate(45deg);color:var(--acid);border-color:rgba(255,48,56,.24)}
 .mylive-create-drawer-body{padding:22px;border-top:1px solid var(--line)}
 
+/* MYLIVE ADMIN V4 — 30 DJ CONTROL CENTER */
 .mylive-directory{display:grid;gap:14px;margin-top:8px}
+.mylive-hub-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+.mylive-management-shell{
+  display:grid;
+  grid-template-columns:minmax(280px,330px) minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+}
+.mylive-roster-panel{
+  position:sticky;
+  top:18px;
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:#0d0d0e;
+}
+.mylive-toolbar-roster{
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+  padding:14px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  background:rgba(13,13,14,.97);
+  backdrop-filter:blur(16px);
+}
+.mylive-toolbar-roster .mylive-filters{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.mylive-toolbar-roster .mylive-filters button{
+  min-width:0;
+  min-height:36px;
+  padding:0 9px;
+  font-size:8px;
+}
+.mylive-roster{
+  display:grid;
+  max-height:calc(100vh - 235px);
+  overflow:auto;
+  scrollbar-width:thin;
+  overscroll-behavior:contain;
+}
+.mylive-roster-item{
+  appearance:none;
+  width:100%;
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  min-height:74px;
+  padding:10px 12px;
+  border:0;
+  border-bottom:1px solid rgba(255,255,255,.055);
+  border-radius:0;
+  background:transparent;
+  color:#fff;
+  text-align:left;
+  cursor:pointer;
+  transition:background .16s,border-color .16s;
+}
+.mylive-roster-item:last-child{border-bottom:0}
+.mylive-roster-item:hover{background:rgba(255,255,255,.025)}
+.mylive-roster-item.is-selected{
+  background:linear-gradient(90deg,rgba(255,48,56,.12),rgba(255,48,56,.025));
+  box-shadow:inset 3px 0 0 var(--acid);
+}
+.mylive-roster-item[hidden]{display:none!important}
+.mylive-roster-item>img,
+.mylive-roster-avatar{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  object-fit:cover;
+  background:#080809;
+}
+.mylive-roster-avatar{
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+}
+.mylive-roster-copy{
+  display:block;
+  min-width:0;
+}
+.mylive-roster-copy strong,
+.mylive-roster-copy small,
+.mylive-roster-copy em{display:block}
+.mylive-roster-copy strong{
+  overflow:hidden;
+  color:#f4f4f1;
+  font-size:12px;
+  font-weight:850;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.mylive-roster-copy small{
+  margin-top:3px;
+  overflow:hidden;
+  color:#83837e;
+  font-size:8px;
+  font-style:normal;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.mylive-roster-copy em{
+  margin-top:3px;
+  overflow:hidden;
+  color:#4e4e4b;
+  font-size:7px;
+  font-style:normal;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.mylive-roster-metrics{
+  display:grid;
+  justify-items:end;
+  gap:4px;
+}
+.mylive-roster-metrics b{
+  color:#6f6f6a;
+  font-size:7px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.mylive-roster-metrics b.is-empty{color:#e08a8f}
+.mylive-roster-metrics i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#555;
+}
+.mylive-roster-metrics i.is-active{
+  background:#57c985;
+  box-shadow:0 0 0 4px rgba(87,201,133,.08);
+}
+.mylive-roster-metrics i.is-disabled{background:#555}
+.mylive-roster-empty{
+  padding:28px 16px;
+  color:#666;
+  font-size:10px;
+  text-align:center;
+}
+.mylive-workspace{
+  min-width:0;
+}
+.mylive-workspace-placeholder{
+  min-height:360px;
+  display:grid;
+  place-items:center;
+  align-content:center;
+  padding:40px;
+  border:1px dashed var(--line);
+  border-radius:22px;
+  background:#0b0b0c;
+  text-align:center;
+}
+.mylive-workspace-placeholder span{
+  color:var(--acid);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.mylive-workspace-placeholder strong{
+  margin-top:8px;
+  font-size:23px;
+}
+.mylive-workspace-placeholder p{
+  max-width:420px;
+  margin:7px 0 0;
+  color:#666;
+  font-size:10px;
+  line-height:1.55;
+}
+.mylive-workspace .mylive-admin-list{display:block}
+.mylive-workspace .mylive-v3-account{margin:0!important}
+.mylive-account-quicknav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  padding:0 20px 14px;
+}
+.mylive-account-quicknav button{
+  min-height:34px;
+  padding:0 12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#0a0a0b;
+  color:#8a8a84;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.03em;
+  cursor:pointer;
+}
+.mylive-account-quicknav button:hover{
+  border-color:rgba(255,48,56,.25);
+  color:#fff;
+}
+.mylive-account-quicknav button.is-primary{
+  border-color:rgba(255,48,56,.28);
+  background:var(--acid);
+  color:#080808;
+}
+.mylive-v3-sections{
+  display:flex;
+  flex-direction:column;
+}
+.mylive-v3-detail[data-mylive-detail="assets"]{order:1}
+.mylive-v3-detail[data-mylive-detail="episodes"]{order:2}
+.mylive-v3-detail[data-mylive-detail="account"]{order:3}
+.mylive-v3-detail[data-mylive-detail="assets"]>summary{
+  background:linear-gradient(90deg,rgba(255,48,56,.055),transparent);
+}
+.mylive-v3-detail[data-mylive-detail="assets"]>summary>div strong{font-size:18px}
+.mylive-v3-asset-upload{
+  grid-template-columns:minmax(150px,.8fr) minmax(180px,1.2fr);
+  padding:14px;
+  border:1px solid rgba(255,48,56,.13);
+  border-radius:16px;
+  background:rgba(255,48,56,.025);
+}
+.mylive-v3-asset-upload .button-primary{
+  min-height:44px;
+  font-size:9px;
+}
+.mylive-assets-admin-list{
+  max-height:390px;
+  overflow:auto;
+  padding-right:2px;
+}
+.mylive-set-admin-list{
+  max-height:480px;
+  overflow:auto;
+  padding-right:2px;
+}
+.mylive-v3-account .mylive-account-top{
+  background:linear-gradient(135deg,rgba(255,255,255,.012),transparent);
+}
+.mylive-v3-account .mylive-account-identity h2{font-size:20px}
+.mylive-v3-health{padding-bottom:14px}
+.mylive-v3-health span{font-size:7px}
+
 .mylive-directory-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;padding:0 2px}
 .mylive-directory-head span{display:block;color:var(--acid);font-size:13px;font-weight:900;letter-spacing:.15em}
 .mylive-directory-head h2{margin:6px 0 0;font-size:31px;letter-spacing:-.045em}
@@ -486,9 +736,38 @@ fieldset:disabled{opacity:.55}
 .mylive-v3-asset-upload{margin-bottom:16px}
 .mylive-no-results{padding:34px;border:1px dashed var(--line);border-radius:18px;color:#666661;text-align:center;font-size:15px}
 
+@media(max-width:1180px){
+  .mylive-management-shell{grid-template-columns:minmax(250px,300px) minmax(0,1fr)}
+}
 @media(max-width:1050px){
   .mylive-hub-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mylive-management-shell{grid-template-columns:1fr}
+  .mylive-roster-panel{position:relative;top:auto}
+  .mylive-roster{max-height:310px}
+  .mylive-toolbar-roster .mylive-filters{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+@media(max-width:760px){
+  .mylive-toolbar-roster .mylive-filters{
+    display:flex;
+    overflow:auto;
+    padding-bottom:2px;
+  }
+  .mylive-toolbar-roster .mylive-filters button{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+  .mylive-roster{max-height:330px}
+  .mylive-account-quicknav{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    padding:0 16px 14px;
+  }
+  .mylive-account-quicknav .is-primary{grid-column:1/-1}
+  .mylive-v3-asset-upload{grid-template-columns:1fr}
+  .mylive-v3-asset-upload .file-input,
+  .mylive-v3-asset-upload .button{grid-column:auto}
+}
+
 @media(max-width:760px){
   .mylive-hub-heading h1{font-size:38px}
   .mylive-hub-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -519,6 +798,10 @@ fieldset:disabled{opacity:.55}
 }
 @media(max-width:480px){
   .mylive-hub-stats{grid-template-columns:1fr}
+  .mylive-roster-item{grid-template-columns:40px minmax(0,1fr) auto;min-height:68px;padding:9px 10px}
+  .mylive-roster-item>img,.mylive-roster-avatar{width:40px;height:40px;border-radius:11px}
+  .mylive-roster-copy em{display:none}
+  .mylive-roster-metrics b{font-size:6px}
   .mylive-v3-account .mylive-account-top{align-items:flex-start}
   .mylive-v3-account .mylive-account-stats{flex-direction:column;gap:5px}
   .mylive-v3-account .mylive-account-stats>div{min-width:54px}
