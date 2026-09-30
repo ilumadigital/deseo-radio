@@ -1008,6 +1008,10 @@ $activeAccountCount = count(array_filter(
 $disabledAccountCount = count($managedAccounts) - $activeAccountCount;
 $totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
 $totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
+$noAssetAccountCount = count(array_filter(
+    $managedAccounts,
+    static fn(array $account): bool => (int)($account['asset_count'] ?? 0) === 0
+));
 $publicProfileBulkAccounts = array_values(array_filter(
     $managedAccounts,
     static fn(array $account): bool =>
@@ -1036,7 +1040,7 @@ admin_page_start('MyLive', 'mylive');
         <div>
             <span>Deseo Radio · DJ Workspace</span>
             <h1>MyLive management</h1>
-            <p>Ένα καθαρό σημείο για access, DJ Sets και προσωπικά assets. Τα βασικά φαίνονται άμεσα και οι λεπτομέρειες ανοίγουν μόνο όταν τις χρειάζεσαι.</p>
+            <p>Control center για γρήγορη διαχείριση των DJs, approvals, assets και DJ Sets χωρίς endless scrolling.</p>
         </div>
         <div class="mylive-hub-heading-actions">
             <?php if ($publicProfileBulkAccounts): ?>
@@ -1093,10 +1097,15 @@ admin_page_start('MyLive', 'mylive');
             <strong><?= $totalAssetCount ?></strong>
             <small>artwork & imaging</small>
         </div>
+        <div class="mylive-hub-stat <?= $noAssetAccountCount > 0 ? 'is-attention' : '' ?>">
+            <span>NO ASSETS</span>
+            <strong><?= $noAssetAccountCount ?></strong>
+            <small>χρειάζονται υλικό</small>
+        </div>
         <div class="mylive-hub-stat">
-            <span>DISABLED</span>
-            <strong><?= $disabledAccountCount ?></strong>
-            <small>ανενεργά accounts</small>
+            <span>PUBLIC PROFILES</span>
+            <strong><?= $publicProfileEnabledCount ?></strong>
+            <small>ενεργά profiles</small>
         </div>
     </section>
 
@@ -1104,9 +1113,9 @@ admin_page_start('MyLive', 'mylive');
         <section class="panel mylive-pending-panel mylive-v3-pending">
             <div class="mylive-panel-head">
                 <div>
-                    <span>NEEDS YOUR ATTENTION</span>
-                    <h2>Pending MyLive access</h2>
-                    <p>Έχουν ήδη εγκριθεί στη Season 6 αλλά δεν έχουν ακόμη MyLive credentials. Ένα click δημιουργεί temporary password και στέλνει το onboarding email.</p>
+                    <span>APPROVAL QUEUE</span>
+                    <h2>DJs waiting for MyLive access</h2>
+                    <p>Έγκρινε γρήγορα τα pending accounts. Δημιουργείται temporary password και στέλνεται αυτόματα το onboarding email.</p>
                 </div>
                 <strong><?= count($pendingAccounts) ?></strong>
             </div>
@@ -1139,7 +1148,7 @@ admin_page_start('MyLive', 'mylive');
                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                             <input type="hidden" name="action" value="approve_pending">
                             <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
-                            <button class="button button-primary" type="submit">Create MyLive Access</button>
+                            <button class="button button-primary" type="submit">Approve & Send Access</button>
                         </form>
                     </article>
                 <?php endforeach; ?>
@@ -1211,25 +1220,80 @@ admin_page_start('MyLive', 'mylive');
         <div class="mylive-directory-head">
             <div>
                 <span>DJ DIRECTORY</span>
-                <h2>Manage accounts</h2>
-                <p>Βρες τον DJ και άνοιξε μόνο το κομμάτι που θέλεις να διαχειριστείς.</p>
+                <h2>DJ Control Center</h2>
+                <p>Επίλεξε DJ από αριστερά και διαχειρίσου assets, episodes και account χωρίς να ψάχνεις μέσα σε 30 κάρτες.</p>
             </div>
             <strong><?= count($managedAccounts) ?></strong>
         </div>
 
-        <div class="mylive-toolbar">
-            <label class="mylive-search">
-                <span>SEARCH</span>
-                <input id="myliveAccountSearch" type="search" placeholder="Artist, email ή slot…" autocomplete="off">
-            </label>
-            <div class="mylive-filters" role="group" aria-label="Filter MyLive accounts">
-                <button type="button" class="is-active" data-mylive-filter="all">All <b><?= count($managedAccounts) ?></b></button>
-                <button type="button" data-mylive-filter="active">Active <b><?= $activeAccountCount ?></b></button>
-                <button type="button" data-mylive-filter="disabled">Disabled <b><?= $disabledAccountCount ?></b></button>
-            </div>
-        </div>
+        <div class="mylive-management-shell">
+            <aside class="mylive-roster-panel">
+                <div class="mylive-toolbar mylive-toolbar-roster">
+                    <label class="mylive-search">
+                        <span>FIND DJ</span>
+                        <input id="myliveAccountSearch" type="search" placeholder="Artist, email ή slot…" autocomplete="off">
+                    </label>
+                    <div class="mylive-filters" role="group" aria-label="Filter MyLive accounts">
+                        <button type="button" class="is-active" data-mylive-filter="all">All <b><?= count($managedAccounts) ?></b></button>
+                        <button type="button" data-mylive-filter="active">Active <b><?= $activeAccountCount ?></b></button>
+                        <button type="button" data-mylive-filter="no-assets">No Assets <b><?= $noAssetAccountCount ?></b></button>
+                        <button type="button" data-mylive-filter="disabled">Disabled <b><?= $disabledAccountCount ?></b></button>
+                    </div>
+                </div>
 
-        <div class="mylive-admin-list" id="myliveAccountList">
+                <div class="mylive-roster" id="myliveRoster">
+                    <?php foreach ($managedAccounts as $rosterAccount): ?>
+                        <?php
+                        $rosterId = (int)$rosterAccount['id'];
+                        $rosterSlot = deseo_mylive_slot($rosterAccount);
+                        $rosterStatus = (string)($rosterAccount['account_status'] ?? (!empty($rosterAccount['is_active']) ? 'active' : 'disabled'));
+                        $rosterAssets = (int)($rosterAccount['asset_count'] ?? 0);
+                        $rosterSets = (int)($rosterAccount['set_count'] ?? 0);
+                        $rosterSearch = strtolower(trim(
+                            (string)$rosterAccount['artist_name'] . ' ' .
+                            (string)$rosterAccount['full_name'] . ' ' .
+                            (string)$rosterAccount['email'] . ' ' .
+                            $rosterSlot
+                        ));
+                        ?>
+                        <button type="button"
+                                class="mylive-roster-item"
+                                data-account-select="<?= $rosterId ?>"
+                                data-account-status="<?= admin_e($rosterStatus) ?>"
+                                data-account-assets="<?= $rosterAssets ?>"
+                                data-account-search="<?= admin_e($rosterSearch) ?>">
+                            <?php if (!empty($rosterAccount['application_photo'])): ?>
+                                <img src="<?= admin_e((string)$rosterAccount['application_photo']) ?>" alt="">
+                            <?php else: ?>
+                                <span class="mylive-roster-avatar"><?= admin_e(strtoupper(substr((string)$rosterAccount['artist_name'], 0, 1))) ?></span>
+                            <?php endif; ?>
+
+                            <span class="mylive-roster-copy">
+                                <strong><?= admin_e((string)$rosterAccount['artist_name']) ?></strong>
+                                <small><?= admin_e($rosterSlot) ?></small>
+                                <em><?= admin_e((string)$rosterAccount['email']) ?></em>
+                            </span>
+
+                            <span class="mylive-roster-metrics">
+                                <b class="<?= $rosterAssets === 0 ? 'is-empty' : '' ?>"><?= $rosterAssets ?> assets</b>
+                                <b><?= $rosterSets ?> sets</b>
+                                <i class="<?= $rosterStatus === 'active' ? 'is-active' : 'is-disabled' ?>" aria-label="<?= admin_e($rosterStatus) ?>"></i>
+                            </span>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="mylive-roster-empty" id="myliveRosterEmpty" hidden>Δεν βρέθηκε DJ με αυτά τα φίλτρα.</div>
+            </aside>
+
+            <div class="mylive-workspace">
+                <div class="mylive-workspace-placeholder" id="myliveWorkspacePlaceholder">
+                    <span>DJ WORKSPACE</span>
+                    <strong>Επίλεξε έναν DJ</strong>
+                    <p>Θα εμφανιστούν εδώ τα assets, τα DJ Sets και οι ρυθμίσεις του account.</p>
+                </div>
+
+                <div class="mylive-admin-list" id="myliveAccountList">
         <?php if (!$managedAccounts): ?>
             <div class="empty-admin">Δεν υπάρχουν ακόμη MyLive accounts.</div>
         <?php else: ?>
@@ -1247,8 +1311,11 @@ admin_page_start('MyLive', 'mylive');
                 ?>
                 <article
                     class="panel mylive-account-card mylive-v3-account"
+                    data-account-id="<?= $accountId ?>"
                     data-account-status="<?= admin_e($accountStatus) ?>"
+                    data-account-assets="<?= (int)$account['asset_count'] ?>"
                     data-account-search="<?= admin_e($accountSearch) ?>"
+                    hidden
                 >
                     <div class="mylive-account-top">
                         <div class="mylive-account-identity">
@@ -1271,6 +1338,12 @@ admin_page_start('MyLive', 'mylive');
                             <div><strong><?= (int)$account['set_count'] ?></strong><span>Episodes</span></div>
                             <div><strong><?= (int)$account['asset_count'] ?></strong><span>Assets</span></div>
                         </div>
+                    </div>
+
+                    <div class="mylive-account-quicknav">
+                        <button type="button" class="is-primary" data-mylive-open-detail="assets">+ Add / Manage Assets</button>
+                        <button type="button" data-mylive-open-detail="episodes">DJ Sets</button>
+                        <button type="button" data-mylive-open-detail="account">Account</button>
                     </div>
 
                     <div class="mylive-v3-health">
@@ -1297,7 +1370,7 @@ admin_page_start('MyLive', 'mylive');
                     </div>
 
                     <div class="mylive-v3-sections">
-                        <details class="mylive-v3-detail">
+                        <details class="mylive-v3-detail" data-mylive-detail="account">
                             <summary>
                                 <div><span>ACCOUNT</span><strong>Profile & access</strong></div>
                                 <small>Edit details, password, status</small>
@@ -1401,7 +1474,7 @@ admin_page_start('MyLive', 'mylive');
                             </div>
                         </details>
 
-                        <details class="mylive-v3-detail">
+                        <details class="mylive-v3-detail" data-mylive-detail="episodes">
                             <summary>
                                 <div><span>DJ DELIVERY</span><strong>Episodes</strong></div>
                                 <small><?= count($setsByAccount[$accountId]) ?> uploaded</small>
@@ -1451,10 +1524,10 @@ admin_page_start('MyLive', 'mylive');
                             </div>
                         </details>
 
-                        <details class="mylive-v3-detail">
+                        <details class="mylive-v3-detail" data-mylive-detail="assets">
                             <summary>
                                 <div><span>DESEO / ILUMA</span><strong>Assets</strong></div>
-                                <small><?= count($assetsByAccount[$accountId]) ?> available</small>
+                                <small><?= count($assetsByAccount[$accountId]) ?> available · upload / assign</small>
                                 <b>+</b>
                             </summary>
                             <div class="mylive-v3-detail-body">
@@ -1507,9 +1580,9 @@ admin_page_start('MyLive', 'mylive');
                 </article>
             <?php endforeach; ?>
         <?php endif; ?>
+                </div>
+            </div>
         </div>
-
-        <div class="mylive-no-results" id="myliveNoResults" hidden>Δεν βρέθηκε account με αυτά τα φίλτρα.</div>
     </section>
 </div>
 
@@ -1590,29 +1663,110 @@ admin_page_start('MyLive', 'mylive');
 (function(){
     var search=document.getElementById('myliveAccountSearch');
     var list=document.getElementById('myliveAccountList');
-    var empty=document.getElementById('myliveNoResults');
-    var buttons=document.querySelectorAll('[data-mylive-filter]');
-    if(!list)return;
+    var roster=document.getElementById('myliveRoster');
+    var rosterEmpty=document.getElementById('myliveRosterEmpty');
+    var placeholder=document.getElementById('myliveWorkspacePlaceholder');
+    var buttons=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-filter]'));
+    if(!list||!roster)return;
 
     var filter='all';
-    var cards=Array.prototype.slice.call(list.querySelectorAll('[data-account-status]'));
+    var rosterItems=Array.prototype.slice.call(roster.querySelectorAll('[data-account-select]'));
+    var cards=Array.prototype.slice.call(list.querySelectorAll('[data-account-id]'));
+    var selectedId=window.localStorage ? localStorage.getItem('deseoMyliveAdminSelectedDj') : '';
 
-    function apply(){
-        var q=search ? search.value.trim().toLowerCase() : '';
-        var visible=0;
+    function cardFor(id){
+        return cards.find(function(card){return card.getAttribute('data-account-id')===String(id);})||null;
+    }
 
-        cards.forEach(function(card){
-            var status=(card.getAttribute('data-account-status')||'').toLowerCase();
-            var haystack=(card.getAttribute('data-account-search')||'').toLowerCase();
-            var statusMatch=filter==='all'||status===filter;
-            var searchMatch=!q||haystack.indexOf(q)!==-1;
-            var show=statusMatch&&searchMatch;
-            card.hidden=!show;
-            if(show)visible++;
+    function rosterFor(id){
+        return rosterItems.find(function(item){return item.getAttribute('data-account-select')===String(id);})||null;
+    }
+
+    function selectAccount(id,openSection){
+        var item=rosterFor(id);
+        if(!item||item.hidden)return;
+
+        selectedId=String(id);
+        if(window.localStorage){
+            try{localStorage.setItem('deseoMyliveAdminSelectedDj',selectedId);}catch(e){}
+        }
+
+        rosterItems.forEach(function(row){
+            row.classList.toggle('is-selected',row===item);
         });
 
-        if(empty)empty.hidden=visible!==0;
+        cards.forEach(function(card){
+            card.hidden=card.getAttribute('data-account-id')!==selectedId;
+        });
+
+        if(placeholder)placeholder.hidden=true;
+
+        var selectedCard=cardFor(selectedId);
+        if(openSection&&selectedCard){
+            var detail=selectedCard.querySelector('[data-mylive-detail="'+openSection+'"]');
+            if(detail){
+                selectedCard.querySelectorAll('[data-mylive-detail]').forEach(function(other){
+                    other.open=other===detail;
+                });
+                detail.open=true;
+                window.setTimeout(function(){
+                    detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+                },40);
+            }
+        }
     }
+
+    function matches(item){
+        var q=search ? search.value.trim().toLowerCase() : '';
+        var status=(item.getAttribute('data-account-status')||'').toLowerCase();
+        var assets=parseInt(item.getAttribute('data-account-assets')||'0',10);
+        var haystack=(item.getAttribute('data-account-search')||'').toLowerCase();
+
+        var filterMatch=
+            filter==='all'
+            || (filter==='active'&&status==='active')
+            || (filter==='disabled'&&status==='disabled')
+            || (filter==='no-assets'&&assets===0);
+
+        return filterMatch&&(!q||haystack.indexOf(q)!==-1);
+    }
+
+    function apply(){
+        var visibleItems=[];
+        rosterItems.forEach(function(item){
+            var show=matches(item);
+            item.hidden=!show;
+            if(show)visibleItems.push(item);
+        });
+
+        if(rosterEmpty)rosterEmpty.hidden=visibleItems.length!==0;
+
+        var selected=rosterFor(selectedId);
+        if(!selected||selected.hidden){
+            if(visibleItems.length){
+                selectAccount(visibleItems[0].getAttribute('data-account-select'));
+            }else{
+                selectedId='';
+                cards.forEach(function(card){card.hidden=true;});
+                rosterItems.forEach(function(item){item.classList.remove('is-selected');});
+                if(placeholder)placeholder.hidden=false;
+            }
+        }
+    }
+
+    rosterItems.forEach(function(item){
+        item.addEventListener('click',function(){
+            selectAccount(item.getAttribute('data-account-select'));
+        });
+    });
+
+    list.addEventListener('click',function(event){
+        var quick=event.target.closest('[data-mylive-open-detail]');
+        if(!quick)return;
+        var card=quick.closest('[data-account-id]');
+        if(!card)return;
+        selectAccount(card.getAttribute('data-account-id'),quick.getAttribute('data-mylive-open-detail'));
+    });
 
     buttons.forEach(function(button){
         button.addEventListener('click',function(){
@@ -1623,6 +1777,15 @@ admin_page_start('MyLive', 'mylive');
     });
 
     if(search)search.addEventListener('input',apply);
+
+    apply();
+    if(!selectedId){
+        var first=rosterItems.find(function(item){return !item.hidden;});
+        if(first)selectAccount(first.getAttribute('data-account-select'));
+    }else{
+        var saved=rosterFor(selectedId);
+        if(saved&&!saved.hidden)selectAccount(selectedId);
+    }
 }());
 
 (function(){
