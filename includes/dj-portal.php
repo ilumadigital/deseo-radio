@@ -214,6 +214,26 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         );
     }
 
+    // One-time safe backfill for profiles created while application bios were not imported.
+    // Only untouched, never-published profiles are filled, so existing DJ edits are preserved.
+    $pdo->exec(
+        "UPDATE dj_public_profiles p
+         INNER JOIN dj_portal_accounts a ON a.id = p.account_id
+         INNER JOIN dj_season_bookings b ON b.id = a.booking_id
+         SET p.draft_bio = b.bio,
+             p.application_bio_seeded = 1
+         WHERE p.application_bio_seeded = 0
+           AND TRIM(p.draft_bio) = ''
+           AND TRIM(p.published_bio) = ''
+           AND p.published_at IS NULL
+           AND TRIM(COALESCE(b.bio, '')) <> ''"
+    );
+    $pdo->exec(
+        "UPDATE dj_public_profiles
+         SET application_bio_seeded = 1
+         WHERE application_bio_seeded = 0"
+    );
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_password_resets (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         account_id BIGINT NOT NULL,
