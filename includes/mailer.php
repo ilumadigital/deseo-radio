@@ -8,6 +8,52 @@ function deseo_env(string $key, string $default = ''): string {
     return $value === false ? $default : trim((string)$value);
 }
 
+function deseo_mylive_dj_bio_guidance_text(): string {
+    return 'Το Public Profile σου είναι η δημόσια καλλιτεχνική σου παρουσία στο Deseo Radio. Εμφανίζεται στο deseoradio.com όταν βρίσκεσαι On Air και μπορεί να το δουν χιλιάδες ακροατές. Συμπλήρωσε ένα ολοκληρωμένο, επαγγελματικό bio στα Αγγλικά, έως 1.600 χαρακτήρες, που να παρουσιάζει σωστά τη μουσική σου ταυτότητα, την εμπειρία και τη διαδρομή σου.';
+}
+
+function deseo_mylive_dj_bio_chatgpt_cta(): string {
+    return 'Δεν έχεις έτοιμο bio; Δημιούργησέ το με ChatGPT';
+}
+
+function deseo_mylive_dj_bio_chatgpt_url(): string {
+    $prompt = <<<'PROMPT'
+Create a professional DJ biography in English for my public profile on Deseo Radio. The bio will be shown publicly on deseoradio.com while my DJ set is On Air.
+
+Requirements:
+- Maximum 1,600 characters including spaces.
+- Write the final biography in English only.
+- Write in the third person.
+- Use a contemporary, premium, natural and professional tone.
+- Make it read like an artist biography, not a CV or a list of achievements.
+- Highlight musical identity, genres/style, experience, notable venues/events, releases/labels, collaborations and artistic direction only when I provide those facts.
+- Do not invent any achievement, venue, release, label, collaboration or fact.
+- Avoid clichés, exaggerated claims and generic promotional language.
+- Keep it suitable for a public radio profile that may be read by thousands of listeners.
+- Return a polished final bio ready to copy and paste into MyLive.
+
+Before writing the bio, ask me briefly for:
+1. DJ / artist name
+2. City and country
+3. Genres / musical style
+4. Years of experience
+5. Notable venues, clubs, festivals or events
+6. Releases and labels
+7. Collaborations
+8. Musical influences / artistic philosophy
+9. Any other fact I want included
+
+After I answer, write only the final English bio and keep it within 1,600 characters including spaces.
+PROMPT;
+
+    return 'https://chatgpt.com/?' . http_build_query(
+        ['q' => $prompt],
+        '',
+        '&',
+        PHP_QUERY_RFC3986
+    );
+}
+
 function deseo_mail_encode_header(string $value): string {
     return '=?UTF-8?B?' . base64_encode($value) . '?=';
 }
@@ -636,6 +682,9 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
 function deseo_mylive_public_profile_enabled_email(array $account): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
+    $bioGuideText = deseo_mylive_dj_bio_guidance_text();
+    $bioGuideUrl = deseo_mylive_dj_bio_chatgpt_url();
+    $bioGuideCta = deseo_mylive_dj_bio_chatgpt_cta();
 
     $body = '<tr><td style="padding:0 0 18px;">'
         . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
@@ -644,31 +693,31 @@ function deseo_mylive_public_profile_enabled_email(array $account): array {
         . '</div></td></tr>';
 
     $body .= deseo_mylive_email_section('01', 'Τι μπορείς να διαχειρίζεσαι',
-        'Μέσα από το <strong style="color:#fff;">MyLive → Your Public DJ Profile</strong> μπορείς να γράφεις και να ενημερώνεις το προσωπικό σου <strong style="color:#fff;">About</strong> και τα social links σου: Instagram, TikTok, SoundCloud, Spotify και Website.');
+        'Μέσα από το <strong style="color:#fff;">MyLive → Your Public DJ Profile</strong> μπορείς να γράφεις και να ενημερώνεις το προσωπικό σου <strong style="color:#fff;">Bio</strong> και τα social links σου: Instagram, TikTok, SoundCloud, Spotify και Website.');
 
     $body .= deseo_mylive_email_section('02', 'Πώς εμφανίζεται στους ακροατές',
-        'Όταν το show σου παίζει στον αέρα του Deseo Radio και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να <strong style="color:#fff;">πατήσει πάνω στη φωτογραφία σου</strong> στο Now On Air / Radio Program και να ανοίξει το μικρό δημόσιο DJ profile σου.<br><br>'
-        . 'Εκεί εμφανίζονται το About που έχεις δημοσιεύσει και τα social media links που έχεις επιλέξει.');
+        'Όταν το show σου παίζει στον αέρα του Deseo Radio και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να <strong style="color:#fff;">πατήσει πάνω στη φωτογραφία σου</strong> στο Now On Air / Radio Program και να ανοίξει το δημόσιο DJ profile σου.<br><br>'
+        . 'Εκεί εμφανίζονται το Bio που έχεις δημοσιεύσει και τα social media links που έχεις επιλέξει.');
 
-    $body .= deseo_mylive_email_section('03', 'Save Draft & Publish',
+    $body .= deseo_mylive_email_section('03', 'Το Public Bio σου',
+        $e($bioGuideText)
+        . '<br><br><a href="' . $e($bioGuideUrl) . '" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 17px;border-radius:999px;background:#ff2b36;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.04em;">'
+        . $e($bioGuideCta)
+        . '</a>');
+
+    $body .= deseo_mylive_email_section('04', 'Save Draft & Publish',
         'Το <strong style="color:#fff;">Save Draft</strong> αποθηκεύει τις αλλαγές μόνο μέσα στο MyLive και δεν τις εμφανίζει δημόσια.<br><br>'
         . 'Μόνο όταν πατήσεις <strong style="color:#fff;">Publish Profile</strong> περνάει η νέα έκδοση στο website. Αν κάνεις νέες αλλαγές αργότερα, η προηγούμενη published έκδοση παραμένει live μέχρι να ξαναπατήσεις Publish.');
 
-    $body .= deseo_mylive_email_section('04', 'Η φωτογραφία και το show σου',
+    $body .= deseo_mylive_email_section('05', 'Η φωτογραφία και το show σου',
         'Δεν χρειάζεται να ανεβάζεις φωτογραφία μέσα από το Public Profile. Η εικόνα, το show title και το on-air slot διαχειρίζονται από το <strong style="color:#fff;">Deseo Radio</strong> μέσα από το επίσημο Radio Program, ώστε η παρουσίαση να παραμένει ενιαία και σωστή.');
-
-    $body .= '<tr><td style="padding:2px 0 0;">'
-        . '<div style="padding:18px;border:1px solid #3f161b;border-radius:17px;background:#160b0d;color:#d8b4b7;font:400 12px/1.65 Arial,sans-serif;">'
-        . '<strong style="display:block;margin-bottom:5px;color:#ff4650;">TIP</strong>'
-        . 'Κράτησε το About σύντομο, προσωπικό και αντιπροσωπευτικό του sound σου. Είναι το κείμενο που θα βλέπει ο listener την ώρα που σε ακούει.'
-        . '</div></td></tr>';
 
     $subject = 'Deseo Radio MyLive · Το Public Profile σου ενεργοποιήθηκε';
 
     $html = deseo_mylive_email_shell(
         'DESEO RADIO · MYLIVE · PUBLIC PROFILE',
         'Το Public Profile σου ενεργοποιήθηκε.',
-        $artist . ', από σήμερα μπορείς να διαχειρίζεσαι μέσα από το MyLive το κείμενο και τα social links που βλέπει ο listener όταν ανοίγει το DJ profile σου στο Deseo Radio.',
+        $artist . ', από σήμερα μπορείς να διαχειρίζεσαι μέσα από το MyLive το Bio και τα social links που βλέπει ο listener όταν ανοίγει το DJ profile σου στο Deseo Radio.',
         $body,
         'OPEN MYLIVE',
         'https://deseoradio.com/mylive/'
@@ -676,8 +725,10 @@ function deseo_mylive_public_profile_enabled_email(array $account): array {
 
     $text = "DESEO RADIO · MYLIVE · PUBLIC PROFILE\n\n"
         . "{$artist}, το Public Profile σου ενεργοποιήθηκε.\n\n"
-        . "Μέσα από το MyLive μπορείς να διαχειρίζεσαι το About σου και τα social links: Instagram, TikTok, SoundCloud, Spotify και Website.\n\n"
-        . "Όταν το show σου παίζει στον αέρα και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να πατήσει πάνω στη φωτογραφία σου στο Now On Air / Radio Program και να δει το published About και τα social media σου.\n\n"
+        . "Μέσα από το MyLive μπορείς να διαχειρίζεσαι το Bio σου και τα social links: Instagram, TikTok, SoundCloud, Spotify και Website.\n\n"
+        . "Όταν το show σου παίζει στον αέρα και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να πατήσει πάνω στη φωτογραφία σου στο Now On Air / Radio Program και να δει το published Bio και τα social media σου.\n\n"
+        . $bioGuideText . "\n"
+        . $bioGuideCta . ": " . $bioGuideUrl . "\n\n"
         . "Save Draft: αποθηκεύει ιδιωτικά τις αλλαγές.\n"
         . "Publish Profile: δημοσιεύει τη νέα έκδοση στο website.\n\n"
         . "Η φωτογραφία, το show title και το on-air slot διαχειρίζονται από το Deseo Radio μέσα από το Radio Program.\n\n"
@@ -686,7 +737,6 @@ function deseo_mylive_public_profile_enabled_email(array $account): array {
 
     return ['subject' => $subject, 'html' => $html, 'text' => $text];
 }
-
 
 function deseo_mylive_onboarding_email(array $account, string $temporaryPassword, bool $reset = false): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -771,6 +821,19 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         'Μπαίνοντας στο MyLive θα βλέπεις πλέον μια απλή εικόνα του show σου:<br><br>'
         . $dashboard
         . '<div style="margin-top:7px;color:#77777e;font:400 11px/1.6 Arial,sans-serif;">Τα audience statistics ανανεώνονται όταν υπάρχουν διαθέσιμα στοιχεία για τον ολοκληρωμένο μήνα.</div>'
+    );
+
+    $bioGuideText = deseo_mylive_dj_bio_guidance_text();
+    $bioGuideUrl = deseo_mylive_dj_bio_chatgpt_url();
+    $bioGuideCta = deseo_mylive_dj_bio_chatgpt_cta();
+
+    $body .= $section(
+        'PUBLIC PROFILE',
+        'Το δημόσιο DJ bio σου',
+        $e($bioGuideText)
+        . '<br><br><a href="' . $e($bioGuideUrl) . '" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 17px;border-radius:999px;background:#ff2b36;color:#080808;text-decoration:none;font:800 10px Arial,sans-serif;letter-spacing:.04em;">'
+        . $e($bioGuideCta)
+        . '</a>'
     );
 
     $body .= $section('DJ SET DELIVERY', 'Διάρκεια & τελικό αρχείο',
@@ -875,6 +938,8 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
         . "MyLive dashboard: βλέπεις την εκτιμώμενη απήχηση του show σου, πόσα episodes έχεις ανεβάσει και πόσα προσωπικά assets έχεις διαθέσιμα.\n"
         . "Audience stats: εμφανίζονται για τον τελευταίο ολοκληρωμένο μήνα, όταν υπάρχουν διαθέσιμα στοιχεία.\n"
+        . "PUBLIC PROFILE: " . $bioGuideText . "\n"
+        . $bioGuideCta . ": " . $bioGuideUrl . "\n"
         . "Promo tracks: επιτρέπονται μόνο αν τα έχεις λάβει απευθείας από τον δημιουργό ή νόμιμο δικαιούχο και έχεις άδεια για online / internet radio μετάδοση, αποκλειστικά μέσα στο δικό σου DJ Set.\n"
         . "Exclusive set: Personal DJ Imaging στην αρχή και _30 Imaging περίπου στο 30ό λεπτό.\n"
         . "Artwork και branded DJ spots: διαθέσιμα μέσα από το MyLive.\n"
