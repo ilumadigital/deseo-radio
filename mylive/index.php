@@ -863,12 +863,12 @@ if ($isGuestAccount && dj_season_is_guest_zone_slot($accountDay, (string)$accoun
     $myliveSlotLabel = 'Guest DJ · ' . $myliveSlotLabel;
 }
 
-// NEXT SHOW · resident recurrence is active only inside Season 6.
-// Until 12/10/2026 the dashboard deliberately keeps the next broadcast as TBA.
+// NEXT SHOW · resident recurrence is visible immediately.
+// Before Season 6 starts, each resident DJ points to the first real weekly
+// occurrence on/after 14.10.2026. After each broadcast it rolls forward by +7 days.
 // Guest accounts remain one-off and never roll forward by +7 days.
 $athensTz = dj_season_athens_timezone();
 $nowAthens = new DateTimeImmutable('now', $athensTz);
-$nextShowScheduleHidden = !$isGuestAccount && !dj_season_schedule_visible($nowAthens);
 $nextShowSeasonComplete = false;
 $nextShowStart = null;
 $nextShowEnd = null;
@@ -889,51 +889,44 @@ $slotStartRaw = trim((string)($account['start_time'] ?? ''));
 $slotEndRaw = trim((string)($account['end_time'] ?? ''));
 
 if (!$isGuestAccount && $slotDay >= 1 && $slotDay <= 7 && $slotStartRaw !== '') {
-    if ($nextShowScheduleHidden) {
-        $nextShowDay = 'TBA';
-        $nextShowTime = '';
-        $nextShowDate = 'Season 6';
-        $nextShowWhen = '14.10.2026–30.05.2027';
-    } else {
-        $occurrence = dj_season_weekly_occurrence(
-            $slotDay,
-            $slotStartRaw,
-            $slotEndRaw,
-            $nowAthens
-        );
+    $occurrence = dj_season_weekly_occurrence(
+        $slotDay,
+        $slotStartRaw,
+        $slotEndRaw,
+        $nowAthens
+    );
 
-        if ($occurrence !== null) {
-            [$candidateStart, $candidateEnd] = $occurrence;
+    if ($occurrence !== null) {
+        [$candidateStart, $candidateEnd] = $occurrence;
 
-            $nextShowStart = $candidateStart;
-            $nextShowEnd = $candidateEnd;
-            $nextShowIsLive = $nowAthens >= $candidateStart && $nowAthens < $candidateEnd;
+        $nextShowStart = $candidateStart;
+        $nextShowEnd = $candidateEnd;
+        $nextShowIsLive = $nowAthens >= $candidateStart && $nowAthens < $candidateEnd;
 
-            $today = $nowAthens->setTime(0, 0, 0);
-            $todayKey = $nowAthens->format('Y-m-d');
-            $tomorrowKey = $nowAthens->modify('+1 day')->format('Y-m-d');
-            $showKey = $candidateStart->format('Y-m-d');
+        $today = $nowAthens->setTime(0, 0, 0);
+        $todayKey = $nowAthens->format('Y-m-d');
+        $tomorrowKey = $nowAthens->modify('+1 day')->format('Y-m-d');
+        $showKey = $candidateStart->format('Y-m-d');
 
-            if ($nextShowIsLive) {
-                $nextShowWhen = 'LIVE NOW';
-            } elseif ($showKey === $todayKey) {
-                $nextShowWhen = 'Today';
-            } elseif ($showKey === $tomorrowKey) {
-                $nextShowWhen = 'Tomorrow';
-            } else {
-                $daysToShow = (int)$today->diff($candidateStart->setTime(0, 0))->format('%a');
-                $nextShowWhen = 'In ' . $daysToShow . ' days';
-            }
-
-            $nextShowDate = $candidateStart->format('d.m.Y');
-            $nextShowTime = $candidateStart->format('H:i');
-        } elseif ($nowAthens >= dj_season_start_at()) {
-            $nextShowSeasonComplete = true;
-            $nextShowDay = 'SEASON 6';
-            $nextShowTime = '';
-            $nextShowDate = '30.05.2027';
-            $nextShowWhen = 'Completed';
+        if ($nextShowIsLive) {
+            $nextShowWhen = 'LIVE NOW';
+        } elseif ($showKey === $todayKey) {
+            $nextShowWhen = 'Today';
+        } elseif ($showKey === $tomorrowKey) {
+            $nextShowWhen = 'Tomorrow';
+        } else {
+            $daysToShow = (int)$today->diff($candidateStart->setTime(0, 0))->format('%a');
+            $nextShowWhen = 'In ' . $daysToShow . ' days';
         }
+
+        $nextShowDate = $candidateStart->format('d.m.Y');
+        $nextShowTime = $candidateStart->format('H:i');
+    } elseif ($nowAthens >= dj_season_start_at()) {
+        $nextShowSeasonComplete = true;
+        $nextShowDay = 'SEASON 6';
+        $nextShowTime = '';
+        $nextShowDate = '30.05.2027';
+        $nextShowWhen = 'Completed';
     }
 }
 
@@ -966,10 +959,7 @@ $nextShowStatusClass = match ($nextShowSetStatus) {
     default => 'is-waiting',
 };
 
-if ($nextShowScheduleHidden) {
-    $nextShowStatusLabel = 'TBA';
-    $nextShowStatusClass = 'is-waiting';
-} elseif ($nextShowSeasonComplete) {
+if ($nextShowSeasonComplete) {
     $nextShowStatusLabel = 'SEASON COMPLETE';
     $nextShowStatusClass = 'is-ready';
 }
@@ -990,11 +980,16 @@ $nextShowMessage = match ($nextShowSetStatus) {
         : 'Δεν έχει ανέβει ακόμη set για το επόμενο episode.',
 };
 
-if ($nextShowScheduleHidden) {
-    $nextShowMessage = 'Η Season 6 ξεκινά την Τετάρτη 14.10.2026. Το εβδομαδιαίο Next Show countdown θα ενεργοποιηθεί από 13.10.2026.';
-} elseif ($nextShowSeasonComplete) {
+if ($nextShowSeasonComplete) {
     $nextShowMessage = 'Δεν υπάρχει άλλη εβδομαδιαία μετάδοση για αυτό το slot μέσα στη Season 6, η οποία ολοκληρώνεται στις 30.05.2027.';
 }
+
+$nextShowStartIso = $nextShowStart instanceof DateTimeImmutable
+    ? $nextShowStart->format(DateTimeInterface::ATOM)
+    : '';
+$nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
+    ? $nextShowEnd->format(DateTimeInterface::ATOM)
+    : '';
 ?>
 <!doctype html>
 <html lang="el">
@@ -1126,6 +1121,14 @@ if ($nextShowScheduleHidden) {
                 <div>
                     <strong><?= deseo_mylive_e($nextShowDay) ?><?= $nextShowTime !== '' ? ' · ' . deseo_mylive_e($nextShowTime) : '' ?></strong>
                     <span><?= deseo_mylive_e($nextShowDate) ?><?= $nextShowWhen !== '' ? ' · ' . deseo_mylive_e($nextShowWhen) : '' ?></span>
+                    <?php if (!$isGuestAccount && $nextShowStartIso !== '' && !$nextShowSeasonComplete): ?>
+                        <small class="mylive-next-show-countdown"
+                               data-mylive-next-countdown
+                               data-start="<?= deseo_mylive_e($nextShowStartIso) ?>"
+                               data-end="<?= deseo_mylive_e($nextShowEndIso) ?>">
+                            Countdown to broadcast
+                        </small>
+                    <?php endif; ?>
                 </div>
                 <div class="mylive-next-episode">
                     <?php if ($nextShowSeasonComplete): ?>
@@ -1164,9 +1167,6 @@ if ($nextShowScheduleHidden) {
             <span><?= $nextShowIsLive ? 'ON AIR NOW' : 'DESEO RADIO · SEASON 6' ?></span>
             <?php if ($nextShowSeasonComplete): ?>
                 <strong>Season 6 complete.</strong>
-            <?php elseif ($nextShowScheduleHidden): ?>
-                <strong>Next Show: TBA</strong>
-                <a href="#sets">MY DJ SETS ↓</a>
             <?php elseif ($nextShowSetStatus === 'not_uploaded'): ?>
                 <strong>Your set is next.</strong>
                 <a href="#sets">UPLOAD DJ SET ↓</a>
