@@ -39,6 +39,11 @@ function mylive_json(bool $ok, string $message, array $extra = []): never {
     exit;
 }
 
+function mylive_password_is_ascii(string $password): bool {
+    return $password !== '' && preg_match('/^[\x20-\x7E]+$/D', $password) === 1;
+}
+
+
 if (
     $_SERVER['REQUEST_METHOD'] === 'GET'
     && trim((string)($_GET['reset'] ?? '')) !== ''
@@ -150,6 +155,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (strlen($password) < 8) {
                 throw new RuntimeException('Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
             }
+            if (!mylive_password_is_ascii($password)) {
+                throw new RuntimeException('Ο κωδικός πρέπει να χρησιμοποιεί μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα. Δεν επιτρέπονται ελληνικοί χαρακτήρες.');
+            }
             if ($password !== $confirm) {
                 throw new RuntimeException('Οι δύο κωδικοί δεν είναι ίδιοι.');
             }
@@ -239,6 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (strlen($password) < 8) {
                 throw new RuntimeException('Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+            }
+            if (!mylive_password_is_ascii($password)) {
+                throw new RuntimeException('Ο κωδικός πρέπει να χρησιμοποιεί μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα. Δεν επιτρέπονται ελληνικοί χαρακτήρες.');
             }
             if ($password !== $confirm) {
                 throw new RuntimeException('Οι δύο κωδικοί δεν είναι ίδιοι.');
@@ -567,7 +578,7 @@ if ($forgotState === 'sent') {
                     <label>
                         <span>New password</span>
                         <div class="password-field">
-                            <input id="resetNewPassword" type="password" name="new_password" minlength="8" autocomplete="new-password" required autofocus>
+                            <input id="resetNewPassword" type="password" name="new_password" minlength="8" pattern="[\x20-\x7E]{8,}" title="Use only English characters, numbers and symbols." autocomplete="new-password" data-latin-password required autofocus>
                             <button type="button" class="password-toggle" data-password-toggle="resetNewPassword">Show</button>
                         </div>
                     </label>
@@ -575,12 +586,12 @@ if ($forgotState === 'sent') {
                     <label>
                         <span>Confirm password</span>
                         <div class="password-field">
-                            <input id="resetConfirmPassword" type="password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                            <input id="resetConfirmPassword" type="password" name="confirm_password" minlength="8" pattern="[\x20-\x7E]{8,}" title="Use only English characters, numbers and symbols." autocomplete="new-password" data-latin-password required>
                             <button type="button" class="password-toggle" data-password-toggle="resetConfirmPassword">Show</button>
                         </div>
                     </label>
 
-                    <small class="mylive-reset-help">Τουλάχιστον 8 χαρακτήρες. Με την αλλαγή, ο προηγούμενος κωδικός παύει να ισχύει.</small>
+                    <small class="mylive-reset-help">Τουλάχιστον 8 χαρακτήρες · μόνο αγγλικοί χαρακτήρες, αριθμοί και σύμβολα. Δεν επιτρέπονται ελληνικά.</small>
                     <button class="primary-button" type="submit">CHANGE PASSWORD</button>
                 </form>
             <?php else: ?>
@@ -685,6 +696,15 @@ if ($forgotState === 'sent') {
     
 </main>
 <script>
+document.querySelectorAll('[data-latin-password]').forEach(input => {
+    const validatePasswordAlphabet = () => {
+        const valid = /^[\x20-\x7E]*$/.test(input.value);
+        input.setCustomValidity(valid ? '' : 'Χρησιμοποίησε μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα.');
+    };
+    input.addEventListener('input', validatePasswordAlphabet);
+    validatePasswordAlphabet();
+});
+
 document.querySelectorAll('[data-password-toggle]').forEach(button => {
     button.addEventListener('click', () => {
         const input = document.getElementById(button.dataset.passwordToggle);
@@ -761,7 +781,7 @@ if (!empty($account['must_change_password'])):
             <label>
                 <span>New password</span>
                 <div class="password-field">
-                    <input id="newPassword" type="password" name="new_password" minlength="8" autocomplete="new-password" required autofocus>
+                    <input id="newPassword" type="password" name="new_password" minlength="8" pattern="[\x20-\x7E]{8,}" title="Use only English characters, numbers and symbols." autocomplete="new-password" data-latin-password required autofocus>
                     <button type="button" class="password-toggle" data-password-toggle="newPassword">Show</button>
                 </div>
             </label>
@@ -769,17 +789,26 @@ if (!empty($account['must_change_password'])):
             <label>
                 <span>Confirm password</span>
                 <div class="password-field">
-                    <input id="confirmPassword" type="password" name="confirm_password" minlength="8" autocomplete="new-password" required>
+                    <input id="confirmPassword" type="password" name="confirm_password" minlength="8" pattern="[\x20-\x7E]{8,}" title="Use only English characters, numbers and symbols." autocomplete="new-password" data-latin-password required>
                     <button type="button" class="password-toggle" data-password-toggle="confirmPassword">Show</button>
                 </div>
             </label>
 
-            <small>Τουλάχιστον 8 χαρακτήρες. Αποθήκευσε το email και τον νέο κωδικό στον browser / password manager σου για την επόμενη σύνδεση.</small>
+            <small>Τουλάχιστον 8 χαρακτήρες · μόνο αγγλικοί χαρακτήρες, αριθμοί και σύμβολα. Δεν επιτρέπονται ελληνικά. Αποθήκευσε το email και τον νέο κωδικό στον browser / password manager σου.</small>
             <button class="primary-button" type="submit">Save & open MyLive</button>
         </form>
     </section>
 </main>
 <script>
+document.querySelectorAll('[data-latin-password]').forEach(input => {
+    const validatePasswordAlphabet = () => {
+        const valid = /^[\x20-\x7E]*$/.test(input.value);
+        input.setCustomValidity(valid ? '' : 'Χρησιμοποίησε μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα.');
+    };
+    input.addEventListener('input', validatePasswordAlphabet);
+    validatePasswordAlphabet();
+});
+
 document.querySelectorAll('[data-password-toggle]').forEach(button => {
     button.addEventListener('click', () => {
         const input = document.getElementById(button.dataset.passwordToggle);
