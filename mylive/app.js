@@ -714,3 +714,475 @@
     updateCountdown();
     window.setInterval(updateCountdown, 30000);
 }());
+
+
+/* MYLIVE_I18N_V1 */
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'mylive_language';
+  var supported = ['el', 'en'];
+  var currentLanguage = 'el';
+  var applying = false;
+
+  var pairs = [
+    ['SEASON 6 · DJ ACCESS', 'SEASON 6 · DJ ACCESS'],
+    ['Your sets.', 'Τα sets σου.'],
+    ['Your space.', 'Ο χώρος σου.'],
+    ['DJ Set delivery, personal artwork και branded imaging. Όλα σε ένα απλό, ιδιωτικό workspace.', 'Παράδοση DJ Set, προσωπικό artwork και branded υλικό. Όλα σε ένα απλό, ιδιωτικό workspace.'],
+    ['MYLIVE · SECURITY', 'MYLIVE · ΑΣΦΑΛΕΙΑ'],
+    ['Password changed.', 'Ο κωδικός άλλαξε.'],
+    ['Ο νέος κωδικός σου αποθηκεύτηκε. Μπορείς τώρα να μπεις κανονικά στο MyLive.', 'Your new password has been saved. You can now sign in to MyLive.'],
+    ['BACK TO LOGIN', 'ΠΙΣΩ ΣΤΟ LOGIN'],
+    ['MYLIVE · PASSWORD RESET', 'MYLIVE · ΕΠΑΝΑΦΟΡΑ ΚΩΔΙΚΟΥ'],
+    ['Νέος κωδικός.', 'New password.'],
+    ['Δημιούργησε νέο password για το MyLive account σου. Το reset link χρησιμοποιείται μόνο μία φορά.', 'Create a new password for your MyLive account. The reset link can only be used once.'],
+    ['Email', 'Email'],
+    ['New password', 'Νέος κωδικός'],
+    ['Confirm password', 'Επιβεβαίωση κωδικού'],
+    ['Show', 'Εμφάνιση'],
+    ['Hide', 'Απόκρυψη'],
+    ['Τουλάχιστον 8 χαρακτήρες · μόνο αγγλικοί χαρακτήρες, αριθμοί και σύμβολα. Δεν επιτρέπονται ελληνικά.', 'At least 8 characters · English characters, numbers and symbols only. Greek characters are not allowed.'],
+    ['CHANGE PASSWORD', 'ΑΛΛΑΓΗ ΚΩΔΙΚΟΥ'],
+    ['Το link έληξε.', 'The link has expired.'],
+    ['Ο σύνδεσμος αλλαγής κωδικού δεν είναι πλέον έγκυρος ή έχει ήδη χρησιμοποιηθεί. Ζήτησε νέο link για να συνεχίσεις.', 'This password reset link is no longer valid or has already been used. Request a new link to continue.'],
+    ['RESET LINK EXPIRED', 'ΤΟ RESET LINK ΕΛΗΞΕ'],
+    ['REQUEST NEW LINK', 'ΝΕΟ RESET LINK'],
+    ['← Back to login', '← Πίσω στο login'],
+    ['Reset password.', 'Επαναφορά κωδικού.'],
+    ['Reset password', 'Επαναφορά κωδικού'],
+    ['Γράψε το email του MyLive account σου και θα σου στείλουμε ασφαλές link για να ορίσεις νέο κωδικό.', 'Enter the email address of your MyLive account and we will send you a secure link to set a new password.'],
+    ['Το Cloudflare security δεν είναι ακόμη ρυθμισμένο για το MyLive.', 'Cloudflare security is not configured for MyLive yet.'],
+    ['SEND RESET LINK', 'ΑΠΟΣΤΟΛΗ RESET LINK'],
+    ['Καλώς ήρθες.', 'Welcome.'],
+    ['Μπες με τα στοιχεία πρόσβασης που έλαβες από το Deseo Radio.', 'Sign in with the access details you received from Deseo Radio.'],
+    ['Password', 'Κωδικός'],
+    ['Enter MyLive', 'Είσοδος στο MyLive'],
+    ['Private DJ workspace · Deseo Radio / ILUMA Digital Agency', 'Ιδιωτικό DJ workspace · Deseo Radio / ILUMA Digital Agency'],
+    ['Create your password · MyLive · Deseo Radio', 'Δημιούργησε τον κωδικό σου · MyLive · Deseo Radio'],
+    ['FIRST ACCESS ·', 'ΠΡΩΤΗ ΠΡΟΣΒΑΣΗ ·'],
+    ['Κάν’ το δικό σου.', 'Make it yours.'],
+    ['Το password που έλαβες ήταν προσωρινό. Δημιούργησε τώρα τον προσωπικό σου κωδικό για το MyLive.', 'The password you received was temporary. Create your personal MyLive password now.'],
+    ['Τουλάχιστον 8 χαρακτήρες · μόνο αγγλικοί χαρακτήρες, αριθμοί και σύμβολα. Δεν επιτρέπονται ελληνικά. Αποθήκευσε το email και τον νέο κωδικό στον browser / password manager σου.', 'At least 8 characters · English characters, numbers and symbols only. Greek characters are not allowed. Save your email and new password in your browser or password manager.'],
+    ['Save & open MyLive', 'Αποθήκευση & είσοδος'],
+    ['Logout', 'Αποσύνδεση'],
+    ['Overview', 'Επισκόπηση'],
+    ['My Assets', 'Τα Assets μου'],
+    ['My DJ Sets', 'Τα DJ Sets μου'],
+    ['Listen Live', 'Άκου Live'],
+    ['My Profile', 'Το Προφίλ μου'],
+    ['My Rewards', 'Τα Rewards μου'],
+    ['MySettings', 'Ρυθμίσεις'],
+    ['DESEO RADIO · MYLIVE', 'DESEO RADIO · MYLIVE'],
+    ['Welcome,', 'Καλώς ήρθες,'],
+    ['MYLIVE APP · PWA', 'MYLIVE APP · PWA'],
+    ['Το MyLive στο κινητό σου.', 'MyLive on your phone.'],
+    ['Εγκατάστησέ το σαν app για γρήγορη πρόσβαση στα DJ Sets, τα assets, το πρόγραμμα και το προσωπικό σου dashboard.', 'Install it as an app for quick access to your DJ Sets, assets, schedule and personal dashboard.'],
+    ['INSTALL MYLIVE APP', 'ΕΓΚΑΤΑΣΤΑΣΗ MYLIVE APP'],
+    ['APP INSTALLED', 'ΤΟ APP ΕΓΚΑΤΑΣΤΑΘΗΚΕ'],
+    ['INSTALL ON IPHONE', 'ΕΓΚΑΤΑΣΤΑΣΗ ΣΕ IPHONE'],
+    ['PUSH NOTIFICATIONS', 'PUSH ΕΙΔΟΠΟΙΗΣΕΙΣ'],
+    ['Μείνε ενημερωμένος για το show σου.', 'Stay updated about your show.'],
+    ['ENABLE PUSH ALERTS', 'ΕΝΕΡΓΟΠΟΙΗΣΗ PUSH ALERTS'],
+    ['Countdown to broadcast', 'Αντίστροφη μέτρηση για τη μετάδοση'],
+    ['SEASON', 'ΣΕΖΟΝ'],
+    ['NEXT EPISODE', 'ΕΠΟΜΕΝΟ EPISODE'],
+    ['Uploaded', 'Ανέβηκε'],
+    ['Checked', 'Ελέγχθηκε'],
+    ['Scheduled', 'Προγραμματίστηκε'],
+    ['Season 6 complete.', 'Η Season 6 ολοκληρώθηκε.'],
+    ['Your set is next.', 'Το set σου είναι το επόμενο.'],
+    ['UPLOAD DJ SET ↓', 'ΑΝΕΒΑΣΕ DJ SET ↓'],
+    ['Action required.', 'Απαιτείται ενέργεια.'],
+    ['VIEW DJ SET ↓', 'ΠΡΟΒΟΛΗ DJ SET ↓'],
+    ['Ready for broadcast.', 'Έτοιμο για μετάδοση.'],
+    ['VIEW EP', 'ΠΡΟΒΟΛΗ EP'],
+    ['Delivery in progress.', 'Η παράδοση είναι σε εξέλιξη.'],
+    ['EPISODES', 'EPISODES'],
+    ['uploaded στο MyLive', 'ανέβηκαν στο MyLive'],
+    ['YOUR ASSETS', 'ΤΑ ASSETS ΣΟΥ'],
+    ['διαθέσιμα για download', 'available for download'],
+    ['ΣΕ ΑΚΟΥΣΑΝ', 'LISTENERS REACHED'],
+    ['Not Available', 'Μη διαθέσιμο'],
+    ['FROM DESEO RADIO · ILUMA Digital Agency', 'ΑΠΟ DESEO RADIO · ILUMA Digital Agency'],
+    ['Your Assets', 'Τα Assets σου'],
+    ['Το επίσημο artwork, το personal imaging και ό,τι δημιουργούμε για το show σου.', 'Your official artwork, personal imaging and everything we create for your show.'],
+    ['COMING HERE', 'ΕΡΧΟΝΤΑΙ ΕΔΩ'],
+    ['Τα προσωπικά σου assets θα εμφανιστούν εδώ.', 'Your personal assets will appear here.'],
+    ['Download ↓', 'Λήψη ↓'],
+    ['Download', 'Λήψη'],
+    ['Share it', 'Κοινοποίηση'],
+    ['DJ SET DELIVERY', 'ΠΑΡΑΔΟΣΗ DJ SET'],
+    ['Your DJ Sets', 'Τα DJ Sets σου'],
+    ['Upload το επόμενο episode. Το filename και το EP number δημιουργούνται αυτόματα.', 'Upload your next episode. The filename and EP number are generated automatically.'],
+    ['NEXT DELIVERY', 'ΕΠΟΜΕΝΗ ΠΑΡΑΔΟΣΗ'],
+    ['MP3 · 192 kbps · Stereo · έως 1 GB', 'MP3 · 192 kbps · Stereo · up to 1 GB'],
+    ['Upload DJ Set', 'Ανέβασε DJ Set'],
+    ['Πάτησε εδώ ή σύρε το αρχείο σου', 'Click here or drag your file'],
+    ['Upload EP', 'Ανέβασμα EP'],
+    ['YOUR REPOSITORY', 'ΤΟ ΑΡΧΕΙΟ ΣΟΥ'],
+    ['Episodes', 'Episodes'],
+    ['Τα BROADCASTED episodes παραμένουν στο ιστορικό σου, αλλά το audio file αφαιρείται αμέσως από τον server μόλις ολοκληρωθεί η μετάδοση.', 'BROADCASTED episodes remain in your history, but the audio file is removed from the server as soon as the broadcast is complete.'],
+    ['Δεν έχεις ανεβάσει ακόμη κάποιο set.', 'You have not uploaded a set yet.'],
+    ['Το πρώτο σου upload θα εμφανιστεί εδώ ως EP001.', 'Your first upload will appear here as EP001.'],
+    ['FILE REMOVED · episode retained', 'ΤΟ ΑΡΧΕΙΟ ΑΦΑΙΡΕΘΗΚΕ · το episode διατηρήθηκε'],
+    ['DESEO RADIO · LIVE', 'DESEO RADIO · LIVE'],
+    ['Listen to the station.', 'Άκου τον σταθμό.'],
+    ['Άκου live τον Deseo Radio και δες ποιος βρίσκεται αυτή τη στιγμή στον αέρα.', 'Listen to Deseo Radio live and see who is currently on air.'],
+    ['LIVE 24/7', 'LIVE 24/7'],
+    ['NOW PLAYING', 'ΠΑΙΖΕΙ ΤΩΡΑ'],
+    ['NOW ON AIR', 'ΤΩΡΑ ΣΤΟΝ ΑΕΡΑ'],
+    ['LIVE BROADCAST', 'LIVE ΜΕΤΑΔΟΣΗ'],
+    ['Loading…', 'Φόρτωση…'],
+    ['YOUR WEEKLY SLOT', 'ΤΟ ΕΒΔΟΜΑΔΙΑΙΟ SLOT ΣΟΥ'],
+    ['GUEST DJ ACCESS', 'GUEST DJ ΠΡΟΣΒΑΣΗ'],
+    ['Είσαι LIVE Τώρα!', 'You are LIVE Now!'],
+    ['YOUR PUBLIC DJ PROFILE', 'ΤΟ ΔΗΜΟΣΙΟ DJ ΠΡΟΦΙΛ ΣΟΥ'],
+    ['What listeners see.', 'Τι βλέπουν οι ακροατές.'],
+    ['Hidden from listeners', 'Κρυφό από τους ακροατές'],
+    ['Not public yet', 'Δεν είναι δημόσιο ακόμη'],
+    ['PUBLIC BIO · ENGLISH RECOMMENDED', 'ΔΗΜΟΣΙΟ BIO · ΠΡΟΤΕΙΝΟΝΤΑΙ ΑΓΓΛΙΚΑ'],
+    ['You have unpublished changes.', 'Έχεις μη δημοσιευμένες αλλαγές.'],
+    ['Το site συνεχίζει να δείχνει την προηγούμενη published έκδοση μέχρι να πατήσεις Publish Profile.', 'The site keeps showing the previous published version until you click Publish Profile.'],
+    ['BIO', 'BIO'],
+    ['Έως 1.600 χαρακτήρες · το bio της αίτησής σου διατηρείται και εμφανίζεται εδώ. Μπορείς προαιρετικά να το βελτιώσεις ή να το μετατρέψεις σε επαγγελματικό αγγλικό bio με το ChatGPT.', 'Up to 1,600 characters · the bio from your application is preserved and shown here. You can optionally improve it or turn it into a professional English bio with ChatGPT.'],
+    ['No photo upload here.', 'Δεν γίνεται upload φωτογραφίας εδώ.'],
+    ['Το public modal χρησιμοποιεί πάντα τη φωτογραφία που έχει ορίσει το Deseo Radio στο πρόγραμμα.', 'The public modal always uses the photo assigned by Deseo Radio in the schedule.'],
+    ['Save Draft', 'Αποθήκευση Draft'],
+    ['Publish Profile', 'Δημοσίευση Προφίλ'],
+    ['Unpublish', 'Απόκρυψη'],
+    ['MY REWARDS · LIVE STATUS', 'ΤΑ REWARDS ΜΟΥ · LIVE STATUS'],
+    ['Your referrals.', 'Οι συστάσεις σου.'],
+    ['Παρακολούθησε τις επιχειρήσεις που έχεις συστήσει, την πορεία κάθε συνεργασίας και τα Rewards σου.', 'Track the businesses you have referred, the progress of each partnership and your Rewards.'],
+    ['REFERRAL', 'ΣΥΣΤΑΣΗ'],
+    ['REFERRALS', 'ΣΥΣΤΑΣΕΙΣ'],
+    ['συνολικά', 'total'],
+    ['CONFIRMED', 'ΕΠΙΒΕΒΑΙΩΜΕΝΑ'],
+    ['campaigns', 'campaigns'],
+    ['PENDING', 'ΣΕ ΑΝΑΜΟΝΗ'],
+    ['reward to be paid', 'reward προς πληρωμή'],
+    ['TOTAL PAID', 'ΣΥΝΟΛΟ ΠΛΗΡΩΜΩΝ'],
+    ['completed rewards', 'ολοκληρωμένα rewards'],
+    ['NO REFERRALS YET', 'ΔΕΝ ΥΠΑΡΧΟΥΝ ΣΥΣΤΑΣΕΙΣ ΑΚΟΜΗ'],
+    ['Το πρώτο σου Reward ξεκινά από μια σύσταση.', 'Your first Reward starts with a referral.'],
+    ['Χρησιμοποίησε το προσωπικό σου link παρακάτω. Μόλις η ILUMA καταχωρήσει το referral, θα εμφανιστεί εδώ με live status.', 'Use your personal link below. Once ILUMA registers the referral, it will appear here with live status.'],
+    ['YOUR REWARD', 'ΤΟ REWARD ΣΟΥ'],
+    ['CAMPAIGN VALUE', 'ΑΞΙΑ ΚΑΜΠΑΝΙΑΣ'],
+    ['YOUR SHARE', 'ΤΟ ΜΕΡΙΔΙΟ ΣΟΥ'],
+    ['REWARD', 'REWARD'],
+    ['STATUS', 'ΚΑΤΑΣΤΑΣΗ'],
+    ['REFERRAL CONTACT', 'ΕΠΑΦΗ ΣΥΣΤΑΣΗΣ'],
+    ['UPDATE FROM ILUMA', 'ΕΝΗΜΕΡΩΣΗ ΑΠΟ ILUMA'],
+    ['PAID ·', 'ΠΛΗΡΩΘΗΚΕ ·'],
+    ['DJ PARTNER REWARD', 'DJ PARTNER REWARD'],
+    ['Φέρε το brand.', 'Bring the brand.'],
+    ['Κράτα το 15%.', 'Keep 15%.'],
+    ['Ξέρεις μια επιχείρηση που θέλει να ακουστεί στο Deseo Radio; Σύστησέ τη στην ILUMA και κέρδισε', 'Know a business that wants to be heard on Deseo Radio? Refer it to ILUMA and earn'],
+    ['από κάθε νέα διαφημιστική καμπάνια που κλείνει μέσω της δικής σου σύστασης.', 'from every new advertising campaign closed through your referral.'],
+    ['ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ ↗', 'REFER A BUSINESS ↗'],
+    ['COPY LINK', 'ΑΝΤΙΓΡΑΦΗ LINK'],
+    ['COPIED ✓', 'ΑΝΤΙΓΡΑΦΗΚΕ ✓'],
+    ['MYSETTINGS · COMMUNICATIONS', 'ΡΥΘΜΙΣΕΙΣ · ΕΠΙΚΟΙΝΩΝΙΕΣ'],
+    ['Choose how Deseo reaches you.', 'Επίλεξε πώς θα επικοινωνεί μαζί σου το Deseo.'],
+    ['Ρύθμισε ποια operational reminders και ανακοινώσεις θέλεις να λαμβάνεις μέσω Email και Push Notifications.', 'Choose which operational reminders and announcements you want to receive via Email and Push Notifications.'],
+    ['PERSONAL PREFERENCES', 'ΠΡΟΣΩΠΙΚΕΣ ΡΥΘΜΙΣΕΙΣ'],
+    ['EMAIL CHANNEL', 'ΚΑΝΑΛΙ EMAIL'],
+    ['Email notifications', 'Ειδοποιήσεις email'],
+    ['NOTIFICATION TYPE', 'ΤΥΠΟΣ ΕΙΔΟΠΟΙΗΣΗΣ'],
+    ['EMAIL', 'EMAIL'],
+    ['PUSH', 'PUSH'],
+    ['Guest DJ notifications', 'Ειδοποιήσεις Guest DJ'],
+    ['Το Guest access είναι one-off. Δεν δημιουργείται αυτόματα νέο show ή reminder κάθε εβδομάδα.', 'Guest access is one-off. A new show or reminder is not created automatically every week.'],
+    ['DJ Set Reminder', 'Υπενθύμιση DJ Set'],
+    ['3 ημέρες πριν, μόνο όταν λείπει το επόμενο DJ Set.', '3 days before, only when your next DJ Set is missing.'],
+    ['On Air Now', 'Τώρα στον Αέρα'],
+    ['Τη στιγμή που το weekly slot σου γίνεται live.', 'At the moment your weekly slot goes live.'],
+    ['Deseo Announcements', 'Ανακοινώσεις Deseo'],
+    ['Γενικές ενημερώσεις της ομάδας του Deseo Radio προς τους DJs.', 'General updates from the Deseo Radio team to DJs.'],
+    ['Τα Push χρειάζονται μία ενεργή συσκευή. Η άδεια του browser εμφανίζεται μόνο όταν πατήσεις Enable Push Alerts.', 'Push notifications require one active device. The browser permission appears only when you click Enable Push Alerts.'],
+    ['SAVE MY SETTINGS', 'ΑΠΟΘΗΚΕΥΣΗ ΡΥΘΜΙΣΕΩΝ'],
+    ['Powered by ILUMA Digital Agency', 'Powered by ILUMA Digital Agency'],
+    ['MYLIVE · NOTIFICATIONS', 'MYLIVE · ΕΙΔΟΠΟΙΗΣΕΙΣ'],
+    ['DJ Alerts στο κινητό και στον browser σου.', 'DJ Alerts on your phone and browser.'],
+    ['Λάβε ειδοποίηση 3 ημέρες πριν αν λείπει το επόμενο DJ Set σου και μόλις το show σου βγει live στον Deseo Radio.', 'Get an alert 3 days before if your next DJ Set is missing and when your show goes live on Deseo Radio.'],
+    ['CHECKING…', 'ΕΛΕΓΧΟΣ…'],
+    ['TURN OFF ALERTS', 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ ALERTS'],
+    ['Δεν εμφανίζεται κανένα Webpushr popup. Η άδεια ζητείται μόνο όταν πατήσεις Enable.', 'No Webpushr popup is shown automatically. Permission is requested only after you click Enable.'],
+    ['API NOT CONFIGURED', 'ΤΟ API ΔΕΝ ΕΧΕΙ ΡΥΘΜΙΣΤΕΙ'],
+    ['PUSH UNAVAILABLE', 'PUSH ΜΗ ΔΙΑΘΕΣΙΜΟ'],
+    ['Το Webpushr API δεν είναι διαθέσιμο στον server.', 'The Webpushr API is not available on the server.'],
+    ['NOT SUPPORTED', 'ΔΕΝ ΥΠΟΣΤΗΡΙΖΕΤΑΙ'],
+    ['Ο συγκεκριμένος browser δεν υποστηρίζει web push notifications.', 'This browser does not support web push notifications.'],
+    ['ACCOUNT ON · DEVICE BLOCKED', 'ACCOUNT ON · Η ΣΥΣΚΕΥΗ ΜΠΛΟΚΑΡΕΙ'],
+    ['BLOCKED', 'ΜΠΛΟΚΑΡΙΣΜΕΝΟ'],
+    ['BLOCKED IN BROWSER', 'ΜΠΛΟΚΑΡΙΣΜΕΝΟ ΣΤΟΝ BROWSER'],
+    ['Οι ειδοποιήσεις έχουν αποκλειστεί από τον browser. Άλλαξε την άδεια του deseoradio.com σε Allow.', 'Notifications are blocked by the browser. Change the deseoradio.com permission to Allow.'],
+    ['BROWSER READY', 'Ο BROWSER ΕΙΝΑΙ ΕΤΟΙΜΟΣ'],
+    ['PUSH ALERTS ACTIVE', 'ΤΑ PUSH ALERTS ΕΙΝΑΙ ΕΝΕΡΓΑ'],
+    ['Θα λαμβάνεις τα προσωπικά reminders του MyLive ακόμη κι όταν η σελίδα δεν είναι ανοιχτή.', 'You will receive your personal MyLive reminders even when the page is not open.'],
+    ['Ο browser έχει ήδη άδεια. Πάτησε Enable για να συνδεθεί με το MyLive account σου.', 'The browser already has permission. Click Enable to connect it to your MyLive account.'],
+    ['ACCOUNT ON · ENABLE THIS DEVICE', 'ACCOUNT ON · ΕΝΕΡΓΟΠΟΙΗΣΕ ΑΥΤΗ ΤΗ ΣΥΣΚΕΥΗ'],
+    ['ENABLE THIS DEVICE', 'ΕΝΕΡΓΟΠΟΙΗΣΗ ΣΥΣΚΕΥΗΣ'],
+    ['Η άδεια του browser θα εμφανιστεί μόνο αφού πατήσεις το κουμπί.', 'The browser permission will appear only after you click the button.'],
+    ['CONNECTING…', 'ΣΥΝΔΕΣΗ…'],
+    ['TRY AGAIN', 'ΔΟΚΙΜΑΣΕ ΞΑΝΑ'],
+    ['Preparing…', 'Προετοιμασία…'],
+    ['Opening share…', 'Άνοιγμα κοινοποίησης…'],
+    ['Share artwork', 'Κοινοποίηση artwork'],
+    ['Share unavailable', 'Η κοινοποίηση δεν είναι διαθέσιμη'],
+    ['File sharing unavailable', 'Η κοινοποίηση αρχείου δεν είναι διαθέσιμη'],
+    ['Ready to share', 'Έτοιμο για κοινοποίηση'],
+    ['LIVE NOW', 'LIVE ΤΩΡΑ'],
+    ['Updating next show…', 'Ενημέρωση επόμενου show…'],
+    ['ON AIR NOW', 'ΤΩΡΑ ΣΤΟΝ ΑΕΡΑ'],
+    ['NON-STOP MIX', 'NON-STOP MIX'],
+    ['Live status temporarily unavailable', 'Το live status δεν είναι προσωρινά διαθέσιμο'],
+    ['Use only English characters, numbers and symbols.', 'Χρησιμοποίησε μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα.']
+  ];
+
+  function normalizeLanguage(value) {
+    return supported.indexOf(value) !== -1 ? value : 'el';
+  }
+
+  function storedLanguage() {
+    try {
+      return normalizeLanguage(window.localStorage.getItem(STORAGE_KEY) || 'el');
+    } catch (e) {
+      return 'el';
+    }
+  }
+
+  function saveLanguage(value) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, value);
+    } catch (e) {}
+  }
+
+  function directTranslate(value, target) {
+    var text = String(value == null ? '' : value);
+    var compact = text.replace(/\s+/g, ' ').trim();
+    if (!compact) return text;
+
+    for (var i = 0; i < pairs.length; i += 1) {
+      var en = pairs[i][0];
+      var el = pairs[i][1];
+      if (compact === en || compact === el) {
+        return target === 'en' ? en : el;
+      }
+    }
+
+    var match;
+
+    match = compact.match(/^(Welcome,|Καλώς ήρθες,)\s*(.+)$/);
+    if (match) return (target === 'en' ? 'Welcome, ' : 'Καλώς ήρθες, ') + match[2];
+
+    match = compact.match(/^(\d+)\s+(uploaded στο MyLive|ανέβηκαν στο MyLive)$/i);
+    if (match) return match[1] + (target === 'en' ? ' uploaded to MyLive' : ' ανέβηκαν στο MyLive');
+
+    match = compact.match(/^(\d+)\s+(διαθέσιμα για download|available for download)$/i);
+    if (match) return match[1] + (target === 'en' ? ' available for download' : ' διαθέσιμα για download');
+
+    match = compact.match(/^ON AIR IN · (\d{2})D · (\d{2})H · (\d{2})M$/);
+    if (match) {
+      return target === 'en'
+        ? compact
+        : 'ΣΤΟΝ ΑΕΡΑ ΣΕ · ' + match[1] + 'ΗΜ · ' + match[2] + 'Ω · ' + match[3] + 'Λ';
+    }
+
+    match = compact.match(/^ΣΤΟΝ ΑΕΡΑ ΣΕ · (\d{2})ΗΜ · (\d{2})Ω · (\d{2})Λ$/);
+    if (match) {
+      return target === 'el'
+        ? compact
+        : 'ON AIR IN · ' + match[1] + 'D · ' + match[2] + 'H · ' + match[3] + 'M';
+    }
+
+    match = compact.match(/^ACTIVE · (\d+) DEVICE(S?)$/);
+    if (match) {
+      if (target === 'en') return compact;
+      return 'ΕΝΕΡΓΟ · ' + match[1] + (match[1] === '1' ? ' ΣΥΣΚΕΥΗ' : ' ΣΥΣΚΕΥΕΣ');
+    }
+
+    match = compact.match(/^ΕΝΕΡΓΟ · (\d+) (ΣΥΣΚΕΥΗ|ΣΥΣΚΕΥΕΣ)$/);
+    if (match) {
+      if (target === 'el') return compact;
+      return 'ACTIVE · ' + match[1] + ' DEVICE' + (match[1] === '1' ? '' : 'S');
+    }
+
+    match = compact.match(/^(.+?) MB · (έτοιμο για upload|ready to upload)$/i);
+    if (match) return match[1] + ' MB · ' + (target === 'en' ? 'ready to upload' : 'έτοιμο για upload');
+
+    match = compact.match(/^Uploading (\d+)% · MyLive · Deseo Radio$/);
+    if (match) return target === 'en'
+      ? compact
+      : 'Ανέβασμα ' + match[1] + '% · MyLive · Deseo Radio';
+
+    match = compact.match(/^Ανέβασμα (\d+)% · MyLive · Deseo Radio$/);
+    if (match) return target === 'el'
+      ? compact
+      : 'Uploading ' + match[1] + '% · MyLive · Deseo Radio';
+
+    return text;
+  }
+
+  function translateTextNode(node, target) {
+    if (!node || !node.parentElement) return;
+    var tag = node.parentElement.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return;
+
+    var raw = node.nodeValue || '';
+    var match = raw.match(/^(\s*)([\s\S]*?)(\s*)$/);
+    if (!match || !match[2].trim()) return;
+
+    var translated = directTranslate(match[2], target);
+    if (translated !== match[2]) {
+      node.nodeValue = match[1] + translated + match[3];
+    }
+  }
+
+  function translateAttributes(root, target) {
+    var selector = '[title],[placeholder],[aria-label]';
+    var nodes = [];
+    if (root && root.nodeType === 1 && root.matches && root.matches(selector)) nodes.push(root);
+    if (root && root.querySelectorAll) {
+      nodes = nodes.concat(Array.prototype.slice.call(root.querySelectorAll(selector)));
+    }
+
+    nodes.forEach(function (element) {
+      ['title', 'placeholder', 'aria-label'].forEach(function (name) {
+        if (!element.hasAttribute(name)) return;
+        var value = element.getAttribute(name);
+        var translated = directTranslate(value, target);
+        if (translated !== value) element.setAttribute(name, translated);
+      });
+    });
+  }
+
+  function translateTree(root, target) {
+    if (!root) return;
+
+    if (root.nodeType === 3) {
+      translateTextNode(root, target);
+      return;
+    }
+
+    if (root.nodeType !== 1 && root.nodeType !== 9 && root.nodeType !== 11) return;
+
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) translateTextNode(node, target);
+    translateAttributes(root, target);
+  }
+
+  function updateSwitcher(target) {
+    var switcher = document.querySelector('[data-mylive-language-switcher]');
+    if (!switcher) return;
+
+    var buttons = switcher.querySelectorAll('button[data-lang]');
+    Array.prototype.forEach.call(buttons, function (button) {
+      var active = button.getAttribute('data-lang') === target;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    switcher.setAttribute(
+      'aria-label',
+      target === 'en' ? 'Language selection' : 'Επιλογή γλώσσας'
+    );
+  }
+
+  function applyLanguage(target) {
+    target = normalizeLanguage(target);
+    currentLanguage = target;
+    applying = true;
+
+    document.documentElement.lang = target;
+    if (document.body) document.body.setAttribute('data-mylive-lang', target);
+
+    translateTree(document.body || document.documentElement, target);
+    updateSwitcher(target);
+
+    var title = document.title || '';
+    var translatedTitle = directTranslate(title, target);
+    if (translatedTitle !== title) document.title = translatedTitle;
+
+    applying = false;
+
+    document.dispatchEvent(new CustomEvent('mylive:languagechange', {
+      detail: { language: target }
+    }));
+  }
+
+  function createSwitcher() {
+    if (!document.body || document.querySelector('[data-mylive-language-switcher]')) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'mylive-language-switcher';
+    wrap.setAttribute('data-mylive-language-switcher', '');
+    wrap.setAttribute('role', 'group');
+
+    var greek = document.createElement('button');
+    greek.type = 'button';
+    greek.setAttribute('data-lang', 'el');
+    greek.textContent = 'ΕΛ';
+
+    var english = document.createElement('button');
+    english.type = 'button';
+    english.setAttribute('data-lang', 'en');
+    english.textContent = 'EN';
+
+    wrap.appendChild(greek);
+    wrap.appendChild(english);
+    document.body.appendChild(wrap);
+
+    wrap.addEventListener('click', function (event) {
+      var button = event.target.closest ? event.target.closest('button[data-lang]') : null;
+      if (!button) return;
+      var next = normalizeLanguage(button.getAttribute('data-lang'));
+      saveLanguage(next);
+      applyLanguage(next);
+    });
+  }
+
+  var observer = new MutationObserver(function (mutations) {
+    if (applying) return;
+    applying = true;
+
+    mutations.forEach(function (mutation) {
+      if (mutation.type === 'characterData') {
+        translateTextNode(mutation.target, currentLanguage);
+        return;
+      }
+
+      Array.prototype.forEach.call(mutation.addedNodes || [], function (node) {
+        translateTree(node, currentLanguage);
+      });
+    });
+
+    updateSwitcher(currentLanguage);
+    applying = false;
+  });
+
+  window.MyLiveI18n = {
+    getLanguage: function () { return currentLanguage; },
+    setLanguage: function (language) {
+      var next = normalizeLanguage(language);
+      saveLanguage(next);
+      applyLanguage(next);
+    },
+    t: function (value) {
+      return directTranslate(value, currentLanguage);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    currentLanguage = storedLanguage();
+    createSwitcher();
+    applyLanguage(currentLanguage);
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  });
+}());
