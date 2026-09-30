@@ -712,7 +712,7 @@ function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
     ];
 
     $stmt = $pdo->prepare(
-        "SELECT b.bio, b.instagram, b.website
+        "SELECT b.instagram, b.website
          FROM dj_portal_accounts a
          LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
          WHERE a.id = ?
@@ -721,7 +721,8 @@ function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
     $stmt->execute([$accountId]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($booking) {
-        $source['bio'] = trim((string)($booking['bio'] ?? ''));
+        // The public Bio intentionally starts empty: it must be written specifically
+        // for the public profile in English rather than copied from the application.
         $source['instagram'] = deseo_mylive_profile_clean_url((string)($booking['instagram'] ?? ''));
         $source['website'] = deseo_mylive_profile_clean_url((string)($booking['website'] ?? ''));
     }
@@ -751,7 +752,7 @@ function deseo_mylive_save_public_profile_draft(PDO $pdo, int $accountId, array 
 
     $bio = trim((string)($data['bio'] ?? ''));
     if (mb_strlen($bio) > 1600) {
-        throw new RuntimeException('Το About μπορεί να έχει έως 1.600 χαρακτήρες.');
+        throw new RuntimeException('Το Bio μπορεί να έχει έως 1.600 χαρακτήρες.');
     }
 
     $instagram = deseo_mylive_profile_clean_url((string)($data['instagram'] ?? ''));
@@ -794,7 +795,7 @@ function deseo_mylive_publish_public_profile(PDO $pdo, int $accountId): array {
     $profile = deseo_mylive_public_profile_ensure($pdo, $accountId);
 
     if (trim((string)($profile['draft_bio'] ?? '')) === '') {
-        throw new RuntimeException('Συμπλήρωσε το About πριν δημοσιεύσεις το Public Profile.');
+        throw new RuntimeException('Συμπλήρωσε το Bio στα Αγγλικά πριν δημοσιεύσεις το Public Profile.');
     }
 
     $stmt = $pdo->prepare(
