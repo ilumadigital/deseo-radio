@@ -222,9 +222,11 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
                 ? (int)$pendingSet['episode_no']
                 : ($latestEpisode + 1);
 
-            // Reminder on the calendar day exactly three days before the next broadcast.
-            $reminderDay = $showStart->modify('-3 days')->format('Y-m-d');
-            if ($now->format('Y-m-d') === $reminderDay) {
+            // Reminder becomes due exactly 72 hours before the broadcast.
+            // If the scheduler is triggered a little later, it sends on the first
+            // available request before showtime and remains idempotent via event_key.
+            $reminderAt = $showStart->modify('-3 days');
+            if ($now >= $reminderAt && $now < $showStart) {
                 $eventKey = 'set-due:' . $programId . ':' . $showStart->format('Y-m-d') . ':ep' . $nextEpisode;
 
                 if ($pendingSet) {
