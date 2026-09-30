@@ -1211,7 +1211,7 @@ if ($nextShowScheduleHidden) {
                 <a href="<?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_url()) ?>"
                    target="_blank"
                    rel="noopener noreferrer">
-                    <?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_cta()) ?> ↗
+                    <?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_cta()) ?>
                 </a>
             </div>
 
