@@ -200,11 +200,19 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         published_website VARCHAR(500) NOT NULL DEFAULT '',
         is_published TINYINT(1) NOT NULL DEFAULT 0,
         published_at DATETIME NULL,
+        application_bio_seeded TINYINT(1) NOT NULL DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         CONSTRAINT fk_public_profile_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    if (!deseo_mylive_column_exists($pdo, 'dj_public_profiles', 'application_bio_seeded')) {
+        $pdo->exec(
+            "ALTER TABLE dj_public_profiles
+             ADD COLUMN application_bio_seeded TINYINT(1) NOT NULL DEFAULT 0 AFTER published_at"
+        );
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_password_resets (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -700,11 +708,6 @@ function deseo_mylive_profile_clean_url(string $value): string {
 }
 
 function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
-    $existing = $pdo->prepare("SELECT * FROM dj_public_profiles WHERE account_id = ? LIMIT 1");
-    $existing->execute([$accountId]);
-    $profile = $existing->fetch(PDO::FETCH_ASSOC);
-    if ($profile) return $profile;
-
     $source = [
         'bio' => '',
         'instagram' => '',
@@ -712,7 +715,7 @@ function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
     ];
 
     $stmt = $pdo->prepare(
-        "SELECT b.instagram, b.website
+        "SELECT b.bio, b.instagram, b.website
          FROM dj_portal_accounts a
          LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
          WHERE a.id = ?
@@ -721,16 +724,48 @@ function deseo_mylive_public_profile_ensure(PDO $pdo, int $accountId): array {
     $stmt->execute([$accountId]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($booking) {
-        // The public Bio intentionally starts empty: it must be written specifically
-        // for the public profile in English rather than copied from the application.
+        $source['bio'] = trim((string)($booking['bio'] ?? ''));
         $source['instagram'] = deseo_mylive_profile_clean_url((string)($booking['instagram'] ?? ''));
         $source['website'] = deseo_mylive_profile_clean_url((string)($booking['website'] ?? ''));
     }
 
+    $existing = $pdo->prepare("SELECT * FROM dj_public_profiles WHERE account_id = ? LIMIT 1");
+    $existing->execute([$accountId]);
+    $profile = $existing->fetch(PDO::FETCH_ASSOC);
+
+    if ($profile) {
+        if (empty($profile['application_bio_seeded'])) {
+            $canSeedApplicationBio =
+                trim((string)($profile['draft_bio'] ?? '')) === ''
+                && trim((string)($profile['published_bio'] ?? '')) === ''
+                && empty($profile['published_at'])
+                && $source['bio'] !== '';
+
+            if ($canSeedApplicationBio) {
+                $pdo->prepare(
+                    "UPDATE dj_public_profiles
+                     SET draft_bio = ?, application_bio_seeded = 1
+                     WHERE account_id = ?"
+                )->execute([$source['bio'], $accountId]);
+            } else {
+                $pdo->prepare(
+                    "UPDATE dj_public_profiles
+                     SET application_bio_seeded = 1
+                     WHERE account_id = ?"
+                )->execute([$accountId]);
+            }
+
+            $existing->execute([$accountId]);
+            $profile = $existing->fetch(PDO::FETCH_ASSOC);
+        }
+
+        return $profile ?: [];
+    }
+
     $insert = $pdo->prepare(
         "INSERT INTO dj_public_profiles
-         (account_id, draft_bio, draft_instagram, draft_website, published_bio)
-         VALUES (?, ?, ?, ?, '')"
+         (account_id, draft_bio, draft_instagram, draft_website, published_bio, application_bio_seeded)
+         VALUES (?, ?, ?, ?, '', 1)"
     );
     $insert->execute([
         $accountId,
@@ -795,7 +830,7 @@ function deseo_mylive_publish_public_profile(PDO $pdo, int $accountId): array {
     $profile = deseo_mylive_public_profile_ensure($pdo, $accountId);
 
     if (trim((string)($profile['draft_bio'] ?? '')) === '') {
-        throw new RuntimeException('Συμπλήρωσε το Bio στα Αγγλικά πριν δημοσιεύσεις το Public Profile.');
+        throw new RuntimeException('Συμπλήρωσε το Bio πριν δημοσιεύσεις το Public Profile.');
     }
 
     $stmt = $pdo->prepare(
