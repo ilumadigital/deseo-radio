@@ -1187,7 +1187,7 @@ if ($nextShowScheduleHidden) {
                 <div>
                     <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
                     <h2>What listeners see.</h2>
-                    <p>Γράψε το About σου και πρόσθεσε τα socials σου. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
+                    <p>Γράψε το επαγγελματικό Bio σου στα Αγγλικά και πρόσθεσε τα socials σου. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
                 </div>
 
                 <?php $publicProfileWasPublished = !empty($publicProfile['published_at']); ?>
@@ -1203,6 +1203,18 @@ if ($nextShowScheduleHidden) {
                 </div>
             </div>
 
+            <div class="public-profile-bio-guide">
+                <div>
+                    <span>PUBLIC BIO · ENGLISH</span>
+                    <p><?= deseo_mylive_e(deseo_mylive_dj_bio_guidance_text()) ?></p>
+                </div>
+                <a href="<?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_url()) ?>"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_cta()) ?> ↗
+                </a>
+            </div>
+
             <?php if (!empty($publicProfile['is_published']) && $publicProfileHasChanges): ?>
                 <div class="public-profile-unpublished">
                     <strong>You have unpublished changes.</strong>
@@ -1214,9 +1226,9 @@ if ($nextShowScheduleHidden) {
                 <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
 
                 <label class="public-profile-about">
-                    <span>ABOUT YOU</span>
-                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Tell listeners a little about your sound, your story and your show…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
-                    <small>Έως 1.600 χαρακτήρες. Το αρχικό κείμενο έχει εισαχθεί από την Season 6 αίτησή σου, όπου υπήρχε.</small>
+                    <span>BIO · ENGLISH</span>
+                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Write your professional DJ bio in English…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
+                    <small>Έως 1.600 χαρακτήρες · το Bio πρέπει να είναι γραμμένο στα Αγγλικά και να είναι έτοιμο για δημόσια προβολή.</small>
                 </label>
 
                 <div class="public-profile-links">
