@@ -9,11 +9,11 @@ function deseo_env(string $key, string $default = ''): string {
 }
 
 function deseo_mylive_dj_bio_guidance_text(): string {
-    return 'Το Public Profile σου είναι η δημόσια καλλιτεχνική σου παρουσία στο Deseo Radio. Εμφανίζεται στο deseoradio.com όταν βρίσκεσαι On Air και μπορεί να το δουν χιλιάδες ακροατές. Συμπλήρωσε ένα ολοκληρωμένο, επαγγελματικό bio στα Αγγλικά, έως 1.600 χαρακτήρες, που να παρουσιάζει σωστά τη μουσική σου ταυτότητα, την εμπειρία και τη διαδρομή σου.';
+    return 'Το Public Profile σου είναι η δημόσια καλλιτεχνική σου παρουσία στο Deseo Radio και εμφανίζεται στο deseoradio.com όταν βρίσκεσαι On Air. Το bio που έδωσες στην αίτησή σου μεταφέρεται αυτόματα στο MyLive και δεν χάνεται. Μπορείς να το κρατήσεις ως έχει ή να το επεξεργαστείς. Για τη δημόσια παρουσίασή σου προτείνουμε ένα ολοκληρωμένο, επαγγελματικό bio στα Αγγλικά, έως 1.600 χαρακτήρες.';
 }
 
 function deseo_mylive_dj_bio_chatgpt_cta(): string {
-    return 'Δεν έχεις έτοιμο bio; Δημιούργησέ το με ChatGPT';
+    return 'Προαιρετικά: Βελτίωσέ το με ChatGPT';
 }
 
 function deseo_mylive_dj_bio_chatgpt_url(): string {
