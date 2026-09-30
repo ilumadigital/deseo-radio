@@ -4482,6 +4482,14 @@ body{
   backdrop-filter: blur(14px);
 }
 
+.mylive-language-switcher.is-inline {
+  position: static;
+  top: auto;
+  right: auto;
+  flex: 0 0 auto;
+  box-shadow: none;
+}
+
 .mylive-language-switcher button {
   min-width: 38px;
   height: 32px;
