@@ -1187,7 +1187,7 @@ if ($nextShowScheduleHidden) {
                 <div>
                     <span class="eyebrow">YOUR PUBLIC DJ PROFILE</span>
                     <h2>What listeners see.</h2>
-                    <p>Γράψε το επαγγελματικό Bio σου στα Αγγλικά και πρόσθεσε τα socials σου. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
+                    <p>Το bio που έδωσες στην αίτησή σου εμφανίζεται ήδη εδώ και δεν χάνεται. Μπορείς να το κρατήσεις όπως είναι ή να το επεξεργαστείς. Για δημόσια παρουσίαση προτείνεται επαγγελματικό bio στα Αγγλικά. Η φωτογραφία και το show title έρχονται πάντα από το επίσημο Radio Program του Deseo.</p>
                 </div>
 
                 <?php $publicProfileWasPublished = !empty($publicProfile['published_at']); ?>
@@ -1205,7 +1205,7 @@ if ($nextShowScheduleHidden) {
 
             <div class="public-profile-bio-guide">
                 <div>
-                    <span>PUBLIC BIO · ENGLISH</span>
+                    <span>PUBLIC BIO · ENGLISH RECOMMENDED</span>
                     <p><?= deseo_mylive_e(deseo_mylive_dj_bio_guidance_text()) ?></p>
                 </div>
                 <a href="<?= deseo_mylive_e(deseo_mylive_dj_bio_chatgpt_url()) ?>"
@@ -1226,9 +1226,9 @@ if ($nextShowScheduleHidden) {
                 <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
 
                 <label class="public-profile-about">
-                    <span>BIO · ENGLISH</span>
-                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Write your professional DJ bio in English…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
-                    <small>Έως 1.600 χαρακτήρες · το Bio πρέπει να είναι γραμμένο στα Αγγλικά και να είναι έτοιμο για δημόσια προβολή.</small>
+                    <span>BIO</span>
+                    <textarea name="bio" maxlength="1600" rows="7" placeholder="Your bio from the Season 6 application will appear here…"><?= deseo_mylive_e((string)($publicProfile['draft_bio'] ?? '')) ?></textarea>
+                    <small>Έως 1.600 χαρακτήρες · το bio της αίτησής σου διατηρείται και εμφανίζεται εδώ. Μπορείς προαιρετικά να το βελτιώσεις ή να το μετατρέψεις σε επαγγελματικό αγγλικό bio με το ChatGPT.</small>
                 </label>
 
                 <div class="public-profile-links">
