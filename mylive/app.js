@@ -1215,7 +1215,19 @@
 
     wrap.appendChild(greek);
     wrap.appendChild(english);
-    document.body.appendChild(wrap);
+
+    var portalUser = document.querySelector('.portal-user');
+    if (portalUser) {
+      wrap.classList.add('is-inline');
+      var logoutForm = portalUser.querySelector('form');
+      if (logoutForm) {
+        portalUser.insertBefore(wrap, logoutForm);
+      } else {
+        portalUser.appendChild(wrap);
+      }
+    } else {
+      document.body.appendChild(wrap);
+    }
 
     wrap.addEventListener('click', function (event) {
       var button = event.target.closest ? event.target.closest('button[data-lang]') : null;
