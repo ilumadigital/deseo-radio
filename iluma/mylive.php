@@ -1119,53 +1119,6 @@ admin_page_start('MyLive', 'mylive');
         </div>
     </section>
 
-    <?php if ($pendingAccounts): ?>
-        <section class="panel mylive-pending-panel mylive-v3-pending">
-            <div class="mylive-panel-head">
-                <div>
-                    <span>APPROVAL QUEUE</span>
-                    <h2>DJs waiting for MyLive access</h2>
-                    <p>Έγκρινε γρήγορα τα pending accounts. Δημιουργείται temporary password και στέλνεται αυτόματα το onboarding email.</p>
-                </div>
-                <strong><?= count($pendingAccounts) ?></strong>
-            </div>
-
-            <div class="mylive-pending-list">
-                <?php foreach ($pendingAccounts as $pending): ?>
-                    <article class="mylive-pending-card mylive-v3-pending-card">
-                        <div class="mylive-pending-main">
-                            <?php if (!empty($pending['application_photo'])): ?>
-                                <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
-                            <?php else: ?>
-                                <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
-                            <?php endif; ?>
-
-                            <div class="mylive-pending-copy">
-                                <span><?= admin_e(strtoupper((string)($pending['application_status'] ?? 'approved'))) ?> · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
-                                <h3><?= admin_e($pending['artist_name']) ?></h3>
-                                <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
-
-                                <div class="mylive-pending-tags">
-                                    <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
-                                    <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
-                                    <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
-                                    <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <form method="post" class="mylive-pending-approve" data-deseo-confirm="Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email;" data-deseo-confirm-title="Ενεργοποίηση MyLive" data-deseo-confirm-label="Ενεργοποίηση">
-                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="approve_pending">
-                            <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
-                            <button class="button button-primary" type="submit">Approve & Send Access</button>
-                        </form>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-        </section>
-    <?php endif; ?>
-
     <details class="panel mylive-create-panel mylive-create-drawer">
         <summary>
             <div>
@@ -1594,6 +1547,53 @@ admin_page_start('MyLive', 'mylive');
             </div>
         </div>
     </section>
+
+    <?php if ($pendingAccounts): ?>
+        <section class="panel mylive-pending-panel mylive-v3-pending">
+            <div class="mylive-panel-head">
+                <div>
+                    <span>APPROVAL QUEUE</span>
+                    <h2>DJs waiting for MyLive access</h2>
+                    <p>Έγκρινε γρήγορα τα pending accounts. Δημιουργείται temporary password και στέλνεται αυτόματα το onboarding email.</p>
+                </div>
+                <strong><?= count($pendingAccounts) ?></strong>
+            </div>
+
+            <div class="mylive-pending-list">
+                <?php foreach ($pendingAccounts as $pending): ?>
+                    <article class="mylive-pending-card mylive-v3-pending-card">
+                        <div class="mylive-pending-main">
+                            <?php if (!empty($pending['application_photo'])): ?>
+                                <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
+                            <?php else: ?>
+                                <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
+                            <?php endif; ?>
+
+                            <div class="mylive-pending-copy">
+                                <span><?= admin_e(strtoupper((string)($pending['application_status'] ?? 'approved'))) ?> · <?= admin_e(deseo_mylive_slot($pending)) ?></span>
+                                <h3><?= admin_e($pending['artist_name']) ?></h3>
+                                <p><?= admin_e($pending['full_name']) ?> · <?= admin_e($pending['email']) ?></p>
+
+                                <div class="mylive-pending-tags">
+                                    <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
+                                    <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="post" class="mylive-pending-approve" data-deseo-confirm="Να ενεργοποιηθεί το MyLive για <?= admin_e($pending['artist_name']) ?> και να σταλεί το onboarding email;" data-deseo-confirm-title="Ενεργοποίηση MyLive" data-deseo-confirm-label="Ενεργοποίηση">
+                            <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="approve_pending">
+                            <input type="hidden" name="account_id" value="<?= (int)$pending['id'] ?>">
+                            <button class="button button-primary" type="submit">Approve & Send Access</button>
+                        </form>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endif; ?>
 </div>
 
 <div class="schedule-media-modal" id="myliveAssetMediaModal" hidden>
