@@ -771,7 +771,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 . (string)$account['artist_name']
                                 . ' και στάλθηκε ενημερωτικό email στο '
                                 . (string)$account['email']
-                                . '. Τα διαθέσιμα social links εισήχθησαν από την αίτηση, όπου υπήρχαν. Το Bio συμπληρώνεται από τον DJ στα Αγγλικά.';
+                                . '. Τα διαθέσιμα social links και το bio της αίτησης μεταφέρθηκαν όπου υπήρχαν. Ο DJ μπορεί προαιρετικά να κρατήσει το bio ως έχει ή να το βελτιώσει μέσα από το MyLive.';
                         } catch (Throwable $mailError) {
                             $pdo->prepare(
                                 "UPDATE dj_portal_accounts
