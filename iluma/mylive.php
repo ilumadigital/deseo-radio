@@ -1524,7 +1524,7 @@ admin_page_start('MyLive', 'mylive');
                             </div>
                         </details>
 
-                        <details class="mylive-v3-detail" data-mylive-detail="assets">
+                        <details class="mylive-v3-detail" data-mylive-detail="assets" open>
                             <summary>
                                 <div><span>DESEO / ILUMA</span><strong>Assets</strong></div>
                                 <small><?= count($assetsByAccount[$accountId]) ?> available · upload / assign</small>
@@ -1672,7 +1672,12 @@ admin_page_start('MyLive', 'mylive');
     var filter='all';
     var rosterItems=Array.prototype.slice.call(roster.querySelectorAll('[data-account-select]'));
     var cards=Array.prototype.slice.call(list.querySelectorAll('[data-account-id]'));
-    var selectedId=window.localStorage ? localStorage.getItem('deseoMyliveAdminSelectedDj') : '';
+    var selectedId='';
+    try{
+        selectedId=window.localStorage ? (localStorage.getItem('deseoMyliveAdminSelectedDj')||'') : '';
+    }catch(e){
+        selectedId='';
+    }
 
     function cardFor(id){
         return cards.find(function(card){return card.getAttribute('data-account-id')===String(id);})||null;
