@@ -937,6 +937,60 @@
     ['ON AIR NOW', 'ΤΩΡΑ ΣΤΟΝ ΑΕΡΑ'],
     ['NON-STOP MIX', 'NON-STOP MIX'],
     ['Live status temporarily unavailable', 'Το live status δεν είναι προσωρινά διαθέσιμο'],
+    ['Η συνεδρία έληξε. Ανανέωσε τη σελίδα και δοκίμασε ξανά.', 'Your session expired. Refresh the page and try again.'],
+    ['Η ασφαλής ανάκτηση κωδικού δεν είναι διαθέσιμη αυτή τη στιγμή.', 'Secure password recovery is not available right now.'],
+    ['Το Cloudflare security check απέτυχε. Δοκίμασε ξανά.', 'The Cloudflare security check failed. Try again.'],
+    ['Συμπλήρωσε ένα έγκυρο email.', 'Enter a valid email address.'],
+    ['Δεν υπάρχει MyLive account με αυτό το email.', 'There is no MyLive account with this email address.'],
+    ['Περίμενε λίγα δευτερόλεπτα πριν ζητήσεις νέο reset link.', 'Wait a few seconds before requesting a new reset link.'],
+    ['Έχει ήδη σταλεί πρόσφατα reset link σε αυτό το email. Έλεγξε Inbox και Spam / Junk.', 'A reset link was recently sent to this email. Check your Inbox and Spam / Junk folders.'],
+    ['Δεν ήταν δυνατή η αποστολή του reset email αυτή τη στιγμή. Δοκίμασε ξανά σε λίγο.', 'The reset email could not be sent right now. Try again shortly.'],
+    ['Ο νέος κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.', 'The new password must be at least 8 characters long.'],
+    ['Ο κωδικός πρέπει να χρησιμοποιεί μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα. Δεν επιτρέπονται ελληνικοί χαρακτήρες.', 'The password must use English characters, numbers and symbols only. Greek characters are not allowed.'],
+    ['Οι δύο κωδικοί δεν είναι ίδιοι.', 'The two passwords do not match.'],
+    ['Ο σύνδεσμος αλλαγής κωδικού δεν είναι πλέον έγκυρος. Ζήτησε νέο reset link.', 'The password reset link is no longer valid. Request a new reset link.'],
+    ['Η ασφαλής είσοδος δεν είναι διαθέσιμη αυτή τη στιγμή.', 'Secure sign-in is not available right now.'],
+    ['Πολλές αποτυχημένες προσπάθειες. Δοκίμασε ξανά σε λίγα λεπτά.', 'Too many failed attempts. Try again in a few minutes.'],
+    ['Συμπλήρωσε σωστά email και password.', 'Enter a valid email and password.'],
+    ['Το email ή το password δεν είναι σωστό.', 'The email or password is incorrect.'],
+    ['Η συνεδρία σου έχει λήξει.', 'Your session has expired.'],
+    ['Το account δεν είναι ενεργό.', 'Your account is not active.'],
+    ['Ο προσωπικός σου κωδικός αποθηκεύτηκε.', 'Your personal password has been saved.'],
+    ['Η συνεδρία σου έχει λήξει. Κάνε ξανά login.', 'Your session has expired. Sign in again.'],
+    ['Οι ρυθμίσεις επικοινωνίας αποθηκεύτηκαν.', 'Your communication settings have been saved.'],
+    ['Το Public Profile δεν είναι ενεργό για το account σου.', 'Public Profile is not enabled for your account.'],
+    ['Δημιούργησε πρώτα το προσωπικό σου password.', 'Create your personal password first.'],
+    ['Το Public Profile έγινε Unpublished. Το show σου παραμένει συνδεδεμένο κανονικά με το Radio Program και μπορείς να το δημοσιεύσεις ξανά οποιαδήποτε στιγμή.', 'Your Public Profile is now unpublished. Your show remains connected to the Radio Program and you can publish it again at any time.'],
+    ['Το Public Profile δημοσιεύτηκε. Η σύνδεση με το Radio Program παραμένει κανονικά ενεργή.', 'Your Public Profile has been published. Its Radio Program connection remains active.'],
+    ['Το draft του Public Profile αποθηκεύτηκε. Οι αλλαγές δεν είναι ακόμη δημόσιες.', 'Your Public Profile draft has been saved. The changes are not public yet.'],
+    ['Το account δεν είναι πλέον ενεργό.', 'This account is no longer active.'],
+    ['Επίλεξε το DJ set που θέλεις να ανεβάσεις.', 'Select the DJ set you want to upload.'],
+    ['Το αρχείο ξεπερνά το όριο upload του server.', 'The file exceeds the server upload limit.'],
+    ['Το αρχείο είναι πολύ μεγάλο.', 'The file is too large.'],
+    ['Το upload διακόπηκε πριν ολοκληρωθεί.', 'The upload was interrupted before it completed.'],
+    ['Δεν επιλέχθηκε αρχείο.', 'No file was selected.'],
+    ['Το upload δεν ολοκληρώθηκε.', 'The upload did not complete.'],
+    ['Το αρχείο πρέπει να είναι μικρότερο από 1 GB.', 'The file must be smaller than 1 GB.'],
+    ['Το DJ Set πρέπει να είναι MP3 · 192 kbps · Stereo.', 'The DJ Set must be MP3 · 192 kbps · Stereo.'],
+    ['Το αρχείο δεν αναγνωρίστηκε ως έγκυρο upload.', 'The file was not recognized as a valid upload.'],
+    ['Το account δεν βρέθηκε.', 'The account was not found.'],
+    ['Δεν ήταν δυνατή η δημιουργία του προσωπικού φακέλου upload.', 'Your personal upload folder could not be created.'],
+    ['Δεν ήταν δυνατή η αποθήκευση του DJ set.', 'The DJ set could not be saved.'],
+    ['Κάτι πήγε στραβά. Δοκίμασε ξανά.', 'Something went wrong. Try again.'],
+    ['Το reset link στάλθηκε. Έλεγξε και τον φάκελο Spam / Junk.', 'The reset link was sent. Check your Spam / Junk folder too.'],
+    ['Το set παραλήφθηκε από το Deseo και περιμένει έλεγχο.', 'The set was received by Deseo and is waiting for review.'],
+    ['Το set έχει ελεγχθεί και περιμένει να προγραμματιστεί.', 'The set has been reviewed and is waiting to be scheduled.'],
+    ['Όλα έτοιμα. Το επόμενο episode είναι προγραμματισμένο για broadcast.', 'Everything is ready. The next episode is scheduled for broadcast.'],
+    ['Το set χρειάζεται αλλαγές πριν μπορέσει να προγραμματιστεί.', 'The set needs changes before it can be scheduled.'],
+    ['Η Guest εμφάνισή σου είναι one-off. Η ομάδα του Deseo θα επιβεβαιώσει ξεχωριστά την ημερομηνία μετάδοσης.', 'Your Guest appearance is one-off. The Deseo team will confirm the broadcast date separately.'],
+    ['Δεν έχει ανέβει ακόμη set για το επόμενο episode.', 'No set has been uploaded for the next episode yet.'],
+    ['Δεν υπάρχει άλλη εβδομαδιαία μετάδοση για αυτό το slot μέσα στη Season 6, η οποία ολοκληρώνεται στις 30.05.2027.', 'There is no further weekly broadcast for this slot in Season 6, which ends on 30.05.2027.'],
+    ['Ενεργοποίησε push alerts για DJ Set reminders και το ON AIR NOW του MyLive.', 'Enable push alerts for DJ Set reminders and MyLive ON AIR NOW.'],
+    ['εκτιμώμενη απήχηση ·', 'estimated reach ·'],
+    ['MB · έτοιμο για upload', 'MB · ready to upload'],
+    ['Το set ανέβηκε.', 'The set was uploaded.'],
+    ['Η σύνδεση διακόπηκε κατά το upload.', 'The connection was interrupted during the upload.'],
+    ['Αντέγραψε το προσωπικό referral link σου από το πεδίο παρακάτω.', 'Copy your personal referral link from the field below.'],
     ['Use only English characters, numbers and symbols.', 'Χρησιμοποίησε μόνο αγγλικούς χαρακτήρες, αριθμούς και σύμβολα.']
   ];
 
@@ -1019,6 +1073,26 @@
 
     match = compact.match(/^(.+?) MB · (έτοιμο για upload|ready to upload)$/i);
     if (match) return match[1] + ' MB · ' + (target === 'en' ? 'ready to upload' : 'έτοιμο για upload');
+
+    match = compact.match(/^Το (EP\d{3}) ανέβηκε επιτυχώς\.$/i);
+    if (match) return target === 'en'
+      ? match[1] + ' uploaded successfully.'
+      : 'Το ' + match[1] + ' ανέβηκε επιτυχώς.';
+
+    match = compact.match(/^(EP\d{3}) uploaded successfully\.$/i);
+    if (match) return target === 'el'
+      ? 'Το ' + match[1] + ' ανέβηκε επιτυχώς.'
+      : match[1] + ' uploaded successfully.';
+
+    match = compact.match(/^Στάλθηκε reset link στο (.+)\. Έλεγξε και τον φάκελο Spam \/ Junk\.$/i);
+    if (match) return target === 'en'
+      ? 'A reset link was sent to ' + match[1] + '. Check your Spam / Junk folder too.'
+      : compact;
+
+    match = compact.match(/^A reset link was sent to (.+)\. Check your Spam \/ Junk folder too\.$/i);
+    if (match) return target === 'el'
+      ? 'Στάλθηκε reset link στο ' + match[1] + '. Έλεγξε και τον φάκελο Spam / Junk.'
+      : compact;
 
     match = compact.match(/^Uploading (\d+)% · MyLive · Deseo Radio$/);
     if (match) return target === 'en'
