@@ -662,3 +662,55 @@
     startEmailAutomationTick();
   });
 }());
+
+
+(function initNextShowCountdown(){
+    const countdown = document.querySelector('[data-mylive-next-countdown]');
+    if (!countdown) return;
+
+    const startRaw = countdown.getAttribute('data-start') || '';
+    const endRaw = countdown.getAttribute('data-end') || '';
+    const start = Date.parse(startRaw);
+    const end = Date.parse(endRaw);
+
+    if (!Number.isFinite(start)) return;
+
+    let reloadScheduled = false;
+
+    function updateCountdown(){
+        const now = Date.now();
+
+        if (Number.isFinite(end) && now >= start && now < end) {
+            countdown.textContent = 'LIVE NOW';
+            countdown.classList.add('is-live');
+            return;
+        }
+
+        if (Number.isFinite(end) && now >= end) {
+            countdown.textContent = 'Updating next show…';
+            countdown.classList.remove('is-live');
+
+            if (!reloadScheduled) {
+                reloadScheduled = true;
+                window.setTimeout(() => window.location.reload(), 2500);
+            }
+            return;
+        }
+
+        const diff = Math.max(0, start - now);
+        const totalMinutes = Math.floor(diff / 60000);
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+
+        countdown.classList.remove('is-live');
+        countdown.textContent =
+            'ON AIR IN · ' +
+            String(days).padStart(2, '0') + 'D · ' +
+            String(hours).padStart(2, '0') + 'H · ' +
+            String(minutes).padStart(2, '0') + 'M';
+    }
+
+    updateCountdown();
+    window.setInterval(updateCountdown, 30000);
+}());
