@@ -973,9 +973,18 @@ $accountsStmt = $pdo->query(
      FROM dj_portal_accounts a
      LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
      ORDER BY
-        CASE a.account_status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END,
+        CASE COALESCE(b.status, '')
+            WHEN 'approved' THEN 0
+            WHEN 'guest' THEN 1
+            ELSE 2
+        END,
+        CASE
+            WHEN a.day_of_week BETWEEN 1 AND 7 THEN a.day_of_week
+            ELSE 8
+        END,
+        a.start_time ASC,
         a.artist_name ASC,
-        a.id DESC"
+        a.id ASC"
 );
 $accounts = $accountsStmt->fetchAll(PDO::FETCH_ASSOC);
 $pendingAccounts = array_values(array_filter(
