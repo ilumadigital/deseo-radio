@@ -242,6 +242,7 @@ $partners = [
     5 => ['url' => 'https://tunein.com/radio/Deseo-Radio-s258242/', 'name' => 'TuneIn'],
     6 => ['url' => 'https://vradio.app/play?id=20739', 'name' => 'VRadio'],
     8 => ['url' => 'https://iluma.gr/radios', 'name' => 'ILUMA Radios'],
+    9 => ['url' => 'https://streamee.com/fm_radio/deseo-radio/', 'name' => 'Streamee', 'image' => 'partner-9.svg'],
 ];
 ?>
 
@@ -517,24 +518,12 @@ $partners = [
                        rel="noopener noreferrer"
                        aria-label="<?= deseo_e($partner['name']) ?>"
                        data-analytics-event="radio_partner_click">
-                        <img src="/assets/img/partner-<?= $id ?>.png"
+                        <img src="/assets/img/<?= deseo_e($partner['image'] ?? ('partner-' . $id . '.png')) ?>"
                              data-fallback="/assets/img/deseoradio-logo.png"
                              alt="<?= deseo_e($partner['name']) ?>">
                     </a>
                 <?php endforeach; ?>
             </div>
-            <a class="partner-streamee reveal"
-               href="https://streamee.com/fm_radio/deseo-radio/"
-               target="_blank"
-               rel="noopener noreferrer"
-               aria-label="Listen to Deseo Radio on Streamee"
-               data-analytics-event="radio_partner_click">
-                <img src="https://streamee.com/wp-content/themes/streamee-theme/img/logo-wh.svg"
-                     alt="Streamee"
-                     width="160"
-                     loading="lazy">
-                <span>Streamee ↗</span>
-            </a>
         </div>
     </section>
 
