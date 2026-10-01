@@ -559,6 +559,7 @@ $partners = [
             </div>
         </div>
     </section>
+    <?php require __DIR__ . '/includes/ai-discovery.php'; ?>
 </main>
 
 <div class="lineup-lightbox" id="lineup-lightbox" hidden role="dialog" aria-modal="true" aria-label="<?= deseo_e(deseo_t('lineup.zoom')) ?>">

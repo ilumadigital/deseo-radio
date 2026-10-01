@@ -6,6 +6,7 @@
             <div class="footer-brand-actions">
                 <a class="footer-iluma" href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
                 <a class="footer-dj-call" href="/dj" data-analytics-event="dj_call_footer_click">The DJs Call ↗</a>
+                <a class="footer-media-kit" href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-i18n="footer.media_kit" data-analytics-event="media_kit_footer_click"><?= deseo_e(deseo_t('footer.media_kit')) ?></a>
             </div>
         </div>
 
@@ -149,7 +150,8 @@ $clientKeys = [
     'faq.kicker','faq.title','faq.text',
     'faq.q1','faq.a1','faq.q2','faq.a2','faq.q3','faq.a3','faq.q4','faq.a4','faq.q5','faq.a5',
     'advertise.kicker','advertise.title','advertise.text','advertise.cta',
-    'footer.tagline','footer.contact','footer.follow','footer.listen','footer.live_player','footer.today_program','footer.playlists','footer.faq','footer.powered',
+    'footer.tagline','footer.contact','footer.follow','footer.listen','footer.live_player','footer.today_program','footer.playlists','footer.faq','footer.powered','footer.media_kit',
+    'ai.kicker','ai.title_start','ai.title_end','ai.text','ai.sources','ai.metrics','ai.open',
     'dj.hero.lead','dj.need.1','dj.need.2','dj.need.3','dj.need.note',
     'dj.info.title','dj.info.p1','dj.info.p2',
     'dj.field.full_name','dj.field.photo','dj.field.photo_note','dj.field.set_type',
@@ -742,6 +744,10 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
             var ariaKey = ariaNodes[i].getAttribute('data-i18n-aria');
             if (Object.prototype.hasOwnProperty.call(catalog, ariaKey)) ariaNodes[i].setAttribute('aria-label', catalog[ariaKey]);
         }
+
+        // Keep destination questions in sync with the live language switch.
+        var aiLinks = document.querySelectorAll('[data-ai-href-' + language + ']');
+        for (i = 0; i < aiLinks.length; i++) aiLinks[i].setAttribute('href', aiLinks[i].getAttribute('data-ai-href-' + language));
 
         document.documentElement.lang = language;
 

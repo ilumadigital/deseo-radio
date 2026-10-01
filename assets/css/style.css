@@ -734,7 +734,8 @@ button{cursor:pointer}
   margin-top:24px;
 }
 .footer-iluma,
-.footer-dj-call{
+.footer-dj-call,
+.footer-media-kit{
   min-height:40px;
   display:inline-flex;
   align-items:center;
@@ -751,13 +752,15 @@ button{cursor:pointer}
   background:rgba(255,43,54,.06);
   color:var(--red);
 }
-.footer-dj-call{
+.footer-dj-call,
+.footer-media-kit{
   border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.04);
   color:#fff;
 }
 .footer-iluma:hover,
-.footer-dj-call:hover{
+.footer-dj-call:hover,
+.footer-media-kit:hover{
   transform:translateY(-1px);
   border-color:rgba(255,255,255,.22);
 }
@@ -2106,7 +2109,8 @@ h2,
   }
 
   .footer-iluma,
-  .footer-dj-call{
+  .footer-dj-call,
+  .footer-media-kit{
     width:min(280px,100%);
     min-height:42px;
     margin:0;
@@ -2698,4 +2702,53 @@ body.dj-profile-modal-open{overflow:hidden}
 @media(max-width:430px){
   .hero-cms-card.has-dj-profile::before{right:12px;top:12px;font-size:6px}
   .dj-profile-modal-copy h2{font-size:40px}
+}
+
+/* Deseo Radio: Ask AI discovery (homepage) */
+.ai-discovery-section{padding:0 0 100px;background:#050505}
+.ai-discovery-panel{display:grid;grid-template-columns:minmax(0,40%) minmax(0,60%);overflow:hidden;border:1px solid rgba(255,255,255,.11);border-radius:32px;background:#111113}
+.ai-discovery-intro{position:relative;isolation:isolate;min-width:0;min-height:385px;overflow:hidden;padding:52px clamp(26px,3.1vw,52px);border-right:1px solid rgba(255,255,255,.08)}
+.ai-discovery-intro::after{content:"AI";position:absolute;z-index:-1;left:24px;bottom:-105px;font-size:clamp(180px,20vw,320px);line-height:1;font-weight:800;letter-spacing:-.1em;color:rgba(255,255,255,.018);pointer-events:none}
+.ai-discovery-kicker{display:inline-flex;align-items:center;gap:11px;color:#8e8e95;font-size:10px;font-weight:700;letter-spacing:.21em}
+.ai-discovery-dot{width:8px;height:8px;flex:none;border-radius:50%;background:#d2fc00;box-shadow:0 0 15px rgba(210,252,0,.24)}
+.ai-discovery-intro h2{margin:28px 0 20px;font-size:clamp(32px,3.6vw,58px);font-weight:800;line-height:1.03;letter-spacing:-.065em;color:#fff}
+.ai-discovery-title-accent{color:#b9b9bd}
+.ai-discovery-intro p{max-width:480px;margin:0;color:#909098;font-size:13px;line-height:1.75}
+.ai-discovery-sources{display:flex;align-items:center;flex-wrap:wrap;column-gap:14px;row-gap:9px;margin-top:27px}
+.ai-discovery-sources>span{flex-basis:100%;color:#616169;font-size:9px;font-weight:700;letter-spacing:.14em}
+.ai-discovery-sources a{color:#ababaf;font-size:11px;text-decoration:underline;text-decoration-color:rgba(255,255,255,.19);text-underline-offset:4px;transition:color .2s}
+.ai-discovery-sources a:hover{color:#fff}
+.ai-discovery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));min-width:0}
+.ai-discovery-card{display:flex;min-width:0;min-height:190px;flex-direction:column;justify-content:space-between;gap:24px;padding:28px;border-left:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);color:#ededf0;background:rgba(255,255,255,.008);transition:background .2s ease}
+.ai-discovery-card:nth-child(n+3){border-bottom:0}
+.ai-discovery-card:hover,.ai-discovery-card:focus-visible{background:rgba(255,255,255,.045)}
+.ai-discovery-card:focus-visible{outline:2px solid var(--red);outline-offset:-3px}
+.ai-discovery-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.ai-discovery-logo{display:grid;width:49px;height:49px;flex:none;place-items:center;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#202023}
+.ai-discovery-logo img{width:36px;height:36px;object-fit:contain;border-radius:7px}
+.ai-discovery-arrow{display:grid;width:36px;height:36px;flex:none;place-items:center;border:1px solid rgba(255,255,255,.09);border-radius:50%;color:#686870;font-size:16px;transition:border-color .2s,color .2s,transform .2s}
+.ai-discovery-card:hover .ai-discovery-arrow{color:#fff;border-color:rgba(255,255,255,.3);transform:translate(2px,-2px)}
+.ai-discovery-card-copy{display:flex;flex-direction:column;gap:7px}
+.ai-discovery-card-copy strong{font-size:16px;line-height:1.2;letter-spacing:-.02em}
+.ai-discovery-card-copy small{color:#66666f;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+@media(max-width:900px){
+  .ai-discovery-section{padding-bottom:78px}
+  .ai-discovery-panel{grid-template-columns:1fr}
+  .ai-discovery-intro{min-height:0;padding:40px 32px 36px;border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .ai-discovery-intro h2{font-size:clamp(35px,6vw,54px)}
+  .ai-discovery-card{min-height:170px;border-left:0}
+  .ai-discovery-card:nth-child(even){border-left:1px solid rgba(255,255,255,.07)}
+}
+@media(max-width:520px){
+  .ai-discovery-section{padding-bottom:65px}
+  .ai-discovery-panel{border-radius:25px}
+  .ai-discovery-intro{padding:33px 24px 30px}
+  .ai-discovery-kicker{font-size:9px;letter-spacing:.14em}
+  .ai-discovery-intro h2{margin:25px 0 17px;font-size:clamp(32px,9vw,42px)}
+  .ai-discovery-intro p{font-size:12px}
+  .ai-discovery-grid{grid-template-columns:1fr;grid-template-rows:auto}
+  .ai-discovery-card,.ai-discovery-card:nth-child(even),.ai-discovery-card:nth-child(n+3){min-height:140px;padding:22px 24px;border-left:0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .ai-discovery-card:last-child{border-bottom:0}
+  .ai-discovery-logo{width:44px;height:44px}
+  .ai-discovery-card-copy strong{font-size:15px}
 }
