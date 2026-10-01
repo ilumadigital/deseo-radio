@@ -1011,12 +1011,37 @@ foreach ($accounts as $account) {
     $setsByAccount[$accountId] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// The overview and delivery library use the complete set history, not the
+// eight-episode limit used by each DJ's management panel.
+$receivedSetsStmt = $pdo->query(
+    "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
+            s.status, s.file_deleted_at, s.uploaded_at, a.artist_name
+     FROM dj_portal_sets s
+     INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+     ORDER BY s.uploaded_at DESC, s.id DESC"
+);
+$receivedSets = $receivedSetsStmt->fetchAll(PDO::FETCH_ASSOC);
+$setStatusLabels = [
+    'received' => 'RECEIVED',
+    'checked' => 'CHECKED',
+    'scheduled' => 'SCHEDULED',
+    'needs_changes' => 'NEEDS CHANGES',
+    'broadcasted' => 'BROADCASTED',
+];
+$setStatusCounts = array_fill_keys(deseo_mylive_set_statuses(), 0);
+foreach ($receivedSets as $receivedSet) {
+    $setStatus = (string)$receivedSet['status'];
+    if (isset($setStatusCounts[$setStatus])) {
+        $setStatusCounts[$setStatus]++;
+    }
+}
+
 $activeAccountCount = count(array_filter(
     $managedAccounts,
     static fn(array $account): bool => (string)($account['account_status'] ?? '') === 'active' && !empty($account['is_active'])
 ));
 $disabledAccountCount = count($managedAccounts) - $activeAccountCount;
-$totalSetCount = array_sum(array_map(static fn(array $account): int => (int)$account['set_count'], $managedAccounts));
+$totalSetCount = count($receivedSets);
 $totalAssetCount = array_sum(array_map(static fn(array $account): int => (int)$account['asset_count'], $managedAccounts));
 $noAssetAccountCount = count(array_filter(
     $managedAccounts,
@@ -1101,6 +1126,16 @@ admin_page_start('MyLive', 'mylive');
             <span>DJ SETS</span>
             <strong><?= $totalSetCount ?></strong>
             <small>συνολικά episodes</small>
+        </div>
+        <div class="mylive-hub-stat is-set-scheduled">
+            <span>SCHEDULED SETS</span>
+            <strong><?= $setStatusCounts['scheduled'] ?></strong>
+            <small>προγραμματισμένα episodes</small>
+        </div>
+        <div class="mylive-hub-stat is-set-broadcasted">
+            <span>BROADCASTED SETS</span>
+            <strong><?= $setStatusCounts['broadcasted'] ?></strong>
+            <small>ολοκληρωμένες μεταδόσεις</small>
         </div>
         <div class="mylive-hub-stat">
             <span>ASSETS</span>
@@ -1548,6 +1583,74 @@ admin_page_start('MyLive', 'mylive');
         </div>
     </section>
 
+
+    <section class="panel mylive-library" aria-labelledby="myliveLibraryTitle">
+        <div class="mylive-library-heading">
+            <div>
+                <span>DJ DELIVERY / ALL EPISODES</span>
+                <h2 id="myliveLibraryTitle">DJ Sets received</h2>
+                <p>Όλα τα DJ Sets που έχουν παραληφθεί έως σήμερα, με το τρέχον status και πρόσβαση στο διαθέσιμο αρχείο.</p>
+            </div>
+            <div class="mylive-library-total">
+                <strong><?= $totalSetCount ?></strong>
+                <small>TOTAL UPLOADS</small>
+            </div>
+        </div>
+
+        <?php if (!$receivedSets): ?>
+            <div class="mylive-library-empty">Δεν έχουμε λάβει ακόμη κάποιο DJ Set.</div>
+        <?php else: ?>
+            <div class="mylive-library-toolbar">
+                <label class="mylive-library-search">
+                    <span>SEARCH DJ SETS</span>
+                    <input id="myliveLibrarySearch" type="search" placeholder="DJ, episode ή filename…" autocomplete="off">
+                </label>
+                <div class="mylive-library-filters" role="group" aria-label="Filter DJ Sets by status">
+                    <button type="button" class="is-active" data-mylive-library-filter="all">All <b><?= $totalSetCount ?></b></button>
+                    <?php foreach ($setStatusLabels as $status => $label): ?>
+                        <button type="button" data-mylive-library-filter="<?= admin_e($status) ?>"><?= admin_e($label) ?> <b><?= $setStatusCounts[$status] ?></b></button>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="mylive-library-results" aria-live="polite">
+                <span>SHOWING <b id="myliveLibraryVisibleCount"><?= $totalSetCount ?></b> OF <?= $totalSetCount ?> DJ SETS</span>
+                <span>NEWEST FIRST</span>
+            </div>
+            <div class="mylive-library-list" id="myliveLibraryList">
+                <?php foreach ($receivedSets as $set): ?>
+                    <?php
+                    $setStatus = (string)$set['status'];
+                    $statusClass = isset($setStatusLabels[$setStatus]) ? $setStatus : 'unknown';
+                    $episodeLabel = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
+                    ?>
+                    <article class="mylive-library-row"
+                             data-mylive-library-status="<?= admin_e($setStatus) ?>"
+                             data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>">
+                        <div class="mylive-library-dj">
+                            <span><?= admin_e($episodeLabel) ?></span>
+                            <strong><?= admin_e((string)$set['artist_name']) ?></strong>
+                        </div>
+                        <div class="mylive-library-file">
+                            <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
+                            <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
+                        </div>
+                        <div class="mylive-library-status">
+                            <span class="mylive-library-badge is-status-<?= admin_e($statusClass) ?>"><?= admin_e($setStatusLabels[$setStatus] ?? strtoupper(str_replace('_', ' ', $setStatus))) ?></span>
+                        </div>
+                        <div class="mylive-library-action">
+                            <?php if (!empty($set['file_deleted_at'])): ?>
+                                <span class="mylive-library-removed" title="Το episode παραμένει στο ιστορικό, αλλά το audio έχει διαγραφεί από τον server.">FILE REMOVED</span>
+                            <?php else: ?>
+                                <a class="button button-secondary" href="mylive-download.php?type=set&amp;id=<?= (int)$set['id'] ?>" aria-label="Download <?= admin_e($episodeLabel . ' · ' . (string)$set['artist_name']) ?>">Download ↓</a>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+            <div class="mylive-library-empty" id="myliveLibraryNoResults" hidden>Δεν βρέθηκαν DJ Sets με αυτά τα φίλτρα.</div>
+        <?php endif; ?>
+    </section>
+
     <?php if ($pendingAccounts): ?>
         <section class="panel mylive-pending-panel mylive-v3-pending">
             <div class="mylive-panel-head">
@@ -1801,6 +1904,41 @@ admin_page_start('MyLive', 'mylive');
         var saved=rosterFor(selectedId);
         if(saved&&!saved.hidden)selectAccount(selectedId);
     }
+}());
+
+(function(){
+    var list=document.getElementById('myliveLibraryList');
+    if(!list)return;
+
+    var search=document.getElementById('myliveLibrarySearch');
+    var empty=document.getElementById('myliveLibraryNoResults');
+    var visibleCount=document.getElementById('myliveLibraryVisibleCount');
+    var rows=Array.prototype.slice.call(list.querySelectorAll('[data-mylive-library-status]'));
+    var filters=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-library-filter]'));
+    var selected='all';
+
+    function apply(){
+        var query=search?search.value.trim().toLocaleLowerCase():'';
+        var count=0;
+        rows.forEach(function(row){
+            var status=row.getAttribute('data-mylive-library-status')||'';
+            var haystack=(row.getAttribute('data-mylive-library-search')||'').toLocaleLowerCase();
+            var show=(selected==='all'||status===selected)&&(!query||haystack.indexOf(query)!==-1);
+            row.hidden=!show;
+            if(show)count++;
+        });
+        if(visibleCount)visibleCount.textContent=String(count);
+        if(empty)empty.hidden=count!==0;
+    }
+
+    filters.forEach(function(button){
+        button.addEventListener('click',function(){
+            selected=button.getAttribute('data-mylive-library-filter')||'all';
+            filters.forEach(function(item){item.classList.toggle('is-active',item===button);});
+            apply();
+        });
+    });
+    if(search)search.addEventListener('input',apply);
 }());
 
 (function(){
