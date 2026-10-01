@@ -17,6 +17,7 @@
                 <a href="#program" data-i18n="footer.today_program"><?= deseo_e(deseo_t('footer.today_program')) ?></a>
                 <a href="#playlists" data-i18n="footer.playlists"><?= deseo_e(deseo_t('footer.playlists')) ?></a>
                 <a href="#faq" data-i18n="footer.faq"><?= deseo_e(deseo_t('footer.faq')) ?></a>
+                <a href="/privacy">Privacy</a>
             </div>
 
             <div>
@@ -43,7 +44,6 @@
                     <svg class="footer-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="2"/><path d="M9.5 16.5c.2-1.5 1-2.5 2.5-2.5s2.3 1 2.5 2.5L14 21h-4l-.5-4.5ZM7 15a7 7 0 1 1 10 0M9 12.5a4 4 0 1 1 6 0"/></svg>
                     Apple Podcasts ↗
                 </a>
-                <a href="/privacy">Privacy</a>
             </div>
         </div>
     </div>
