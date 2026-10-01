@@ -624,6 +624,35 @@ button{cursor:pointer}
 }
 .partner-grid-v3 a:hover img{opacity:1;filter:none;transform:scale(1.04)}
 
+/* Featured listening backlink: use Streamee's official white SVG on dark UI. */
+.partner-streamee{
+  display:flex;
+  width:fit-content;
+  max-width:100%;
+  min-height:80px;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  margin:18px auto 0;
+  padding:18px 30px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#0d0d0f;
+  color:#b9b9be;
+  transition:background .2s ease,border-color .2s ease;
+}
+.partner-streamee:hover,.partner-streamee:focus-visible{
+  background:#151518;
+  border-color:rgba(255,255,255,.28);
+  color:#fff;
+}
+.partner-streamee img{display:block;width:160px;max-width:100%;height:auto}
+.partner-streamee span{font-size:12px;font-weight:700;white-space:nowrap}
+@media(max-width:480px){
+  .partner-streamee{width:100%;gap:16px;padding:18px}
+  .partner-streamee img{width:130px}
+}
+
 /* FAQ */
 .faq-section{background:#070708}
 .faq-list{border-top:1px solid var(--line)}
@@ -780,6 +809,9 @@ button{cursor:pointer}
 }
 .footer-links a{color:#9a9aa0;font-size:12px}
 .footer-links a:hover{color:#fff}
+
+.footer-platform-link{display:inline-flex;align-items:center;gap:8px}
+.footer-platform-icon{width:16px;height:16px;flex:none}
 .footer-links p{margin:2px 0 0;color:#59595e;font-size:10px;line-height:1.7}
 .footer-bottom{
   display:flex;
