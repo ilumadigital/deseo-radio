@@ -1625,7 +1625,7 @@ admin_page_start('MyLive', 'mylive');
                     ?>
                     <article class="mylive-library-row"
                              data-mylive-library-status="<?= admin_e($setStatus) ?>"
-                             data-mylive-library-search="<?= admin_e(strtolower((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name'])) ?>">
+                             data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>">
                         <div class="mylive-library-dj">
                             <span><?= admin_e($episodeLabel) ?></span>
                             <strong><?= admin_e((string)$set['artist_name']) ?></strong>
@@ -1918,11 +1918,11 @@ admin_page_start('MyLive', 'mylive');
     var selected='all';
 
     function apply(){
-        var query=search?search.value.trim().toLowerCase():'';
+        var query=search?search.value.trim().toLocaleLowerCase():'';
         var count=0;
         rows.forEach(function(row){
             var status=row.getAttribute('data-mylive-library-status')||'';
-            var haystack=row.getAttribute('data-mylive-library-search')||'';
+            var haystack=(row.getAttribute('data-mylive-library-search')||'').toLocaleLowerCase();
             var show=(selected==='all'||status===selected)&&(!query||haystack.indexOf(query)!==-1);
             row.hidden=!show;
             if(show)count++;
