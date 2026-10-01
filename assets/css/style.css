@@ -2256,7 +2256,7 @@ h2,
     rgba(255,43,54,.055);
   box-shadow:0 18px 48px rgba(0,0,0,.24);
 }
-.season-lineup-start span{
+.season-lineup-start > span{
   color:#b9b9be;
   font-size:9px;
   font-weight:800;
@@ -2270,6 +2270,46 @@ h2,
   line-height:.9;
   letter-spacing:-.055em;
   text-shadow:0 0 28px rgba(255,43,54,.18);
+}
+.season-lineup-start .season-lineup-countdown{
+  display:flex;
+  align-items:flex-start;
+  gap:15px;
+  font-size:initial;
+  line-height:1;
+  letter-spacing:normal;
+  text-shadow:none;
+}
+.season-lineup-time-unit{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px;
+  min-width:52px;
+}
+.season-lineup-time-unit + .season-lineup-time-unit{
+  border-left:1px solid rgba(255,43,54,.27);
+  padding-left:15px;
+}
+.season-lineup-start .season-lineup-time-value{
+  color:var(--red);
+  font-size:clamp(30px,3.5vw,44px);
+  font-weight:800;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.05em;
+}
+.season-lineup-start .season-lineup-time-label{
+  color:#b9b9be;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.2;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.season-lineup-start .season-lineup-countdown[hidden],
+.season-lineup-start .season-lineup-onair[hidden]{
+  display:none;
 }
 .season-lineup-poster{
   position:relative;
@@ -2450,12 +2490,29 @@ body.lineup-lightbox-open{
     padding:13px 16px 12px;
     border-radius:16px;
   }
-  .season-lineup-start span{
+  .season-lineup-start > span{
     font-size:8px;
     letter-spacing:.15em;
   }
   .season-lineup-start strong{
     font-size:40px;
+  }
+  .season-lineup-start .season-lineup-countdown{
+    gap:9px;
+  }
+  .season-lineup-time-unit{
+    min-width:40px;
+    gap:6px;
+  }
+  .season-lineup-time-unit + .season-lineup-time-unit{
+    padding-left:9px;
+  }
+  .season-lineup-start .season-lineup-time-value{
+    font-size:32px;
+  }
+  .season-lineup-start .season-lineup-time-label{
+    font-size:8px;
+    letter-spacing:.08em;
   }
   .season-lineup-poster{
     padding:4px;
