@@ -5,7 +5,6 @@
             <p class="metal-title footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
             <div class="footer-brand-actions">
                 <a class="footer-iluma" href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
-                <a class="footer-dj-call" href="/dj" data-analytics-event="dj_call_footer_click">The DJs Call ↗</a>
                 <a class="footer-media-kit" href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-i18n="footer.media_kit" data-analytics-event="media_kit_footer_click"><?= deseo_e(deseo_t('footer.media_kit')) ?></a>
             </div>
         </div>
