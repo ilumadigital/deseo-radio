@@ -24,8 +24,6 @@ $deseoAiPlatforms = [
                 <p data-i18n="ai.text"><?= deseo_e(deseo_t('ai.text')) ?></p>
                 <div class="ai-discovery-sources">
                     <span data-i18n="ai.sources"><?= deseo_e(deseo_t('ai.sources')) ?></span>
-                    <a href="https://deseoradio.com" target="_blank" rel="noopener noreferrer" data-analytics-event="ask_ai_source_website_click">Website ↗</a>
-                    <a href="https://iluma.gr/radios/metrics" target="_blank" rel="noopener noreferrer" data-i18n="ai.metrics" data-analytics-event="ask_ai_source_metrics_click"><?= deseo_e(deseo_t('ai.metrics')) ?></a>
                     <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-analytics-event="ask_ai_source_mediakit_click">Media Kit ↗</a>
                 </div>
             </div>
