@@ -935,10 +935,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (is_file($path)) @unlink($path);
                 $notice = 'Το asset διαγράφηκε.';
 
-            } elseif ($action === 'update_set') {
+            } elseif ($action === 'update_set' || $action === 'update_set_from_library') {
                 $setId = (int)($_POST['set_id'] ?? 0);
                 $status = (string)($_POST['status'] ?? 'received');
-                $note = trim((string)($_POST['admin_note'] ?? ''));
+                if ($action === 'update_set_from_library') {
+                    // The quick editor changes only status; preserve the current
+                    // admin note without trusting a stale hidden form value.
+                    $noteStmt = $pdo->prepare("SELECT admin_note FROM dj_portal_sets WHERE id = ? LIMIT 1");
+                    $noteStmt->execute([$setId]);
+                    $currentNote = $noteStmt->fetchColumn();
+                    if ($currentNote === false) {
+                        throw new RuntimeException('Το DJ Set δεν βρέθηκε.');
+                    }
+                    $note = (string)$currentNote;
+                } else {
+                    $note = trim((string)($_POST['admin_note'] ?? ''));
+                }
 
                 $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
 
@@ -1623,9 +1635,18 @@ admin_page_start('MyLive', 'mylive');
                     $statusClass = isset($setStatusLabels[$setStatus]) ? $setStatus : 'unknown';
                     $episodeLabel = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
                     ?>
-                    <article class="mylive-library-row"
-                             data-mylive-library-status="<?= admin_e($setStatus) ?>"
-                             data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>">
+                    <form method="post" class="mylive-library-row"
+                          data-mylive-library-status="<?= admin_e($setStatus) ?>"
+                          data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
+                          data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;"
+                          data-deseo-confirm-title="BROADCASTED · Διαγραφή audio"
+                          data-deseo-confirm-label="BROADCASTED"
+                          data-deseo-confirm-if-status="broadcasted"
+                          data-deseo-confirm-danger
+                          <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
+                        <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                        <input type="hidden" name="action" value="update_set_from_library">
+                        <input type="hidden" name="set_id" value="<?= (int)$set['id'] ?>">
                         <div class="mylive-library-dj">
                             <span><?= admin_e($episodeLabel) ?></span>
                             <strong><?= admin_e((string)$set['artist_name']) ?></strong>
@@ -1636,15 +1657,21 @@ admin_page_start('MyLive', 'mylive');
                         </div>
                         <div class="mylive-library-status">
                             <span class="mylive-library-badge is-status-<?= admin_e($statusClass) ?>"><?= admin_e($setStatusLabels[$setStatus] ?? strtoupper(str_replace('_', ' ', $setStatus))) ?></span>
+                            <select name="status" aria-label="Αλλαγή status για <?= admin_e($episodeLabel . ' · ' . (string)$set['artist_name']) ?>">
+                                <?php foreach (deseo_mylive_set_statuses() as $statusChoice): ?>
+                                    <option value="<?= admin_e($statusChoice) ?>" <?= $setStatus === $statusChoice ? 'selected' : '' ?>><?= admin_e($setStatusLabels[$statusChoice] ?? strtoupper(str_replace('_', ' ', $statusChoice))) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                         <div class="mylive-library-action">
+                            <button class="button button-primary" type="submit">Save</button>
                             <?php if (!empty($set['file_deleted_at'])): ?>
                                 <span class="mylive-library-removed" title="Το episode παραμένει στο ιστορικό, αλλά το audio έχει διαγραφεί από τον server.">FILE REMOVED</span>
                             <?php else: ?>
                                 <a class="button button-secondary" href="mylive-download.php?type=set&amp;id=<?= (int)$set['id'] ?>" aria-label="Download <?= admin_e($episodeLabel . ' · ' . (string)$set['artist_name']) ?>">Download ↓</a>
                             <?php endif; ?>
                         </div>
-                    </article>
+                    </form>
                 <?php endforeach; ?>
             </div>
             <div class="mylive-library-empty" id="myliveLibraryNoResults" hidden>Δεν βρέθηκαν DJ Sets με αυτά τα φίλτρα.</div>
