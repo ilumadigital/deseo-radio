@@ -523,6 +523,18 @@ $partners = [
                     </a>
                 <?php endforeach; ?>
             </div>
+            <a class="partner-streamee reveal"
+               href="https://streamee.com/fm_radio/deseo-radio/"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Listen to Deseo Radio on Streamee"
+               data-analytics-event="radio_partner_click">
+                <img src="https://streamee.com/wp-content/themes/streamee-theme/img/logo-wh.svg"
+                     alt="Streamee"
+                     width="160"
+                     loading="lazy">
+                <span>Streamee ↗</span>
+            </a>
         </div>
     </section>
 
