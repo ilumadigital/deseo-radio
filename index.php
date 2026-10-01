@@ -24,6 +24,15 @@ $dataStatus = 'live';
 $tz = new DateTimeZone('Europe/Athens');
 $now = new DateTimeImmutable('now', $tz);
 
+// Season 6 premiere: 14 October 2026, 20:00 Athens time.
+$lineupStart = new DateTimeImmutable('2026-10-14 20:00:00', $tz);
+$lineupRemainingSeconds = max(0, $lineupStart->getTimestamp() - $now->getTimestamp());
+$lineupRemainingMinutes = (int)ceil($lineupRemainingSeconds / 60);
+$lineupDays = intdiv($lineupRemainingMinutes, 1440);
+$lineupHours = intdiv($lineupRemainingMinutes % 1440, 60);
+$lineupMinutes = $lineupRemainingMinutes % 60;
+$lineupOnAir = $lineupRemainingSeconds === 0;
+
 try {
     require_once __DIR__ . '/iluma/connection.php';
     require_once __DIR__ . '/includes/mylive-email-reminders.php';
@@ -451,9 +460,23 @@ $partners = [
                     <p class="season-lineup-tagline" data-i18n="lineup.tagline"><?= deseo_e(deseo_t('lineup.tagline')) ?></p>
                     <span class="season-lineup-meta" data-i18n="lineup.schedule"><?= deseo_e(deseo_t('lineup.schedule')) ?></span>
 
-                    <div class="season-lineup-start" aria-label="<?= deseo_e(deseo_t('lineup.start_label') . ': ' . deseo_t('lineup.start_value')) ?>">
+                    <div class="season-lineup-start" data-lineup-countdown-container data-lineup-target="<?= deseo_e($lineupStart->format(DATE_ATOM)) ?>">
                         <span data-i18n="lineup.start_label"><?= deseo_e(deseo_t('lineup.start_label')) ?></span>
-                        <strong data-i18n="lineup.start_value"><?= deseo_e(deseo_t('lineup.start_value')) ?></strong>
+                        <strong class="season-lineup-countdown" data-lineup-countdown role="timer" aria-live="off" <?= $lineupOnAir ? 'hidden' : '' ?>>
+                            <span class="season-lineup-time-unit">
+                                <span class="season-lineup-time-value" data-lineup-days><?= str_pad((string)$lineupDays, 2, '0', STR_PAD_LEFT) ?></span>
+                                <span class="season-lineup-time-label" data-i18n="lineup.days"><?= deseo_e(deseo_t('lineup.days')) ?></span>
+                            </span>
+                            <span class="season-lineup-time-unit">
+                                <span class="season-lineup-time-value" data-lineup-hours><?= str_pad((string)$lineupHours, 2, '0', STR_PAD_LEFT) ?></span>
+                                <span class="season-lineup-time-label" data-i18n="lineup.hours"><?= deseo_e(deseo_t('lineup.hours')) ?></span>
+                            </span>
+                            <span class="season-lineup-time-unit">
+                                <span class="season-lineup-time-value" data-lineup-minutes><?= str_pad((string)$lineupMinutes, 2, '0', STR_PAD_LEFT) ?></span>
+                                <span class="season-lineup-time-label" data-i18n="lineup.minutes"><?= deseo_e(deseo_t('lineup.minutes')) ?></span>
+                            </span>
+                        </strong>
+                        <strong class="season-lineup-onair" data-lineup-onair data-i18n="lineup.start_value" <?= $lineupOnAir ? '' : 'hidden' ?>><?= deseo_e(deseo_t('lineup.start_value')) ?></strong>
                     </div>
                 </header>
 
@@ -639,6 +662,47 @@ $partners = [
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !modal.hidden) closeLineup();
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const container = document.querySelector('[data-lineup-countdown-container]');
+    if (!container) return;
+
+    const countdown = container.querySelector('[data-lineup-countdown]');
+    const onAir = container.querySelector('[data-lineup-onair]');
+    const days = container.querySelector('[data-lineup-days]');
+    const hours = container.querySelector('[data-lineup-hours]');
+    const minutes = container.querySelector('[data-lineup-minutes]');
+    const deadline = Date.parse(container.getAttribute('data-lineup-target') || '');
+    if (!Number.isFinite(deadline) || !countdown || !onAir || !days || !hours || !minutes) return;
+
+    let intervalId;
+    const renderCountdown = () => {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+            countdown.hidden = true;
+            onAir.hidden = false;
+            window.clearInterval(intervalId);
+            return;
+        }
+
+        // Round up so 00:00 is never displayed before the actual premiere.
+        const totalMinutes = Math.ceil(remaining / 60000);
+        days.textContent = String(Math.floor(totalMinutes / 1440)).padStart(2, '0');
+        hours.textContent = String(Math.floor((totalMinutes % 1440) / 60)).padStart(2, '0');
+        minutes.textContent = String(totalMinutes % 60).padStart(2, '0');
+        onAir.hidden = true;
+        countdown.hidden = false;
+    };
+
+    renderCountdown();
+    if (!onAir.hidden) return;
+    intervalId = window.setInterval(renderCountdown, 1000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) renderCountdown();
     });
 })();
 </script>
