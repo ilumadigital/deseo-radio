@@ -97,7 +97,7 @@ function deseo_t(string $key): string {
 
             'partners.kicker' => 'LISTEN EVERYWHERE',
             'partners.title' => 'Άκου Deseo παντού.',
-            'partners.text' => 'Στο site, στο iRadios και σε επιλεγμένες radio platforms.',
+            'partners.text' => 'Στο site, στο iRadios, στο Streamee και σε επιλεγμένες radio platforms.',
 
             'lineup.kicker' => 'DESEO RADIO · SEASON 6',
             'lineup.title' => 'THE LINE UP',
@@ -285,7 +285,7 @@ function deseo_t(string $key): string {
 
             'partners.kicker' => 'LISTEN EVERYWHERE',
             'partners.title' => 'Listen to Deseo everywhere.',
-            'partners.text' => 'On this website, iRadios and selected radio platforms.',
+            'partners.text' => 'On this website, iRadios, Streamee and selected radio platforms.',
 
             'lineup.kicker' => 'DESEO RADIO · SEASON 6',
             'lineup.title' => 'THE LINE UP',
