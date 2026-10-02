@@ -179,11 +179,16 @@ $key = trim((string)(getenv('HEARTHIS_API_KEY') ?: ''));
 $secret = trim((string)(getenv('HEARTHIS_API_SECRET') ?: ''));
 $username = strtolower(trim((string)(getenv('HEARTHIS_USERNAME') ?: '')));
 $config = ['key' => $key, 'secret' => $secret];
-$setId = deseo_hearthis_s6_playlist_id('deseoradio');
+$playlist = deseo_hearthis_s6_playlist('deseoradio');
+$setId = $playlist['id'] ?? null;
+$setListing = $setId !== null ? deseo_hearthis_s6_track_listing($setId) : null;
 
 echo 'Season 6 release title: ' . DESEO_S6_RELEASE_TITLE . PHP_EOL;
 echo 'Season 6 existing set: ' . DESEO_HEARTHIS_SEASON6_URL . PHP_EOL;
 echo 'Set numeric ID resolved: ' . ($setId ?? 'NO (no network write will be made)') . PHP_EOL;
+echo 'Actual playlist URL: ' . ($playlist['url'] ?? 'UNKNOWN') . PHP_EOL;
+echo 'Canonical playlist track read: ' . ($setListing !== null
+    ? 'OK (' . count($setListing['tracks']) . ' tracks)' : 'UNVERIFIED (no network write will be made)') . PHP_EOL;
 echo 'Old PRIVATE test receipt: unrelated; preserved without modification.' . PHP_EOL;
 echo 'PUBLIC release receipt: ' . (is_array($record) ? (string)($record['state'] ?? 'unknown') : 'none') . PHP_EOL;
 $sourceValid = $file && $file === $expected && !is_link($expected)
@@ -193,7 +198,7 @@ echo 'Credentials configured for deseoradio: ' . ($key !== '' && $secret !== '' 
 echo 'Automatic MyLive upload: ' . (getenv('HEARTHIS_UPLOAD_ENABLED') === '1' ? 'ON (STOP)' : 'OFF') . PHP_EOL;
 if ($command === '--check') {
     echo 'Dry run only: no upload, set modification or deletion.' . PHP_EOL;
-    if (!$sourceValid || $setId === null || $key === '' || $secret === ''
+    if (!$sourceValid || $setId === null || $setListing === null || $key === '' || $secret === ''
         || $username !== 'deseoradio' || getenv('HEARTHIS_UPLOAD_ENABLED') === '1') {
         deseo_s6_cli_fail('Preflight not ready; do not publish. Check exact Spot MP3, Season 6 set, credentials and disabled worker.');
     }
@@ -204,7 +209,7 @@ if (getenv('HEARTHIS_UPLOAD_ENABLED') === '1') deseo_s6_cli_fail('Keep the norma
 
 if ($command === '--publish-public') {
     if ($record !== null) deseo_s6_cli_fail('Release receipt exists; another upload is prohibited. Use --finalize or inspect receipt.');
-    if ($setId === null) deseo_s6_cli_fail('Season 6 set ID not verified from public account listing; do not upload yet.');
+    if ($setId === null || $setListing === null) deseo_s6_cli_fail('Season 6 set ID and canonical track listing must BOTH be verified before upload.');
     if (!$file || $file !== $expected || !is_file($file) || is_link($expected) || !is_readable($file)) {
         deseo_s6_cli_fail('Expected original MP3 must still exist outside public_html.');
     }
