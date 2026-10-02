@@ -437,7 +437,7 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
  */
 function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     $summary = [
-        'advanced' => 0, 'uploaded' => 0, 'local_deleted' => 0, 'synced' => 0,
+        'advanced' => 0, 'show_end_normalized' => 0, 'uploaded' => 0, 'local_deleted' => 0, 'synced' => 0,
         'verifying' => 0, 'podcast_pending' => 0, 'review_required' => 0, 'default_artwork' => 0,
         'disabled' => false, 'retention' => [],
     ];
@@ -458,6 +458,11 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     try {
         $now = new DateTimeImmutable('now', dj_season_athens_timezone());
         $nowSql = $now->format('Y-m-d H:i:s');
+        // Before considering any elapsed slot, repair the narrow 23:59 legacy
+        // boundary so no 23:00–00:00 DJ upload starts one minute early.
+        // This path is behind the hard ON/config guard above.
+        $showEndRepair = deseo_mylive_backfill_scheduled_show_ends($pdo, $now);
+        $summary['show_end_normalized'] = (int)($showEndRepair['midnight_fixed'] ?? 0);
         $summary['advanced'] = deseo_hearthis_advance_broadcasts($pdo, $now);
         // A terminated request may have published remotely. Never auto-retry
         // this uncertain result, even if no URL came back to the worker.
