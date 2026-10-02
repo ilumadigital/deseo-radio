@@ -160,6 +160,9 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_title VARCHAR(255) NULL,
+        hearthis_description TEXT NULL,
+        hearthis_genre VARCHAR(80) NULL,
+        hearthis_tags VARCHAR(255) NULL,
         hearthis_source_sha256 CHAR(64) NULL,
         hearthis_upload_accepted_at DATETIME NULL,
         hearthis_podcast_status VARCHAR(24) NOT NULL DEFAULT 'pending',
@@ -190,7 +193,10 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
         'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
         'hearthis_title' => "VARCHAR(255) NULL AFTER hearthis_meta_warning",
-        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_title",
+        'hearthis_description' => "TEXT NULL AFTER hearthis_title",
+        'hearthis_genre' => "VARCHAR(80) NULL AFTER hearthis_description",
+        'hearthis_tags' => "VARCHAR(255) NULL AFTER hearthis_genre",
+        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_tags",
         'hearthis_upload_accepted_at' => "DATETIME NULL AFTER hearthis_source_sha256",
         'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_upload_accepted_at",
         'hearthis_podcast_verified_at' => "DATETIME NULL AFTER hearthis_podcast_status",
@@ -479,6 +485,20 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     );
     $stmt->execute([$accountId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * A DJ can open the accepted public episode as soon as its ID and owned
+ * permalink are saved, without waiting for Season 6 playlist or podcast RSS.
+ * Only expose THEIR OWN broadcasted row through the authenticated MyLive query.
+ */
+function deseo_mylive_hearthis_episode_link(array $set): string {
+    if ((string)($set['status'] ?? '') !== 'broadcasted'
+        || !in_array((string)($set['hearthis_status'] ?? ''), ['verifying', 'synced'], true)
+        || empty($set['hearthis_upload_accepted_at'])) return '';
+    $id = trim((string)($set['hearthis_track_id'] ?? ''));
+    if (!ctype_digit($id) || (int)$id < 1) return '';
+    return deseo_hearthis_podcast_canonical_track((string)($set['hearthis_url'] ?? ''));
 }
 
 function deseo_mylive_set_statuses(): array {
