@@ -1307,7 +1307,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                 <div>
                     <span class="eyebrow">YOUR REPOSITORY</span>
                     <h3>Episodes</h3>
-                    <p>Τα BROADCASTED episodes παραμένουν στο ιστορικό σου, αλλά το audio file αφαιρείται αμέσως από τον server μόλις ολοκληρωθεί η μετάδοση.</p>
+                    <p>Τα BROADCASTED episodes παραμένουν στο ιστορικό σου. Το MP3 διαγράφεται μόνο μετά από επιτυχημένο HearThis sync και αποθήκευση του URL στο PMS.</p>
                 </div>
                 <strong><?= count($sets) ?> upload<?= count($sets) === 1 ? '' : 's' ?></strong>
             </div>
@@ -1330,8 +1330,9 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                             <div class="set-status">
                                 <span class="status-<?= deseo_mylive_e((string)$set['status']) ?>"><?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)$set['status']))) ?></span>
 
+                                <?php if (!empty($set['hearthis_url']) && (string)$set['hearthis_status'] === 'synced'): ?><a href="<?= deseo_mylive_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">HearThis</a><?php endif; ?>
+                                <?php if ((string)($set['status'] ?? '') === 'broadcasted' && empty($set['file_deleted_at'])): ?><small>HEARTHIS: <?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?></small><?php endif; ?>
                                 <?php if (!empty($set['file_deleted_at'])): ?>
-                                    <small class="set-retention is-deleted">
                                         FILE REMOVED · episode retained
                                     </small>
                                 <?php else: ?>
