@@ -8,8 +8,9 @@ require_once __DIR__ . '/hearthis-podcast.php';
  * permalink are saved, without waiting for Season 6 playlist or podcast RSS.
  * Only expose THEIR OWN broadcasted row through the authenticated MyLive query.
  */
-function deseo_mylive_hearthis_episode_link(array $set): string {
-    if ((string)($set['status'] ?? '') !== 'broadcasted'
+function deseo_mylive_hearthis_episode_link(array $set, int $signedInAccountId): string {
+    if ($signedInAccountId < 1 || (int)($set['account_id'] ?? 0) !== $signedInAccountId
+        || (string)($set['status'] ?? '') !== 'broadcasted'
         || !in_array((string)($set['hearthis_status'] ?? ''), ['verifying', 'synced'], true)
         || empty($set['hearthis_upload_accepted_at'])) return '';
     $id = trim((string)($set['hearthis_track_id'] ?? ''));
