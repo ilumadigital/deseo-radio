@@ -194,6 +194,21 @@ function deseo_hearthis_metadata(array $set): array {
 }
 
 /**
+ * Older HearThis read objects can return an HTTP public permalink. Normalize
+ * that one canonical provider domain to HTTPS before persisting; never follow
+ * any URL supplied by an untrusted response.
+ */
+function deseo_hearthis_https_permalink(string $url): string {
+    $url = trim($url);
+    $parts = parse_url($url);
+    if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'http'
+        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || isset($parts['user']) || isset($parts['pass']) || isset($parts['port'])
+        || isset($parts['query']) || isset($parts['fragment'])) return $url;
+    return 'https://' . strtolower((string)$parts['host']) . (string)($parts['path'] ?? '');
+}
+
+/**
  * Require a public track permalink under the account that owns the credentials.
  * A profile, playlist, another artist's track, or arbitrary hearthis.at URL
  * must never authorize deletion of an MP3.
@@ -292,7 +307,7 @@ function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): 
         if ($owner !== '' && strtolower($owner) !== $config['username']) {
             return ['id' => $id, 'url' => '', 'warning' => 'Returned track belongs to a different account.'];
         }
-        $url = trim((string)($full['permalink_url'] ?? $item['permalink_url'] ?? ''));
+        $url = deseo_hearthis_https_permalink((string)($full['permalink_url'] ?? $item['permalink_url'] ?? ''));
         if (!deseo_hearthis_owned_track_url($url, $config['username'])) {
             return ['id' => $id, 'url' => '', 'warning' => 'Track ID received without a valid owned public track permalink.'];
         }
@@ -390,7 +405,7 @@ function deseo_hearthis_public_track_ready(string $url, string $id, string $user
     if (!is_array($track) || (string)($track['id'] ?? '') !== $id) return false;
     $user = is_array($track['user'] ?? null) ? $track['user'] : [];
     if (strtolower((string)($user['permalink'] ?? '')) !== $username) return false;
-    if (!deseo_hearthis_owned_track_url((string)($track['permalink_url'] ?? ''), $username)) return false;
+    if (deseo_hearthis_https_permalink((string)($track['permalink_url'] ?? '')) !== $url) return false;
     if (isset($track['private']) && in_array(strtolower((string)$track['private']), ['1', 'true', 'yes'], true)) return false;
     if ((int)($track['duration'] ?? 0) <= 0) return false;
     $stream = trim((string)($track['stream_url'] ?? ''));
