@@ -1587,9 +1587,9 @@ admin_page_start('MyLive', 'mylive');
                                         </div>
                                     <?php else: ?>
                                         <div>
-                                            <strong>HEARTHIS ARTWORK 02 · MISSING</strong>
+                                            <strong>HEARTHIS ARTWORK · DEFAULT FALLBACK</strong>
                                             <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($hearthisCoverErrorByAccount[$accountId] ?? 'Square DJ image 02 is unavailable.')) ?></small>
-                                            <small style="display:block;">Check the DJ's weekday File Manager folder or assign artwork 02 below. No station-logo fallback.</small>
+                                            <small style="display:block;">DJ Set upload will continue without custom artwork; HearThis will use its default image. Assign the correct DJ artwork 02 below only if you want to override it.</small>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -1609,7 +1609,7 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
                                     <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
                                     <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
-                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, μπορείς να επιλέξεις χειροκίνητα το square artwork 02 εδώ. Καμία αντικατάσταση από το station logo.</small>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, το DJ Set συνεχίζει χωρίς custom artwork και το HearThis εφαρμόζει την προεπιλεγμένη εικόνα του. Μπορείς προαιρετικά να επιλέξεις χειροκίνητα το square artwork 02 εδώ.</small>
                                     <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
