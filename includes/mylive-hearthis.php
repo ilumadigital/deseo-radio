@@ -330,7 +330,7 @@ function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): 
 function deseo_hearthis_stream_playable(string $stream): bool {
     $parts = parse_url($stream);
     if (!is_array($parts) || !filter_var($stream, FILTER_VALIDATE_URL)
-        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || !deseo_hearthis_media_host_allowed((string)($parts['host'] ?? ''))
         || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['https', 'http'], true)
         || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])) return false;
     if (($parts['scheme'] ?? '') === 'http') {
@@ -413,7 +413,7 @@ function deseo_hearthis_public_track_ready(string $url, string $id, string $user
     $parts = parse_url($stream);
     if (!is_array($parts) || !filter_var($stream, FILTER_VALIDATE_URL)
         || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)
-        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || !deseo_hearthis_media_host_allowed((string)($parts['host'] ?? ''))
         || isset($parts['user']) || isset($parts['pass'])) return false;
     return deseo_hearthis_stream_playable($stream);
 }
