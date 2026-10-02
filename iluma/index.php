@@ -202,7 +202,7 @@ admin_page_start('Overview', 'dashboard');
             <a class="dashboard-audience-card" href="audience.php">
                 <div class="dashboard-audience-top">
                     <span>MONTHLY AUDIENCE</span>
-                    <b>OPEN ↗</b>
+                    <b>OPEN</b>
                 </div>
                 <strong><?= $monthlyAudience > 0 ? admin_e(deseo_audience_format($monthlyAudience)) : '—' ?></strong>
                 <p>Listeners · <?= admin_e($currentAudienceMonthLabel) ?></p>
@@ -277,7 +277,6 @@ admin_page_start('Overview', 'dashboard');
                     <small>Spotify tracks, artwork και σειρά εμφάνισης.</small>
                 </div>
                 <b><?= $airplayCount ?>/6</b>
-                <i>↗</i>
             </a>
 
             <a class="dashboard-workspace-row" href="program.php">
@@ -287,7 +286,6 @@ admin_page_start('Overview', 'dashboard');
                     <small>DJs, ημέρες, ώρες και φωτογραφίες.</small>
                 </div>
                 <b><?= $programCount ?></b>
-                <i>↗</i>
             </a>
 
             <a class="dashboard-workspace-row" href="playlists.php">
@@ -297,7 +295,6 @@ admin_page_start('Overview', 'dashboard');
                     <small>Collections, covers και σειρά εμφάνισης.</small>
                 </div>
                 <b><?= $playlistCount ?></b>
-                <i>↗</i>
             </a>
         </article>
 
@@ -317,7 +314,6 @@ admin_page_start('Overview', 'dashboard');
                     <small>Submissions, slots, bios και approvals.</small>
                 </div>
                 <b><?= $djApplicationCount ?></b>
-                <i>↗</i>
             </a>
 
             <a class="dashboard-workspace-row is-featured" href="mylive.php">
@@ -327,7 +323,6 @@ admin_page_start('Overview', 'dashboard');
                     <small>Accounts, DJ Sets, assets και onboarding.</small>
                 </div>
                 <b><?= $myLiveAccountCount ?></b>
-                <i>↗</i>
             </a>
 
             <a class="dashboard-workspace-row" href="communications.php">
@@ -336,8 +331,6 @@ admin_page_start('Overview', 'dashboard');
                     <strong>Communications</strong>
                     <small>Preferences, manual emails, manual pushes και delivery log.</small>
                 </div>
-                <b>↗</b>
-                <i>↗</i>
             </a>
 
             <?php if (admin_can_access('audience')): ?>
@@ -347,9 +340,7 @@ admin_page_start('Overview', 'dashboard');
                         <strong>Audience</strong>
                         <small>Monthly listeners και estimated DJ reach.</small>
                     </div>
-                    <b>↗</b>
-                    <i>↗</i>
-                </a>
+                        </a>
             <?php endif; ?>
         </article>
     </section>
