@@ -498,6 +498,11 @@ $partners = [
                                     <circle cx="16" cy="14" r="2.3"/><path d="M13.2 21c.2-2 1.3-3.4 2.8-3.4s2.6 1.4 2.8 3.4l-.6 6h-4.4l-.6-6ZM9.5 19a9 9 0 1 1 13 0M12 17a5.5 5.5 0 1 1 8 0"/>
                                 </svg>
                             </a>
+                            <a class="season-lineup-podcast-link" href="https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue?si=_3btuPp0Qy-nHs950YFIpg" target="_blank" rel="noopener noreferrer" aria-label="Spotify · Deseo Podcasts · Coming Soon" title="Spotify · Deseo Podcasts · Coming Soon" data-analytics-event="deseo_podcasts_spotify_lineup_click">
+                                <svg viewBox="0 0 32 32" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <circle cx="16" cy="16" r="12.8"/><path d="M8.5 12.1c5.7-1.7 11.4-.9 16 2.1M9.3 16.4c4.8-1.4 9.9-.6 13.7 1.9M10.5 20.5c3.7-1 7.7-.5 10.7 1.5"/>
+                                </svg>
+                            </a>
                             <a href="https://www.deezer.com/en/show/1000338791" target="_blank" rel="noopener noreferrer" aria-label="Deezer" title="Deezer" data-analytics-event="season_deezer_click">
                                 <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
                                     <rect x="3" y="22" width="5" height="3" rx=".5"/><rect x="3" y="17" width="5" height="3" rx=".5"/>
@@ -604,7 +609,7 @@ $partners = [
         </div>
     </section>
 
-    <section class="brand-cta">
+    <section class="brand-cta brand-cta-before-podcasts">
         <div class="wide-shell brand-cta-card reveal">
             <div>
                 <span class="kicker" data-i18n="advertise.kicker"><?= deseo_e(deseo_t('advertise.kicker')) ?></span>
@@ -618,6 +623,54 @@ $partners = [
                    rel="noopener noreferrer"
                    data-i18n="advertise.cta"
                    data-analytics-event="advertising_cta_click"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="deseo-podcasts-section" id="deseo-podcasts" aria-labelledby="deseo-podcasts-title">
+        <div class="wide-shell">
+            <div class="deseo-podcasts-panel">
+                <div class="deseo-podcasts-content reveal">
+                    <div class="deseo-podcasts-kicker">
+                        <span class="deseo-podcasts-signal" aria-hidden="true"></span>
+                        <span data-i18n="podcasts.kicker"><?= deseo_e(deseo_t('podcasts.kicker')) ?></span>
+                    </div>
+                    <div class="deseo-podcasts-heading">
+                        <span class="deseo-podcasts-soon" data-i18n="podcasts.soon"><?= deseo_e(deseo_t('podcasts.soon')) ?></span>
+                        <h2 id="deseo-podcasts-title" class="metal-title">
+                            <span data-i18n="podcasts.title_first"><?= deseo_e(deseo_t('podcasts.title_first')) ?></span>
+                            <span data-i18n="podcasts.title_second"><?= deseo_e(deseo_t('podcasts.title_second')) ?></span>
+                        </h2>
+                    </div>
+                    <p class="deseo-podcasts-lead" data-i18n="podcasts.lead"><?= deseo_e(deseo_t('podcasts.lead')) ?></p>
+                    <p class="deseo-podcasts-description" data-i18n="podcasts.description"><?= deseo_e(deseo_t('podcasts.description')) ?></p>
+                    <div class="deseo-podcasts-topics" aria-label="<?= deseo_e(deseo_t('podcasts.topics_aria')) ?>">
+                        <span data-i18n="podcasts.topic_djs"><?= deseo_e(deseo_t('podcasts.topic_djs')) ?></span>
+                        <span data-i18n="podcasts.topic_events"><?= deseo_e(deseo_t('podcasts.topic_events')) ?></span>
+                        <span data-i18n="podcasts.topic_backstage"><?= deseo_e(deseo_t('podcasts.topic_backstage')) ?></span>
+                    </div>
+                    <div class="deseo-podcasts-action">
+                        <a class="deseo-podcasts-spotify-button" href="https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue?si=_3btuPp0Qy-nHs950YFIpg" target="_blank" rel="noopener noreferrer" data-analytics-event="deseo_podcasts_spotify_teaser_click" aria-label="<?= deseo_e(deseo_t('podcasts.cta_aria')) ?>">
+                            <svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <circle cx="16" cy="16" r="13"/><path d="M8.5 12.1c5.7-1.7 11.4-.9 16 2.1M9.3 16.4c4.8-1.4 9.9-.6 13.7 1.9M10.5 20.5c3.7-1 7.7-.5 10.7 1.5"/>
+                            </svg>
+                            <span data-i18n="podcasts.cta"><?= deseo_e(deseo_t('podcasts.cta')) ?></span>
+                        </a>
+                        <span class="deseo-podcasts-exclusive" data-i18n="podcasts.exclusive"><?= deseo_e(deseo_t('podcasts.exclusive')) ?></span>
+                    </div>
+                </div>
+                <div class="deseo-podcasts-art reveal" aria-hidden="true">
+                    <span class="deseo-podcasts-art-overline">DESEO / ORIGINAL VOICES</span>
+                    <div class="deseo-podcasts-art-orbit deseo-podcasts-art-orbit-outer"></div>
+                    <div class="deseo-podcasts-art-orbit deseo-podcasts-art-orbit-mid"></div>
+                    <div class="deseo-podcasts-art-orbit deseo-podcasts-art-orbit-inner"></div>
+                    <div class="deseo-podcasts-art-monogram">D<span>.</span></div>
+                    <div class="deseo-podcasts-art-foot">
+                        <span>THE STORIES BEHIND THE SOUND</span>
+                        <strong>BEYOND<br>THE SET<span>.</span></strong>
+                        <div class="deseo-podcasts-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
