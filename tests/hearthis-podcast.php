@@ -20,8 +20,30 @@ $fixture = static function (string $episodeTitle, string $episodeUrl, string $au
         . '</item>' . $extra . '</channel></rss>';
 };
 $good = $fixture($title, $url, 'https://hearthis.at/deseoradio/deseoradio-season-6-spot/download/', '694648', 'audio/mpeg');
+
+// The actual public Season 6 Spot API returns stream_url on hearthis.app.
+// Keep an exact provider host allowlist; NEVER allow lookalike subdomains.
+$trustedHosts = [
+    'hearthis.at' => true,
+    'www.hearthis.at' => true,
+    'download.hearthis.at' => true,
+    'hearthis.app' => true,
+    'api.hearthis.app' => false,
+    'hearthis.app.evil.example' => false,
+    'evil-hearthis.app' => false,
+    'example.com' => false,
+];
+foreach ($trustedHosts as $host => $expectedTrusted) {
+    if (deseo_hearthis_media_host_allowed($host) !== $expectedTrusted) {
+        fwrite(STDERR, "FAIL: media host allowlist for {$host}\n");
+        exit(1);
+    }
+}
+
 $cases = [
     ['valid exact track', $good, true],
+    ['hearthis.app HTTPS audio enclosure', $fixture($title, $url, 'https://hearthis.app/stream/test.mp3', '694648', 'audio/mpeg'), true],
+    ['lookalike enclosure host rejected', $fixture($title, $url, 'https://hearthis.app.evil.example/test.mp3', '694648', 'audio/mpeg'), false],
     ['wrong track title', $fixture('Another mix', $url, 'https://hearthis.at/test.mp3', '694648', 'audio/mpeg'), false],
     ['another track URL with same title', $fixture($title, 'https://hearthis.at/deseoradio/other-mix/', 'https://hearthis.at/test.mp3', '694648', 'audio/mpeg'), false],
     ['no audio enclosure', $fixture($title, $url, '', '694648', 'audio/mpeg'), false],
@@ -41,4 +63,5 @@ foreach ($cases as [$name, $xml, $expected]) {
         exit(1);
     }
 }
-echo 'PASS: ' . count($cases) . " podcast RSS exact-match / deletion-gate cases.\n";
+echo 'PASS: ' . count($cases) . ' podcast RSS exact-match / deletion-gate cases and '
+    . count($trustedHosts) . " exact provider media host tests.\n";
