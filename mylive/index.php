@@ -603,7 +603,7 @@ if ($forgotState === 'sent') {
 
                 <div class="mylive-reset-expired">RESET LINK EXPIRED</div>
                 <a class="primary-button mylive-login-action-link" href="/mylive/?forgot=1">REQUEST NEW LINK</a>
-                <a class="mylive-recovery-back" href="/mylive/">← Back to login</a>
+                <a class="mylive-recovery-back" href="/mylive/">Back to login</a>
             <?php endif; ?>
 
         <?php elseif ($isForgotMode): ?>
@@ -640,7 +640,7 @@ if ($forgotState === 'sent') {
                 <button class="primary-button" type="submit" <?= $turnstileConfigured ? '' : 'disabled' ?>>SEND RESET LINK</button>
             </form>
 
-            <a class="mylive-recovery-back" href="/mylive/">← Back to login</a>
+            <a class="mylive-recovery-back" href="/mylive/">Back to login</a>
 
         <?php else: ?>
             <div class="login-card-head">
@@ -1169,16 +1169,16 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                 <strong>Season 6 complete.</strong>
             <?php elseif ($nextShowSetStatus === 'not_uploaded'): ?>
                 <strong>Your set is next.</strong>
-                <a href="#sets">UPLOAD DJ SET ↓</a>
+                <a href="#sets">UPLOAD DJ SET</a>
             <?php elseif ($nextShowSetStatus === 'needs_changes'): ?>
                 <strong>Action required.</strong>
-                <a href="#sets">VIEW DJ SET ↓</a>
+                <a href="#sets">VIEW DJ SET</a>
             <?php elseif ($nextShowSetStatus === 'scheduled'): ?>
                 <strong>Ready for broadcast.</strong>
-                <a href="#sets">VIEW EP<?= str_pad((string)$nextShowEpisode, 3, '0', STR_PAD_LEFT) ?> ↓</a>
+                <a href="#sets">VIEW EP<?= str_pad((string)$nextShowEpisode, 3, '0', STR_PAD_LEFT) ?></a>
             <?php else: ?>
                 <strong>Delivery in progress.</strong>
-                <a href="#sets">VIEW DJ SET ↓</a>
+                <a href="#sets">VIEW DJ SET</a>
             <?php endif; ?>
         </div>
     </section>
@@ -1246,7 +1246,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                             <h3><?= deseo_mylive_e($asset['title']) ?></h3>
                             <p><?= deseo_mylive_e(deseo_mylive_format_bytes((int)$asset['file_size'])) ?> · <?= deseo_mylive_e(date('d.m.Y', strtotime((string)$asset['created_at']))) ?></p>
                             <div class="asset-actions">
-                                <a href="/mylive/asset.php?id=<?= (int)$asset['id'] ?>" class="asset-download">Download ↓</a>
+                                <a href="/mylive/asset.php?id=<?= (int)$asset['id'] ?>" class="asset-download">Download</a>
                                 <?php if ($isImage): ?>
                                     <button
                                         type="button"
@@ -1613,7 +1613,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                    target="_blank"
                    rel="noopener noreferrer"
                    class="mylive-referral-button">
-                    ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ ↗
+                    ΠΡΟΤΕΙΝΕ ΜΙΑ ΕΠΙΧΕΙΡΗΣΗ
                 </a>
 
                 <button type="button"
