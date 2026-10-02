@@ -355,7 +355,6 @@ $partners = [
                                         <small><?= deseo_e(($track['artist_name'] && $track['artist_name'] !== 'Διάφοροι / Μη διαθέσιμο') ? $track['artist_name'] : 'Deseo Radio Selection') ?></small>
                                     </span>
 
-                                    <span class="deseo-row-action" aria-hidden="true">↗</span>
                                 </a>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -441,7 +440,6 @@ $partners = [
                                         <small>Spotify · Deseo Radio Playlist</small>
                                     </span>
 
-                                    <span class="deseo-row-action" aria-hidden="true">↗</span>
                                 </a>
                             <?php endforeach; ?>
                         <?php else: ?>
