@@ -1106,7 +1106,7 @@ admin_page_start('MyLive', 'mylive');
                     </button>
                 </form>
             <?php endif; ?>
-            <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive ↗</a>
+            <a class="button button-secondary" href="/mylive/" target="_blank" rel="noopener">Open MyLive</a>
         </div>
     </div>
 
@@ -1668,7 +1668,7 @@ admin_page_start('MyLive', 'mylive');
                             <?php if (!empty($set['file_deleted_at'])): ?>
                                 <span class="mylive-library-removed" title="Το episode παραμένει στο ιστορικό, αλλά το audio έχει διαγραφεί από τον server.">FILE REMOVED</span>
                             <?php else: ?>
-                                <a class="button button-secondary" href="mylive-download.php?type=set&amp;id=<?= (int)$set['id'] ?>" aria-label="Download <?= admin_e($episodeLabel . ' · ' . (string)$set['artist_name']) ?>">Download ↓</a>
+                                <a class="button button-secondary" href="mylive-download.php?type=set&amp;id=<?= (int)$set['id'] ?>" aria-label="Download <?= admin_e($episodeLabel . ' · ' . (string)$set['artist_name']) ?>">Download</a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -1706,9 +1706,9 @@ admin_page_start('MyLive', 'mylive');
 
                                 <div class="mylive-pending-tags">
                                     <?php if (!empty($pending['application_set_type'])): ?><span><?= admin_e($pending['application_set_type']) ?></span><?php endif; ?>
-                                    <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social ↗</a><?php endif; ?>
-                                    <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website ↗</a><?php endif; ?>
-                                    <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample ↗</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_instagram'])): ?><a href="<?= admin_e($pending['application_instagram']) ?>" target="_blank" rel="noopener">Social</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_website'])): ?><a href="<?= admin_e($pending['application_website']) ?>" target="_blank" rel="noopener">Website</a><?php endif; ?>
+                                    <?php if (!empty($pending['application_work_sample'])): ?><a href="<?= admin_e($pending['application_work_sample']) ?>" target="_blank" rel="noopener noreferrer">Work sample</a><?php endif; ?>
                                 </div>
                             </div>
                         </div>
