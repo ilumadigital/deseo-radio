@@ -622,74 +622,86 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             }
         }
 
-        // Remote reconciliation is independent of the local source file, which
-        // is normally already deleted after the accepted upload response.
+        // Reconcile all accepted tracks independently of local audio. New
+        // accepted uploads are checked first so their Season 6 add can happen
+        // in this SAME worker run, without waiting for stream/RSS processing.
         $verify = $pdo->prepare(
             "SELECT id, hearthis_url, hearthis_track_id, hearthis_set_id,
-                    hearthis_set_status, hearthis_set_started_at, hearthis_title
+                    hearthis_set_status, hearthis_set_started_at, hearthis_title,
+                    hearthis_podcast_status
              FROM dj_portal_sets WHERE status = 'broadcasted'
                AND hearthis_status = 'verifying'
                AND hearthis_upload_accepted_at IS NOT NULL
                AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
-             ORDER BY hearthis_started_at ASC, id ASC LIMIT 5"
+             ORDER BY hearthis_started_at DESC, id DESC LIMIT 20"
         );
         $verify->execute();
         foreach ($verify->fetchAll(PDO::FETCH_ASSOC) as $track) {
             $id = (int)$track['id'];
             try {
                 $remoteId = (string)$track['hearthis_track_id'];
+                $trackUrl = (string)$track['hearthis_url'];
                 $assignedSetId = (string)($track['hearthis_set_id'] ?? '');
-                if ($assignedSetId !== $season6SetId
-                    || !deseo_hearthis_public_track_ready(
-                        (string)$track['hearthis_url'], $remoteId, (string)$config['username']
-                    )) {
+                if ($assignedSetId !== $season6SetId) {
                     $summary['verifying']++;
                     continue;
                 }
+                // First associate the accepted track with the existing set.
+                // This must not wait for media transcoding or RSS propagation.
                 $membership = deseo_hearthis_s6_contains_track($remoteId, $assignedSetId);
-                if ($membership === null) {
-                    // Unrecognized read response is NEVER evidence of absence.
-                    $summary['verifying']++;
-                    continue;
-                }
-                if ($membership === false) {
-                    // A prior attempted POST may have succeeded despite network
-                    // ambiguity. Record 'adding' BEFORE posting; never blindly
-                    // repeat an already-attempted association request.
-                    if ((string)$track['hearthis_set_status'] !== 'pending') {
-                        $summary['verifying']++;
-                        continue;
-                    }
+                if ($membership === false && (string)$track['hearthis_set_status'] === 'pending') {
                     $started = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
                     $claim = $pdo->prepare(
                         "UPDATE dj_portal_sets
                          SET hearthis_set_status = 'adding', hearthis_set_started_at = ?
-                         WHERE id = ? AND hearthis_status = 'verifying'
+                         WHERE id = ? AND status = 'broadcasted'
+                           AND hearthis_status = 'verifying'
                            AND hearthis_set_status = 'pending' AND hearthis_set_id = ?
                            AND hearthis_upload_accepted_at IS NOT NULL"
                     );
                     $claim->execute([$started, $id, $assignedSetId]);
-                    if ($claim->rowCount() !== 1) continue;
-                    try {
-                        deseo_hearthis_s6_add_track($remoteId, $assignedSetId, $config);
-                    } catch (Throwable $additionError) {
-                        // No retries on uncertain POST outcome. Next cron ticks
-                        // only READ membership; admin can reconcile if needed.
-                        error_log('HearThis Season 6 association needs review for episode ' . $id);
-                    }
-                    $membership = deseo_hearthis_s6_contains_track($remoteId, $assignedSetId);
-                    if ($membership !== true) {
-                        $summary['verifying']++;
-                        continue;
+                    if ($claim->rowCount() === 1) {
+                        try {
+                            deseo_hearthis_s6_add_track($remoteId, $assignedSetId, $config);
+                        } catch (Throwable $additionError) {
+                            // The attempt is durable. Do not repeat uncertain POST.
+                            error_log('HearThis Season 6 association needs review for episode ' . $id);
+                        }
+                        $membership = deseo_hearthis_s6_contains_track($remoteId, $assignedSetId);
                     }
                 }
-                // Monitor RSS separately. Its eventual appearance updates the
-                // archive status but is NOT a condition for local MP3 cleanup.
+                if ($membership === true) {
+                    $pdo->prepare(
+                        "UPDATE dj_portal_sets SET hearthis_set_status = 'confirmed'
+                         WHERE id = ? AND status = 'broadcasted'
+                           AND hearthis_status = 'verifying' AND hearthis_set_id = ?
+                           AND hearthis_upload_accepted_at IS NOT NULL"
+                    )->execute([$id, $assignedSetId]);
+                }
+
+                // The single station podcast RSS is a later independent check.
+                // Its delay NEVER holds the already accepted local MP3.
                 $publishedTitle = trim((string)($track['hearthis_title'] ?? ''));
-                if ($publishedTitle === '' || !deseo_hearthis_podcast_contains_track(
-                    $remoteId, (string)$track['hearthis_url'], $publishedTitle
-                )) {
+                $podcastConfirmed = $publishedTitle !== ''
+                    && deseo_hearthis_podcast_contains_track($remoteId, $trackUrl, $publishedTitle);
+                if ($podcastConfirmed) {
+                    $pdo->prepare(
+                        "UPDATE dj_portal_sets SET hearthis_podcast_status = 'confirmed',
+                                hearthis_podcast_verified_at = COALESCE(hearthis_podcast_verified_at, ?)
+                         WHERE id = ? AND status = 'broadcasted'
+                           AND hearthis_status = 'verifying'
+                           AND hearthis_upload_accepted_at IS NOT NULL"
+                    )->execute([
+                        (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s'), $id
+                    ]);
+                } else {
                     $summary['podcast_pending']++;
+                }
+
+                // SYNCED is now an aggregate remote-publication milestone,
+                // NOT a prerequisite for local deletion.
+                if ($membership !== true || !$podcastConfirmed
+                    || !deseo_hearthis_public_track_ready($trackUrl, $remoteId, (string)$config['username'])) {
                     $summary['verifying']++;
                     continue;
                 }
@@ -698,7 +710,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                     "UPDATE dj_portal_sets SET hearthis_status = 'synced',
                          hearthis_set_status = 'confirmed',
                          hearthis_podcast_status = 'confirmed',
-                         hearthis_podcast_verified_at = ?,
+                         hearthis_podcast_verified_at = COALESCE(hearthis_podcast_verified_at, ?),
                          hearthis_synced_at = ?, hearthis_error = ''
                      WHERE id = ? AND status = 'broadcasted'
                        AND hearthis_status = 'verifying'
@@ -707,12 +719,12 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                        AND hearthis_set_id = ? AND hearthis_title = ?"
                 );
                 $mark->execute([$syncedAt, $syncedAt, $id,
-                    $track['hearthis_url'], $remoteId, $assignedSetId, $publishedTitle]);
+                    $trackUrl, $remoteId, $assignedSetId, $publishedTitle]);
                 if ($mark->rowCount() === 1) $summary['synced']++;
             } catch (Throwable $verifyError) {
-                // Never turn uncertain playlist/audio verification into upload retry.
+                // Never auto-reupload after ambiguous remote reconciliation.
                 $summary['verifying']++;
-                error_log('HearThis Season 6/public verification postponed for episode ' . $id . '.');
+                error_log('HearThis archive / podcast reconciliation postponed for episode ' . $id . '.');
             }
         }
         $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
