@@ -80,12 +80,12 @@ function deseo_hearthis_s6_playlist_id(string $username = 'deseoradio'): ?string
  * HearThis API docs. Only a proven ID hit inside a recognized track collection
  * may authorize retention; unknown response schemas fail CLOSED.
  */
-function deseo_hearthis_s6_contains_track(string $trackId, string $setId): bool {
-    if (!ctype_digit($trackId) || !ctype_digit($setId)) return false;
+function deseo_hearthis_s6_contains_track(string $trackId, string $setId): ?bool {
+    if (!ctype_digit($trackId) || !ctype_digit($setId)) return null;
     $body = deseo_hearthis_s6_read('https://api-v2.hearthis.at/set/season-6/');
-    if ($body === null) return false;
+    if ($body === null) return null;
     if (isset($body['id']) && ctype_digit((string)$body['id']) && (string)$body['id'] !== $setId) {
-        return false;
+        return null;
     }
     $entries = array_is_list($body) ? $body : null;
     if ($entries === null) {
@@ -96,7 +96,7 @@ function deseo_hearthis_s6_contains_track(string $trackId, string $setId): bool 
             }
         }
     }
-    if ($entries === null) return false;
+    if ($entries === null) return null;
     foreach ($entries as $row) {
         if (!is_array($row)) continue;
         $candidate = is_array($row['track'] ?? null) ? $row['track'] : $row;
