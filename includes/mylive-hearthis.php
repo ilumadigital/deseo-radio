@@ -539,7 +539,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             $claim = $pdo->prepare(
                 "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
                     hearthis_cover_asset_id = ?, hearthis_cover_source_path = ?,
-                    hearthis_started_at = ?, hearthis_error = '',
+                    hearthis_started_at = ?, hearthis_error = '', hearthis_meta_warning = '',
                     hearthis_attempts = hearthis_attempts + 1
                  WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'pending'
                    AND file_deleted_at IS NULL"
@@ -566,7 +566,8 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                 }
                 $save = $pdo->prepare(
                     "UPDATE dj_portal_sets SET hearthis_status = 'verifying',
-                         hearthis_url = ?, hearthis_track_id = ?, hearthis_error = ?
+                         hearthis_url = ?, hearthis_track_id = ?,
+                         hearthis_error = '', hearthis_meta_warning = ?
                      WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'uploading'
                        AND file_deleted_at IS NULL"
                 );
