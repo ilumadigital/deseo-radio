@@ -31,18 +31,6 @@
                 <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
                 <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
                 <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios ↗</a>
-                <a class="footer-platform-link" href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_mixcloud_click">
-                    <svg class="footer-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13V8m3 7V6m3 10V5m3 11V8"/><path d="M14.5 17H19a3 3 0 0 0 .2-6 4.5 4.5 0 0 0-7.7-2.3"/></svg>
-                    Mixcloud ↗
-                </a>
-                <a class="footer-platform-link" href="https://hearthis.at/deseoradio/set/season-6/" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_hearthis_click">
-                    <svg class="footer-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 10v4m4-7v10m4-14v18m4-14v10m4-7v4"/></svg>
-                    HearThis.at ↗
-                </a>
-                <a class="footer-platform-link" href="https://podcasts.apple.com/us/podcast/deseo-casts/id1711008342" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_apple_podcasts_click">
-                    <svg class="footer-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="2"/><path d="M9.5 16.5c.2-1.5 1-2.5 2.5-2.5s2.3 1 2.5 2.5L14 21h-4l-.5-4.5ZM7 15a7 7 0 1 1 10 0M9 12.5a4 4 0 1 1 6 0"/></svg>
-                    Apple Podcasts ↗
-                </a>
             </div>
         </div>
     </div>
@@ -158,7 +146,7 @@ $clientKeys = [
     'about.kicker','about.title','about.intro','about.created.before','about.created.after',
     'about.music','about.rhythm','about.moments','about.promise','about.tagline','about.iluma',
     'partners.kicker','partners.title','partners.text',
-    'lineup.kicker','lineup.title','lineup.tagline','lineup.schedule','lineup.start_label','lineup.start_value','lineup.days','lineup.hours','lineup.minutes','lineup.zoom','lineup.open','lineup.close',
+    'lineup.kicker','lineup.title','lineup.tagline','lineup.schedule','lineup.start_label','lineup.start_value','lineup.days','lineup.hours','lineup.minutes','lineup.platforms','lineup.zoom','lineup.open','lineup.close',
     'faq.kicker','faq.title','faq.text',
     'faq.q1','faq.a1','faq.q2','faq.a2','faq.q3','faq.a3','faq.q4','faq.a4','faq.q5','faq.a5',
     'advertise.kicker','advertise.title','advertise.text','advertise.cta',
