@@ -77,7 +77,7 @@ function deseo_s6_cli_public_url_by_id(string $trackId): string {
 function deseo_s6_cli_stream_ready(string $stream): bool {
     $parts = parse_url($stream);
     if (!is_array($parts) || !filter_var($stream, FILTER_VALIDATE_URL)
-        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || !deseo_hearthis_media_host_allowed((string)($parts['host'] ?? ''))
         || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['https', 'http'], true)
         || isset($parts['user']) || isset($parts['pass'])) return false;
     if (($parts['scheme'] ?? '') === 'http') {
