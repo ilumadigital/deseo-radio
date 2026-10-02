@@ -109,15 +109,11 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
     $nowSql = $now->format('Y-m-d H:i:s');
     $cutoff = $now->modify('-6 hours')->format('Y-m-d H:i:s');
     $advanced = 0;
-    $nextByAccount = [];
     foreach ($rows as $row) {
         $end = (string)($row['scheduled_show_end'] ?? '');
         if ($end === '') {
-            $account = (int)$row['account_id'];
-            if (!array_key_exists($account, $nextByAccount)) {
-                $nextByAccount[$account] = deseo_mylive_next_show_end($pdo, $account, $now);
-            }
-            $end = (string)($nextByAccount[$account] ?? '');
+            // Resolve each legacy row in episode order, respecting reserved dates.
+            $end = (string)(deseo_mylive_next_show_end($pdo, (int)$row['account_id'], $now) ?? '');
             if ($end !== '') {
                 $pdo->prepare(
                     "UPDATE dj_portal_sets SET scheduled_show_end = ?
