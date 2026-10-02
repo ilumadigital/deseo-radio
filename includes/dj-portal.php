@@ -157,6 +157,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_cover_asset_id BIGINT NULL,
         hearthis_cover_source_path VARCHAR(500) NULL,
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
+        hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_attempts INT NOT NULL DEFAULT 0,
         hearthis_started_at DATETIME NULL,
         hearthis_synced_at DATETIME NULL,
@@ -178,7 +179,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_cover_asset_id' => "BIGINT NULL AFTER hearthis_track_id",
         'hearthis_cover_source_path' => "VARCHAR(500) NULL AFTER hearthis_cover_asset_id",
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
-        'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_error",
+        'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
+        'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_meta_warning",
         'hearthis_started_at' => "DATETIME NULL AFTER hearthis_attempts",
         'hearthis_synced_at' => "DATETIME NULL AFTER hearthis_started_at"
     ];
@@ -451,7 +453,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_synced_at, uploaded_at
+                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning, hearthis_synced_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
          ORDER BY episode_no DESC"
