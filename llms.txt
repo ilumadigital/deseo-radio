@@ -44,7 +44,7 @@ These are program formats, not guarantees that every format is live at a particu
 
 ## Season 6 — announced weekly DJ lineup
 
-- Official launch of weekly DJ Sets: Wednesday, 14 October 2026, 20:00 local Athens time (EEST on launch day).
+- Official launch of weekly DJ Sets: Wednesday, 14 October 2026 (2026-10-14), 20:00 local Athens time (EEST on launch day).
 - Schedule recurrence: weekly, Wednesday–Sunday.
 - Local timezone: Europe/Athens, automatically observing EEST/EET seasonally.
 - Announcement: https://deseoradio.com/#season-6
