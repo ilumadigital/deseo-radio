@@ -592,7 +592,7 @@ $partners = [
             </div>
 
             <div class="faq-list">
-                <?php for ($i = 1; $i <= 5; $i++): ?>
+                <?php for ($i = 1; $i <= DESEO_PUBLIC_FAQ_COUNT; $i++): ?>
                     <details class="faq-item reveal">
                         <summary>
                             <span><?= str_pad((string)$i, 2, '0', STR_PAD_LEFT) ?></span>
