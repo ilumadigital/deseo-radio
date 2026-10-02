@@ -55,7 +55,7 @@ function admin_page_start(string $title, string $active = 'dashboard'): void {
                 <span><?= admin_e($currentCmsRole) ?></span>
                 <strong><?= admin_e($currentCmsEmail) ?></strong>
             </div>
-            <a href="/" target="_blank" rel="noopener">View website ↗</a>
+            <a href="/" target="_blank" rel="noopener">View website</a>
             <form method="post" action="index.php">
                 <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                 <input type="hidden" name="action" value="logout">
