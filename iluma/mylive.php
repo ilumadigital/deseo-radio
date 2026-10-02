@@ -953,7 +953,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $note = trim((string)($_POST['admin_note'] ?? ''));
                 }
 
-                $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
+                $updatedSet = deseo_mylive_update_set_status(
+                    $pdo, $setId, $status, $note, (string)($_POST['scheduled_show_end'] ?? '')
+                );
 
                 if ($status === 'broadcasted' && empty($updatedSet['file_deleted_at'])) {
                     $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το MP3 παραμένει στον server μέχρι να επιβεβαιωθεί το HearThis URL και να αποθηκευτεί στο PMS.';
@@ -1523,6 +1525,9 @@ admin_page_start('MyLive', 'mylive');
                                                 <?php endforeach; ?>
                                             </select>
                                             <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
+                                            <label>SHOW ENDS · ATHENS
+                                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                                            </label>
 
                                             <?php if (!empty($set['file_deleted_at'])): ?>
                                                 <span class="mylive-retention-state is-deleted">
@@ -1669,6 +1674,9 @@ admin_page_start('MyLive', 'mylive');
                                     <option value="<?= admin_e($statusChoice) ?>" <?= $setStatus === $statusChoice ? 'selected' : '' ?>><?= admin_e($setStatusLabels[$statusChoice] ?? strtoupper(str_replace('_', ' ', $statusChoice))) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <label>SHOW ENDS · ATHENS
+                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                            </label>
                         </div>
                         <div class="mylive-library-action">
                             <button class="button button-primary" type="submit">Save</button>
