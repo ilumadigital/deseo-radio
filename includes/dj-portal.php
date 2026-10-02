@@ -537,7 +537,7 @@ function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable 
     return null;
 }
 
-function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = ''): array {
+function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = '', string $showEndInput = ''): array {
     if (!in_array($status, deseo_mylive_set_statuses(), true)) {
         throw new RuntimeException('Μη έγκυρο status.');
     }
@@ -579,6 +579,36 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
             $scheduledEnd = $previous === 'scheduled' && !empty($set['scheduled_show_end'])
                 ? (string)$set['scheduled_show_end']
                 : deseo_mylive_next_show_end($pdo, (int)$set['account_id'], $now);
+            // Admin may supply an actual end date/time for a one-off Guest DJ slot.
+            if (trim($showEndInput) !== '') {
+                $given = DateTimeImmutable::createFromFormat(
+                    '!Y-m-d\\TH:i', trim($showEndInput), dj_season_athens_timezone()
+                );
+                $parseErrors = DateTimeImmutable::getLastErrors();
+                if (!$given || ($parseErrors !== false && ($parseErrors['warning_count'] || $parseErrors['error_count']))
+                    || $given->format('Y-m-d\\TH:i') !== trim($showEndInput)) {
+                    throw new RuntimeException('Μη έγκυρη ημερομηνία λήξης μετάδοσης.');
+                }
+                $inputSql = $given->format('Y-m-d H:i:s');
+                if (($given <= $now && $inputSql !== (string)($set['scheduled_show_end'] ?? ''))
+                    || $given < dj_season_start_at()
+                    || $given > dj_season_end_at()->modify('+1 day')) {
+                    throw new RuntimeException('Η λήξη πρέπει να είναι μελλοντική και μέσα στη Season 6.');
+                }
+                $collision = $pdo->prepare(
+                    "SELECT COUNT(*) FROM dj_portal_sets
+                     WHERE account_id = ? AND id <> ? AND status = 'scheduled'
+                       AND scheduled_show_end = ?"
+                );
+                $collision->execute([(int)$set['account_id'], $setId, $inputSql]);
+                if ((int)$collision->fetchColumn() > 0) {
+                    throw new RuntimeException('Άλλο episode του DJ έχει ήδη κρατήσει αυτό το slot.');
+                }
+                $scheduledEnd = $inputSql;
+            }
+            if ($scheduledEnd === null) {
+                throw new RuntimeException('Δεν υπάρχει συνδεδεμένο εβδομαδιαίο slot. Όρισε ημερομηνία/ώρα λήξης για το Guest DJ Set.');
+            }
         }
         $pdo->prepare(
             "UPDATE dj_portal_sets
