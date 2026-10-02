@@ -1,0 +1,233 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/dj-portal.php';
+
+/**
+ * Upload transport is deliberately OFF until the HearThis write endpoint,
+ * authentication scheme and response payload have been checked with the
+ * account's actual API documentation. Never infer a write endpoint from /api-v2.
+ */
+function deseo_hearthis_upload_config(): ?array {
+    if (getenv('HEARTHIS_UPLOAD_ENABLED') !== '1') return null;
+    $endpoint = trim((string)(getenv('HEARTHIS_UPLOAD_ENDPOINT') ?: ''));
+    $key = trim((string)(getenv('HEARTHIS_API_KEY') ?: getenv('HEARTHIS_KEY') ?: ''));
+    $secret = trim((string)(getenv('HEARTHIS_API_SECRET') ?: getenv('HEARTHIS_SECRET') ?: ''));
+    $username = trim((string)(getenv('HEARTHIS_USERNAME') ?: ''));
+    $mode = trim((string)(getenv('HEARTHIS_UPLOAD_AUTH_MODE') ?: ''));
+    $parts = parse_url($endpoint);
+    $host = strtolower((string)($parts['host'] ?? ''));
+    if (($parts['scheme'] ?? '') !== 'https' || $host === ''
+        || ($host !== 'hearthis.at' && !str_ends_with($host, '.hearthis.at'))
+        || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])
+        || $key === '' || $secret === '' || $username === ''
+        || !in_array($mode, ['basic', 'headers'], true)) {
+        // A fail-closed transport protects both credentials and local MP3 files.
+        return null;
+    }
+    return compact('endpoint', 'key', 'secret', 'username', 'mode');
+}
+
+function deseo_hearthis_public_url(string $url): bool {
+    if (!filter_var($url, FILTER_VALIDATE_URL)) return false;
+    $parts = parse_url($url);
+    return is_array($parts) && ($parts['scheme'] ?? '') === 'https'
+        && in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        && !isset($parts['user']) && !isset($parts['pass']);
+}
+
+function deseo_hearthis_upload_track(array $set, array $config): array {
+    if (!function_exists('curl_init') || !class_exists('CURLFile')) {
+        throw new RuntimeException('PHP cURL extension is required.');
+    }
+    $file = deseo_mylive_set_storage_file((string)$set['file_path']);
+    if (!$file['exists'] || $file['storage_root'] === ''
+        || !str_starts_with((string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR)) {
+        throw new RuntimeException('Audio file unavailable inside protected MyLive storage.');
+    }
+    $episode = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
+    $artist = trim((string)$set['artist_name']);
+    $title = 'Deseo Radio · ' . $artist . ' · ' . $episode;
+    $description = 'Deseo Radio Season 6 | ' . $artist . ' | ' . $episode
+        . ' | Broadcast: ' . (string)$set['broadcasted_at'] . ' (Athens)';
+    $fields = [
+        'file' => new CURLFile((string)$file['real_file'], 'audio/mpeg', (string)$set['stored_name']),
+        'title' => $title, 'description' => $description,
+        'username' => $config['username'],
+    ];
+    $headers = ['Accept: application/json'];
+    $curl = curl_init($config['endpoint']);
+    if ($curl === false) throw new RuntimeException('Could not initialize upload.');
+    if ($config['mode'] === 'headers') {
+        $headers[] = 'X-API-Key: ' . $config['key'];
+        $headers[] = 'X-API-Secret: ' . $config['secret'];
+    } else {
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_USERPWD, $config['key'] . ':' . $config['secret']);
+    }
+    curl_setopt_array($curl, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $fields,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT => 1800,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_MAXREDIRS => 0,
+    ]);
+    try {
+        $body = curl_exec($curl);
+        $http = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ($body === false) throw new RuntimeException('Transport result is uncertain; verify on HearThis before retrying.');
+        if ($http < 200 || $http >= 300) {
+            throw new RuntimeException('HearThis HTTP ' . $http . '; verify on HearThis before retrying.');
+        }
+        $payload = json_decode((string)$body, true);
+        if (!is_array($payload)) throw new RuntimeException('Upload response is not JSON; manual verification required.');
+        $track = is_array($payload['track'] ?? null) ? $payload['track'] : $payload;
+        $url = trim((string)($track['permalink_url'] ?? $track['url'] ?? $track['link'] ?? ''));
+        if (!deseo_hearthis_public_url($url)) {
+            throw new RuntimeException('Upload response has no verified public HearThis URL; manual verification required.');
+        }
+        $id = trim((string)($track['id'] ?? $track['track_id'] ?? ''));
+        return ['url' => $url, 'id' => substr($id, 0, 120)];
+    } finally {
+        curl_close($curl);
+    }
+}
+
+/** Prepare existing scheduled rows and complete slots in Europe/Athens. */
+function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): int {
+    $stmt = $pdo->query(
+        "SELECT s.id, s.account_id, s.scheduled_show_end
+         FROM dj_portal_sets s WHERE s.status = 'scheduled' AND s.file_deleted_at IS NULL
+         ORDER BY s.account_id, s.episode_no"
+    );
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $nowSql = $now->format('Y-m-d H:i:s');
+    $cutoff = $now->modify('-6 hours')->format('Y-m-d H:i:s');
+    $advanced = 0;
+    $nextByAccount = [];
+    foreach ($rows as $row) {
+        $end = (string)($row['scheduled_show_end'] ?? '');
+        if ($end === '') {
+            $account = (int)$row['account_id'];
+            if (!array_key_exists($account, $nextByAccount)) {
+                $nextByAccount[$account] = deseo_mylive_next_show_end($pdo, $account, $now);
+            }
+            $end = (string)($nextByAccount[$account] ?? '');
+            if ($end !== '') {
+                $pdo->prepare(
+                    "UPDATE dj_portal_sets SET scheduled_show_end = ?
+                     WHERE id = ? AND status = 'scheduled' AND scheduled_show_end IS NULL"
+                )->execute([$end, (int)$row['id']]);
+            }
+        }
+        if ($end === '' || $end > $nowSql || $end < $cutoff
+            || $end < dj_season_start_at()->format('Y-m-d H:i:s')) continue;
+        // A slot was planned and its broadcast window has completed.
+        $pdo->prepare(
+            "UPDATE dj_portal_sets SET status = 'broadcasted', broadcasted_at = scheduled_show_end,
+                 delete_after = NULL
+             WHERE id = ? AND status = 'scheduled' AND scheduled_show_end = ?
+               AND file_deleted_at IS NULL"
+        )->execute([(int)$row['id'], $end]);
+        $advanced++;
+    }
+    return $advanced;
+}
+
+/**
+ * CLI-only worker, serialized with a MySQL advisory lock. An ambiguous HTTP
+ * outcome is review_required, NOT an automatic retry that might double-post.
+ */
+function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
+    deseo_mylive_bootstrap($pdo);
+    $summary = ['advanced' => 0, 'uploaded' => 0, 'review_required' => 0, 'disabled' => false, 'retention' => []];
+    $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_hearthis_worker', 0)");
+    if (!$lock || (int)$lock->fetchColumn() !== 1) {
+        $summary['locked'] = true;
+        return $summary;
+    }
+    try {
+        $now = new DateTimeImmutable('now', dj_season_athens_timezone());
+        $summary['advanced'] = deseo_hearthis_advance_broadcasts($pdo, $now);
+        // A PHP process killed mid-request may have succeeded remotely.
+        // Quarantine that attempt rather than uploading the same episode again.
+        $pdo->prepare(
+            "UPDATE dj_portal_sets SET hearthis_status = 'review_required',
+                hearthis_error = 'Interrupted upload: verify the account before retrying'
+             WHERE hearthis_status = 'uploading' AND hearthis_started_at < ?"
+        )->execute([$now->modify('-2 hours')->format('Y-m-d H:i:s')]);
+        $config = deseo_hearthis_upload_config();
+        if ($config === null) {
+            $summary['disabled'] = true;
+            $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
+            return $summary;
+        }
+        $stmt = $pdo->prepare(
+            "SELECT s.id, s.episode_no, s.file_path, s.stored_name, s.broadcasted_at,
+                    a.artist_name
+             FROM dj_portal_sets s
+             INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+             WHERE s.status = 'broadcasted' AND s.hearthis_status = 'pending'
+               AND s.file_deleted_at IS NULL AND s.broadcasted_at >= ?
+             ORDER BY s.broadcasted_at ASC, s.id ASC LIMIT " . max(1, min(5, $limit))
+        );
+        $stmt->execute([dj_season_start_at()->format('Y-m-d H:i:s')]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $set) {
+            $id = (int)$set['id'];
+            $file = deseo_mylive_set_storage_file((string)$set['file_path']);
+            if (!$file['exists'] || $file['storage_root'] === ''
+                || !str_starts_with((string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR)) {
+                $pdo->prepare(
+                    "UPDATE dj_portal_sets SET hearthis_status = 'review_required',
+                         hearthis_error = 'Audio file missing or outside protected storage'
+                     WHERE id = ? AND hearthis_status = 'pending'"
+                )->execute([$id]);
+                $summary['review_required']++;
+                continue;
+            }
+            $started = $now->format('Y-m-d H:i:s');
+            $claim = $pdo->prepare(
+                "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
+                    hearthis_started_at = ?, hearthis_error = '',
+                    hearthis_attempts = hearthis_attempts + 1
+                 WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'pending'
+                   AND file_deleted_at IS NULL"
+            );
+            $claim->execute([$started, $id]);
+            if ($claim->rowCount() !== 1) continue;
+            try {
+                $track = deseo_hearthis_upload_track($set, $config);
+                $save = $pdo->prepare(
+                    "UPDATE dj_portal_sets SET hearthis_status = 'synced',
+                         hearthis_url = ?, hearthis_track_id = ?,
+                         hearthis_synced_at = ?, hearthis_error = ''
+                     WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'uploading'
+                       AND file_deleted_at IS NULL"
+                );
+                $save->execute([$track['url'], $track['id'],
+                    (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s'), $id]);
+                if ($save->rowCount() !== 1) {
+                    throw new RuntimeException('Database sync state was changed; manual verification required.');
+                }
+                $summary['uploaded']++;
+            } catch (Throwable $error) {
+                // Do not log response bodies, auth tokens or private storage paths.
+                error_log('HearThis upload needs review for set ' . $id . ': ' . $error->getMessage());
+                $pdo->prepare(
+                    "UPDATE dj_portal_sets SET hearthis_status = 'review_required', hearthis_error = ?
+                     WHERE id = ? AND hearthis_status = 'uploading'"
+                )->execute([substr($error->getMessage(), 0, 500), $id]);
+                $summary['review_required']++;
+            }
+        }
+        $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
+        return $summary;
+    } finally {
+        $pdo->query("SELECT RELEASE_LOCK('deseo_mylive_hearthis_worker')");
+    }
+}
