@@ -641,11 +641,11 @@ button{cursor:pointer}
   box-sizing:border-box;
   flex:0 1 calc((100% - 36px)/4);
   min-width:0;
-  min-height:122px;
+  min-height:152px;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px;
+  padding:22px;
   background:#0d0d0f;
   border:1px solid var(--line);
   border-radius:16px;
@@ -659,12 +659,11 @@ button{cursor:pointer}
 }
 .partner-grid-v3 img{
   display:block;
-  width:auto;
-  height:auto;
-  max-width:112px;
-  max-height:44px;
+  width:min(100%,220px);
+  height:82px;
+  max-width:100%;
   object-fit:contain;
-  opacity:.72;
+  opacity:.84;
   filter:grayscale(1);
   transition:opacity .2s ease,filter .2s ease,transform .2s ease;
 }
@@ -992,7 +991,8 @@ button{cursor:pointer}
   .playlist-copy small{font-size:8px}
 
   .about-strip{padding:78px 0}
-  .partner-grid-v3 a{flex-basis:calc((100% - 12px)/2);min-height:96px;padding:18px}
+  .partner-grid-v3 a{flex-basis:calc((100% - 12px)/2);min-height:116px;padding:14px}
+  .partner-grid-v3 img{width:min(100%,170px);height:66px}
 
   .faq-item summary{grid-template-columns:34px minmax(0,1fr) 28px;gap:9px;padding:19px 2px}
   .faq-item summary strong{font-size:14px}
