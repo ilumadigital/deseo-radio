@@ -30,6 +30,8 @@
                 <span data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
                 <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
                 <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
+                <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_mixcloud_click">Mixcloud ↗</a>
+                <a href="https://soundcloud.com/deseo-radio" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_soundcloud_click">SoundCloud ↗</a>
                 <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios ↗</a>
             </div>
         </div>
