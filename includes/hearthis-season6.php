@@ -6,7 +6,9 @@ declare(strict_types=1);
  * and documented authenticated set_ajax_add.php POST adapter.
  * Does not import the ILUMA database or enable any MyLive functionality.
  */
-const DESEO_HEARTHIS_SEASON6_URL = 'https://hearthis.at/deseoradio/set/season-6/';
+// Current canonical URL confirmed from the Deseo account's public playlist API.
+// Discovery still validates the current UNIQUE title, ID and permalink live.
+const DESEO_HEARTHIS_SEASON6_URL = 'https://hearthis.at/set/561432-10808078/';
 
 function deseo_hearthis_s6_read(string $url): ?array {
     $parts = parse_url($url);
