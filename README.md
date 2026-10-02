@@ -450,9 +450,9 @@ The worker uses an advisory database lock and does not double-post concurrently.
 
 #### Isolated private upload smoke test (not the production worker)
 
-For the Hostinger layout below, the uploaded test audio is intentionally **outside** \`public_html\`:
+For the Hostinger layout below, the uploaded test audio is intentionally **outside** `public_html`:
 
-\`\`\`text
+```text
 domains/deseoradio.com/
 ├── .env
 ├── deseo-uploads/
@@ -460,16 +460,16 @@ domains/deseoradio.com/
 └── public_html/
     └── iluma/
         └── cli-hearthis-private-test.php
-\`\`\`
+```
 
-After deploying the *single* CLI test script from this branch to its \`public_html/iluma/\` location, rotating the API key/secret previously pasted in chat, and setting \`HEARTHIS_UPLOAD_ENABLED=0\`, execute through Hostinger SSH/Terminal (replace \`/path/to/\` with the absolute account path):
+After deploying the *single* CLI test script from this branch to its `public_html/iluma/` location, rotating the API key/secret previously pasted in chat, and setting `HEARTHIS_UPLOAD_ENABLED=0`, execute through Hostinger SSH/Terminal (replace `/path/to/` with the absolute account path):
 
-\`\`\`sh
+```sh
 php /path/to/domains/deseoradio.com/public_html/iluma/cli-hearthis-private-test.php --check
 php /path/to/domains/deseoradio.com/public_html/iluma/cli-hearthis-private-test.php --upload-private
-\`\`\`
+```
 
-\`--check\` only checks file header/type/size/path, presence of credentials and any prior test receipt; it never contacts the API. The second command requires explicit invocation and makes **one** Premium API call with \`private=1\`, without custom image; it does not connect to MyLive tables, install a cron, turn on the worker or delete audio. An attempt marker (\`deseo-uploads/.hearthis-private-test-receipt.json\`) is saved *before* sending the HTTP request, so interrupted/ambiguous outcomes cannot automatically duplicate the track. A successful response prints only the returned track ID and stores a minimal receipt (no credentials or raw response). A private upload alone does **not** establish public playback or production retention safety. Review the private track in the HearThis account after running; do not remove/retry the receipt without first reconciling that remote track. The exact user-supplied test audio must be owned or licensed appropriately.
+`--check` only checks file header/type/size/path, presence of credentials and any prior test receipt; it never contacts the API. The second command requires explicit invocation and makes **one** Premium API call with `private=1`, without custom image; it does not connect to MyLive tables, install a cron, turn on the worker or delete audio. An attempt marker (`deseo-uploads/.hearthis-private-test-receipt.json`) is saved *before* sending the HTTP request, so interrupted/ambiguous outcomes cannot automatically duplicate the track. A successful response prints only the returned track ID and stores a minimal receipt (no credentials or raw response). A private upload alone does **not** establish public playback or production retention safety. Review the private track in the HearThis account after running; do not remove/retry the receipt without first reconciling that remote track. The exact user-supplied test audio must be owned or licensed appropriately.
 
 #### Artwork 02 and episode metadata (optional artwork with provider default)
 
