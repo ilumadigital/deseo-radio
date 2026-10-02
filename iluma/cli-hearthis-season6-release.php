@@ -127,6 +127,8 @@ function deseo_s6_cli_public_ready(string $trackUrl, string $trackId): bool {
     if (strtolower((string)($owner['permalink'] ?? '')) !== 'deseoradio') return false;
     if (deseo_s6_cli_track_url((string)($body['permalink_url'] ?? '')) !== $canonical) return false;
     if (isset($body['private']) && in_array(strtolower((string)$body['private']), ['1', 'true', 'yes'], true)) return false;
+    $remoteTitle = trim((string)($body['title'] ?? $body['name'] ?? ''));
+    if ($remoteTitle !== DESEO_S6_RELEASE_TITLE) return false;
     if ((int)($body['duration'] ?? 0) < 1) return false;
     return deseo_s6_cli_stream_ready(trim((string)($body['stream_url'] ?? '')));
 }
@@ -163,6 +165,10 @@ echo 'Season 6 existing set: ' . DESEO_HEARTHIS_SEASON6_URL . PHP_EOL;
 echo 'Set numeric ID resolved: ' . ($setId ?? 'NO (no network write will be made)') . PHP_EOL;
 echo 'Old PRIVATE test receipt: ' . (is_array($old) ? (string)($old['state'] ?? 'unknown') : 'missing') . PHP_EOL;
 echo 'PUBLIC release receipt: ' . (is_array($record) ? (string)($record['state'] ?? 'unknown') : 'none') . PHP_EOL;
+echo 'Source MP3: ' . ($file && $file === $expected && is_file($file) && !is_link($expected) ? 'present' : 'missing') . PHP_EOL;
+echo 'Previous private receipt matches source: ' . ($file && is_array($old)
+    && hash_equals((string)($old['file_sha256'] ?? ''), (string)hash_file('sha256', $file)) ? 'yes' : 'no') . PHP_EOL;
+echo 'Credentials configured for deseoradio: ' . ($key !== '' && $secret !== '' && $username === 'deseoradio' ? 'yes' : 'no') . PHP_EOL;
 echo 'Automatic MyLive upload: ' . (getenv('HEARTHIS_UPLOAD_ENABLED') === '1' ? 'ON (STOP)' : 'OFF') . PHP_EOL;
 if ($command === '--check') {
     echo 'Dry run only: no upload, set modification or deletion.' . PHP_EOL;
