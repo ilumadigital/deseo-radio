@@ -506,22 +506,35 @@ function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable 
          WHERE mylive_account_id = ? ORDER BY day_of_week, start_time"
     );
     $stmt->execute([$accountId]);
-    $earliest = null;
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $slot) {
-        $occurrence = dj_season_weekly_occurrence(
-            (int)$slot['day_of_week'], (string)$slot['start_time'],
-            (string)$slot['end_time'], $now
-        );
-        if (!$occurrence) continue;
-        [$start, $end] = $occurrence;
-        if ($start <= $now) {
-            $start = $start->modify('+7 days');
-            $end = $end->modify('+7 days');
+    $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $occupied = $pdo->prepare(
+        "SELECT COUNT(*) FROM dj_portal_sets
+         WHERE account_id = ? AND status = 'scheduled' AND scheduled_show_end = ?"
+    );
+    // Each already scheduled episode reserves a distinct upcoming slot.
+    for ($attempt = 0; $attempt < 52; $attempt++) {
+        $earliest = null;
+        foreach ($slots as $slot) {
+            $occurrence = dj_season_weekly_occurrence(
+                (int)$slot['day_of_week'], (string)$slot['start_time'],
+                (string)$slot['end_time'], $now
+            );
+            if (!$occurrence) continue;
+            [$start, $end] = $occurrence;
+            if ($start <= $now) {
+                $start = $start->modify('+7 days');
+                $end = $end->modify('+7 days');
+            }
+            if ($start > dj_season_end_at()) continue;
+            if ($earliest === null || $end < $earliest) $earliest = $end;
         }
-        if ($start > dj_season_end_at()) continue;
-        if ($earliest === null || $end < $earliest) $earliest = $end;
+        if ($earliest === null) return null;
+        $endSql = $earliest->format('Y-m-d H:i:s');
+        $occupied->execute([$accountId, $endSql]);
+        if ((int)$occupied->fetchColumn() === 0) return $endSql;
+        $now = $earliest->modify('+1 second');
     }
-    return $earliest ? $earliest->format('Y-m-d H:i:s') : null;
+    return null;
 }
 
 function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = ''): array {
