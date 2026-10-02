@@ -193,6 +193,29 @@ function deseo_hearthis_metadata(array $set): array {
     ];
 }
 
+/**
+ * Require a public track permalink under the account that owns the credentials.
+ * A profile, playlist, another artist's track, or arbitrary hearthis.at URL
+ * must never authorize deletion of an MP3.
+ */
+function deseo_hearthis_owned_track_url(string $url, string $username): bool {
+    if (!deseo_hearthis_public_url($url)) return false;
+    $parts = parse_url($url);
+    if (!is_array($parts) || isset($parts['query']) || isset($parts['fragment'])) return false;
+    $segments = explode('/', trim((string)($parts['path'] ?? ''), '/'));
+    return count($segments) === 2
+        && strtolower(rawurldecode($segments[0])) === $username
+        && preg_match('/^[a-z0-9][a-z0-9_-]*$/iD', rawurldecode($segments[1])) === 1;
+}
+
+/**
+ * Upload to the documented Premium endpoint. Optional artwork is deliberately
+ * omitted if its file is not a supported JPG/PNG <= 10 MB. HearThis may then
+ * select embedded ID3 artwork or its account/platform default.
+ *
+ * The documented response shape is {"files":[{"id":"...", "error":"",
+ * "full":{...}, "meta_error":"..."}]}; it is NOT a top-level track object.
+ */
 function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): array {
     if (!function_exists('curl_init') || !class_exists('CURLFile')) {
         throw new RuntimeException('PHP cURL extension is required.');
@@ -202,35 +225,34 @@ function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): 
         || !str_starts_with((string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR)) {
         throw new RuntimeException('Audio file unavailable inside protected MyLive storage.');
     }
+
     $metadata = deseo_hearthis_metadata($set);
-    // Field names are provisional until the HearThis write API is verified.
-    // Custom artwork is optional: when unavailable, omit it entirely and let
-    // HearThis apply its account/platform default. Never send another DJ's
-    // image, promotional 01, or a locally guessed station-logo file.
     $fields = [
+        'key' => $config['key'],
+        'secret' => $config['secret'],
         'file' => new CURLFile((string)$file['real_file'], 'audio/mpeg', (string)$set['stored_name']),
         'title' => $metadata['title'],
+        'private' => '0',
         'description' => $metadata['description'],
         'genre' => $metadata['genre'],
-        'username' => $config['username'],
+        'tags' => 'Deseo Radio,Season 6,DJ Set',
     ];
-    if ($cover !== null) {
-        $fields['artwork'] = new CURLFile((string)$cover['path'], (string)$cover['mime'], (string)$cover['name']);
+    if ($cover !== null
+        && in_array((string)$cover['mime'], ['image/png', 'image/jpeg'], true)
+        && is_file((string)$cover['path'])
+        && filesize((string)$cover['path']) <= 10 * 1024 * 1024) {
+        // Official field is "image" (or "cover"), not the provisional "artwork".
+        $fields['image'] = new CURLFile(
+            (string)$cover['path'], (string)$cover['mime'], (string)$cover['name']
+        );
     }
-    $headers = ['Accept: application/json'];
+
     $curl = curl_init($config['endpoint']);
-    if ($curl === false) throw new RuntimeException('Could not initialize upload.');
-    if ($config['mode'] === 'headers') {
-        $headers[] = 'X-API-Key: ' . $config['key'];
-        $headers[] = 'X-API-Secret: ' . $config['secret'];
-    } else {
-        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($curl, CURLOPT_USERPWD, $config['key'] . ':' . $config['secret']);
-    }
+    if ($curl === false) throw new RuntimeException('Could not initialize HearThis upload.');
     curl_setopt_array($curl, [
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $fields,
-        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_HTTPHEADER => ['Accept: application/json'],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_CONNECTTIMEOUT => 15,
@@ -242,22 +264,91 @@ function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): 
     try {
         $body = curl_exec($curl);
         $http = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ($body === false) throw new RuntimeException('Transport result is uncertain; verify on HearThis before retrying.');
+        if ($body === false) {
+            throw new RuntimeException('Upload transport outcome uncertain; inspect HearThis before any retry.');
+        }
         if ($http < 200 || $http >= 300) {
-            throw new RuntimeException('HearThis HTTP ' . $http . '; verify on HearThis before retrying.');
+            throw new RuntimeException('HearThis upload returned HTTP ' . $http . '; manual verification required.');
         }
         $payload = json_decode((string)$body, true);
-        if (!is_array($payload)) throw new RuntimeException('Upload response is not JSON; manual verification required.');
-        $track = is_array($payload['track'] ?? null) ? $payload['track'] : $payload;
-        $url = trim((string)($track['permalink_url'] ?? $track['url'] ?? $track['link'] ?? ''));
-        if (!deseo_hearthis_public_url($url)) {
-            throw new RuntimeException('Upload response has no verified public HearThis URL; manual verification required.');
+        $files = is_array($payload) ? ($payload['files'] ?? null) : null;
+        if (!is_array($files) || count($files) !== 1 || !is_array($files[0])) {
+            throw new RuntimeException('Unrecognized HearThis files[] response; inspect account before retrying.');
         }
-        $id = trim((string)($track['id'] ?? $track['track_id'] ?? ''));
-        return ['url' => $url, 'id' => substr($id, 0, 120)];
+        $item = $files[0];
+        if (trim((string)($item['error'] ?? '')) !== '') {
+            throw new RuntimeException('HearThis reported an upload error; inspect account before retrying.');
+        }
+        $id = trim((string)($item['id'] ?? ''));
+        if ($id === '' || !ctype_digit($id) || (int)$id < 1) {
+            throw new RuntimeException('HearThis returned no valid track ID; inspect account before retrying.');
+        }
+        $full = is_array($item['full'] ?? null) ? $item['full'] : [];
+        if (isset($full['id']) && (string)$full['id'] !== $id) {
+            // An ID mismatch is a quarantined remote outcome, not a retry.
+            return ['id' => $id, 'url' => '', 'warning' => 'Track IDs differ in the upload response.'];
+        }
+        $owner = is_array($full['user'] ?? null) ? (string)($full['user']['permalink'] ?? '') : '';
+        if ($owner !== '' && strtolower($owner) !== $config['username']) {
+            return ['id' => $id, 'url' => '', 'warning' => 'Returned track belongs to a different account.'];
+        }
+        $url = trim((string)($full['permalink_url'] ?? $item['permalink_url'] ?? ''));
+        if (!deseo_hearthis_owned_track_url($url, $config['username'])) {
+            return ['id' => $id, 'url' => '', 'warning' => 'Track ID received without a valid owned public track permalink.'];
+        }
+        return [
+            'id' => $id,
+            'url' => $url,
+            'warning' => substr(trim((string)($item['meta_error'] ?? '')), 0, 250),
+        ];
     } finally {
         curl_close($curl);
     }
+}
+
+/**
+ * Confirm independently from the public, anonymous read API that the uploaded
+ * track belongs to this account, has finished processing, is not private, and
+ * exposes a real streaming URL. No keys/secrets are sent to this read endpoint.
+ */
+function deseo_hearthis_public_track_ready(string $url, string $id, string $username): bool {
+    if (!deseo_hearthis_owned_track_url($url, $username) || !ctype_digit($id)) return false;
+    $segments = explode('/', trim((string)parse_url($url, PHP_URL_PATH), '/'));
+    $slug = rawurldecode($segments[1]);
+    $readUrl = 'https://api-v2.hearthis.at/' . rawurlencode($username) . '/' . rawurlencode($slug) . '/';
+    $curl = curl_init($readUrl);
+    if ($curl === false) return false;
+    curl_setopt_array($curl, [
+        CURLOPT_HTTPGET => true,
+        CURLOPT_HTTPHEADER => ['Accept: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 8,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+    ]);
+    try {
+        $body = curl_exec($curl);
+        $http = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    } finally {
+        curl_close($curl);
+    }
+    if ($body === false || $http !== 200) return false;
+    $track = json_decode((string)$body, true);
+    if (!is_array($track) || (string)($track['id'] ?? '') !== $id) return false;
+    $user = is_array($track['user'] ?? null) ? $track['user'] : [];
+    if (strtolower((string)($user['permalink'] ?? '')) !== $username) return false;
+    if (!deseo_hearthis_owned_track_url((string)($track['permalink_url'] ?? ''), $username)) return false;
+    if (isset($track['private']) && in_array(strtolower((string)$track['private']), ['1', 'true', 'yes'], true)) return false;
+    if ((int)($track['duration'] ?? 0) <= 0) return false;
+    $stream = trim((string)($track['stream_url'] ?? ''));
+    $parts = parse_url($stream);
+    if (!is_array($parts) || !filter_var($stream, FILTER_VALIDATE_URL)
+        || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)
+        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || isset($parts['user']) || isset($parts['pass'])) return false;
+    return true;
 }
 
 /** Prepare existing scheduled rows and complete slots in Europe/Athens. */
