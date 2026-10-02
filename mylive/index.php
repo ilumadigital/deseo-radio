@@ -1307,7 +1307,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                 <div>
                     <span class="eyebrow">YOUR REPOSITORY</span>
                     <h3>Episodes</h3>
-                    <p>Τα BROADCASTED episodes παραμένουν στο ιστορικό σου. Μετά την αποδοχή του upload στο HearThis εμφανίζεται εδώ το δημόσιο link, ενώ το αντίστοιχο MP3 αφαιρείται από τον server χωρίς αναμονή για το Podcast RSS.</p>
+                    <p>Μετά τη μετάδοση, μόλις δημοσιευτεί το DJ Set σου στο HearThis, το προσωπικό του link θα εμφανιστεί εδώ.</p>
                 </div>
                 <strong><?= count($sets) ?> upload<?= count($sets) === 1 ? '' : 's' ?></strong>
             </div>
@@ -1336,14 +1336,13 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                                 $episodeHearThisUrl = deseo_mylive_hearthis_episode_link($set, (int)$account['id']);
                                 ?>
                                 <?php if ($episodeHearThisUrl !== ''): ?>
-                                    <a href="<?= deseo_mylive_e($episodeHearThisUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Listen to EP<?= (int)$set['episode_no'] ?> on HearThis">Listen on HearThis</a>
-                                <?php endif; ?>
-                                <?php if ((string)($set['status'] ?? '') === 'broadcasted'): ?>
-                                    <small>HEARTHIS: <?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?></small>
+                                    <a href="<?= deseo_mylive_e($episodeHearThisUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Listen to EP<?= (int)$set['episode_no'] ?> on HearThis">Το link του DJ Set σου</a>
+                                <?php elseif ((string)($set['status'] ?? '') === 'broadcasted'): ?>
+                                    <small>Το link σου ετοιμάζεται.</small>
                                 <?php endif; ?>
                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                     <small class="set-retention is-deleted">
-                                        FILE REMOVED · episode retained
+                                        Το DJ Set σου παραμένει στο ιστορικό.
                                     </small>
                                 <?php else: ?>
                                     <a href="/mylive/download.php?id=<?= (int)$set['id'] ?>">Download</a>
@@ -1353,6 +1352,41 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+            <div class="mylive-episode-platforms" aria-label="Οι πλατφόρμες του DJ Set σου">
+                <div class="mylive-episode-platforms-copy">
+                    <span class="eyebrow">ΜΕΤΑ ΤΗ ΜΕΤΑΔΟΣΗ</span>
+                    <h4>Το DJ Set σου, παντού.</h4>
+                    <p>Μετά τη μετάδοση στον Deseo Radio, το set σου θα δημοσιεύεται σταδιακά και στις τρεις πλατφόρμες.</p>
+                </div>
+                <div class="mylive-episode-platform-links">
+                    <a href="https://podcasts.apple.com/us/podcast/deseo-radioshows/id1711008342" target="_blank" rel="noopener noreferrer" aria-label="Apple Podcasts · Deseo RadioShows">
+                        <span class="mylive-episode-platform-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <circle cx="16" cy="14" r="2.3"/><path d="M13.2 21c.2-2 1.3-3.4 2.8-3.4s2.6 1.4 2.8 3.4l-.6 6h-4.4l-.6-6ZM9.5 19a9 9 0 1 1 13 0M12 17a5.5 5.5 0 1 1 8 0"/>
+                            </svg>
+                        </span>
+                        <span>Apple Podcasts</span>
+                    </a>
+                    <a href="https://hearthis.at/deseoradio/set/season-6/" target="_blank" rel="noopener noreferrer" aria-label="HearThis · Deseo Radio Season 6">
+                        <span class="mylive-episode-platform-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <path d="M16 27S4.5 20.2 4.5 12.5a6 6 0 0 1 11.5-2.4 6 6 0 0 1 11.5 2.4C27.5 20.2 16 27 16 27Z"/>
+                                <path d="M8.5 16h3l1.4-3.5 2.8 7 2.2-5 1.2 1.5h4.4"/>
+                            </svg>
+                        </span>
+                        <span>HearThis</span>
+                    </a>
+                    <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" aria-label="Mixcloud · Deseo Radio">
+                        <span class="mylive-episode-platform-icon" aria-hidden="true">
+                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <path d="M3.5 20V12m4 11V9m4 15V7m4 17V11"/>
+                                <path d="M19 23h6a4 4 0 0 0 .3-8 6 6 0 0 0-10.2-3"/>
+                            </svg>
+                        </span>
+                        <span>Mixcloud</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 
