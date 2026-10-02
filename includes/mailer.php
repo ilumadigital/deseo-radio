@@ -639,7 +639,7 @@ function deseo_mylive_access_email(array $account, string $temporaryPassword, bo
         '<strong style="color:#fff;">' . $e($slot) . '</strong>. Το slot εμφανίζεται και μέσα στο προσωπικό dashboard.');
 
     $body .= deseo_mylive_email_section('02', 'Upload DJ Set',
-        'Μπαίνεις στο dashboard, πατάς <strong style="color:#fff;">+ Upload DJ Set</strong>, επιλέγεις το τελικό <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong> αρχείο και κάνεις Upload. Δεν συμπληρώνεις episode number ή filename. Το MyLive δημιουργεί αυτόματα <strong style="color:#fff;">EP001 → EP002 → EP003</strong> και filenames όπως <strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong>.');
+        'Μπαίνεις στο dashboard, πατάς <strong style="color:#fff;">+ Upload DJ Set</strong>, επιλέγεις το τελικό <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong> αρχείο και κάνεις Upload. Δεν συμπληρώνεις episode number ή filename. Το MyLive δημιουργεί αυτόματα <strong style="color:#fff;">EP001, EP002, EP003</strong> και filenames όπως <strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong>.');
 
     $body .= deseo_mylive_email_section('03', 'Τα αρχεία από το Deseo Radio',
         'Στο <strong style="color:#fff;">Your Assets</strong> θα βρίσκεις ό,τι παραδίδει η ομάδα του Deseo Radio / <strong style="color:#fff;">ILUMA Digital Agency</strong>: προσωπικό Instagram / social artwork, Personal DJ Imaging, _30 Imaging και οποιοδήποτε πρόσθετο promotional ή on-air asset.');
@@ -693,7 +693,7 @@ function deseo_mylive_public_profile_enabled_email(array $account): array {
         . '</div></td></tr>';
 
     $body .= deseo_mylive_email_section('01', 'Τι μπορείς να διαχειρίζεσαι',
-        'Μέσα από το <strong style="color:#fff;">MyLive → Your Public DJ Profile</strong> μπορείς να γράφεις και να ενημερώνεις το προσωπικό σου <strong style="color:#fff;">Bio</strong> και τα social links σου: Instagram, TikTok, SoundCloud, Spotify και Website.');
+        'Μέσα από το <strong style="color:#fff;">MyLive, στην ενότητα Your Public DJ Profile</strong> μπορείς να γράφεις και να ενημερώνεις το προσωπικό σου <strong style="color:#fff;">Bio</strong> και τα social links σου: Instagram, TikTok, SoundCloud, Spotify και Website.');
 
     $body .= deseo_mylive_email_section('02', 'Πώς εμφανίζεται στους ακροατές',
         'Όταν το show σου παίζει στον αέρα του Deseo Radio και έχει συνδεθεί με το MyLive profile σου, ο ακροατής μπορεί να <strong style="color:#fff;">πατήσει πάνω στη φωτογραφία σου</strong> στο Now On Air / Radio Program και να ανοίξει το δημόσιο DJ profile σου.<br><br>'
@@ -845,7 +845,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $body .= $section('MYLIVE AUTOMATION', 'Δεν χρειάζεται να μετονομάζεις τίποτα',
         'Ανεβάζεις απλώς το τελικό MP3 από το κουμπί <strong style="color:#fff;">+ Upload DJ Set</strong>. '
         . 'Το MyLive βρίσκει μόνο του ποιο episode ακολουθεί και αποθηκεύει το set με το σωστό naming format.<br><br>'
-        . '<strong style="color:#fff;">EP001 → EP002 → EP003…</strong><br>'
+        . '<strong style="color:#fff;">EP001, EP002, EP003…</strong><br>'
         . '<strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong><br><br>'
         . 'Δεν χρειάζεται να αλλάξεις μόνος σου filename, να γράψεις episode number ή να στείλεις WeTransfer / Drive link.');
 
@@ -1293,7 +1293,7 @@ function deseo_mylive_on_air_social_email(array $account, array $context): array
     $body .= deseo_mylive_email_section(
         'YOUR ASSETS',
         'Χρειάζεσαι το δημιουργικό σου;',
-        'Τα επίσημα social assets του show σου βρίσκονται στο <strong style="color:#fff;">MyLive → Your Assets</strong>.'
+        'Τα επίσημα social assets του show σου βρίσκονται στο <strong style="color:#fff;">MyLive, στην ενότητα Your Assets</strong>.'
     );
 
     $subject = 'Deseo Radio · You are On Air · ' . $artist;
