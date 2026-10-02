@@ -15,10 +15,10 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/../includes/env.php';
 require_once __DIR__ . '/../includes/hearthis-season6.php';
 
-const DESEO_S6_RELEASE_FILE = 'Deseo Radio - Season 6.mp3';
-const DESEO_S6_RELEASE_TITLE = 'Deseo Radio Season 6 begins 14/10/2026';
+const DESEO_S6_RELEASE_FILE = 'DeseoRadio - Season 6 Spot.mp3';
+const DESEO_S6_RELEASE_TITLE = 'DeseoRadio - Season 6 Spot';
 const DESEO_S6_RELEASE_API = 'https://xhr.hearthis.at/upload_api.php';
-const DESEO_S6_RELEASE_RECEIPT = '.hearthis-season6-release-receipt.json';
+const DESEO_S6_RELEASE_RECEIPT = '.hearthis-season6-spot-release-receipt.json';
 
 function deseo_s6_cli_fail(string $message, int $code = 1): never {
     fwrite(STDERR, '[Deseo Season 6 release] ' . $message . PHP_EOL);
@@ -133,6 +133,28 @@ function deseo_s6_cli_public_ready(string $trackUrl, string $trackId): bool {
     return deseo_s6_cli_stream_ready(trim((string)($body['stream_url'] ?? '')));
 }
 
+/**
+ * Prevent any wrong/non-audio file from being published or later unlinked.
+ * The MP3 must remain under the fixed private domain-level folder.
+ */
+function deseo_s6_cli_valid_spot_mp3(string $path): bool {
+    if (!is_file($path) || !is_readable($path) || !function_exists('finfo_open')) return false;
+    $size = filesize($path);
+    if ($size === false || $size < 1024 || $size > 1073741824) return false;
+    $head = file_get_contents($path, false, null, 0, 3);
+    if (!is_string($head) || !(str_starts_with($head, 'ID3')
+        || (strlen($head) >= 2 && ord($head[0]) === 0xff
+            && (ord($head[1]) & 0xe0) === 0xe0))) return false;
+    $info = finfo_open(FILEINFO_MIME_TYPE);
+    if (!$info) return false;
+    try {
+        $mime = (string)finfo_file($info, $path);
+    } finally {
+        finfo_close($info);
+    }
+    return in_array($mime, ['audio/mpeg', 'audio/mp3', 'application/octet-stream'], true);
+}
+
 $command = $argv[1] ?? '';
 if (count($argv) !== 2 || !in_array($command, ['--check', '--publish-public', '--finalize'], true)) {
     deseo_s6_cli_fail('Usage: --check | --publish-public | --finalize', 2);
@@ -142,18 +164,17 @@ $folder = $root ? realpath($root . '/deseo-uploads') : false;
 $expected = $folder ? $folder . '/' . DESEO_S6_RELEASE_FILE : '';
 $file = $expected !== '' ? realpath($expected) : false;
 $receiptPath = $folder ? $folder . '/' . DESEO_S6_RELEASE_RECEIPT : '';
-$privateReceipt = $folder ? $folder . '/.hearthis-private-test-receipt.json' : '';
+// The earlier PRIVATE test was for a DIFFERENT MP3. Its receipt is unrelated
+// and is deliberately neither modified nor required for this release.
 if (!$root || !$folder || !str_starts_with($folder, $root . DIRECTORY_SEPARATOR)
     || !is_dir($folder) || !is_writable($folder)) {
     deseo_s6_cli_fail('The domain-level deseo-uploads folder is missing or not writable.');
 }
-$lock = fopen($folder . '/.hearthis-season6-release.lock', 'c');
+$lock = fopen($folder . '/.hearthis-season6-spot-release.lock', 'c');
 if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) deseo_s6_cli_fail('A Season 6 release command is already running.');
 $receiptBytes = is_file($receiptPath) ? file_get_contents($receiptPath) : false;
 $record = is_string($receiptBytes) ? json_decode($receiptBytes, true) : null;
 if ($receiptBytes !== false && !is_array($record)) deseo_s6_cli_fail('Existing release receipt is invalid: STOP. Do not upload again.');
-$privateBytes = is_file($privateReceipt) ? file_get_contents($privateReceipt) : false;
-$old = is_string($privateBytes) ? json_decode($privateBytes, true) : null;
 $key = trim((string)(getenv('HEARTHIS_API_KEY') ?: ''));
 $secret = trim((string)(getenv('HEARTHIS_API_SECRET') ?: ''));
 $username = strtolower(trim((string)(getenv('HEARTHIS_USERNAME') ?: '')));
@@ -163,15 +184,19 @@ $setId = deseo_hearthis_s6_playlist_id('deseoradio');
 echo 'Season 6 release title: ' . DESEO_S6_RELEASE_TITLE . PHP_EOL;
 echo 'Season 6 existing set: ' . DESEO_HEARTHIS_SEASON6_URL . PHP_EOL;
 echo 'Set numeric ID resolved: ' . ($setId ?? 'NO (no network write will be made)') . PHP_EOL;
-echo 'Old PRIVATE test receipt: ' . (is_array($old) ? (string)($old['state'] ?? 'unknown') : 'missing') . PHP_EOL;
+echo 'Old PRIVATE test receipt: unrelated; preserved without modification.' . PHP_EOL;
 echo 'PUBLIC release receipt: ' . (is_array($record) ? (string)($record['state'] ?? 'unknown') : 'none') . PHP_EOL;
-echo 'Source MP3: ' . ($file && $file === $expected && is_file($file) && !is_link($expected) ? 'present' : 'missing') . PHP_EOL;
-echo 'Previous private receipt matches source: ' . ($file && is_array($old)
-    && hash_equals((string)($old['file_sha256'] ?? ''), (string)hash_file('sha256', $file)) ? 'yes' : 'no') . PHP_EOL;
+$sourceValid = $file && $file === $expected && !is_link($expected)
+    && deseo_s6_cli_valid_spot_mp3($file);
+echo 'Exact Spot MP3: ' . ($sourceValid ? 'valid and readable' : 'missing/invalid') . PHP_EOL;
 echo 'Credentials configured for deseoradio: ' . ($key !== '' && $secret !== '' && $username === 'deseoradio' ? 'yes' : 'no') . PHP_EOL;
 echo 'Automatic MyLive upload: ' . (getenv('HEARTHIS_UPLOAD_ENABLED') === '1' ? 'ON (STOP)' : 'OFF') . PHP_EOL;
 if ($command === '--check') {
     echo 'Dry run only: no upload, set modification or deletion.' . PHP_EOL;
+    if (!$sourceValid || $setId === null || $key === '' || $secret === ''
+        || $username !== 'deseoradio' || getenv('HEARTHIS_UPLOAD_ENABLED') === '1') {
+        deseo_s6_cli_fail('Preflight not ready; do not publish. Check exact Spot MP3, Season 6 set, credentials and disabled worker.');
+    }
     exit(0);
 }
 if ($username !== 'deseoradio' || $key === '' || $secret === '') deseo_s6_cli_fail('Valid rotated HearThis credentials are required in server .env.');
@@ -180,24 +205,20 @@ if (getenv('HEARTHIS_UPLOAD_ENABLED') === '1') deseo_s6_cli_fail('Keep the norma
 if ($command === '--publish-public') {
     if ($record !== null) deseo_s6_cli_fail('Release receipt exists; another upload is prohibited. Use --finalize or inspect receipt.');
     if ($setId === null) deseo_s6_cli_fail('Season 6 set ID not verified from public account listing; do not upload yet.');
-    if (!is_array($old) || ($old['state'] ?? '') !== 'private_track_accepted'
-        || !ctype_digit((string)($old['track_id'] ?? ''))) {
-        deseo_s6_cli_fail('Original private-test receipt is missing/unexpected; reconcile original remote track before a new upload.');
-    }
     if (!$file || $file !== $expected || !is_file($file) || is_link($expected) || !is_readable($file)) {
         deseo_s6_cli_fail('Expected original MP3 must still exist outside public_html.');
     }
-    $sha = hash_file('sha256', $file);
-    if (!$sha || !hash_equals((string)($old['file_sha256'] ?? ''), $sha)) {
-        deseo_s6_cli_fail('The source MP3 has changed since the previous private test.');
+    if (!deseo_s6_cli_valid_spot_mp3($file)) {
+        deseo_s6_cli_fail('The selected Season 6 Spot is not a valid readable MP3.');
     }
-    // User has explicitly stated that the prior private remote track was removed.
-    // Retain the old receipt untouched; a NEW public-release marker is saved first.
+    $sha = hash_file('sha256', $file);
+    if (!is_string($sha) || $sha === '') deseo_s6_cli_fail('Could not hash the Spot MP3; no upload made.');
+    // An independent spot-specific receipt is saved before its FIRST upload.
+    // The historical private-test MP3 and receipt are never modified.
     $record = [
         'state' => 'upload_in_flight', 'created_at' => gmdate('c'),
         'title' => DESEO_S6_RELEASE_TITLE, 'file' => DESEO_S6_RELEASE_FILE,
         'file_sha256' => $sha, 'visibility' => 'public', 'set_id' => $setId,
-        'previous_private_track_id' => (string)$old['track_id'],
         'set_state' => 'pending',
     ];
     deseo_s6_cli_save($receiptPath, $record);
@@ -210,7 +231,8 @@ if ($command === '--publish-public') {
             'file' => new CURLFile($file, 'audio/mpeg', DESEO_S6_RELEASE_FILE),
             'title' => DESEO_S6_RELEASE_TITLE,
             'private' => '0',
-            'description' => 'Deseo Radio Season 6 begins 14/10/2026.' . "\n\n"
+            'description' => 'DeseoRadio - Season 6 Spot.' . "\n\n"
+                . 'Season 6 DJ Sets begin 14/10/2026.' . "\n"
                 . '24 Resident DJs, Guest DJ slots and exclusive weekly DJ Sets.' . "\n"
                 . 'Listen Live: https://deseoradio.com' . "\n"
                 . 'Season 6: ' . DESEO_HEARTHIS_SEASON6_URL . "\n\n"
@@ -252,13 +274,17 @@ if ($command === '--publish-public') {
         echo 'PUBLIC upload outcome uncertain / rejected (HTTP ' . $http . '). Inspect HearThis BEFORE any new attempt.' . PHP_EOL;
     }
     deseo_s6_cli_save($receiptPath, $record);
-    echo 'Old private-test receipt remains unchanged. Local MP3 retained.' . PHP_EOL;
+    echo 'Private-test receipt remains unchanged. Season 6 Spot MP3 retained.' . PHP_EOL;
     exit($record['state'] === 'upload_accepted' ? 0 : 1);
 }
 
 // --finalize: public feed/stream and Season 6 membership must BOTH be proven.
 if (!is_array($record) || !in_array((string)($record['state'] ?? ''), ['upload_accepted', 'finalizing', 'completed'], true)
-    || !ctype_digit((string)($record['track_id'] ?? ''))) {
+    || !ctype_digit((string)($record['track_id'] ?? ''))
+    || (string)($record['file'] ?? '') !== DESEO_S6_RELEASE_FILE
+    || (string)($record['title'] ?? '') !== DESEO_S6_RELEASE_TITLE
+    || (string)($record['visibility'] ?? '') !== 'public'
+    || !preg_match('/^[a-f0-9]{64}$/D', (string)($record['file_sha256'] ?? ''))) {
     deseo_s6_cli_fail('No accepted public release. STOP: never auto-retry an uncertain upload.');
 }
 if ($record['state'] === 'completed') {
