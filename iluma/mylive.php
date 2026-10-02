@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
+require_once __DIR__ . '/../includes/mylive-hearthis.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/mylive-email-reminders.php';
 require_once __DIR__ . '/../includes/mylive-push.php';
@@ -954,8 +955,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
 
-                if ($status === 'broadcasted' && !empty($updatedSet['file_deleted_at'])) {
-                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED και το audio file διαγράφηκε αμέσως από τον server. Το episode παραμένει κανονικά στη βάση και στο MyLive ιστορικό.';
+                if ($status === 'broadcasted' && empty($updatedSet['file_deleted_at'])) {
+                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το MP3 παραμένει στον server μέχρι να επιβεβαιωθεί το HearThis URL και να αποθηκευτεί στο PMS.';
                 } elseif (!empty($updatedSet['file_deleted_at'])) {
                     $notice = 'Το status ενημερώθηκε. Το audio file έχει ήδη αφαιρεθεί από τον server και το episode παραμένει στο ιστορικό.';
                 } else {
@@ -1016,7 +1017,8 @@ foreach ($accounts as $account) {
 
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
-                broadcasted_at, delete_after, file_deleted_at, uploaded_at
+                broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
+                hearthis_status, hearthis_url, hearthis_error, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
     );
     $stmt->execute([$accountId]);
@@ -1027,7 +1029,8 @@ foreach ($accounts as $account) {
 // eight-episode limit used by each DJ's management panel.
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
-            s.status, s.file_deleted_at, s.uploaded_at, a.artist_name
+            s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
+            s.hearthis_url, s.hearthis_error, s.uploaded_at, a.artist_name
      FROM dj_portal_sets s
      INNER JOIN dj_portal_accounts a ON a.id = s.account_id
      ORDER BY s.uploaded_at DESC, s.id DESC"
@@ -1498,7 +1501,7 @@ admin_page_start('MyLive', 'mylive');
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
-                                              data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;" data-deseo-confirm-title="BROADCASTED · Διαγραφή audio" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted" data-deseo-confirm-danger
+                                              data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει στον server έως ότου επιβεβαιωθεί το HearThis URL." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
                                               <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                             <input type="hidden" name="action" value="update_set">
@@ -1507,6 +1510,9 @@ admin_page_start('MyLive', 'mylive');
                                                 <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
                                                 <strong><?= admin_e($set['stored_name']) ?></strong>
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                                <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                                                <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
+                                                <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                                     <em>Episode retained · audio file deleted from server</em>
                                                 <?php endif; ?>
@@ -1638,11 +1644,10 @@ admin_page_start('MyLive', 'mylive');
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
                           data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
-                          data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;"
-                          data-deseo-confirm-title="BROADCASTED · Διαγραφή audio"
+                          data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει μέχρι να αποθηκευτεί επιβεβαιωμένο HearThis URL."
+                          data-deseo-confirm-title="BROADCASTED · HearThis Sync"
                           data-deseo-confirm-label="BROADCASTED"
                           data-deseo-confirm-if-status="broadcasted"
-                          data-deseo-confirm-danger
                           <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                         <input type="hidden" name="action" value="update_set_from_library">
@@ -1654,6 +1659,8 @@ admin_page_start('MyLive', 'mylive');
                         <div class="mylive-library-file">
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
+                            <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                            <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                         </div>
                         <div class="mylive-library-status">
                             <span class="mylive-library-badge is-status-<?= admin_e($statusClass) ?>"><?= admin_e($setStatusLabels[$setStatus] ?? strtoupper(str_replace('_', ' ', $setStatus))) ?></span>
