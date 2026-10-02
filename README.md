@@ -428,3 +428,20 @@ The scheduler is checked:
 The database throttle prevents repeated work and duplicate emails.
 
 Because there is no always-on background process, the On Air email is sent on the first scheduler tick/request that occurs inside the live slot. With active site traffic this is normally close to the start time, but an exact minute cannot be guaranteed if the site receives no requests during the slot.
+
+
+### HearThis Season 6 post-broadcast sync (protected rollout)
+
+The CLI worker `iluma/cron-mylive-hearthis.php` runs every minute under **Europe/Athens**. The app now records `scheduled_show_end` when a set moves to `scheduled`, using the existing `program.mylive_account_id` mapping and the Season 6 boundary (14 Oct 2026). It reserves separate future time slots for multiple queued episodes. After the planned show ends, the worker marks the episode `broadcasted` and attempts its archive upload **only if the HearThis upload transport has been explicitly enabled**. One-off/guest episodes need an actual linked Program slot or an explicit admin BROADCASTED action; do not interpret a guest application as a repeating resident slot.
+
+**Critical retention change:** `broadcasted` NEVER deletes MP3 audio. Both the legacy retention cron and page-load cleanup delete only if the row is `hearthis_status='synced'`, contains a validated HTTPS `hearthis.at` URL, and has a non-null `hearthis_synced_at`. The URL is saved before file removal, and the episode record remains. Existing already-deleted historical audio cannot be reconstructed or retroactively published.
+
+The upload API's current write endpoint/auth contract was not publicly verifiable during this change. `HEARTHIS_UPLOAD_ENABLED=0` is deliberately fail-closed: **do not enable merely because KEY, SECRET and USERNAME are populated**. First obtain/confirm the actual supported HearThis upload endpoint, form fields, authentication scheme and JSON response with HearThis; verify a small single-file test in staging. The configurable sender currently uses HTTPS multipart (`file`, `title`, `description`, `username`) and either HTTP Basic (`key:secret`) or `X-API-Key`/`X-API-Secret` headers; these are adapter options, **not a claim that either is the HearThis API specification**. Set `HEARTHIS_UPLOAD_ENDPOINT` to the confirmed HTTPS HearThis-controlled endpoint and `HEARTHIS_UPLOAD_AUTH_MODE` to the confirmed transport before setting `HEARTHIS_UPLOAD_ENABLED=1`. Never place credentials in Git or client-side JS.
+
+Configure one minute CLI cron via the hosting dashboard (replace with the real PHP executable and deployment path):
+
+```sh
+* * * * * /usr/bin/php /absolute/path/to/public_html/iluma/cron-mylive-hearthis.php
+```
+
+The worker uses an advisory database lock and does not double-post concurrently. Uncertain network outcomes and missing/unrecognized response URLs become `review_required`, keep the MP3, and require checking HearThis before any manual retry. This prevents duplicate publication when the upload succeeds remotely but its HTTP response is lost. `pending` means awaiting broadcast or enabled transport, `uploading` means in progress, and `synced` means URL stored. Verify cron, storage permissions, cURL and the production MariaDB migration on a staging copy before merging this branch. No production upload or deletion test has been performed by this repository change.
