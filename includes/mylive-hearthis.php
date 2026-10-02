@@ -4,28 +4,25 @@ declare(strict_types=1);
 require_once __DIR__ . '/dj-portal.php';
 
 /**
- * Upload transport is deliberately OFF until the HearThis write endpoint,
- * authentication scheme and response payload have been checked with the
- * account's actual API documentation. Never infer a write endpoint from /api-v2.
+ * Official HearThis Premium write API (hearthis.at/api).
+ * Do not turn the worker on until one staging upload has been verified.
+ * Credentials remain exclusively in the server-side .env and are passed as
+ * HTTPS multipart POST fields, never in a logged URL or GitHub source.
  */
 function deseo_hearthis_upload_config(): ?array {
     if (getenv('HEARTHIS_UPLOAD_ENABLED') !== '1') return null;
-    $endpoint = trim((string)(getenv('HEARTHIS_UPLOAD_ENDPOINT') ?: ''));
+    $endpoint = 'https://xhr.hearthis.at/upload_api.php';
+    $configured = trim((string)(getenv('HEARTHIS_UPLOAD_ENDPOINT') ?: ''));
+    $mode = strtolower(trim((string)(getenv('HEARTHIS_UPLOAD_AUTH_MODE') ?: 'post')));
     $key = trim((string)(getenv('HEARTHIS_API_KEY') ?: getenv('HEARTHIS_KEY') ?: ''));
     $secret = trim((string)(getenv('HEARTHIS_API_SECRET') ?: getenv('HEARTHIS_SECRET') ?: ''));
-    $username = trim((string)(getenv('HEARTHIS_USERNAME') ?: ''));
-    $mode = trim((string)(getenv('HEARTHIS_UPLOAD_AUTH_MODE') ?: ''));
-    $parts = parse_url($endpoint);
-    $host = strtolower((string)($parts['host'] ?? ''));
-    if (($parts['scheme'] ?? '') !== 'https' || $host === ''
-        || ($host !== 'hearthis.at' && !str_ends_with($host, '.hearthis.at'))
-        || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])
-        || $key === '' || $secret === '' || $username === ''
-        || !in_array($mode, ['basic', 'headers'], true)) {
-        // A fail-closed transport protects both credentials and local MP3 files.
-        return null;
+    $username = strtolower(trim((string)(getenv('HEARTHIS_USERNAME') ?: '')));
+    if (($configured !== '' && $configured !== $endpoint)
+        || $mode !== 'post' || $key === '' || $secret === ''
+        || !preg_match('/^[a-z0-9][a-z0-9-]*$/D', $username)) {
+        return null; // Fail closed; never upload to an unverified endpoint.
     }
-    return compact('endpoint', 'key', 'secret', 'username', 'mode');
+    return compact('endpoint', 'key', 'secret', 'username');
 }
 
 function deseo_hearthis_public_url(string $url): bool {
