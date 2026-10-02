@@ -307,6 +307,57 @@ function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): 
 }
 
 /**
+ * Make a bounded, anonymous range request to the advertised public stream.
+ * Never download an entire DJ set for verification or transmit API credentials
+ * to the stream/CDN. All redirects are HTTPS-only; unready streams are retried.
+ */
+function deseo_hearthis_stream_playable(string $stream): bool {
+    $parts = parse_url($stream);
+    if (!is_array($parts) || !filter_var($stream, FILTER_VALIDATE_URL)
+        || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
+        || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['https', 'http'], true)
+        || isset($parts['user']) || isset($parts['pass']) || isset($parts['fragment'])) return false;
+    if (($parts['scheme'] ?? '') === 'http') {
+        // Some legacy player objects expose HTTP listen links; enforce TLS.
+        $stream = 'https://' . $parts['host'] . (string)($parts['path'] ?? '')
+            . (isset($parts['query']) ? '?' . $parts['query'] : '');
+    }
+    $curl = curl_init($stream);
+    if ($curl === false) return false;
+    $received = 0;
+    curl_setopt_array($curl, [
+        CURLOPT_HTTPGET => true,
+        CURLOPT_HTTPHEADER => ['Accept: audio/*', 'Range: bytes=0-1023'],
+        CURLOPT_RANGE => '0-1023',
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+        CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+        CURLOPT_MAXREDIRS => 3,
+        CURLOPT_CONNECTTIMEOUT => 7,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_WRITEFUNCTION => static function ($handle, string $chunk) use (&$received): int {
+            $length = strlen($chunk);
+            if ($received + $length > 32768) return 0; // Abort an ignored Range.
+            $received += $length;
+            return $length;
+        },
+    ]);
+    try {
+        $ok = curl_exec($curl);
+        $errno = curl_errno($curl);
+        $http = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $mime = strtolower(trim((string)curl_getinfo($curl, CURLINFO_CONTENT_TYPE)));
+    } finally {
+        curl_close($curl);
+    }
+    return $received > 0 && in_array($http, [200, 206], true)
+        && (str_starts_with($mime, 'audio/') || str_starts_with($mime, 'application/octet-stream'))
+        && ($ok !== false || $errno === CURLE_WRITE_ERROR);
+}
+
+/**
  * Confirm independently from the public, anonymous read API that the uploaded
  * track belongs to this account, has finished processing, is not private, and
  * exposes a real streaming URL. No keys/secrets are sent to this read endpoint.
@@ -348,7 +399,7 @@ function deseo_hearthis_public_track_ready(string $url, string $id, string $user
         || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)
         || !in_array(strtolower((string)($parts['host'] ?? '')), ['hearthis.at', 'www.hearthis.at'], true)
         || isset($parts['user']) || isset($parts['pass'])) return false;
-    return true;
+    return deseo_hearthis_stream_playable($stream);
 }
 
 /** Prepare existing scheduled rows and complete slots in Europe/Athens. */
