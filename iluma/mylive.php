@@ -1044,7 +1044,8 @@ foreach ($accounts as $account) {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning, uploaded_at
+                hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
+                hearthis_set_status, hearthis_set_id, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
     );
     $stmt->execute([$accountId]);
@@ -1056,7 +1057,8 @@ foreach ($accounts as $account) {
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
             s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
-            s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning, s.uploaded_at, a.artist_name
+            s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
+            s.hearthis_set_status, s.hearthis_set_id, s.uploaded_at, a.artist_name
      FROM dj_portal_sets s
      INNER JOIN dj_portal_accounts a ON a.id = s.account_id
      ORDER BY s.uploaded_at DESC, s.id DESC"
@@ -1538,6 +1540,7 @@ admin_page_start('MyLive', 'mylive');
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
                                                 <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                                                 <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
+                                                <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
                                                 <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">HearThis optional metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
                                                 <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
@@ -1708,6 +1711,7 @@ admin_page_start('MyLive', 'mylive');
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
                             <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                            <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
                             <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">Metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
                             <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                         </div>
