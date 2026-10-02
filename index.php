@@ -479,6 +479,36 @@ $partners = [
                         </strong>
                         <strong class="season-lineup-onair" data-lineup-onair data-i18n="lineup.start_value" <?= $lineupOnAir ? '' : 'hidden' ?>><?= deseo_e(deseo_t('lineup.start_value')) ?></strong>
                     </div>
+
+                    <div class="season-lineup-platforms" aria-label="Deseo Radio DJ Set platforms">
+                        <span class="season-lineup-platforms-label" data-i18n="lineup.platforms"><?= deseo_e(deseo_t('lineup.platforms')) ?></span>
+                        <div class="season-lineup-platform-links">
+                            <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" aria-label="Mixcloud" title="Mixcloud" data-analytics-event="season_mixcloud_click">
+                                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3.5 20V12m4 11V9m4 15V7m4 17V11"/><path d="M19 23h6a4 4 0 0 0 .3-8 6 6 0 0 0-10.2-3"/>
+                                </svg>
+                            </a>
+                            <a href="https://hearthis.at/deseoradio/set/season-6/" target="_blank" rel="noopener noreferrer" aria-label="hearthis.at" title="hearthis.at" data-analytics-event="season_hearthis_click">
+                                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M16 27S4.5 20.2 4.5 12.5a6 6 0 0 1 11.5-2.4 6 6 0 0 1 11.5 2.4C27.5 20.2 16 27 16 27Z"/>
+                                    <path d="M8.5 16h3l1.4-3.5 2.8 7 2.2-5 1.2 1.5h4.4"/>
+                                </svg>
+                            </a>
+                            <a href="https://podcasts.apple.com/us/podcast/deseo-casts/id1711008342" target="_blank" rel="noopener noreferrer" aria-label="Apple Podcasts" title="Apple Podcasts" data-analytics-event="season_apple_podcasts_click">
+                                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="16" cy="14" r="2.3"/><path d="M13.2 21c.2-2 1.3-3.4 2.8-3.4s2.6 1.4 2.8 3.4l-.6 6h-4.4l-.6-6ZM9.5 19a9 9 0 1 1 13 0M12 17a5.5 5.5 0 1 1 8 0"/>
+                                </svg>
+                            </a>
+                            <a href="https://www.deezer.com/en/show/1000338791" target="_blank" rel="noopener noreferrer" aria-label="Deezer" title="Deezer" data-analytics-event="season_deezer_click">
+                                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                                    <rect x="3" y="22" width="5" height="3" rx=".5"/><rect x="3" y="17" width="5" height="3" rx=".5"/>
+                                    <rect x="10" y="22" width="5" height="3" rx=".5"/><rect x="10" y="17" width="5" height="3" rx=".5"/><rect x="10" y="12" width="5" height="3" rx=".5"/>
+                                    <rect x="17" y="22" width="5" height="3" rx=".5"/><rect x="17" y="17" width="5" height="3" rx=".5"/><rect x="17" y="12" width="5" height="3" rx=".5"/><rect x="17" y="7" width="5" height="3" rx=".5"/>
+                                    <rect x="24" y="22" width="5" height="3" rx=".5"/><rect x="24" y="17" width="5" height="3" rx=".5"/><rect x="24" y="12" width="5" height="3" rx=".5"/><rect x="24" y="7" width="5" height="3" rx=".5"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
                 </header>
 
                 <button class="season-lineup-poster reveal"
