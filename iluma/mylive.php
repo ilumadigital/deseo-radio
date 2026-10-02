@@ -52,6 +52,46 @@ function mylive_admin_time(string $value, string $label): string {
     return $time->format('H:i:s');
 }
 
+/**
+ * The preview and the actual HearThis POST share the exact same metadata
+ * formatter. Once an upload attempt is claimed, its payload snapshot is
+ * immutable for display even if the account profile changes afterwards.
+ */
+function mylive_admin_hearthis_payload(array $set, string $artistName): array {
+    $preview = deseo_hearthis_metadata(array_merge($set, ['artist_name' => $artistName]));
+    if (trim((string)($set['hearthis_description'] ?? '')) !== '') {
+        $preview['title'] = (string)($set['hearthis_title'] ?? $preview['title']);
+        $preview['description'] = (string)$set['hearthis_description'];
+        $preview['genre'] = (string)($set['hearthis_genre'] ?? $preview['genre']);
+        $preview['tags'] = (string)($set['hearthis_tags'] ?? $preview['tags']);
+        $preview['kind'] = 'SAVED UPLOAD PAYLOAD';
+    } else {
+        $preview['kind'] = 'PREVIEW · Πριν από την αποστολή';
+    }
+    return $preview;
+}
+
+/** Match the actual optional multipart image choice, never imply a fallback was uploaded. */
+function mylive_admin_hearthis_artwork_label(array $set, ?array $resolvedCover): string {
+    if (trim((string)($set['hearthis_description'] ?? '')) !== '') {
+        $snapshotSource = (string)($set['hearthis_cover_source_path'] ?? '');
+        if ($snapshotSource !== '') return 'DJ 02: ' . basename($snapshotSource) . ' (saved upload choice)';
+        if ((int)($set['hearthis_cover_asset_id'] ?? 0) > 0) {
+            return 'DJ 02: MyLive asset #' . (int)$set['hearthis_cover_asset_id'] . ' (saved upload choice)';
+        }
+        return 'No custom image supplied (HearThis may use embedded ID3 / account default)';
+    }
+    if ($resolvedCover !== null
+        && in_array((string)($resolvedCover['mime'] ?? ''), ['image/png', 'image/jpeg'], true)
+        && is_file((string)($resolvedCover['path'] ?? ''))) {
+        $size = filesize((string)$resolvedCover['path']);
+        if ($size !== false && $size > 0 && $size <= 10 * 1024 * 1024) {
+            return 'DJ 02: ' . basename((string)($resolvedCover['name'] ?? '02')) . ' (preview)';
+        }
+    }
+    return 'No eligible custom image (HearThis may use embedded ID3 / account default)';
+}
+
 function mylive_admin_account(PDO $pdo, int $id): array {
     $stmt = $pdo->prepare(
         "SELECT a.*, b.status AS application_status
@@ -1058,6 +1098,8 @@ foreach ($accounts as $account) {
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
                 hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
+                hearthis_title, hearthis_description, hearthis_genre, hearthis_tags,
+                hearthis_cover_asset_id, hearthis_cover_source_path,
                 hearthis_set_status, hearthis_set_id, hearthis_podcast_status,
                 hearthis_podcast_verified_at, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
@@ -1072,6 +1114,8 @@ $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
             s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
+            s.hearthis_title, s.hearthis_description, s.hearthis_genre, s.hearthis_tags,
+            s.hearthis_cover_asset_id, s.hearthis_cover_source_path,
             s.hearthis_set_status, s.hearthis_set_id, s.hearthis_podcast_status,
             s.hearthis_podcast_verified_at, s.uploaded_at, a.artist_name,
             b.status AS application_status
@@ -1544,6 +1588,7 @@ admin_page_start('MyLive', 'mylive');
                                 <?php else: ?>
                                     <div class="mylive-set-admin-list">
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
+                                        <?php $hearthisPayload = mylive_admin_hearthis_payload($set, (string)$account['artist_name']); ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
                                               data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 διαγράφεται μόνο μετά από επιβεβαιωμένη αποδοχή upload στο HearThis." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
@@ -1561,6 +1606,20 @@ admin_page_start('MyLive', 'mylive');
                                                 <small>PODCAST RSS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_podcast_status'] ?? 'pending')))) ?><?php if (!empty($set['hearthis_podcast_verified_at'])): ?> · <?= admin_e((string)$set['hearthis_podcast_verified_at']) ?> (Athens)<?php endif; ?></small>
                                                 <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">HearThis optional metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
                                                 <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
+                                                <details class="mylive-hearthis-metadata" style="margin-top:10px;max-width:100%;overflow-wrap:anywhere;">
+                                                        <summary style="cursor:pointer;">HEARTHIS · METADATA &amp; DESCRIPTION</summary>
+                                                        <div style="padding:12px 0;display:grid;gap:7px;">
+                                                            <small><?= admin_e((string)$hearthisPayload['kind']) ?></small>
+                                                            <small><b>TITLE:</b> <?= admin_e((string)$hearthisPayload['title']) ?></small>
+                                                            <small><b>VISIBILITY:</b> PUBLIC (private=0)</small>
+                                                            <small><b>GENRE:</b> <?= admin_e((string)$hearthisPayload['genre']) ?></small>
+                                                            <small><b>TAGS:</b> <?= admin_e((string)$hearthisPayload['tags']) ?></small>
+                                                            <small><b>SEASON 6 SET:</b> <?= admin_e(DESEO_HEARTHIS_SEASON6_URL) ?></small>
+                                                            <small><b>DESCRIPTION:</b></small>
+                                                            <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
+                                                            <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[$accountId] ?? null)) ?></small>
+                                                        </div>
+                                                    </details>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                                     <em>Episode retained · audio file deleted from server</em>
                                                 <?php endif; ?>
@@ -1715,6 +1774,7 @@ admin_page_start('MyLive', 'mylive');
                     $setStatus = (string)$set['status'];
                     $statusClass = isset($setStatusLabels[$setStatus]) ? $setStatus : 'unknown';
                     $episodeLabel = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
+                    $hearthisPayload = mylive_admin_hearthis_payload($set, (string)$set['artist_name']);
                     ?>
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
@@ -1738,6 +1798,20 @@ admin_page_start('MyLive', 'mylive');
                             <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
                             <small>PODCAST RSS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_podcast_status'] ?? 'pending')))) ?><?php if (!empty($set['hearthis_podcast_verified_at'])): ?> · <?= admin_e((string)$set['hearthis_podcast_verified_at']) ?> (Athens)<?php endif; ?></small>
                             <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">Metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
+                            <details class="mylive-hearthis-metadata" style="margin-top:10px;max-width:100%;overflow-wrap:anywhere;">
+                                                        <summary style="cursor:pointer;">HEARTHIS · METADATA &amp; DESCRIPTION</summary>
+                                                        <div style="padding:12px 0;display:grid;gap:7px;">
+                                                            <small><?= admin_e((string)$hearthisPayload['kind']) ?></small>
+                                                            <small><b>TITLE:</b> <?= admin_e((string)$hearthisPayload['title']) ?></small>
+                                                            <small><b>VISIBILITY:</b> PUBLIC (private=0)</small>
+                                                            <small><b>GENRE:</b> <?= admin_e((string)$hearthisPayload['genre']) ?></small>
+                                                            <small><b>TAGS:</b> <?= admin_e((string)$hearthisPayload['tags']) ?></small>
+                                                            <small><b>SEASON 6 SET:</b> <?= admin_e(DESEO_HEARTHIS_SEASON6_URL) ?></small>
+                                                            <small><b>DESCRIPTION:</b></small>
+                                                            <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
+                                                            <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[(int)$set['account_id']] ?? null)) ?></small>
+                                                        </div>
+                                                    </details>
                             <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                         </div>
                         <div class="mylive-library-status">

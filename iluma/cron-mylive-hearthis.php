@@ -31,7 +31,8 @@ if ($mode === '--check') {
             'file_deleted_at', 'hearthis_status', 'hearthis_url',
             'hearthis_track_id', 'hearthis_source_sha256',
             'hearthis_upload_accepted_at', 'hearthis_set_status',
-            'hearthis_podcast_status',
+            'hearthis_podcast_status', 'hearthis_description',
+            'hearthis_genre', 'hearthis_tags',
         ];
         $missing = array_values(array_filter(
             $required, static fn(string $column): bool => !isset($columns[$column])
@@ -68,6 +69,54 @@ if ($mode === '--check') {
             . ((string)($dates['earliest_scheduled_end'] ?? '') ?: 'none') . PHP_EOL;
         echo 'HearThis UPLOADING / REVIEW REQUIRED: '
             . (int)($dates['uploading'] ?? 0) . ' / ' . (int)($dates['review_required'] ?? 0) . PHP_EOL;
+        // Pure SELECT and local stat checks, no mutations and no account secrets.
+        $future = $pdo->prepare(
+            "SELECT s.file_path, s.scheduled_show_end, s.status
+             FROM dj_portal_sets s
+             WHERE s.status = 'scheduled' AND s.file_deleted_at IS NULL"
+        );
+        $future->execute();
+        $unavailableFiles = 0;
+        $elapsedSlots = 0;
+        foreach ($future->fetchAll(PDO::FETCH_ASSOC) as $scheduled) {
+            $audio = deseo_mylive_set_storage_file((string)$scheduled['file_path']);
+            if (!$audio['exists'] || $audio['storage_root'] === ''
+                || !str_starts_with((string)$audio['real_file'], (string)$audio['storage_root'] . DIRECTORY_SEPARATOR)) {
+                $unavailableFiles++;
+            }
+            if (!empty($scheduled['scheduled_show_end'])
+                && (string)$scheduled['scheduled_show_end'] <= $now->format('Y-m-d H:i:s')
+                && (string)$scheduled['scheduled_show_end'] >= dj_season_start_at()->format('Y-m-d H:i:s')) {
+                $elapsedSlots++;
+            }
+        }
+        $eligibleStmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM dj_portal_sets
+             WHERE status = 'broadcasted' AND hearthis_status = 'pending'
+               AND file_deleted_at IS NULL AND scheduled_show_end IS NOT NULL
+               AND scheduled_show_end <= ? AND broadcasted_at >= ?"
+        );
+        $eligibleStmt->execute([
+            $now->format('Y-m-d H:i:s'), dj_season_start_at()->format('Y-m-d H:i:s')
+        ]);
+        // Cross-check any remaining legacy late-hour reservation, including
+        // malformed account mappings the narrow automatic repair cannot infer.
+        $legacyStmt = $pdo->query(
+            "SELECT COUNT(*) FROM dj_portal_sets s
+             INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+             LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+             WHERE s.status = 'scheduled' AND s.file_deleted_at IS NULL
+               AND s.hearthis_status = 'pending'
+               AND s.hearthis_track_id IS NULL
+               AND a.start_time = '23:00:00'
+               AND TIME(s.scheduled_show_end) IN ('23:59:00', '23:59:59')
+               AND COALESCE(b.status, '') <> 'guest'"
+        );
+        echo 'Resident 23:00 legacy Show Ends still requiring review: '
+            . (int)$legacyStmt->fetchColumn() . PHP_EOL;
+        echo 'SCHEDULED slots already elapsed: ' . $elapsedSlots . PHP_EOL;
+        echo 'SCHEDULED original MP3 files unavailable: ' . $unavailableFiles . PHP_EOL;
+        echo 'Already BROADCASTED eligible pending uploads: ' . (int)$eligibleStmt->fetchColumn() . PHP_EOL;
         echo 'CHECK COMPLETE: No production changes made.' . PHP_EOL;
         exit(0);
     } catch (Throwable $e) {

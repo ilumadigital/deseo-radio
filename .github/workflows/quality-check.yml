@@ -36,6 +36,18 @@ jobs:
           set -euo pipefail
           php tests/mylive-show-ends.php
 
+      - name: HearThis exact metadata payload fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/hearthis-metadata.php
+
+      - name: DJ HearThis link identity and ownership fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/hearthis-episode-link.php
+
       - name: JavaScript syntax
         run: node --check sw.js
 

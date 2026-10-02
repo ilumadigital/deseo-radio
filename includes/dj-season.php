@@ -43,10 +43,37 @@ function dj_season_normalized_resident_end_time(string $startTime, string $endTi
     if ($start && $end
         && $start->format('H:i:s') === $startTime
         && $end->format('H:i:s') === $endTime
-        && $end->format('H:i:s') === $start->modify('+1 hour -1 second')->format('H:i:s')) {
+        && in_array($end->format('H:i:s'), [
+            $start->modify('+1 hour -1 second')->format('H:i:s'),
+            $start->modify('+1 hour -1 minute')->format('H:i:s'),
+        ], true)) {
         return $start->modify('+1 hour')->format('H:i:s');
     }
     return $endTime;
+}
+
+/**
+ * Exact one-time repair of legacy stored 23:59:00/23:59:59 end dates for
+ * 23:00 Resident shows. Do not change Guests, arbitrary custom times, old
+ * shows, or unrelated manually entered dates.
+ */
+function dj_season_legacy_midnight_end_fix(
+    int $dayOfWeek, string $startTime, string $endTime, string $storedEnd,
+    DateTimeImmutable $now
+): ?string {
+    if ($dayOfWeek < 1 || $dayOfWeek > 7 || $startTime !== '23:00:00'
+        || !in_array($endTime, ['23:59:00', '23:59:59'], true)) return null;
+    $date = DateTimeImmutable::createFromFormat(
+        '!Y-m-d H:i:s', $storedEnd, dj_season_athens_timezone()
+    );
+    if (!$date || $date->format('Y-m-d H:i:s') !== $storedEnd
+        || $date->format('H:i:s') !== $endTime
+        || (int)$date->format('N') !== $dayOfWeek
+        || $date <= $now->setTimezone(dj_season_athens_timezone())
+        || $date < dj_season_start_at() || $date > dj_season_end_at()) return null;
+    $corrected = $date->modify($endTime === '23:59:00' ? '+1 minute' : '+1 second');
+    return $corrected->format('H:i:s') === '00:00:00'
+        ? $corrected->format('Y-m-d H:i:s') : null;
 }
 
 function dj_season_weekly_occurrence(

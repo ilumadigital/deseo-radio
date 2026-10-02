@@ -10,6 +10,7 @@ $beforeLaunch = new DateTimeImmutable('2026-10-02 12:00:00', $tz);
 $normalization = [
     ['20:00:00', '20:59:59', '21:00:00'],
     ['23:00:00', '23:59:59', '00:00:00'],
+    ['23:00:00', '23:59:00', '00:00:00'],
     ['18:00:00', '18:59:59', '19:00:00'],
     ['20:00:00', '21:00:00', '21:00:00'],
     ['20:00:00', '20:45:00', '20:45:00'],
@@ -40,6 +41,27 @@ foreach ($cases as [$name, $day, $start, $strictEnd, $expectedStart, $expectedEn
         fwrite(STDERR, "FAIL: {$name}\n");
         exit(1);
     }
+}
+
+// Live CMS showed Cobo B ending 16/10 at 23:59:00 (legacy); actual
+// one-hour on-air slot must end on Saturday 17/10 at 00:00:00.
+$correction = dj_season_legacy_midnight_end_fix(
+    5, '23:00:00', '23:59:00', '2026-10-16 23:59:00', $beforeLaunch
+);
+if ($correction !== '2026-10-17 00:00:00') {
+    fwrite(STDERR, "FAIL: Cobo B legacy Friday midnight repair\n");
+    exit(1);
+}
+if (dj_season_legacy_midnight_end_fix(
+    5, '23:00:00', '23:59:00', '2026-10-16 23:59:00',
+    new DateTimeImmutable('2026-10-17 00:00:00', $tz)
+) !== null || dj_season_legacy_midnight_end_fix(
+    4, '23:00:00', '23:59:00', '2026-10-16 23:59:00', $beforeLaunch
+) !== null || dj_season_legacy_midnight_end_fix(
+    5, '23:00:00', '23:45:00', '2026-10-16 23:45:00', $beforeLaunch
+) !== null) {
+    fwrite(STDERR, "FAIL: legacy repair must not edit past, wrong weekday or custom durations\n");
+    exit(1);
 }
 
 $next = dj_season_weekly_occurrence(

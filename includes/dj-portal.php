@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../iluma/connection.php';
 require_once __DIR__ . '/hearthis-podcast.php';
+require_once __DIR__ . '/hearthis-episode-link.php';
 require_once __DIR__ . '/dj-season.php';
 
 const DESEO_MYLive_MAX_BYTES = 1073741824; // 1 GB
@@ -160,6 +161,9 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_title VARCHAR(255) NULL,
+        hearthis_description TEXT NULL,
+        hearthis_genre VARCHAR(80) NULL,
+        hearthis_tags VARCHAR(255) NULL,
         hearthis_source_sha256 CHAR(64) NULL,
         hearthis_upload_accepted_at DATETIME NULL,
         hearthis_podcast_status VARCHAR(24) NOT NULL DEFAULT 'pending',
@@ -190,7 +194,10 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
         'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
         'hearthis_title' => "VARCHAR(255) NULL AFTER hearthis_meta_warning",
-        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_title",
+        'hearthis_description' => "TEXT NULL AFTER hearthis_title",
+        'hearthis_genre' => "VARCHAR(80) NULL AFTER hearthis_description",
+        'hearthis_tags' => "VARCHAR(255) NULL AFTER hearthis_genre",
+        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_tags",
         'hearthis_upload_accepted_at' => "DATETIME NULL AFTER hearthis_source_sha256",
         'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_upload_accepted_at",
         'hearthis_podcast_verified_at' => "DATETIME NULL AFTER hearthis_podcast_status",
@@ -468,7 +475,7 @@ function deseo_mylive_is_guest_account(array $account): bool {
 
 function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
-        "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
+        "SELECT id, account_id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
@@ -583,13 +590,56 @@ function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable 
 function deseo_mylive_backfill_scheduled_show_ends(PDO $pdo, ?DateTimeImmutable $reference = null): array {
     $reference = ($reference ?? new DateTimeImmutable('now', dj_season_athens_timezone()))
         ->setTimezone(dj_season_athens_timezone());
-    if ($reference > dj_season_end_at()) return ['assigned' => 0, 'unresolved' => 0, 'locked' => false];
+    if ($reference > dj_season_end_at()) return ['assigned' => 0, 'unresolved' => 0, 'midnight_fixed' => 0, 'locked' => false];
 
     $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_show_end_backfill', 0)");
     if (!$lock || (int)$lock->fetchColumn() !== 1) {
-        return ['assigned' => 0, 'unresolved' => 0, 'locked' => true];
+        return ['assigned' => 0, 'unresolved' => 0, 'midnight_fixed' => 0, 'locked' => true];
     }
     try {
+        // Legacy accounts may store a nominal hour end as 23:59:00 rather
+        // than midnight. Correct only unbroadcast future Resident 23:00 rows,
+        // preserving all files, episode/status IDs and custom Guest dates.
+        $midnightFixed = 0;
+        $legacy = $pdo->prepare(
+            "SELECT s.id, s.account_id, s.scheduled_show_end,
+                    a.day_of_week, a.start_time, a.end_time,
+                    b.status AS application_status
+             FROM dj_portal_sets s
+             INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+             LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+             WHERE s.status = 'scheduled' AND s.scheduled_show_end > ?
+               AND TIME(s.scheduled_show_end) IN ('23:59:00', '23:59:59')
+               AND s.file_deleted_at IS NULL AND s.hearthis_status = 'pending'
+               AND s.hearthis_track_id IS NULL
+             ORDER BY s.account_id, s.episode_no, s.id"
+        );
+        $legacy->execute([$reference->format('Y-m-d H:i:s')]);
+        $collision = $pdo->prepare(
+            "SELECT COUNT(*) FROM dj_portal_sets
+             WHERE account_id = ? AND status = 'scheduled'
+               AND scheduled_show_end = ? AND id <> ?"
+        );
+        $fix = $pdo->prepare(
+            "UPDATE dj_portal_sets SET scheduled_show_end = ?
+             WHERE id = ? AND account_id = ? AND status = 'scheduled'
+               AND scheduled_show_end = ? AND file_deleted_at IS NULL
+               AND hearthis_status = 'pending' AND hearthis_track_id IS NULL"
+        );
+        foreach ($legacy->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (strtolower((string)($row['application_status'] ?? '')) === 'guest') continue;
+            $newEnd = dj_season_legacy_midnight_end_fix(
+                (int)$row['day_of_week'], (string)$row['start_time'],
+                (string)$row['end_time'], (string)$row['scheduled_show_end'], $reference
+            );
+            if ($newEnd === null) continue;
+            $collision->execute([(int)$row['account_id'], $newEnd, (int)$row['id']]);
+            if ((int)$collision->fetchColumn() !== 0) continue;
+            $fix->execute([$newEnd, (int)$row['id'], (int)$row['account_id'],
+                (string)$row['scheduled_show_end']]);
+            $midnightFixed += $fix->rowCount();
+        }
+
         $query = $pdo->query(
             "SELECT s.id, s.account_id, b.status AS application_status
              FROM dj_portal_sets s
@@ -621,7 +671,7 @@ function deseo_mylive_backfill_scheduled_show_ends(PDO $pdo, ?DateTimeImmutable 
             $save->execute([$end, (int)$row['id'], (int)$row['account_id']]);
             $assigned += $save->rowCount();
         }
-        return ['assigned' => $assigned, 'unresolved' => $unresolved, 'locked' => false];
+        return ['assigned' => $assigned, 'unresolved' => $unresolved, 'midnight_fixed' => $midnightFixed, 'locked' => false];
     } finally {
         $pdo->query("SELECT RELEASE_LOCK('deseo_mylive_show_end_backfill')");
     }
