@@ -337,7 +337,7 @@ fieldset:disabled{opacity:.55}
 .dashboard-workspace-head h3{margin:7px 0 0;font-size:22px;letter-spacing:-.04em}
 .dashboard-workspace-head>b{color:#28282a;font-size:38px;line-height:1;letter-spacing:-.06em}
 
-.dashboard-workspace-row{display:grid;grid-template-columns:minmax(0,1fr) auto 24px;gap:18px;align-items:center;min-height:106px;padding:19px 22px;border-bottom:1px solid rgba(255,255,255,.065);transition:background .18s}
+.dashboard-workspace-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;min-height:106px;padding:19px 22px;border-bottom:1px solid rgba(255,255,255,.065);transition:background .18s}
 .dashboard-workspace-row:last-child{border-bottom:0}
 .dashboard-workspace-row:hover{background:#131314}
 .dashboard-workspace-row.is-featured{background:linear-gradient(90deg,rgba(255,48,56,.055),transparent 52%)}
@@ -346,8 +346,6 @@ fieldset:disabled{opacity:.55}
 .dashboard-workspace-row>div>strong{display:block;margin-top:5px;font-size:17px;letter-spacing:-.025em}
 .dashboard-workspace-row>div>small{display:block;margin-top:6px;color:#72726c;font-size:15px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dashboard-workspace-row>b{min-width:38px;color:#777771;font-size:15px;text-align:right;letter-spacing:-.04em}
-.dashboard-workspace-row>i{color:#3f3f3b;font-size:14px;font-style:normal;text-align:right;transition:color .18s,transform .18s}
-.dashboard-workspace-row:hover>i{color:var(--acid);transform:translate(2px,-2px)}
 .dashboard-workspace-row:hover>div>strong{color:#fff}
 
 @media(max-width:1180px){
@@ -371,7 +369,7 @@ fieldset:disabled{opacity:.55}
   .dashboard-section-head p{margin-top:7px;text-align:left}
   .dashboard-workspace{border-radius:22px}
   .dashboard-workspace-head{padding:20px}
-  .dashboard-workspace-row{grid-template-columns:minmax(0,1fr) auto 18px;gap:11px;min-height:96px;padding:17px 18px}
+  .dashboard-workspace-row{grid-template-columns:minmax(0,1fr) auto;gap:11px;min-height:96px;padding:17px 18px}
   .dashboard-workspace-row>div>small{white-space:normal}
 }
 
