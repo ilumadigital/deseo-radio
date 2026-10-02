@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 
+admin_require_login();
 deseo_mylive_bootstrap($pdo);
 
 $type = (string)($_GET['type'] ?? '');
@@ -35,7 +36,7 @@ if (!$fileRow) {
 
 if ($type === 'set' && !empty($fileRow['file_deleted_at'])) {
     http_response_code(410);
-    exit('The audio file was removed when the DJ Set was marked BROADCASTED. The episode remains in MyLive history.');
+    exit('The audio file was removed after its HearThis URL was confirmed and saved. The episode remains in MyLive history.');
 }
 
 $relative = ltrim((string)$fileRow['file_path'], '/');
@@ -53,8 +54,12 @@ $mime = (string)$fileRow['mime_type'] ?: 'application/octet-stream';
 header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate', true);
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . filesize($file));
+$inlineImage = $type === 'asset' && (string)($_GET['preview'] ?? '') === '1'
+    && in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true);
+header('X-Content-Type-Options: nosniff');
 header(
-    'Content-Disposition: attachment; filename="' . rawurlencode($name) . '"'
+    'Content-Disposition: ' . ($inlineImage ? 'inline' : 'attachment')
+    . '; filename="' . rawurlencode($name) . '"'
     . "; filename*=UTF-8''" . rawurlencode($name)
 );
 header('Cache-Control: private, no-store, no-cache, must-revalidate');

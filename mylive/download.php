@@ -35,7 +35,7 @@ if (!$set) {
 
 if (!empty($set['file_deleted_at'])) {
     http_response_code(410);
-    exit('The audio file was removed when this DJ Set was marked BROADCASTED. The episode remains in your MyLive history.');
+    exit('The audio file was removed after its HearThis URL was confirmed and saved. The episode remains in your MyLive history.');
 }
 
 $relative = ltrim((string)$set['file_path'], '/');

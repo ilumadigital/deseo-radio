@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
+require_once __DIR__ . '/../includes/mylive-hearthis.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/mylive-email-reminders.php';
 require_once __DIR__ . '/../includes/mylive-push.php';
@@ -828,7 +829,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $title = trim((string)($_POST['title'] ?? ''));
                 $serverAssetPath = trim((string)($_POST['server_asset_path'] ?? ''));
 
-                if (!in_array($type, ['artwork', 'dj_spot', 'dj_spot_30', 'other'], true)) $type = 'other';
+                if (!in_array($type, ['artwork', 'hearthis_cover', 'dj_spot', 'dj_spot_30', 'other'], true)) $type = 'other';
                 if ($title === '') $title = deseo_mylive_asset_label($type);
 
                 $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav'];
@@ -884,6 +885,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mime = (string)$serverAsset['mime'];
                 } else {
                     throw new RuntimeException('Ανέβασε νέο αρχείο ή επίλεξε ένα από το File Manager.');
+                }
+
+                if ($type === 'hearthis_cover') {
+                    // The HearThis cover is the DJ's dedicated square 02 asset.
+                    // Never allow the station logo or promotional 01 by accident.
+                    if (!preg_match('/(?:^|[^0-9])02\\.(?:png|jpe?g|webp)$/i', $originalName)) {
+                        throw new RuntimeException('Επίλεξε το τετράγωνο DJ artwork 02 (π.χ. GregLef02.png), όχι το 01 ή το λογότυπο του σταθμού.');
+                    }
+                    $imageSource = $sourceMode === 'upload' ? $tmp : $sourceAbsolute;
+                    $imageInfo = @getimagesize($imageSource);
+                    if (!is_array($imageInfo) || empty($imageInfo[0])
+                        || (int)$imageInfo[0] !== (int)$imageInfo[1]
+                        || !in_array((string)($imageInfo['mime'] ?? ''), ['image/png', 'image/jpeg', 'image/webp'], true)) {
+                        throw new RuntimeException('Το HearThis artwork 02 πρέπει να είναι έγκυρη τετράγωνη εικόνα PNG, JPG ή WEBP.');
+                    }
+                    $mime = (string)$imageInfo['mime'];
                 }
 
                 $dir = dirname(__DIR__) . '/mylive/storage/assets/' . $accountId;
@@ -952,10 +969,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $note = trim((string)($_POST['admin_note'] ?? ''));
                 }
 
-                $updatedSet = deseo_mylive_update_set_status($pdo, $setId, $status, $note);
+                $updatedSet = deseo_mylive_update_set_status(
+                    $pdo, $setId, $status, $note, (string)($_POST['scheduled_show_end'] ?? '')
+                );
 
-                if ($status === 'broadcasted' && !empty($updatedSet['file_deleted_at'])) {
-                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED και το audio file διαγράφηκε αμέσως από τον server. Το episode παραμένει κανονικά στη βάση και στο MyLive ιστορικό.';
+                if ($status === 'broadcasted' && empty($updatedSet['file_deleted_at'])) {
+                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το MP3 παραμένει στον server μέχρι να επιβεβαιωθεί το HearThis URL και να αποθηκευτεί στο PMS.';
                 } elseif (!empty($updatedSet['file_deleted_at'])) {
                     $notice = 'Το status ενημερώθηκε. Το audio file έχει ήδη αφαιρεθεί από τον server και το episode παραμένει στο ιστορικό.';
                 } else {
@@ -1010,13 +1029,24 @@ $managedAccounts = array_values(array_filter(
 
 $assetsByAccount = [];
 $setsByAccount = [];
+$hearthisCoverByAccount = [];
+$hearthisCoverErrorByAccount = [];
 foreach ($accounts as $account) {
     $accountId = (int)$account['id'];
     $assetsByAccount[$accountId] = deseo_mylive_assets($pdo, $accountId);
+    try {
+        $hearthisCoverByAccount[$accountId] = deseo_hearthis_cover($pdo, $accountId);
+    } catch (Throwable $coverLookupError) {
+        $hearthisCoverByAccount[$accountId] = null;
+        $hearthisCoverErrorByAccount[$accountId] = $coverLookupError->getMessage();
+    }
 
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
-                broadcasted_at, delete_after, file_deleted_at, uploaded_at
+                broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
+                hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
+                hearthis_set_status, hearthis_set_id, hearthis_podcast_status,
+                hearthis_podcast_verified_at, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
     );
     $stmt->execute([$accountId]);
@@ -1027,7 +1057,10 @@ foreach ($accounts as $account) {
 // eight-episode limit used by each DJ's management panel.
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
-            s.status, s.file_deleted_at, s.uploaded_at, a.artist_name
+            s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
+            s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
+            s.hearthis_set_status, s.hearthis_set_id, s.hearthis_podcast_status,
+            s.hearthis_podcast_verified_at, s.uploaded_at, a.artist_name
      FROM dj_portal_sets s
      INNER JOIN dj_portal_accounts a ON a.id = s.account_id
      ORDER BY s.uploaded_at DESC, s.id DESC"
@@ -1498,7 +1531,7 @@ admin_page_start('MyLive', 'mylive');
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
-                                              data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;" data-deseo-confirm-title="BROADCASTED · Διαγραφή audio" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted" data-deseo-confirm-danger
+                                              data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει στον server έως ότου επιβεβαιωθεί το HearThis URL." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
                                               <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                             <input type="hidden" name="action" value="update_set">
@@ -1507,6 +1540,12 @@ admin_page_start('MyLive', 'mylive');
                                                 <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
                                                 <strong><?= admin_e($set['stored_name']) ?></strong>
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                                <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                                                <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
+                                                <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
+                                                <small>PODCAST RSS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_podcast_status'] ?? 'pending')))) ?><?php if (!empty($set['hearthis_podcast_verified_at'])): ?> · <?= admin_e((string)$set['hearthis_podcast_verified_at']) ?> (Athens)<?php endif; ?></small>
+                                                <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">HearThis optional metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
+                                                <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                                     <em>Episode retained · audio file deleted from server</em>
                                                 <?php endif; ?>
@@ -1517,6 +1556,9 @@ admin_page_start('MyLive', 'mylive');
                                                 <?php endforeach; ?>
                                             </select>
                                             <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
+                                            <label>SHOW ENDS · ATHENS
+                                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                                            </label>
 
                                             <?php if (!empty($set['file_deleted_at'])): ?>
                                                 <span class="mylive-retention-state is-deleted">
@@ -1541,13 +1583,31 @@ admin_page_start('MyLive', 'mylive');
                                 <b>+</b>
                             </summary>
                             <div class="mylive-v3-detail-body">
+                                <div class="mylive-hearthis-cover" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px;border:1px solid #38383c;border-radius:8px;margin-bottom:14px;">
+                                    <?php $djCover = $hearthisCoverByAccount[$accountId] ?? null; ?>
+                                    <?php if ($djCover !== null): ?>
+                                        <img src="<?= admin_e((string)$djCover['preview_url']) ?>" loading="lazy" width="86" height="86" alt="<?= admin_e((string)$account['artist_name']) ?> · HearThis artwork 02" style="width:86px;height:86px;aspect-ratio:1;object-fit:cover;border-radius:6px;">
+                                        <div style="min-width:0;flex:1">
+                                            <strong>HEARTHIS ARTWORK 02 · READY</strong>
+                                            <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($djCover['source_path'] ?: $djCover['name'])) ?></small>
+                                            <small style="display:block;">This DJ-specific square image will be used automatically for future HearThis DJ Sets.</small>
+                                        </div>
+                                    <?php else: ?>
+                                        <div>
+                                            <strong>HEARTHIS ARTWORK · DEFAULT FALLBACK</strong>
+                                            <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($hearthisCoverErrorByAccount[$accountId] ?? 'Square DJ image 02 is unavailable.')) ?></small>
+                                            <small style="display:block;">DJ Set upload continues without custom artwork. HearThis may use embedded MP3 ID3 artwork or its account/platform default. You can optionally assign square artwork 02 below.</small>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                                 <form method="post" enctype="multipart/form-data" class="mylive-asset-upload mylive-v3-asset-upload">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="upload_asset">
                                     <input type="hidden" name="account_id" value="<?= $accountId ?>">
 
                                     <select name="asset_type">
-                                        <option value="artwork">Promotional Artwork</option>
+                                        <option value="artwork">Promotional Artwork · 01</option>
+                                        <option value="hearthis_cover">HearThis Square Cover · 02</option>
                                         <option value="dj_spot">Personal DJ Imaging</option>
                                         <option value="dj_spot_30">30' Imaging</option>
                                         <option value="other">Additional Asset</option>
@@ -1556,7 +1616,7 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
                                     <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
                                     <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
-                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Upload νέο αρχείο ή επίλεξε υπάρχον από τον server.</small>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, το DJ Set συνεχίζει χωρίς custom artwork (το HearThis μπορεί να χρησιμοποιήσει ID3 embedded artwork ή προεπιλεγμένη εικόνα). Μπορείς προαιρετικά να επιλέξεις χειροκίνητα το square artwork 02 εδώ.</small>
                                     <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
@@ -1638,11 +1698,10 @@ admin_page_start('MyLive', 'mylive');
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
                           data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
-                          data-deseo-confirm="BROADCASTED: Το audio file θα διαγραφεί ΑΜΕΣΩΣ και οριστικά από τον server. Το episode θα παραμείνει στο ιστορικό. Συνέχεια;"
-                          data-deseo-confirm-title="BROADCASTED · Διαγραφή audio"
+                          data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει μέχρι να αποθηκευτεί επιβεβαιωμένο HearThis URL."
+                          data-deseo-confirm-title="BROADCASTED · HearThis Sync"
                           data-deseo-confirm-label="BROADCASTED"
                           data-deseo-confirm-if-status="broadcasted"
-                          data-deseo-confirm-danger
                           <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                         <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                         <input type="hidden" name="action" value="update_set_from_library">
@@ -1654,6 +1713,11 @@ admin_page_start('MyLive', 'mylive');
                         <div class="mylive-library-file">
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
+                            <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                            <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
+                            <small>PODCAST RSS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_podcast_status'] ?? 'pending')))) ?><?php if (!empty($set['hearthis_podcast_verified_at'])): ?> · <?= admin_e((string)$set['hearthis_podcast_verified_at']) ?> (Athens)<?php endif; ?></small>
+                            <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">Metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
+                            <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                         </div>
                         <div class="mylive-library-status">
                             <span class="mylive-library-badge is-status-<?= admin_e($statusClass) ?>"><?= admin_e($setStatusLabels[$setStatus] ?? strtoupper(str_replace('_', ' ', $setStatus))) ?></span>
@@ -1662,6 +1726,9 @@ admin_page_start('MyLive', 'mylive');
                                     <option value="<?= admin_e($statusChoice) ?>" <?= $setStatus === $statusChoice ? 'selected' : '' ?>><?= admin_e($setStatusLabels[$statusChoice] ?? strtoupper(str_replace('_', ' ', $statusChoice))) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <label>SHOW ENDS · ATHENS
+                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                            </label>
                         </div>
                         <div class="mylive-library-action">
                             <button class="button button-primary" type="submit">Save</button>

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../iluma/connection.php';
+require_once __DIR__ . '/hearthis-podcast.php';
 require_once __DIR__ . '/dj-season.php';
 
 const DESEO_MYLive_MAX_BYTES = 1073741824; // 1 GB
@@ -150,6 +151,25 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         broadcasted_at DATETIME NULL,
         delete_after DATETIME NULL,
         file_deleted_at DATETIME NULL,
+        scheduled_show_end DATETIME NULL,
+        hearthis_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+        hearthis_url VARCHAR(500) NULL,
+        hearthis_track_id VARCHAR(120) NULL,
+        hearthis_cover_asset_id BIGINT NULL,
+        hearthis_cover_source_path VARCHAR(500) NULL,
+        hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
+        hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
+        hearthis_title VARCHAR(255) NULL,
+        hearthis_source_sha256 CHAR(64) NULL,
+        hearthis_upload_accepted_at DATETIME NULL,
+        hearthis_podcast_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+        hearthis_podcast_verified_at DATETIME NULL,
+        hearthis_set_id VARCHAR(120) NULL,
+        hearthis_set_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+        hearthis_set_started_at DATETIME NULL,
+        hearthis_attempts INT NOT NULL DEFAULT 0,
+        hearthis_started_at DATETIME NULL,
+        hearthis_synced_at DATETIME NULL,
         uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_portal_episode (account_id, episode_no),
         KEY idx_portal_sets_account (account_id, uploaded_at),
@@ -160,7 +180,26 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
     $setColumns = [
         'broadcasted_at' => "DATETIME NULL AFTER admin_note",
         'delete_after' => "DATETIME NULL AFTER broadcasted_at",
-        'file_deleted_at' => "DATETIME NULL AFTER delete_after"
+        'file_deleted_at' => "DATETIME NULL AFTER delete_after",
+        'scheduled_show_end' => "DATETIME NULL AFTER file_deleted_at",
+        'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER scheduled_show_end",
+        'hearthis_url' => "VARCHAR(500) NULL AFTER hearthis_status",
+        'hearthis_track_id' => "VARCHAR(120) NULL AFTER hearthis_url",
+        'hearthis_cover_asset_id' => "BIGINT NULL AFTER hearthis_track_id",
+        'hearthis_cover_source_path' => "VARCHAR(500) NULL AFTER hearthis_cover_asset_id",
+        'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
+        'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
+        'hearthis_title' => "VARCHAR(255) NULL AFTER hearthis_meta_warning",
+        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_title",
+        'hearthis_upload_accepted_at' => "DATETIME NULL AFTER hearthis_source_sha256",
+        'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_upload_accepted_at",
+        'hearthis_podcast_verified_at' => "DATETIME NULL AFTER hearthis_podcast_status",
+        'hearthis_set_id' => "VARCHAR(120) NULL AFTER hearthis_podcast_verified_at",
+        'hearthis_set_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_set_id",
+        'hearthis_set_started_at' => "DATETIME NULL AFTER hearthis_set_status",
+        'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_set_started_at",
+        'hearthis_started_at' => "DATETIME NULL AFTER hearthis_attempts",
+        'hearthis_synced_at' => "DATETIME NULL AFTER hearthis_started_at"
     ];
     foreach ($setColumns as $name => $definition) {
         if (!deseo_mylive_column_exists($pdo, 'dj_portal_sets', $name)) {
@@ -430,7 +469,10 @@ function deseo_mylive_is_guest_account(array $account): bool {
 function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
-                broadcasted_at, delete_after, file_deleted_at, uploaded_at
+                broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
+                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
+                hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
+                hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
          ORDER BY episode_no DESC"
@@ -472,137 +514,237 @@ function deseo_mylive_delete_set_file_now(int $setId, string $filePath): string 
     }
 
     if (!@unlink((string)$file['real_file'])) {
-        error_log('MyLive could not immediately delete BROADCASTED set ' . $setId . ': ' . $file['real_file']);
-        throw new RuntimeException('Το status δεν άλλαξε σε BROADCASTED επειδή το audio file δεν μπόρεσε να διαγραφεί από τον server.');
+        error_log('MyLive could not delete synced set ' . $setId . ': ' . $file['real_file']);
+        throw new RuntimeException('Το συγχρονισμένο audio file δεν μπόρεσε να διαγραφεί από τον server.');
     }
 
     return 'deleted';
 }
 
-function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = ''): array {
+/**
+ * The scheduler uses the real Program mapping. A slot starting today but already
+ * in progress is NOT eligible for a newly scheduled upload.
+ */
+function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable $now): ?string {
+    // Season 6 DJ slots live on the MyLive account itself. The generic music-zone
+    // program table is not populated with mylive_account_id in production.
+    $stmt = $pdo->prepare(
+        "SELECT a.day_of_week, a.start_time, a.end_time,
+                b.status AS application_status
+         FROM dj_portal_accounts a
+         LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+         WHERE a.id = ? LIMIT 1"
+    );
+    $stmt->execute([$accountId]);
+    $slot = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$slot || strtolower((string)($slot['application_status'] ?? '')) === 'guest') {
+        // Guest DJs need an explicit date/time rather than a recurring slot.
+        return null;
+    }
+
+    $startTime = substr((string)($slot['start_time'] ?? ''), 0, 8);
+    $endTime = substr((string)($slot['end_time'] ?? ''), 0, 8);
+    if ($startTime === '') return null;
+    if ($endTime === '') $endTime = '';
+    // Existing strict slots sometimes end at HH:59:59. Their intended full-hour
+    // end is HH+1:00, including the day rollover for 23:00 slots.
+    if ($endTime !== '') {
+        $base = DateTimeImmutable::createFromFormat('!H:i:s', $startTime);
+        $endBase = DateTimeImmutable::createFromFormat('!H:i:s', $endTime);
+        if ($base && $endBase && $endBase->format('H:i:s') === $base->modify('+1 hour -1 second')->format('H:i:s')) {
+            $endTime = $base->modify('+1 hour')->format('H:i:s');
+        }
+    }
+    $occupied = $pdo->prepare(
+        "SELECT COUNT(*) FROM dj_portal_sets
+         WHERE account_id = ? AND status = 'scheduled' AND scheduled_show_end = ?"
+    );
+    for ($attempt = 0; $attempt < 52; $attempt++) {
+        $occurrence = dj_season_weekly_occurrence(
+            (int)($slot['day_of_week'] ?? 0), $startTime, $endTime, $now
+        );
+        if (!$occurrence) return null;
+        [$start, $end] = $occurrence;
+        if ($start <= $now) {
+            $start = $start->modify('+7 days');
+            $end = $end->modify('+7 days');
+        }
+        if ($start > dj_season_end_at()) return null;
+        $endSql = $end->format('Y-m-d H:i:s');
+        $occupied->execute([$accountId, $endSql]);
+        if ((int)$occupied->fetchColumn() === 0) return $endSql;
+        $now = $end->modify('+1 second');
+    }
+    return null;
+}
+
+function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = '', string $showEndInput = ''): array {
     if (!in_array($status, deseo_mylive_set_statuses(), true)) {
         throw new RuntimeException('Μη έγκυρο status.');
     }
-
     $stmt = $pdo->prepare(
-        "SELECT id, status, file_path, broadcasted_at, delete_after, file_deleted_at
-         FROM dj_portal_sets
-         WHERE id = ?
-         LIMIT 1"
+        "SELECT id, account_id, status, broadcasted_at, scheduled_show_end,
+                file_deleted_at, hearthis_status
+         FROM dj_portal_sets WHERE id = ? LIMIT 1"
     );
     $stmt->execute([$setId]);
     $set = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$set) {
-        throw new RuntimeException('Το DJ Set δεν βρέθηκε.');
-    }
+    if (!$set) throw new RuntimeException('Το DJ Set δεν βρέθηκε.');
 
     $previous = (string)$set['status'];
-    $timezone = new DateTimeZone('Europe/Athens');
-    $now = new DateTimeImmutable('now', $timezone);
+    $now = new DateTimeImmutable('now', dj_season_athens_timezone());
     $nowSql = $now->format('Y-m-d H:i:s');
 
-    if ($status === 'broadcasted') {
-        if (empty($set['file_deleted_at'])) {
-            deseo_mylive_delete_set_file_now($setId, (string)$set['file_path']);
-        }
-
-        $broadcastedAt = ($previous === 'broadcasted' && !empty($set['broadcasted_at']))
-            ? (string)$set['broadcasted_at']
-            : $nowSql;
-
-        $pdo->prepare(
-            "UPDATE dj_portal_sets
-             SET status = 'broadcasted',
-                 admin_note = ?,
-                 broadcasted_at = ?,
-                 delete_after = NULL,
-                 file_deleted_at = COALESCE(file_deleted_at, ?)
-             WHERE id = ?"
-        )->execute([
-            $note,
-            $broadcastedAt,
-            $nowSql,
-            $setId
-        ]);
-    } else {
-        if (empty($set['file_deleted_at'])) {
-            $pdo->prepare(
-                "UPDATE dj_portal_sets
-                 SET status = ?,
-                     admin_note = ?,
-                     broadcasted_at = NULL,
-                     delete_after = NULL
-                 WHERE id = ?"
-            )->execute([$status, $note, $setId]);
-        } else {
-            $pdo->prepare(
-                "UPDATE dj_portal_sets
-                 SET status = ?,
-                     admin_note = ?,
-                     delete_after = NULL
-                 WHERE id = ?"
-            )->execute([$status, $note, $setId]);
-        }
+    if (in_array((string)$set['hearthis_status'], ['uploading', 'verifying'], true)) {
+        throw new RuntimeException('Το HearThis upload ή η δημόσια επαλήθευση είναι σε εξέλιξη. Δεν μπορεί να αλλάξει το status.');
+    }
+    if ((string)$set['hearthis_status'] === 'synced' && $status !== 'broadcasted') {
+        throw new RuntimeException('Το DJ Set έχει ήδη δημοσιευθεί στο HearThis. Δεν μπορεί να επιστρέψει σε προηγούμενο status.');
     }
 
+    if ($status === 'broadcasted') {
+        if ($previous !== 'broadcasted' && !empty($set['scheduled_show_end']) && $nowSql < $set['scheduled_show_end']) {
+            throw new RuntimeException('Το DJ Set δεν μπορεί να γίνει BROADCASTED πριν ολοκληρωθεί το προγραμματισμένο slot.');
+        }
+        // Never delete audio here. The sync worker owns deletion after a persisted URL.
+        $broadcastedAt = $previous === 'broadcasted' && !empty($set['broadcasted_at'])
+            ? (string)$set['broadcasted_at'] : $nowSql;
+        $pdo->prepare(
+            "UPDATE dj_portal_sets
+             SET status = 'broadcasted', admin_note = ?, broadcasted_at = ?, delete_after = NULL
+             WHERE id = ?"
+        )->execute([$note, $broadcastedAt, $setId]);
+    } else {
+        $scheduledEnd = null;
+        if ($status === 'scheduled') {
+            $scheduledEnd = $previous === 'scheduled' && !empty($set['scheduled_show_end'])
+                ? (string)$set['scheduled_show_end']
+                : deseo_mylive_next_show_end($pdo, (int)$set['account_id'], $now);
+            // Admin may supply an actual end date/time for a one-off Guest DJ slot.
+            if (trim($showEndInput) !== '') {
+                $given = DateTimeImmutable::createFromFormat(
+                    '!Y-m-d\\TH:i', trim($showEndInput), dj_season_athens_timezone()
+                );
+                $parseErrors = DateTimeImmutable::getLastErrors();
+                if (!$given || ($parseErrors !== false && ($parseErrors['warning_count'] || $parseErrors['error_count']))
+                    || $given->format('Y-m-d\\TH:i') !== trim($showEndInput)) {
+                    throw new RuntimeException('Μη έγκυρη ημερομηνία λήξης μετάδοσης.');
+                }
+                $inputSql = $given->format('Y-m-d H:i:s');
+                if (($given <= $now && $inputSql !== (string)($set['scheduled_show_end'] ?? ''))
+                    || $given < dj_season_start_at()
+                    || $given > dj_season_end_at()->modify('+1 day')) {
+                    throw new RuntimeException('Η λήξη πρέπει να είναι μελλοντική και μέσα στη Season 6.');
+                }
+                $collision = $pdo->prepare(
+                    "SELECT COUNT(*) FROM dj_portal_sets
+                     WHERE account_id = ? AND id <> ? AND status = 'scheduled'
+                       AND scheduled_show_end = ?"
+                );
+                $collision->execute([(int)$set['account_id'], $setId, $inputSql]);
+                if ((int)$collision->fetchColumn() > 0) {
+                    throw new RuntimeException('Άλλο episode του DJ έχει ήδη κρατήσει αυτό το slot.');
+                }
+                $scheduledEnd = $inputSql;
+            }
+            if ($scheduledEnd === null) {
+                throw new RuntimeException('Δεν υπάρχει συνδεδεμένο εβδομαδιαίο slot. Όρισε ημερομηνία/ώρα λήξης για το Guest DJ Set.');
+            }
+        }
+        $pdo->prepare(
+            "UPDATE dj_portal_sets
+             SET status = ?, admin_note = ?, broadcasted_at = NULL,
+                 scheduled_show_end = ?, delete_after = NULL
+             WHERE id = ?"
+        )->execute([$status, $note, $scheduledEnd, $setId]);
+    }
     $refresh = $pdo->prepare(
-        "SELECT id, status, broadcasted_at, delete_after, file_deleted_at
-         FROM dj_portal_sets
-         WHERE id = ?
-         LIMIT 1"
+        "SELECT id, status, broadcasted_at, delete_after, file_deleted_at,
+                scheduled_show_end, hearthis_status, hearthis_url, hearthis_error
+         FROM dj_portal_sets WHERE id = ? LIMIT 1"
     );
     $refresh->execute([$setId]);
     return $refresh->fetch(PDO::FETCH_ASSOC) ?: [];
 }
 
-function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
-    // Safety net for legacy BROADCASTED rows created before immediate deletion
-    // was introduced. Any BROADCASTED set that still has a file is removed now.
-    $timezone = new DateTimeZone('Europe/Athens');
-    $now = new DateTimeImmutable('now', $timezone);
-    $nowSql = $now->format('Y-m-d H:i:s');
-
-    $stmt = $pdo->query(
-        "SELECT id, file_path
-         FROM dj_portal_sets
-         WHERE status = 'broadcasted'
-           AND file_deleted_at IS NULL
-         ORDER BY id ASC"
-    );
+/**
+ * Safe retention only after the public HearThis URL is committed to the DB.
+ * This is also called from existing page-load and legacy cron hooks.
+ */
+/**
+ * Delete only a safely pinned local file after a positively accepted HearThis
+ * upload. This no longer waits for playlist membership or podcast RSS.
+ *
+ * The original SHA-256 is written before the upload attempt and the accepted
+ * remote ID/permalink/timestamp are durably saved before any unlink. Unknown
+ * or failed responses have no accepted_at and are NEVER deletion candidates.
+ * Called immediately by the worker and also by legacy/page-load cleanup to
+ * recover after process interruption. The subsequent remote reconciliation
+ * deliberately works on rows whose file_deleted_at is already populated.
+ */
+function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo, ?int $onlySetId = null): array {
+    $nowSql = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
+    $sql = "SELECT id, file_path, hearthis_url, hearthis_track_id,
+                   hearthis_title, hearthis_source_sha256
+            FROM dj_portal_sets
+            WHERE status = 'broadcasted' AND hearthis_status IN ('verifying', 'synced')
+              AND hearthis_upload_accepted_at IS NOT NULL
+              AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
+              AND hearthis_source_sha256 IS NOT NULL AND file_deleted_at IS NULL";
+    if ($onlySetId !== null) $sql .= ' AND id = ?';
+    $sql .= ' ORDER BY id ASC LIMIT 100';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($onlySetId !== null ? [$onlySetId] : []);
     $sets = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $deleted = 0;
-    $missing = 0;
-    $failed = 0;
-
+    $deleted = 0; $missing = 0; $failed = 0;
     foreach ($sets as $set) {
-        $setId = (int)$set['id'];
-
+        $id = (int)$set['id'];
         try {
-            $result = deseo_mylive_delete_set_file_now($setId, (string)$set['file_path']);
-
-            $pdo->prepare(
-                "UPDATE dj_portal_sets
-                 SET delete_after = NULL,
-                     file_deleted_at = ?
-                 WHERE id = ? AND file_deleted_at IS NULL"
-            )->execute([$nowSql, $setId]);
-
+            $url = trim((string)$set['hearthis_url']);
+            $trackId = trim((string)$set['hearthis_track_id']);
+            $sourceSha = strtolower(trim((string)$set['hearthis_source_sha256']));
+            if (!ctype_digit($trackId) || (int)$trackId < 1
+                || !preg_match('/^[a-f0-9]{64}$/D', $sourceSha)
+                || trim((string)$set['hearthis_title']) === ''
+                || deseo_hearthis_podcast_canonical_track($url) === ''
+                || deseo_hearthis_podcast_canonical_track($url) !== $url) {
+                throw new RuntimeException('Accepted remote metadata / source fingerprint is incomplete; file retained.');
+            }
+            $file = deseo_mylive_set_storage_file((string)$set['file_path']);
+            if ($file['storage_root'] === ''
+                || !str_starts_with((string)$file['candidate'], dirname(__DIR__) . '/mylive/storage/')) {
+                throw new RuntimeException('Invalid MyLive storage path; file retained.');
+            }
+            if ($file['exists']) {
+                if ($file['real_file'] === '' || !str_starts_with(
+                    (string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR
+                ) || is_link((string)$file['candidate'])
+                    || !hash_equals($sourceSha, (string)hash_file('sha256', (string)$file['real_file']))) {
+                    throw new RuntimeException('Stored MP3 SHA-256/path changed since accepted upload; file retained.');
+                }
+            }
+            // All checks above are based on the accepted upload, not on a
+            // future RSS update. An already absent pinned file is recorded as
+            // missing, never relinked or replaced with an unrelated file.
+            $result = deseo_mylive_delete_set_file_now($id, (string)$set['file_path']);
+            $update = $pdo->prepare(
+                "UPDATE dj_portal_sets SET delete_after = NULL, file_deleted_at = ?
+                 WHERE id = ? AND status = 'broadcasted'
+                   AND hearthis_status IN ('verifying', 'synced')
+                   AND hearthis_upload_accepted_at IS NOT NULL
+                   AND hearthis_source_sha256 = ? AND hearthis_track_id = ?
+                   AND hearthis_url = ? AND file_deleted_at IS NULL"
+            );
+            $update->execute([$nowSql, $id, $sourceSha, $trackId, $url]);
             if ($result === 'deleted') $deleted++;
             else $missing++;
-        } catch (Throwable $cleanupError) {
-            error_log('MyLive immediate BROADCASTED cleanup failed for set ' . $setId . ': ' . $cleanupError->getMessage());
+        } catch (Throwable $error) {
+            error_log('MyLive accepted-upload local cleanup held for episode ' . $id . ': ' . $error->getMessage());
             $failed++;
         }
     }
-
-    return [
-        'checked' => count($sets),
-        'deleted' => $deleted,
-        'already_missing' => $missing,
-        'failed' => $failed,
-        'at' => $nowSql,
-    ];
+    return ['checked' => count($sets), 'deleted' => $deleted,
+            'already_missing' => $missing, 'failed' => $failed, 'at' => $nowSql];
 }
 
 function deseo_mylive_assets(PDO $pdo, int $accountId): array {
@@ -612,6 +754,7 @@ function deseo_mylive_assets(PDO $pdo, int $accountId): array {
          WHERE account_id = ?
          ORDER BY
             CASE asset_type
+                WHEN 'hearthis_cover' THEN 0
                 WHEN 'artwork' THEN 1
                 WHEN 'dj_spot' THEN 2
                 WHEN 'dj_spot_30' THEN 3
@@ -625,6 +768,7 @@ function deseo_mylive_assets(PDO $pdo, int $accountId): array {
 
 function deseo_mylive_asset_label(string $type): string {
     return match ($type) {
+        'hearthis_cover' => 'HearThis Square Cover · 02',
         'artwork' => 'Promotional Artwork',
         'dj_spot' => 'Personal DJ Imaging',
         'dj_spot_30' => "30' Imaging",
