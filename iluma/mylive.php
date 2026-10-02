@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../includes/dj-portal.php';
 require_once __DIR__ . '/../includes/mylive-hearthis.php';
+require_once __DIR__ . '/../includes/hearthis-artwork-preview.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/mylive-email-reminders.php';
 require_once __DIR__ . '/../includes/mylive-push.php';
@@ -1588,7 +1589,10 @@ admin_page_start('MyLive', 'mylive');
                                 <?php else: ?>
                                     <div class="mylive-set-admin-list">
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
-                                        <?php $hearthisPayload = mylive_admin_hearthis_payload($set, (string)$account['artist_name']); ?>
+                                        <?php
+                                        $hearthisPayload = mylive_admin_hearthis_payload($set, (string)$account['artist_name']);
+                                        $artworkPreview = deseo_hearthis_artwork_preview($set, $hearthisCoverByAccount[$accountId] ?? null);
+                                        ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
                                               data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 διαγράφεται μόνο μετά από επιβεβαιωμένη αποδοχή upload στο HearThis." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
@@ -1618,6 +1622,18 @@ admin_page_start('MyLive', 'mylive');
                                                             <small><b>DESCRIPTION:</b></small>
                                                             <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
                                                             <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[$accountId] ?? null)) ?></small>
+                                                            <?php if ($artworkPreview !== null): ?>
+                                                                <button type="button" class="button button-secondary mylive-artwork-preview-trigger"
+                                                                        data-mylive-artwork-preview
+                                                                        data-preview-src="<?= admin_e((string)$artworkPreview['url']) ?>"
+                                                                        data-preview-name="<?= admin_e((string)$artworkPreview['name']) ?>"
+                                                                        data-preview-size="<?= (int)$artworkPreview['width'] ?> × <?= (int)$artworkPreview['height'] ?>"
+                                                                        aria-haspopup="dialog"
+                                                                        aria-controls="myliveHearThisArtworkModal">Προβολή εικόνας 02</button>
+                                                            <?php elseif (trim((string)($set['hearthis_description'] ?? '')) !== ''
+                                                                && (!empty($set['hearthis_cover_asset_id']) || !empty($set['hearthis_cover_source_path']))): ?>
+                                                                <small>Το αποθηκευμένο artwork δεν είναι πλέον διαθέσιμο για ασφαλή προεπισκόπηση.</small>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </details>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
@@ -1775,6 +1791,9 @@ admin_page_start('MyLive', 'mylive');
                     $statusClass = isset($setStatusLabels[$setStatus]) ? $setStatus : 'unknown';
                     $episodeLabel = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
                     $hearthisPayload = mylive_admin_hearthis_payload($set, (string)$set['artist_name']);
+                    $artworkPreview = deseo_hearthis_artwork_preview(
+                        $set, $hearthisCoverByAccount[(int)$set['account_id']] ?? null
+                    );
                     ?>
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
@@ -1810,6 +1829,18 @@ admin_page_start('MyLive', 'mylive');
                                                             <small><b>DESCRIPTION:</b></small>
                                                             <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
                                                             <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[(int)$set['account_id']] ?? null)) ?></small>
+                                                            <?php if ($artworkPreview !== null): ?>
+                                                                <button type="button" class="button button-secondary mylive-artwork-preview-trigger"
+                                                                        data-mylive-artwork-preview
+                                                                        data-preview-src="<?= admin_e((string)$artworkPreview['url']) ?>"
+                                                                        data-preview-name="<?= admin_e((string)$artworkPreview['name']) ?>"
+                                                                        data-preview-size="<?= (int)$artworkPreview['width'] ?> × <?= (int)$artworkPreview['height'] ?>"
+                                                                        aria-haspopup="dialog"
+                                                                        aria-controls="myliveHearThisArtworkModal">Προβολή εικόνας 02</button>
+                                                            <?php elseif (trim((string)($set['hearthis_description'] ?? '')) !== ''
+                                                                && (!empty($set['hearthis_cover_asset_id']) || !empty($set['hearthis_cover_source_path']))): ?>
+                                                                <small>Το αποθηκευμένο artwork δεν είναι πλέον διαθέσιμο για ασφαλή προεπισκόπηση.</small>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </details>
                             <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
@@ -1894,6 +1925,41 @@ admin_page_start('MyLive', 'mylive');
     <?php endif; ?>
 </div>
 
+<style>
+.mylive-artwork-preview-trigger{justify-self:start;width:max-content;max-width:100%;margin-top:2px}
+dialog.mylive-artwork-modal{width:min(90vw,760px);max-height:92vh;padding:0;border:1px solid #39393e;border-radius:14px;background:#151517;color:#f4f4f5;box-shadow:0 24px 90px #000b;overflow:auto}
+dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(4px)}
+.mylive-artwork-modal-header{display:flex;justify-content:space-between;align-items:start;gap:20px;padding:17px 20px;border-bottom:1px solid #34343a}
+.mylive-artwork-modal-header span{display:block;font-size:11px;letter-spacing:.12em;color:#a4a4ad}
+.mylive-artwork-modal-header h2{font-size:18px;line-height:1.3;margin:5px 0;overflow-wrap:anywhere}
+.mylive-artwork-modal-close{cursor:pointer;background:#29292e;border:1px solid #484850;color:white;border-radius:8px;font-size:24px;width:40px;height:40px;flex:0 0 auto}
+.mylive-artwork-modal-close:focus-visible,.mylive-artwork-preview-trigger:focus-visible{outline:2px solid #fb3b53;outline-offset:3px}
+.mylive-artwork-modal-body{display:grid;justify-items:center;gap:9px;padding:18px}
+.mylive-artwork-modal-body img{width:auto;max-width:100%;max-height:min(68vh,690px);aspect-ratio:1;object-fit:contain;border-radius:5px;background:#0a0a0a}
+.mylive-artwork-modal-body p{margin:0;color:#bcbcc2;font-size:12px}
+.mylive-artwork-modal-error{color:#ff8794!important}
+.mylive-artwork-modal-footer{display:flex;justify-content:flex-end;padding:0 18px 18px}
+@media(max-width:640px){dialog.mylive-artwork-modal{width:calc(100vw - 20px)}.mylive-artwork-modal-header{padding:13px}.mylive-artwork-modal-body{padding:12px}}
+</style>
+<dialog class="mylive-artwork-modal" id="myliveHearThisArtworkModal" aria-labelledby="myliveArtworkModalName" aria-describedby="myliveArtworkModalDescription">
+    <header class="mylive-artwork-modal-header">
+        <div>
+            <span>HEARTHIS · ARTWORK 02 PREVIEW</span>
+            <h2 id="myliveArtworkModalName"></h2>
+            <span id="myliveArtworkModalDescription">Προεπισκόπηση της επιλεγμένης τετράγωνης εικόνας · χωρίς αλλαγές.</span>
+        </div>
+        <button type="button" class="mylive-artwork-modal-close" data-mylive-artwork-close aria-label="Κλείσιμο προεπισκόπησης">×</button>
+    </header>
+    <div class="mylive-artwork-modal-body">
+        <img id="myliveArtworkModalImage" alt="" />
+        <p id="myliveArtworkModalSize"></p>
+        <p id="myliveArtworkModalError" class="mylive-artwork-modal-error" role="status" hidden>Η εικόνα δεν φορτώθηκε. Έλεγξε αν το αρχείο παραμένει διαθέσιμο.</p>
+    </div>
+    <footer class="mylive-artwork-modal-footer">
+        <button type="button" class="button button-secondary" data-mylive-artwork-close>Κλείσιμο</button>
+    </footer>
+</dialog>
+
 <div class="schedule-media-modal" id="myliveAssetMediaModal" hidden>
     <div class="schedule-media-backdrop" data-mylive-media-close></div>
     <section class="schedule-media-manager" role="dialog" aria-modal="true" aria-labelledby="myliveAssetMediaTitle">
@@ -1968,6 +2034,51 @@ admin_page_start('MyLive', 'mylive');
 </div>
 
 <script>
+(function(){
+    var dialog=document.getElementById('myliveHearThisArtworkModal');
+    var image=document.getElementById('myliveArtworkModalImage');
+    var title=document.getElementById('myliveArtworkModalName');
+    var size=document.getElementById('myliveArtworkModalSize');
+    var error=document.getElementById('myliveArtworkModalError');
+    var lastTrigger=null;
+    if(!dialog||!image||!title||!size||!error)return;
+    document.querySelectorAll('[data-mylive-artwork-preview]').forEach(function(button){
+        button.addEventListener('click',function(event){
+            event.preventDefault();
+            var src=button.getAttribute('data-preview-src')||'';
+            if(src.charAt(0)!=='/'||src.charAt(1)==='/')return;
+            if(src.indexOf('/iluma/mylive-download.php?type=asset&id=')!==0
+                &&src.indexOf('/iluma/uploads/deseo_djs/')!==0)return;
+            lastTrigger=button;
+            title.textContent=button.getAttribute('data-preview-name')||'DJ Artwork 02';
+            size.textContent=(button.getAttribute('data-preview-size')||'')+' · Τετράγωνη εικόνα';
+            image.alt=title.textContent;
+            error.hidden=true;
+            image.hidden=false;
+            dialog.showModal();
+            image.src=src;
+            var close=dialog.querySelector('[data-mylive-artwork-close]');
+            if(close)close.focus();
+        });
+    });
+    image.addEventListener('error',function(){
+        image.hidden=true;
+        error.hidden=false;
+    });
+    dialog.querySelectorAll('[data-mylive-artwork-close]').forEach(function(button){
+        button.addEventListener('click',function(){dialog.close();});
+    });
+    dialog.addEventListener('click',function(event){
+        if(event.target===dialog)dialog.close();
+    });
+    dialog.addEventListener('close',function(){
+        image.removeAttribute('src');
+        image.alt='';
+        error.hidden=true;
+        if(lastTrigger)lastTrigger.focus();
+        lastTrigger=null;
+    });
+}());
 (function(){
     var search=document.getElementById('myliveAccountSearch');
     var list=document.getElementById('myliveAccountList');
