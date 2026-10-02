@@ -37,8 +37,98 @@ function deseo_hearthis_public_url(string $url): bool {
 }
 
 /**
- * Resolve a DJ-specific, square 02 cover only from that DJ's assigned MyLive
- * assets. The station logo and promotional 01 artwork are NEVER fallbacks.
+ * Validate a square DJ image under a known local storage root. No remote URLs,
+ * user-supplied filesystem paths, station logo or 01 fallback can enter upload.
+ */
+function deseo_hearthis_cover_file(string $path, string $root, string $originalName, ?int $assetId, string $sourcePath = '', string $previewUrl = ''): ?array {
+    $rootReal = realpath($root);
+    $real = realpath($path);
+    if (!$rootReal || !$real || !is_file($real) || is_link($path)
+        || !str_starts_with($real, $rootReal . DIRECTORY_SEPARATOR)) return null;
+    $info = @getimagesize($real);
+    if (!is_array($info) || empty($info[0]) || (int)$info[0] !== (int)$info[1]) return null;
+    $mime = (string)($info['mime'] ?? '');
+    if (!in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true)) return null;
+    return [
+        'path' => $real, 'mime' => $mime, 'name' => $originalName,
+        'asset_id' => $assetId, 'source_path' => $sourcePath, 'preview_url' => $previewUrl,
+    ];
+}
+
+/**
+ * Find the 02 image adjacent to the account's registered original 01 artwork
+ * in its exact weekday directory on the existing File Manager. The SQL dump
+ * retains original_name (e.g. GregLef01.png), but not the original public file
+ * location, because MyLive copied its 01 asset to private randomized storage.
+ * Require one unique 01-anchored DJ folder: never pick a similarly named DJ.
+ */
+function deseo_hearthis_file_manager_cover(array $account, array $assets): array {
+    $dayDirs = [
+        3 => '1. Wed', 4 => '2. Thu', 5 => '3. Fri',
+        6 => '4. Sat', 7 => '5. Sun',
+    ];
+    $dayName = $dayDirs[(int)($account['day_of_week'] ?? 0)] ?? '';
+    if ($dayName === '') {
+        throw new RuntimeException('No Resident DJ day for automatic artwork 02 resolution; assign the image explicitly.');
+    }
+    $root = realpath(dirname(__DIR__) . '/iluma/uploads/deseo_djs');
+    $day = $root ? realpath($root . DIRECTORY_SEPARATOR . $dayName) : false;
+    if (!$root || !$day || !is_dir($day)
+        || !str_starts_with($day, $root . DIRECTORY_SEPARATOR)) {
+        throw new RuntimeException('DJ File Manager weekday artwork folder is unavailable.');
+    }
+    $seeds = [];
+    foreach ($assets as $asset) {
+        if ((string)$asset['asset_type'] !== 'artwork') continue;
+        $original = basename((string)$asset['original_name']);
+        if (preg_match('/^(.+?)01\.(?:png|jpe?g|webp)$/iD', $original, $parts)) {
+            $seeds[$original] = $parts[1];
+        }
+    }
+    if (!$seeds) throw new RuntimeException('No registered promotional artwork 01 for this DJ; assign square artwork 02 explicitly.');
+
+    $matches = [];
+    foreach (new DirectoryIterator($day) as $directory) {
+        if ($directory->isDot() || !$directory->isDir() || $directory->isLink()) continue;
+        $folderName = $directory->getFilename();
+        if (!preg_match('/^[0-9]+\.\s+\S/u', $folderName)) continue;
+        $folder = $directory->getRealPath();
+        if (!$folder || !str_starts_with($folder, $day . DIRECTORY_SEPARATOR)) continue;
+        foreach ($seeds as $original01 => $stem) {
+            // Original 01 must still be present in this source folder. That is
+            // our account-specific provenance check, not a fuzzy name search.
+            if (!is_file($folder . DIRECTORY_SEPARATOR . $original01)
+                || is_link($folder . DIRECTORY_SEPARATOR . $original01)) continue;
+            foreach (new DirectoryIterator($folder) as $candidate) {
+                if (!$candidate->isFile() || $candidate->isLink()) continue;
+                $name = $candidate->getFilename();
+                $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (!in_array($extension, ['png', 'jpg', 'jpeg', 'webp'], true)) continue;
+                if (strcasecmp((string)pathinfo($name, PATHINFO_FILENAME), $stem . '02') !== 0) continue;
+                $relative = 'iluma/uploads/deseo_djs/' . $dayName . '/' . $folderName . '/' . $name;
+                $preview = '/' . implode('/', array_map('rawurlencode', explode('/', $relative)));
+                $cover = deseo_hearthis_cover_file(
+                    $candidate->getPathname(), $root, $name, null, $relative, $preview
+                );
+                if (!$cover) {
+                    throw new RuntimeException('The DJ File Manager artwork 02 exists but is not a valid square PNG/JPG/WEBP.');
+                }
+                $matches[$relative] = $cover;
+            }
+        }
+    }
+    if (count($matches) !== 1) {
+        throw new RuntimeException(count($matches) > 1
+            ? 'Multiple matching DJ artwork 02 files: choose one explicitly in MyLive Assets.'
+            : 'Matching DJ artwork 02 not found beside registered 01 in the weekday File Manager folder.');
+    }
+    return reset($matches);
+}
+
+/**
+ * A DJ-specific explicit MyLive cover takes priority. Otherwise discover the
+ * existing square 02 next to this account's original 01 in the correct day.
+ * No file is copied or renamed by automatic discovery.
  */
 function deseo_hearthis_cover(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
@@ -52,23 +142,27 @@ function deseo_hearthis_cover(PDO $pdo, int $accountId): array {
     $storageRoot = realpath(dirname(__DIR__) . '/mylive/storage/assets');
     foreach ($rows as $asset) {
         $original = (string)$asset['original_name'];
-        // 01 assets are specifically NOT cover art; require source filename 02.
-        if (!preg_match('/(?:^|[^0-9])02\\.(?:png|jpe?g|webp)$/i', $original)) continue;
-        $filePath = (string)$asset['file_path'];
-        $relative = ltrim($filePath, '/');
+        if (!preg_match('/(?:^|[^0-9])02\.(?:png|jpe?g|webp)$/iD', $original)) continue;
+        $relative = ltrim((string)$asset['file_path'], '/');
         if (!preg_match('~^storage/assets/' . $accountId . '/[^/]+$~D', $relative)) continue;
-        $absolute = realpath(dirname(__DIR__) . '/mylive/' . $relative);
-        if (!$storageRoot || !$absolute || !is_file($absolute)
-            || !str_starts_with($absolute, $storageRoot . DIRECTORY_SEPARATOR . $accountId . DIRECTORY_SEPARATOR)) continue;
-        $info = @getimagesize($absolute);
-        if (!is_array($info) || empty($info[0]) || (int)$info[0] !== (int)$info[1]) continue;
-        $mime = (string)($info['mime'] ?? '');
-        if (!in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true)) continue;
-        return ['path' => $absolute, 'mime' => $mime, 'name' => $original, 'asset_id' => (int)$asset['id']];
+        $absolute = dirname(__DIR__) . '/mylive/' . $relative;
+        $cover = deseo_hearthis_cover_file(
+            $absolute, (string)$storageRoot, $original, (int)$asset['id'], '',
+            '/iluma/mylive-download.php?type=asset&id=' . (int)$asset['id'] . '&preview=1'
+        );
+        if ($cover) return $cover;
+        if ((string)$asset['asset_type'] === 'hearthis_cover') {
+            throw new RuntimeException('Assigned MyLive artwork 02 is missing or not square; correct this DJ asset.');
+        }
     }
-    throw new RuntimeException(
-        'Missing square DJ artwork 02 in MyLive assets; assign the correct image before HearThis upload.'
+
+    $accountStmt = $pdo->prepare(
+        "SELECT id, day_of_week, artist_name FROM dj_portal_accounts WHERE id = ? LIMIT 1"
     );
+    $accountStmt->execute([$accountId]);
+    $account = $accountStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$account) throw new RuntimeException('DJ account does not exist.');
+    return deseo_hearthis_file_manager_cover($account, $rows);
 }
 
 function deseo_hearthis_metadata(array $set): array {
