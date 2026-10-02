@@ -24,7 +24,7 @@ $deseoAiPlatforms = [
                 <p data-i18n="ai.text"><?= deseo_e(deseo_t('ai.text')) ?></p>
                 <div class="ai-discovery-sources">
                     <span data-i18n="ai.sources"><?= deseo_e(deseo_t('ai.sources')) ?></span>
-                    <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-analytics-event="ask_ai_source_mediakit_click">Media Kit ↗</a>
+                    <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-analytics-event="ask_ai_source_mediakit_click">Media Kit</a>
                 </div>
             </div>
             <div class="ai-discovery-grid">
@@ -37,7 +37,6 @@ $deseoAiPlatforms = [
                    data-analytics-event="<?= deseo_e($platform['event']) ?>">
                     <span class="ai-discovery-card-top">
                         <span class="ai-discovery-logo"><img src="<?= deseo_e($platform['logo']) ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
-                        <span class="ai-discovery-arrow" aria-hidden="true">↗</span>
                     </span>
                     <span class="ai-discovery-card-copy"><strong><?= deseo_e($platform['name']) ?></strong><small><span data-i18n="ai.open"><?= deseo_e(deseo_t('ai.open')) ?></span> <?= deseo_e($platform['name']) ?></small></span>
                 </a>
