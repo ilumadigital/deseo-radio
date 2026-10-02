@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../iluma/connection.php';
 require_once __DIR__ . '/hearthis-podcast.php';
+require_once __DIR__ . '/hearthis-episode-link.php';
 require_once __DIR__ . '/dj-season.php';
 
 const DESEO_MYLive_MAX_BYTES = 1073741824; // 1 GB
@@ -485,20 +486,6 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     );
     $stmt->execute([$accountId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-/**
- * A DJ can open the accepted public episode as soon as its ID and owned
- * permalink are saved, without waiting for Season 6 playlist or podcast RSS.
- * Only expose THEIR OWN broadcasted row through the authenticated MyLive query.
- */
-function deseo_mylive_hearthis_episode_link(array $set): string {
-    if ((string)($set['status'] ?? '') !== 'broadcasted'
-        || !in_array((string)($set['hearthis_status'] ?? ''), ['verifying', 'synced'], true)
-        || empty($set['hearthis_upload_accepted_at'])) return '';
-    $id = trim((string)($set['hearthis_track_id'] ?? ''));
-    if (!ctype_digit($id) || (int)$id < 1) return '';
-    return deseo_hearthis_podcast_canonical_track((string)($set['hearthis_url'] ?? ''));
 }
 
 function deseo_mylive_set_statuses(): array {
