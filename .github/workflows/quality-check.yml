@@ -24,6 +24,12 @@ jobs:
             php -l "$file"
           done < <(find . -type f -name '*.php' -print0)
 
+      - name: HearThis podcast RSS safety tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/hearthis-podcast.php
+
       - name: JavaScript syntax
         run: node --check sw.js
 
