@@ -160,6 +160,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_title VARCHAR(255) NULL,
+        hearthis_source_sha256 CHAR(64) NULL,
+        hearthis_upload_accepted_at DATETIME NULL,
         hearthis_podcast_status VARCHAR(24) NOT NULL DEFAULT 'pending',
         hearthis_podcast_verified_at DATETIME NULL,
         hearthis_set_id VARCHAR(120) NULL,
@@ -188,7 +190,9 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
         'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
         'hearthis_title' => "VARCHAR(255) NULL AFTER hearthis_meta_warning",
-        'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_title",
+        'hearthis_source_sha256' => "CHAR(64) NULL AFTER hearthis_title",
+        'hearthis_upload_accepted_at' => "DATETIME NULL AFTER hearthis_source_sha256",
+        'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_upload_accepted_at",
         'hearthis_podcast_verified_at' => "DATETIME NULL AFTER hearthis_podcast_status",
         'hearthis_set_id' => "VARCHAR(120) NULL AFTER hearthis_podcast_verified_at",
         'hearthis_set_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_set_id",
@@ -467,7 +471,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
         "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
-                hearthis_title, hearthis_podcast_status, hearthis_podcast_verified_at,
+                hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
                 hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
@@ -667,55 +671,75 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
  * Safe retention only after the public HearThis URL is committed to the DB.
  * This is also called from existing page-load and legacy cron hooks.
  */
-function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
+/**
+ * Delete only a safely pinned local file after a positively accepted HearThis
+ * upload. This no longer waits for playlist membership or podcast RSS.
+ *
+ * The original SHA-256 is written before the upload attempt and the accepted
+ * remote ID/permalink/timestamp are durably saved before any unlink. Unknown
+ * or failed responses have no accepted_at and are NEVER deletion candidates.
+ * Called immediately by the worker and also by legacy/page-load cleanup to
+ * recover after process interruption. The subsequent remote reconciliation
+ * deliberately works on rows whose file_deleted_at is already populated.
+ */
+function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo, ?int $onlySetId = null): array {
     $nowSql = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
-    $stmt = $pdo->query(
-        "SELECT id, file_path, hearthis_url, hearthis_track_id, hearthis_title
-         FROM dj_portal_sets
-         WHERE status = 'broadcasted' AND hearthis_status = 'synced'
-           AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
-           AND hearthis_podcast_status = 'confirmed'
-           AND hearthis_podcast_verified_at IS NOT NULL
-           AND hearthis_title IS NOT NULL
-           AND hearthis_synced_at IS NOT NULL AND file_deleted_at IS NULL
-         ORDER BY id ASC"
-    );
+    $sql = "SELECT id, file_path, hearthis_url, hearthis_track_id,
+                   hearthis_title, hearthis_source_sha256
+            FROM dj_portal_sets
+            WHERE status = 'broadcasted' AND hearthis_status IN ('verifying', 'synced')
+              AND hearthis_upload_accepted_at IS NOT NULL
+              AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
+              AND hearthis_source_sha256 IS NOT NULL AND file_deleted_at IS NULL";
+    if ($onlySetId !== null) $sql .= ' AND id = ?';
+    $sql .= ' ORDER BY id ASC LIMIT 100';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($onlySetId !== null ? [$onlySetId] : []);
     $sets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $deleted = 0; $missing = 0; $failed = 0;
-    // Page-load and legacy cleanup hooks must independently recheck the
-    // authoritative podcast RSS before ANY destructive file operation.
-    $rssXml = $sets ? deseo_hearthis_podcast_fetch_xml() : null;
     foreach ($sets as $set) {
         $id = (int)$set['id'];
         try {
-            $url = (string)$set['hearthis_url'];
-            $trackId = (string)$set['hearthis_track_id'];
-            $title = (string)$set['hearthis_title'];
-            if ($rssXml === null
-                || !deseo_hearthis_podcast_xml_has_track($rssXml, $trackId, $url, $title)) {
-                throw new RuntimeException('The exact track is not confirmed with audio enclosure in the current podcast RSS; file retained.');
+            $url = trim((string)$set['hearthis_url']);
+            $trackId = trim((string)$set['hearthis_track_id']);
+            $sourceSha = strtolower(trim((string)$set['hearthis_source_sha256']));
+            if (!ctype_digit($trackId) || (int)$trackId < 1
+                || !preg_match('/^[a-f0-9]{64}$/D', $sourceSha)
+                || trim((string)$set['hearthis_title']) === ''
+                || deseo_hearthis_podcast_canonical_track($url) === ''
+                || deseo_hearthis_podcast_canonical_track($url) !== $url) {
+                throw new RuntimeException('Accepted remote metadata / source fingerprint is incomplete; file retained.');
             }
-            $host = strtolower((string)parse_url($url, PHP_URL_HOST));
-            if (!filter_var($url, FILTER_VALIDATE_URL)
-                || parse_url($url, PHP_URL_SCHEME) !== 'https'
-                || !in_array($host, ['hearthis.at', 'www.hearthis.at'], true)) {
-                throw new RuntimeException('No confirmed HearThis public URL; audio retained.');
+            $file = deseo_mylive_set_storage_file((string)$set['file_path']);
+            if ($file['storage_root'] === ''
+                || !str_starts_with((string)$file['candidate'], dirname(__DIR__) . '/mylive/storage/')) {
+                throw new RuntimeException('Invalid MyLive storage path; file retained.');
             }
+            if ($file['exists']) {
+                if ($file['real_file'] === '' || !str_starts_with(
+                    (string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR
+                ) || is_link((string)$file['candidate'])
+                    || !hash_equals($sourceSha, (string)hash_file('sha256', (string)$file['real_file']))) {
+                    throw new RuntimeException('Stored MP3 SHA-256/path changed since accepted upload; file retained.');
+                }
+            }
+            // All checks above are based on the accepted upload, not on a
+            // future RSS update. An already absent pinned file is recorded as
+            // missing, never relinked or replaced with an unrelated file.
             $result = deseo_mylive_delete_set_file_now($id, (string)$set['file_path']);
-            $pdo->prepare(
+            $update = $pdo->prepare(
                 "UPDATE dj_portal_sets SET delete_after = NULL, file_deleted_at = ?
                  WHERE id = ? AND status = 'broadcasted'
-                   AND hearthis_status = 'synced'
-                   AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
-                   AND hearthis_podcast_status = 'confirmed'
-                   AND hearthis_podcast_verified_at IS NOT NULL
-                   AND hearthis_title IS NOT NULL AND hearthis_synced_at IS NOT NULL
+                   AND hearthis_status IN ('verifying', 'synced')
+                   AND hearthis_upload_accepted_at IS NOT NULL
+                   AND hearthis_source_sha256 = ? AND hearthis_track_id = ?
                    AND hearthis_url = ? AND file_deleted_at IS NULL"
-            )->execute([$nowSql, $id, $url]);
+            );
+            $update->execute([$nowSql, $id, $sourceSha, $trackId, $url]);
             if ($result === 'deleted') $deleted++;
             else $missing++;
         } catch (Throwable $error) {
-            error_log('MyLive synced-file retention failed for set ' . $id . ': ' . $error->getMessage());
+            error_log('MyLive accepted-upload local cleanup held for episode ' . $id . ': ' . $error->getMessage());
             $failed++;
         }
     }
