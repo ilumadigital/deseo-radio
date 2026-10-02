@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../iluma/connection.php';
+require_once __DIR__ . '/hearthis-podcast.php';
 require_once __DIR__ . '/dj-season.php';
 
 const DESEO_MYLive_MAX_BYTES = 1073741824; // 1 GB
@@ -158,6 +159,9 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_cover_source_path VARCHAR(500) NULL,
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
+        hearthis_title VARCHAR(255) NULL,
+        hearthis_podcast_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+        hearthis_podcast_verified_at DATETIME NULL,
         hearthis_set_id VARCHAR(120) NULL,
         hearthis_set_status VARCHAR(24) NOT NULL DEFAULT 'pending',
         hearthis_set_started_at DATETIME NULL,
@@ -183,7 +187,10 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_cover_source_path' => "VARCHAR(500) NULL AFTER hearthis_cover_asset_id",
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
         'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
-        'hearthis_set_id' => "VARCHAR(120) NULL AFTER hearthis_meta_warning",
+        'hearthis_title' => "VARCHAR(255) NULL AFTER hearthis_meta_warning",
+        'hearthis_podcast_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_title",
+        'hearthis_podcast_verified_at' => "DATETIME NULL AFTER hearthis_podcast_status",
+        'hearthis_set_id' => "VARCHAR(120) NULL AFTER hearthis_podcast_verified_at",
         'hearthis_set_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_set_id",
         'hearthis_set_started_at' => "DATETIME NULL AFTER hearthis_set_status",
         'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_set_started_at",
@@ -459,7 +466,9 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning, hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
+                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
+                hearthis_title, hearthis_podcast_status, hearthis_podcast_verified_at,
+                hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
          ORDER BY episode_no DESC"
@@ -661,19 +670,31 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
 function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
     $nowSql = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
     $stmt = $pdo->query(
-        "SELECT id, file_path, hearthis_url
+        "SELECT id, file_path, hearthis_url, hearthis_track_id, hearthis_title
          FROM dj_portal_sets
          WHERE status = 'broadcasted' AND hearthis_status = 'synced'
            AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
+           AND hearthis_podcast_status = 'confirmed'
+           AND hearthis_podcast_verified_at IS NOT NULL
+           AND hearthis_title IS NOT NULL
            AND hearthis_synced_at IS NOT NULL AND file_deleted_at IS NULL
          ORDER BY id ASC"
     );
     $sets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $deleted = 0; $missing = 0; $failed = 0;
+    // Page-load and legacy cleanup hooks must independently recheck the
+    // authoritative podcast RSS before ANY destructive file operation.
+    $rssXml = $sets ? deseo_hearthis_podcast_fetch_xml() : null;
     foreach ($sets as $set) {
         $id = (int)$set['id'];
         try {
             $url = (string)$set['hearthis_url'];
+            $trackId = (string)$set['hearthis_track_id'];
+            $title = (string)$set['hearthis_title'];
+            if ($rssXml === null
+                || !deseo_hearthis_podcast_xml_has_track($rssXml, $trackId, $url, $title)) {
+                throw new RuntimeException('The exact track is not confirmed with audio enclosure in the current podcast RSS; file retained.');
+            }
             $host = strtolower((string)parse_url($url, PHP_URL_HOST));
             if (!filter_var($url, FILTER_VALIDATE_URL)
                 || parse_url($url, PHP_URL_SCHEME) !== 'https'
@@ -686,7 +707,9 @@ function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
                  WHERE id = ? AND status = 'broadcasted'
                    AND hearthis_status = 'synced'
                    AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
-                   AND hearthis_synced_at IS NOT NULL
+                   AND hearthis_podcast_status = 'confirmed'
+                   AND hearthis_podcast_verified_at IS NOT NULL
+                   AND hearthis_title IS NOT NULL AND hearthis_synced_at IS NOT NULL
                    AND hearthis_url = ? AND file_deleted_at IS NULL"
             )->execute([$nowSql, $id, $url]);
             if ($result === 'deleted') $deleted++;
