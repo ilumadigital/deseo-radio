@@ -1044,7 +1044,7 @@ foreach ($accounts as $account) {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                hearthis_status, hearthis_url, hearthis_error, uploaded_at
+                hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
     );
     $stmt->execute([$accountId]);
@@ -1056,7 +1056,7 @@ foreach ($accounts as $account) {
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
             s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
-            s.hearthis_url, s.hearthis_error, s.uploaded_at, a.artist_name
+            s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning, s.uploaded_at, a.artist_name
      FROM dj_portal_sets s
      INNER JOIN dj_portal_accounts a ON a.id = s.account_id
      ORDER BY s.uploaded_at DESC, s.id DESC"
@@ -1538,6 +1538,7 @@ admin_page_start('MyLive', 'mylive');
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
                                                 <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                                                 <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
+                                                <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">HearThis optional metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
                                                 <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
                                                     <em>Episode retained · audio file deleted from server</em>
@@ -1589,7 +1590,7 @@ admin_page_start('MyLive', 'mylive');
                                         <div>
                                             <strong>HEARTHIS ARTWORK · DEFAULT FALLBACK</strong>
                                             <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($hearthisCoverErrorByAccount[$accountId] ?? 'Square DJ image 02 is unavailable.')) ?></small>
-                                            <small style="display:block;">DJ Set upload will continue without custom artwork; HearThis will use its default image. Assign the correct DJ artwork 02 below only if you want to override it.</small>
+                                            <small style="display:block;">DJ Set upload continues without custom artwork. HearThis may use embedded MP3 ID3 artwork or its account/platform default. You can optionally assign square artwork 02 below.</small>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -1609,7 +1610,7 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
                                     <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
                                     <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
-                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, το DJ Set συνεχίζει χωρίς custom artwork και το HearThis εφαρμόζει την προεπιλεγμένη εικόνα του. Μπορείς προαιρετικά να επιλέξεις χειροκίνητα το square artwork 02 εδώ.</small>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, το DJ Set συνεχίζει χωρίς custom artwork (το HearThis μπορεί να χρησιμοποιήσει ID3 embedded artwork ή προεπιλεγμένη εικόνα). Μπορείς προαιρετικά να επιλέξεις χειροκίνητα το square artwork 02 εδώ.</small>
                                     <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
@@ -1707,6 +1708,7 @@ admin_page_start('MyLive', 'mylive');
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
                             <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
+                            <?php if (!empty($set['hearthis_meta_warning'])): ?><small title="<?= admin_e((string)$set['hearthis_meta_warning']) ?>">Metadata warning: <?= admin_e((string)$set['hearthis_meta_warning']) ?></small><?php endif; ?>
                             <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
                         </div>
                         <div class="mylive-library-status">
