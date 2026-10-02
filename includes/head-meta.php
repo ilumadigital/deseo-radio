@@ -84,6 +84,7 @@ $schema = [
                 'https://www.instagram.com/deseoradio/',
                 'https://www.facebook.com/deseoradiogr/',
                 'https://www.mixcloud.com/deseoradio/',
+                'https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue?si=_3btuPp0Qy-nHs950YFIpg',
                 'https://soundcloud.com/deseo-radio',
                 'https://play.iradios.gr/station/deseo-radio',
             ],
