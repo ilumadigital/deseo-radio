@@ -501,38 +501,54 @@ function deseo_mylive_delete_set_file_now(int $setId, string $filePath): string 
  * in progress is NOT eligible for a newly scheduled upload.
  */
 function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable $now): ?string {
+    // Season 6 DJ slots live on the MyLive account itself. The generic music-zone
+    // program table is not populated with mylive_account_id in production.
     $stmt = $pdo->prepare(
-        "SELECT day_of_week, start_time, end_time FROM program
-         WHERE mylive_account_id = ? ORDER BY day_of_week, start_time"
+        "SELECT a.day_of_week, a.start_time, a.end_time,
+                b.status AS application_status
+         FROM dj_portal_accounts a
+         LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+         WHERE a.id = ? LIMIT 1"
     );
     $stmt->execute([$accountId]);
-    $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $slot = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$slot || strtolower((string)($slot['application_status'] ?? '')) === 'guest') {
+        // Guest DJs need an explicit date/time rather than a recurring slot.
+        return null;
+    }
+
+    $startTime = substr((string)($slot['start_time'] ?? ''), 0, 8);
+    $endTime = substr((string)($slot['end_time'] ?? ''), 0, 8);
+    if ($startTime === '') return null;
+    if ($endTime === '') $endTime = '';
+    // Existing strict slots sometimes end at HH:59:59. Their intended full-hour
+    // end is HH+1:00, including the day rollover for 23:00 slots.
+    if ($endTime !== '') {
+        $base = DateTimeImmutable::createFromFormat('!H:i:s', $startTime);
+        $endBase = DateTimeImmutable::createFromFormat('!H:i:s', $endTime);
+        if ($base && $endBase && $endBase->format('H:i:s') === $base->modify('+1 hour -1 second')->format('H:i:s')) {
+            $endTime = $base->modify('+1 hour')->format('H:i:s');
+        }
+    }
     $occupied = $pdo->prepare(
         "SELECT COUNT(*) FROM dj_portal_sets
          WHERE account_id = ? AND status = 'scheduled' AND scheduled_show_end = ?"
     );
-    // Each already scheduled episode reserves a distinct upcoming slot.
     for ($attempt = 0; $attempt < 52; $attempt++) {
-        $earliest = null;
-        foreach ($slots as $slot) {
-            $occurrence = dj_season_weekly_occurrence(
-                (int)$slot['day_of_week'], (string)$slot['start_time'],
-                (string)$slot['end_time'], $now
-            );
-            if (!$occurrence) continue;
-            [$start, $end] = $occurrence;
-            if ($start <= $now) {
-                $start = $start->modify('+7 days');
-                $end = $end->modify('+7 days');
-            }
-            if ($start > dj_season_end_at()) continue;
-            if ($earliest === null || $end < $earliest) $earliest = $end;
+        $occurrence = dj_season_weekly_occurrence(
+            (int)($slot['day_of_week'] ?? 0), $startTime, $endTime, $now
+        );
+        if (!$occurrence) return null;
+        [$start, $end] = $occurrence;
+        if ($start <= $now) {
+            $start = $start->modify('+7 days');
+            $end = $end->modify('+7 days');
         }
-        if ($earliest === null) return null;
-        $endSql = $earliest->format('Y-m-d H:i:s');
+        if ($start > dj_season_end_at()) return null;
+        $endSql = $end->format('Y-m-d H:i:s');
         $occupied->execute([$accountId, $endSql]);
         if ((int)$occupied->fetchColumn() === 0) return $endSql;
-        $now = $earliest->modify('+1 second');
+        $now = $end->modify('+1 second');
     }
     return null;
 }
@@ -676,6 +692,7 @@ function deseo_mylive_assets(PDO $pdo, int $accountId): array {
          WHERE account_id = ?
          ORDER BY
             CASE asset_type
+                WHEN 'hearthis_cover' THEN 0
                 WHEN 'artwork' THEN 1
                 WHEN 'dj_spot' THEN 2
                 WHEN 'dj_spot_30' THEN 3
@@ -689,6 +706,7 @@ function deseo_mylive_assets(PDO $pdo, int $accountId): array {
 
 function deseo_mylive_asset_label(string $type): string {
     return match ($type) {
+        'hearthis_cover' => 'HearThis Square Cover · 02',
         'artwork' => 'Promotional Artwork',
         'dj_spot' => 'Personal DJ Imaging',
         'dj_spot_30' => "30' Imaging",
