@@ -243,6 +243,7 @@ $partners = [
     6 => ['url' => 'https://vradio.app/play?id=20739', 'name' => 'VRadio'],
     8 => ['url' => 'https://iluma.gr/radios', 'name' => 'ILUMA Radios'],
     9 => ['url' => 'https://streamee.com/fm_radio/deseo-radio/', 'name' => 'Streamee', 'image' => 'partner-9.svg'],
+    10 => ['url' => 'https://mytuner-radio.com/radio/deseo-radio-479969/', 'name' => 'myTuner Radio', 'image' => 'partner-10.png'],
 ];
 ?>
 
