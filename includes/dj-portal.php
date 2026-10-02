@@ -546,15 +546,8 @@ function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable 
     $endTime = substr((string)($slot['end_time'] ?? ''), 0, 8);
     if ($startTime === '') return null;
     if ($endTime === '') $endTime = '';
-    // Existing strict slots sometimes end at HH:59:59. Their intended full-hour
-    // end is HH+1:00, including the day rollover for 23:00 slots.
-    if ($endTime !== '') {
-        $base = DateTimeImmutable::createFromFormat('!H:i:s', $startTime);
-        $endBase = DateTimeImmutable::createFromFormat('!H:i:s', $endTime);
-        if ($base && $endBase && $endBase->format('H:i:s') === $base->modify('+1 hour -1 second')->format('H:i:s')) {
-            $endTime = $base->modify('+1 hour')->format('H:i:s');
-        }
-    }
+    // Interpret HH:59:59 legacy strict slots as the real full-hour boundary.
+    if ($endTime !== '') $endTime = dj_season_normalized_resident_end_time($startTime, $endTime);
     $occupied = $pdo->prepare(
         "SELECT COUNT(*) FROM dj_portal_sets
          WHERE account_id = ? AND status = 'scheduled' AND scheduled_show_end = ?"
