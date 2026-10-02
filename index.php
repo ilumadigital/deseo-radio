@@ -535,7 +535,16 @@ $partners = [
                 <h2 class="metal-title section-title" data-i18n="about.title"><?= deseo_e(deseo_t('about.title')) ?></h2>
             </div>
             <div class="about-copy reveal">
-                <p data-i18n="about.text"><?= deseo_e(deseo_t('about.text')) ?></p>
+                <p data-i18n="about.intro"><?= deseo_e(deseo_t('about.intro')) ?></p>
+                <p class="about-created"><span data-i18n="about.created.before"><?= deseo_e(deseo_t('about.created.before')) ?></span><strong>Deseo Radio</strong><span data-i18n="about.created.after"><?= deseo_e(deseo_t('about.created.after')) ?></span></p>
+                <p data-i18n="about.music"><?= deseo_e(deseo_t('about.music')) ?></p>
+                <p data-i18n="about.rhythm"><?= deseo_e(deseo_t('about.rhythm')) ?></p>
+                <p data-i18n="about.moments"><?= deseo_e(deseo_t('about.moments')) ?></p>
+                <div class="about-signoff">
+                    <strong data-i18n="about.promise"><?= deseo_e(deseo_t('about.promise')) ?></strong>
+                    <strong data-i18n="about.tagline"><?= deseo_e(deseo_t('about.tagline')) ?></strong>
+                    <em>An ILUMA Radios Experience.</em>
+                </div>
                 <a href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-i18n="about.iluma" data-analytics-event="iluma_network_click"><?= deseo_e(deseo_t('about.iluma')) ?></a>
             </div>
         </div>
