@@ -974,7 +974,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 if ($status === 'broadcasted' && empty($updatedSet['file_deleted_at'])) {
-                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το MP3 παραμένει στον server μέχρι να επιβεβαιωθεί το HearThis URL και να αποθηκευτεί στο PMS.';
+                    $notice = 'Το DJ Set σημειώθηκε ως BROADCASTED. Το MP3 διατηρείται έως ότου το HearThis αποδεχθεί επιτυχώς το upload και καταχωριστεί το Track ID.';
                 } elseif (!empty($updatedSet['file_deleted_at'])) {
                     $notice = 'Το status ενημερώθηκε. Το audio file έχει ήδη αφαιρεθεί από τον server και το episode παραμένει στο ιστορικό.';
                 } else {
@@ -986,6 +986,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e instanceof RuntimeException ? $e->getMessage() : 'Η ενέργεια δεν ολοκληρώθηκε.';
         }
     }
+}
+
+// Populate dates on legacy SCHEDULED Resident episodes even while the
+// HearThis upload worker stays disabled. Only NULL scheduled_show_end is
+// updated; no status change, media operation, cron or network upload occurs.
+try {
+    $showEndsBackfill = deseo_mylive_backfill_scheduled_show_ends($pdo);
+    if ($notice === null && (int)$showEndsBackfill['assigned'] > 0) {
+        $notice = 'Συμπληρώθηκε αυτόματα η λήξη μετάδοσης για '
+            . (int)$showEndsBackfill['assigned'] . ' προγραμματισμένα Resident DJ Sets.';
+    }
+} catch (Throwable $showEndsError) {
+    error_log('MyLive scheduled Resident Show Ends backfill failed: ' . $showEndsError->getMessage());
 }
 
 $accountsStmt = $pdo->query(
@@ -1060,9 +1073,11 @@ $receivedSetsStmt = $pdo->query(
             s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
             s.hearthis_set_status, s.hearthis_set_id, s.hearthis_podcast_status,
-            s.hearthis_podcast_verified_at, s.uploaded_at, a.artist_name
+            s.hearthis_podcast_verified_at, s.uploaded_at, a.artist_name,
+            b.status AS application_status
      FROM dj_portal_sets s
      INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+     LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
      ORDER BY s.uploaded_at DESC, s.id DESC"
 );
 $receivedSets = $receivedSetsStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1531,7 +1546,7 @@ admin_page_start('MyLive', 'mylive');
                                     <?php foreach ($setsByAccount[$accountId] as $set): ?>
                                         <form method="post"
                                               class="mylive-set-admin-row"
-                                              data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει στον server έως ότου επιβεβαιωθεί το HearThis URL." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
+                                              data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 διαγράφεται μόνο μετά από επιβεβαιωμένη αποδοχή upload στο HearThis." data-deseo-confirm-title="BROADCASTED · HearThis Sync" data-deseo-confirm-label="BROADCASTED" data-deseo-confirm-if-status="broadcasted"
                                               <?= !empty($set['file_deleted_at']) ? 'data-file-removed="1"' : '' ?>>
                                             <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                             <input type="hidden" name="action" value="update_set">
@@ -1557,7 +1572,13 @@ admin_page_start('MyLive', 'mylive');
                                             </select>
                                             <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
                                             <label>SHOW ENDS · ATHENS
-                                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                                                <?php if (deseo_mylive_is_guest_account($account)): ?>
+                                                    <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Guest DJ show end date and time in Athens">
+                                                    <small>GUEST · Χειροκίνητη ημερομηνία</small>
+                                                <?php else: ?>
+                                                    <strong><?= !empty($set['scheduled_show_end']) ? admin_e((new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone()))->format('d.m.Y · H:i')) : 'AUTO · Με τον προγραμματισμό' ?></strong>
+                                                    <small>RESIDENT · Αυτόματα από το εβδομαδιαίο slot</small>
+                                                <?php endif; ?>
                                             </label>
 
                                             <?php if (!empty($set['file_deleted_at'])): ?>
@@ -1698,7 +1719,7 @@ admin_page_start('MyLive', 'mylive');
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
                           data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
-                          data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 παραμένει μέχρι να αποθηκευτεί επιβεβαιωμένο HearThis URL."
+                          data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 διαγράφεται μόνο μετά από επιβεβαιωμένη αποδοχή upload στο HearThis."
                           data-deseo-confirm-title="BROADCASTED · HearThis Sync"
                           data-deseo-confirm-label="BROADCASTED"
                           data-deseo-confirm-if-status="broadcasted"
@@ -1727,7 +1748,13 @@ admin_page_start('MyLive', 'mylive');
                                 <?php endforeach; ?>
                             </select>
                             <label>SHOW ENDS · ATHENS
-                                <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Show end date and time in Athens">
+                                <?php if (strtolower((string)($set['application_status'] ?? '')) === 'guest'): ?>
+                                    <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Guest DJ show end date and time in Athens">
+                                    <small>GUEST · Χειροκίνητη ημερομηνία</small>
+                                <?php else: ?>
+                                    <strong><?= !empty($set['scheduled_show_end']) ? admin_e((new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone()))->format('d.m.Y · H:i')) : 'AUTO · Με τον προγραμματισμό' ?></strong>
+                                    <small>RESIDENT · Αυτόματα από το εβδομαδιαίο slot</small>
+                                <?php endif; ?>
                             </label>
                         </div>
                         <div class="mylive-library-action">

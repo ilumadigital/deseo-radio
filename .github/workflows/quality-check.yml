@@ -30,6 +30,12 @@ jobs:
           set -euo pipefail
           php tests/hearthis-podcast.php
 
+      - name: Season 6 Resident Show Ends fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tests/mylive-show-ends.php
+
       - name: JavaScript syntax
         run: node --check sw.js
 
