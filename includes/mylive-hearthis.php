@@ -463,7 +463,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     deseo_mylive_bootstrap($pdo);
     $summary = [
         'advanced' => 0, 'uploaded' => 0, 'synced' => 0,
-        'verifying' => 0, 'review_required' => 0, 'default_artwork' => 0,
+        'verifying' => 0, 'podcast_pending' => 0, 'review_required' => 0, 'default_artwork' => 0,
         'disabled' => false, 'retention' => [],
     ];
     $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_hearthis_worker', 0)");
@@ -565,6 +565,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             if ($claim->rowCount() !== 1) continue;
             $attempted++;
             try {
+                $metadata = deseo_hearthis_metadata($set);
                 $track = deseo_hearthis_upload_track($set, $config, $cover);
                 if ($track['url'] === '') {
                     // The API confirms an ID but not a usable permalink. Never
@@ -581,13 +582,15 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                     "UPDATE dj_portal_sets SET hearthis_status = 'verifying',
                          hearthis_url = ?, hearthis_track_id = ?,
                          hearthis_error = '', hearthis_meta_warning = ?,
+                         hearthis_title = ?, hearthis_podcast_status = 'pending',
+                         hearthis_podcast_verified_at = NULL,
                          hearthis_set_id = ?, hearthis_set_status = 'pending',
                          hearthis_set_started_at = NULL
                      WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'uploading'
                        AND file_deleted_at IS NULL"
                 );
                 $save->execute([$track['url'], $track['id'],
-                    (string)$track['warning'], $season6SetId, $id]);
+                    (string)$track['warning'], (string)$metadata['title'], $season6SetId, $id]);
                 if ($save->rowCount() !== 1) {
                     throw new RuntimeException('Database state changed after remote upload; manual verification required.');
                 }
@@ -610,7 +613,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
         // set are required before marking any row as synced/deletion-eligible.
         $verify = $pdo->prepare(
             "SELECT id, hearthis_url, hearthis_track_id, hearthis_set_id,
-                    hearthis_set_status, hearthis_set_started_at
+                    hearthis_set_status, hearthis_set_started_at, hearthis_title
              FROM dj_portal_sets WHERE status = 'broadcasted'
                AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
                AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
@@ -666,19 +669,33 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                         continue;
                     }
                 }
-                $pdo->prepare(
+                // HearThis's "Show Mix inside Podcast / RSS feed" control is
+                // NOT a documented upload/edit API parameter. The actual RSS
+                // item and its audio enclosure are the authoritative proof;
+                // absence must retain the MP3 rather than assume upload = RSS.
+                $publishedTitle = trim((string)($track['hearthis_title'] ?? ''));
+                if ($publishedTitle === '' || !deseo_hearthis_podcast_contains_track(
+                    $remoteId, (string)$track['hearthis_url'], $publishedTitle
+                )) {
+                    $summary['podcast_pending']++;
+                    $summary['verifying']++;
+                    continue;
+                }
+                $syncedAt = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
+                $mark = $pdo->prepare(
                     "UPDATE dj_portal_sets SET hearthis_status = 'synced',
                          hearthis_set_status = 'confirmed',
+                         hearthis_podcast_status = 'confirmed',
+                         hearthis_podcast_verified_at = ?,
                          hearthis_synced_at = ?, hearthis_error = ''
                      WHERE id = ? AND status = 'broadcasted'
                        AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
                        AND hearthis_url = ? AND hearthis_track_id = ?
-                       AND hearthis_set_id = ?"
-                )->execute([
-                    (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s'),
-                    $id, $track['hearthis_url'], $remoteId, $assignedSetId
-                ]);
-                $summary['synced']++;
+                       AND hearthis_set_id = ? AND hearthis_title = ?"
+                );
+                $mark->execute([$syncedAt, $syncedAt, $id,
+                    $track['hearthis_url'], $remoteId, $assignedSetId, $publishedTitle]);
+                if ($mark->rowCount() === 1) $summary['synced']++;
             } catch (Throwable $verifyError) {
                 // Never turn uncertain playlist/audio verification into upload retry.
                 $summary['verifying']++;
