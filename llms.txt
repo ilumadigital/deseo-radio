@@ -109,7 +109,7 @@ The official website embeds an iRadios player. Live audio requires an internet c
 ### DJ sets, episodes and platform profiles
 - Mixcloud: https://www.mixcloud.com/deseoradio/
 - hearthis.at Season 6: https://hearthis.at/deseoradio/set/season-6/
-- Apple Podcasts (Deseo Casts): https://podcasts.apple.com/us/podcast/deseo-casts/id1711008342
+- Apple Podcasts (Deseo RadioShows): https://podcasts.apple.com/us/podcast/deseo-radioshows/id1711008342
 - Deezer: https://www.deezer.com/en/show/1000338791
 - SoundCloud: https://soundcloud.com/deseo-radio
 
