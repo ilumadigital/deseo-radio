@@ -42,8 +42,13 @@ function deseo_hearthis_s6_read(string $url): ?array {
     return is_array($decoded) ? $decoded : null;
 }
 
-/** The logged-in author is not inferred from search results or a similarly named collection. */
-function deseo_hearthis_s6_playlist_id(string $username = 'deseoradio'): ?string {
+/**
+ * The station account's public playlist listing is authoritative. HearThis's
+ * actual public payload uses a numeric composite slug such as "561432-10808078",
+ * not the human-facing "season-6" shorthand. Resolve the ONE titled "Season 6"
+ * collection, and validate its ID, permalink and canonical URL together.
+ */
+function deseo_hearthis_s6_playlist(string $username = 'deseoradio'): ?array {
     if ($username !== 'deseoradio') return null;
     $body = deseo_hearthis_s6_read('https://api-v2.hearthis.at/deseoradio/?type=playlists&count=100');
     if ($body === null) return null;
@@ -57,36 +62,47 @@ function deseo_hearthis_s6_playlist_id(string $username = 'deseoradio'): ?string
         }
     }
     if ($collections === null) return null;
-    $matched = [];
+    $matches = [];
     foreach ($collections as $row) {
-        if (!is_array($row)) continue;
+        if (!is_array($row) || trim((string)($row['title'] ?? '')) !== 'Season 6') continue;
         $id = trim((string)($row['id'] ?? $row['set_id'] ?? ''));
-        if (!ctype_digit($id) || (int)$id < 1) continue;
+        $slug = trim((string)($row['permalink'] ?? ''));
+        $url = trim((string)($row['permalink_url'] ?? ''));
+        if (!ctype_digit($id) || (int)$id < 1
+            || preg_match('/^[1-9][0-9]*-[1-9][0-9]*$/D', $slug) !== 1
+            || !str_starts_with($slug, $id . '-')
+            || $url !== 'https://hearthis.at/set/' . $slug . '/') continue;
         $user = is_array($row['user'] ?? null) ? $row['user'] : [];
-        $author = strtolower((string)($user['permalink'] ?? $row['username'] ?? 'deseoradio'));
-        if ($author !== 'deseoradio') continue;
-        $url = (string)($row['permalink_url'] ?? $row['url'] ?? '');
-        $slug = strtolower((string)($row['permalink'] ?? $row['slug'] ?? ''));
-        $urlMatch = $url !== '' && rtrim($url, '/') === rtrim(DESEO_HEARTHIS_SEASON6_URL, '/');
-        $slugMatch = $slug === 'season-6';
-        if (!$urlMatch && !$slugMatch) continue;
-        $matched[$id] = true;
+        $author = strtolower(trim((string)($user['permalink'] ?? $user['username'] ?? '')));
+        if ($author !== '' && $author !== $username) continue;
+        $total = $row['track_count'] ?? null;
+        $count = is_int($total) || (is_string($total) && ctype_digit($total)) ? (int)$total : null;
+        $matches[$id] = [
+            'id' => $id, 'slug' => $slug, 'url' => $url, 'track_count' => $count,
+        ];
     }
-    return count($matched) === 1 ? (string)array_key_first($matched) : null;
+    return count($matches) === 1 ? reset($matches) : null;
+}
+
+/** Unique numeric ID for the exact existing Season 6 playlist. */
+function deseo_hearthis_s6_playlist_id(string $username = 'deseoradio'): ?string {
+    $playlist = deseo_hearthis_s6_playlist($username);
+    return $playlist === null ? null : $playlist['id'];
 }
 
 /**
- * GET /set/season-6/ returns collection metadata and its tracks according to
- * HearThis API docs. Only a proven ID hit inside a recognized track collection
- * may authorize retention; unknown response schemas fail CLOSED.
+ * Read the API's actual canonical numeric slug, and treat an empty root list
+ * as empty ONLY when the account playlist metadata also says track_count=0.
+ * A partial, paginated, or unrecognized response can never authorize upload
+ * duplication, positive membership or deletion.
  */
-function deseo_hearthis_s6_contains_track(string $trackId, string $setId): ?bool {
-    if (!ctype_digit($trackId) || !ctype_digit($setId)) return null;
-    $body = deseo_hearthis_s6_read('https://api-v2.hearthis.at/set/season-6/');
+function deseo_hearthis_s6_track_listing(string $setId): ?array {
+    if (!ctype_digit($setId) || (int)$setId < 1) return null;
+    $set = deseo_hearthis_s6_playlist('deseoradio');
+    if ($set === null || $set['id'] !== $setId) return null;
+    $body = deseo_hearthis_s6_read('https://api-v2.hearthis.at/set/' . $set['slug'] . '/');
     if ($body === null) return null;
-    if (isset($body['id']) && ctype_digit((string)$body['id']) && (string)$body['id'] !== $setId) {
-        return null;
-    }
+    if (isset($body['id']) && (string)$body['id'] !== $setId) return null;
     $entries = array_is_list($body) ? $body : null;
     if ($entries === null) {
         foreach (['tracks', 'items', 'entries', 'data'] as $key) {
@@ -97,8 +113,21 @@ function deseo_hearthis_s6_contains_track(string $trackId, string $setId): ?bool
         }
     }
     if ($entries === null) return null;
-    foreach ($entries as $row) {
-        if (!is_array($row)) continue;
+    $declaredCount = $set['track_count'];
+    // A zero-length result for a non-empty set might mean wrong endpoint,
+    // restricted visibility or failed pagination: never treat that as absence.
+    if ($declaredCount === null || count($entries) < $declaredCount) return null;
+    // A larger count than the authoritative playlist metadata is also suspect.
+    if (count($entries) !== $declaredCount) return null;
+    return ['playlist' => $set, 'tracks' => $entries];
+}
+
+function deseo_hearthis_s6_contains_track(string $trackId, string $setId): ?bool {
+    if (!ctype_digit($trackId) || (int)$trackId < 1) return null;
+    $listing = deseo_hearthis_s6_track_listing($setId);
+    if ($listing === null) return null;
+    foreach ($listing['tracks'] as $row) {
+        if (!is_array($row)) return null;
         $candidate = is_array($row['track'] ?? null) ? $row['track'] : $row;
         if (isset($candidate['id']) && (string)$candidate['id'] === $trackId) return true;
         if (isset($candidate['track_id']) && (string)$candidate['track_id'] === $trackId) return true;
