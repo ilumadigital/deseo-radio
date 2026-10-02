@@ -154,6 +154,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_status VARCHAR(24) NOT NULL DEFAULT 'pending',
         hearthis_url VARCHAR(500) NULL,
         hearthis_track_id VARCHAR(120) NULL,
+        hearthis_cover_asset_id BIGINT NULL,
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_attempts INT NOT NULL DEFAULT 0,
         hearthis_started_at DATETIME NULL,
@@ -173,7 +174,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER scheduled_show_end",
         'hearthis_url' => "VARCHAR(500) NULL AFTER hearthis_status",
         'hearthis_track_id' => "VARCHAR(120) NULL AFTER hearthis_url",
-        'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_track_id",
+        'hearthis_cover_asset_id' => "BIGINT NULL AFTER hearthis_track_id",
+        'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_asset_id",
         'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_error",
         'hearthis_started_at' => "DATETIME NULL AFTER hearthis_attempts",
         'hearthis_synced_at' => "DATETIME NULL AFTER hearthis_started_at"
