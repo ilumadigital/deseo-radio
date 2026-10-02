@@ -54,7 +54,7 @@ function deseo_t(string $key): string {
 
             'hero.kicker' => 'DESEO RADIO · HOUSE MUSIC · ATHENS',
             'hero.title' => 'Το Soundtrack της ζωής σου.',
-            'hero.text' => 'House, Afro House, Organic House και επιλεγμένη electronic μουσική σε συνεχή 24/7 ροή.',
+            'hero.text' => 'House, Afro House, Organic House, Indie Dance και επιλεγμένη Electronic Music σε μια προσεκτικά επιμελημένη μουσική ροή 24/7.',
             'hero.listen' => 'Άκου live',
             'hero.network' => 'ILUMA Radios',
             'hero.now_on_air' => 'NOW ON AIR',
@@ -145,7 +145,7 @@ function deseo_t(string $key): string {
 
             'advertise.kicker' => 'FOR BRANDS',
             'advertise.title' => 'Το brand σου. Στον σωστό ήχο.',
-            'advertise.text' => 'Radio advertising, sponsorships και branded audio με δημιουργική επιμέλεια από την ILUMA.',
+            'advertise.text' => 'Radio advertising, sponsored music zones, χορηγίες DJ shows και branded audio εμπειρίες, με τον σχεδιασμό κάθε συνεργασίας από την ILUMA.',
             'advertise.cta' => 'Επικοινωνία για διαφήμιση ↗',
 
             'footer.tagline' => 'Το Soundtrack της ζωής σου',
@@ -161,7 +161,7 @@ function deseo_t(string $key): string {
             'ai.kicker' => 'DISCOVER DESEO IN AI',
             'ai.title_start' => 'Ρωτήστε το AI',
             'ai.title_end' => 'για το Deseo Radio.',
-            'ai.text' => 'Ανακαλύψτε τη μουσική, τους DJs, το πρόγραμμα, τους τρόπους ακρόασης, την ακροαματικότητα και τις δυνατότητες συνεργασίας του Deseo Radio, με αναφορές στις επίσημες πηγές.',
+            'ai.text' => 'Ανακαλύψτε την ταυτότητα του Deseo, το Season 6, τους DJs, το Release Radar, το πρόγραμμα, τις πλατφόρμες ακρόασης και τις δυνατότητες συνεργασίας, μέσα από επίσημες πηγές.',
             'ai.sources' => 'ΕΠΙΣΗΜΕΣ ΠΗΓΕΣ',
             'ai.metrics' => 'Ακροαματικότητα ↗',
             'ai.open' => 'ΑΝΟΙΓΜΑ ΣΤΟ',
@@ -268,7 +268,7 @@ function deseo_t(string $key): string {
 
             'hero.kicker' => 'DESEO RADIO · HOUSE MUSIC · ATHENS',
             'hero.title' => 'The Soundtrack of your life.',
-            'hero.text' => 'House, Afro House, Organic House and selected electronic music in a continuous 24/7 flow.',
+            'hero.text' => 'House, Afro House, Organic House, Indie Dance and selected Electronic Music in a carefully curated 24/7 music flow.',
             'hero.listen' => 'Listen live',
             'hero.network' => 'ILUMA Radios',
             'hero.now_on_air' => 'NOW ON AIR',
@@ -349,7 +349,7 @@ function deseo_t(string $key): string {
 
             'advertise.kicker' => 'FOR BRANDS',
             'advertise.title' => 'Your brand. In the right sound.',
-            'advertise.text' => 'Radio advertising, sponsorships and branded audio with creative direction by ILUMA.',
+            'advertise.text' => 'Radio advertising, sponsored music zones, DJ show sponsorships and branded audio experiences, planned with ILUMA.',
             'advertise.cta' => 'Advertising enquiries ↗',
 
             'footer.tagline' => 'The Soundtrack of your life',
@@ -365,7 +365,7 @@ function deseo_t(string $key): string {
             'ai.kicker' => 'DISCOVER DESEO IN AI',
             'ai.title_start' => 'Ask AI',
             'ai.title_end' => 'about Deseo Radio.',
-            'ai.text' => 'Explore the music, DJs, schedule, ways to listen, audience metrics and partnership opportunities of Deseo Radio, with references to official sources.',
+            'ai.text' => 'Explore the Deseo sound, Season 6, DJs, Release Radar, programming, listening platforms and brand partnerships through official sources.',
             'ai.sources' => 'OFFICIAL SOURCES',
             'ai.metrics' => 'Audience metrics ↗',
             'ai.open' => 'OPEN IN',
