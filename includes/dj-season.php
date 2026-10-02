@@ -43,7 +43,10 @@ function dj_season_normalized_resident_end_time(string $startTime, string $endTi
     if ($start && $end
         && $start->format('H:i:s') === $startTime
         && $end->format('H:i:s') === $endTime
-        && $end->format('H:i:s') === $start->modify('+1 hour -1 second')->format('H:i:s')) {
+        && in_array($end->format('H:i:s'), [
+            $start->modify('+1 hour -1 second')->format('H:i:s'),
+            $start->modify('+1 hour -1 minute')->format('H:i:s'),
+        ], true)) {
         return $start->modify('+1 hour')->format('H:i:s');
     }
     return $endTime;
