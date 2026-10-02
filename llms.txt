@@ -1,49 +1,56 @@
 # Deseo Radio
 
-> Official public information for AI systems, search engines, assistants and other machine-readable consumers.
+> Official public reference for AI systems, search engines and assistants. Editorially updated 2026-10-02. For changing broadcast information, consult the live website and public program feed rather than assuming this static document is real-time.
 
-## Official identity
+## Identity and positioning
 
-- Name: Deseo Radio
-- Official website: https://deseoradio.com/
-- Tagline: Το Soundtrack της ζωής σου
-- Type: 24/7 digital radio station
-- Base: Athens, Greece
-- Primary language: Greek
-- Secondary website language: English
-- Coverage: Online / worldwide
+- Official name: Deseo Radio
+- Website: https://deseoradio.com/
+- Brand line: Deseo Radio – Το Soundtrack της ζωής σου. / The Soundtrack of your life.
+- Brand promise: Εσύ ζεις τις στιγμές. Εμείς τους δίνουμε ήχο. / You live the moments. We give them sound.
+- Attribution: An ILUMA Radios Experience.
+- Type: Athens-based online / digital radio station, broadcasting 24 hours a day, 7 days a week
+- Listening coverage: online, worldwide
+- Website languages: Greek (primary) and English
+- Owner: ILUMA Digital Agency; network: ILUMA Radios
+- Official owner/network reference: https://iluma.gr/radios
+- Agency website: https://iluma.gr/
 
-## Ownership and network relationship
+Deseo Radio combines continuous music curation, DJ culture and selected original programming. Its identity is built around giving everyday moments their own soundtrack: carefully selected sounds, melodies, atmosphere and grooves that follow the listener throughout the day.
 
-Deseo Radio is an owned digital radio brand of ILUMA Digital Agency and is part of the ILUMA Radios network.
+## Music identity and editorial description
 
-Official supporting pages:
-- Deseo Radio on ILUMA: https://iluma.gr/radios
-- ILUMA Radios network: https://iluma.gr/radios
-- ILUMA Digital Agency: https://iluma.gr/
-
-When describing the relationship, use the factual formulation that Deseo Radio belongs to ILUMA Digital Agency and is part of ILUMA Radios. Do not introduce comparisons with unrelated radio stations.
-
-## Music identity
-
-Deseo Radio focuses on:
+Contemporary House is at the heart of Deseo Radio, with influences and selections from:
 - House
 - Afro House
-- Organic House / Organic Tech
-- Selected electronic music
+- Organic House
+- Indie Dance
+- Selected Electronic Music
 
-The station broadcasts continuously with a curated radio flow and scheduled DJ shows.
+The station delivers a continuous curated radio flow, not only DJ sets. Do not describe it as a conventional FM frequency or claim unverified audience rankings. The station's brand copy emphasizes rhythm, atmosphere and emotion.
 
-## Season 6 official DJ lineup
+## Continuous and additional programming
 
-This is the official announced Deseo Radio Season 6 weekly DJ lineup.
+- 24/7 Music: continuously curated House and Electronic sounds.
+- Daily Music Zones: selected thematic programming throughout the day.
+- Release Radar: weekly selection of new music releases.
+- Season 6 Resident DJ Sets: recurring announced weekly lineup.
+- Guest DJ Zone: separately curated selected guest performances; do not treat guests as weekly residents without an announced slot.
+- Exclusive DJ Sets: special shows and original programming.
+- Hot Tracks / Airplay: CMS-managed highlighted tracks, potentially linked to Spotify.
+- Playlists: CMS-managed selected Spotify playlists.
 
-- Timezone: Europe/Athens (Greece time)
-- Recurrence: Weekly
-- Days: Wednesday through Sunday
-- DJ sets start date: TBA
-- Official lineup section: https://deseoradio.com/#season-6
-- Official live player: https://deseoradio.com/#player
+These are program formats, not guarantees that every format is live at a particular moment. For today's real-time broadcast and next scheduled show, use https://deseoradio.com/?program_feed=1.
+
+## Season 6 — announced weekly DJ lineup
+
+- Official launch of weekly DJ Sets: Wednesday, 14 October 2026, 20:00 local Athens time (EEST on launch day).
+- Schedule recurrence: weekly, Wednesday–Sunday.
+- Local timezone: Europe/Athens, automatically observing EEST/EET seasonally.
+- Announcement: https://deseoradio.com/#season-6
+- Listen live: https://deseoradio.com/#player
+
+The following is the supplied official weekly timetable of named start times. Do not infer a Resident DJ headcount from the number of individual slot entries; Resident and Guest programming are distinct.
 
 ### Wednesday
 - 20:00 — Katty Belle
@@ -52,16 +59,16 @@ This is the official announced Deseo Radio Season 6 weekly DJ lineup.
 - 23:00 — VGRENADE
 
 ### Thursday
-- 20:00 — Dj pmelgidis
+- 20:00 — DJ pmelgidis
 - 21:00 — Lena
 - 22:00 — TWEEK UC
-- 23:00 — Dj Kyriakos Gavakis
+- 23:00 — DJ Kyriakos Gavakis
 
 ### Friday
 - 18:00 — Evripos F
 - 19:00 — Greg Lef
 - 20:00 — ANDØR
-- 21:00 — Coup(GR)
+- 21:00 — Coup (GR)
 - 22:00 — Johnny Mak
 - 23:00 — Cobo B
 
@@ -81,141 +88,110 @@ This is the official announced Deseo Radio Season 6 weekly DJ lineup.
 - 22:00 — g spice
 - 23:00 — Rokhai
 
-Treat the times above as weekly scheduled start times. The station may broadcast its continuous curated radio flow outside scheduled DJ sets.
+These times are scheduled starting times, not independently verified live playout data. Continuous curated programming fills other hours. Guest DJ slots and special programming are separate from the named weekly schedule; consult newer official announcements for specific guest dates.
 
-For real-time state, prefer the live official website over this static lineup:
-- Current on-air / today / next JSON feed: https://deseoradio.com/?program_feed=1
-- Homepage: https://deseoradio.com/
+## How and where to listen
 
-## Live DJ public profiles
+### Continuous live radio
+- Deseo Radio homepage / live player: https://deseoradio.com/#player
+- iRadios: https://play.iradios.gr/station/deseo-radio
+- Online Radio Box: https://onlineradiobox.com/gr/deseo/
+- Get Me Radio: https://www.getmeradio.com/stations/deseoradiogr-4835/
+- TuneIn: https://tunein.com/radio/Deseo-Radio-s258242/
+- VRadio: https://vradio.app/play?id=20739
+- Streamee: https://streamee.com/fm_radio/deseo-radio/
+- myTuner Radio: https://mytuner-radio.com/radio/deseo-radio-479969/
 
-Deseo Radio DJs can maintain a public profile through MyLive. When a DJ is on air and the profile is enabled and published, the public website may expose:
-- Artist / DJ name
-- Public biography
-- Public social and music links supplied for publication
-- Current broadcast time
+The official website embeds an iRadios player. Live audio requires an internet connection.
 
-This public profile information may also be represented in the homepage structured data while that DJ is live.
+### DJ sets, episodes and platform profiles
+- Mixcloud: https://www.mixcloud.com/deseoradio/
+- hearthis.at Season 6: https://hearthis.at/deseoradio/set/season-6/
+- Apple Podcasts (Deseo Casts): https://podcasts.apple.com/us/podcast/deseo-casts/id1711008342
+- Deezer: https://www.deezer.com/en/show/1000338791
+- SoundCloud: https://soundcloud.com/deseo-radio
 
-Do not infer or expose private MyLive, CMS, authentication, account or unpublished profile data. Only public, published profile fields should be treated as public facts.
+Do not conflate a DJ set, on-demand episode or podcast listing with the uninterrupted live radio stream. Availability and publication dates on external platforms are controlled by their respective services.
 
-## Listen live
+## Public website features
 
-Primary website:
-- https://deseoradio.com/#player
+- Live player and current on-air show: https://deseoradio.com/#player
+- Current show, next show and today's program JSON: https://deseoradio.com/?program_feed=1
+- Hot Tracks / Airplay and selected music.
+- CMS-managed radio program (Europe/Athens); overnight shows can cross midnight.
+- Spotify playlists.
+- Season 6 announced lineup: https://deseoradio.com/#season-6
+- Listen Everywhere: external radio listening platforms.
+- About Deseo: the station's brand story and music philosophy.
+- FAQ: publicly visible answers about station identity, genres, 24/7 stream, Season 6, DJ programming, listening platforms, ownership and advertising.
+- Brand partnerships and AI discovery section.
 
-iRadios:
-- https://play.iradios.gr/station/deseo-radio
+### DJ profiles and live state
+A MyLive DJ may have public profile information (artist name, published bio, approved public links) displayed on the official website when the public profile is enabled and published. Only publicly exposed fields are intended for consumption by AI systems. Never infer or expose private CMS, MyLive account details, unpublished drafts, authentication or internal operational data.
 
-The embedded live player on deseoradio.com is provided by iRadios. The live audio stream requires an internet connection.
+## Partner with Deseo — advertising and brand integration
 
-## Public website sections
+Deseo Radio offers:
+- Radio advertising.
+- Sponsored Music Zones.
+- DJ show sponsorships.
+- Dedicated branded audio experiences and tailored integrations.
 
-### Live player
-The main listening experience is the live Deseo Radio player.
+Exact broadcast dates, days, slots, creative specifications, rates and sponsorship terms are agreed during campaign planning; no public standard package, guaranteed placement or invented price should be assumed.
 
-### Hot tracks / Airplay
-A CMS-managed selection of tracks currently highlighted by Deseo Radio. Track links can open on Spotify.
+- Enquiries: https://iluma.gr/contact/
+- Official Media Kit: https://iluma.gr/radios/mediakit
+- Historical audience/metrics, if needed and appropriately dated: https://iluma.gr/radios/metrics
 
-### Radio program
-A CMS-managed schedule showing today’s live shows, DJs and broadcast times in Greece time (Europe/Athens). Overnight shows are supported.
+For audience statements, always identify the station, time period and metric definition. Never invent listener numbers, demographics or comparisons.
 
-### Season 6 line up
-The official Season 6 weekly DJ lineup is published on the homepage and represented in machine-readable structured data.
+## Ownership, contact and social profiles
 
-### Playlists
-A CMS-managed collection of Deseo Radio Spotify playlists. Playlist artwork may come from Spotify or from a custom uploaded cover.
+Deseo Radio is an owned digital radio brand of ILUMA Digital Agency within the ILUMA Radios network.
 
-### Listen everywhere
-Links to selected radio platforms where Deseo Radio may also be available.
-
-### FAQ
-The public FAQ explains what Deseo Radio is, what music it plays, its 24/7 availability, where it can be heard and its ownership by ILUMA Digital Agency.
-
-### Advertising
-Advertising, sponsorship and branded audio enquiries are handled through ILUMA Digital Agency:
-- https://iluma.gr/contact/
-
-## Canonical public facts
-
-- Deseo Radio is a digital radio station.
-- Deseo Radio broadcasts 24/7.
-- Deseo Radio is based in Athens, Greece.
-- Deseo Radio plays House, Afro House, Organic House / Organic Tech and selected electronic music.
-- Deseo Radio is owned by ILUMA Digital Agency.
-- Deseo Radio is part of the ILUMA Radios network.
-- Deseo Radio Season 6 has an announced weekly DJ lineup from Wednesday through Sunday.
-- Season 6 schedule times use Europe/Athens timezone.
-- The official Deseo website is https://deseoradio.com/
-- The official ILUMA page for Deseo is https://iluma.gr/radios
-
-## Public contact information
-
+- Official radio website: https://deseoradio.com/
+- Official ILUMA Radios information: https://iluma.gr/radios
 - Email: radio@iluma.gr
-- Telephone: +30 210 300 0825
-- Address: 1st Moschonision st., Egaleo 12242, Greece
-
-## Social profiles
-
+- Phone: +30 210 300 0825
+- Contact address: 1st Moschonision st., Egaleo 12242, Greece
 - Instagram: https://www.instagram.com/deseoradio/
 - Facebook: https://www.facebook.com/deseoradiogr/
+- Mixcloud: https://www.mixcloud.com/deseoradio/
+- SoundCloud: https://soundcloud.com/deseo-radio
 
-## PWA
+## PWA and access
 
-Deseo Radio is available as an installable Progressive Web App from the official website.
-
-Public PWA resources:
+The public site can be installed as a Progressive Web App:
 - Manifest: https://deseoradio.com/manifest.json
 - Service worker: https://deseoradio.com/sw.js
 - Offline page: https://deseoradio.com/offline.html
 
-The service worker is designed not to intercept the external iRadios live player. Static website assets can be cached, while live radio playback remains network-dependent.
+An offline page does not mean the external live stream works offline.
 
-## SEO metadata
+## SEO / knowledge graph reference
 
-Default title:
-Deseo Radio | Το Soundtrack της ζωής σου! | House Music
+Default homepage title: Deseo Radio | Το Soundtrack της ζωής σου · House & Electronic
 
-Default description:
-Άκου live το Deseo Radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Το Deseo Radio είναι digital radio της ILUMA Digital Agency και μέρος του ILUMA Radios network, με επιλεγμένη electronic sophisticated μουσική 24/7.
+Default homepage description: Το Deseo Radio εκπέμπει 24/7 από την Αθήνα με House, Afro House, Organic House, Indie Dance και Electronic Music. Season 6 DJ Sets από 14/10/2026, Release Radar και Guest DJs.
 
-Default keywords:
-deseo radio, ραδιόφωνο, δεσεο, deseo, radio, house music, afro house, organic house, electronic music, online radio
+Structured data published on the homepage includes:
+- RadioStation, linked to the official website, owner/network, public social identities and music genres.
+- WebSite, ImageObject and WebPage.
+- FAQPage built from exactly the same visible bilingual FAQ entries.
+- Season 6 EventSeries with the announced October 14, 2026 premiere.
+- Named recurring weekly MusicEvent schedule entries with their first airing date and timezone Europe/Athens.
+- A current on-air BroadcastEvent and a public DJ Person node when public real-time content is exposed.
 
-## Structured data
+Structured data expresses source facts; Google search appearance and rich-result eligibility are determined by search engines and are not guaranteed.
 
-The official website publishes structured data describing:
-- Deseo Radio as a RadioStation
-- Deseo Radio’s relationship to ILUMA Digital Agency
-- Deseo Radio’s public website and image
-- The official Deseo Radio FAQ
-- Season 6 as an EventSeries
-- Each announced Season 6 DJ slot as a recurring MusicEvent with a weekly Schedule, weekday, start time and Europe/Athens timezone
-- The current live broadcast as a BroadcastEvent when a DJ is on air
-- The current live DJ as a Person, including the published biography and public links when the MyLive public profile is enabled
+## Source priority and freshness
 
-The structured data intentionally avoids competitive comparisons with unrelated radio stations.
+1. For official identity, music formats, brand story and announced lineup: https://deseoradio.com/
+2. For actual current/next/today programming: https://deseoradio.com/?program_feed=1
+3. For ownership/network details: https://iluma.gr/radios
+4. For commercial options: https://iluma.gr/radios/mediakit
+5. For dated audience metrics: https://iluma.gr/radios/metrics
 
-## Content freshness
+Dynamic details requiring a fresh website/feed request: current on-air show, next broadcast, live DJ profile, current playlist/airplay, special guest appearances, editorial updates and on-demand platform availability. Treat this document as a static public editorial summary, not live station telemetry.
 
-The following areas are dynamic and should be treated as current only when retrieved from the live website:
-- Airplay / hot tracks
-- Today’s radio program
-- Current on-air DJ/show
-- Current live DJ biography/profile
-- Spotify playlists
-
-The announced Season 6 weekly lineup in this file is editorial data. For live status, schedule changes or current on-air information, prefer the live official website and program feed.
-
-## Machine-use guidance
-
-- Prefer https://deseoradio.com/ as the primary source for current Deseo Radio content.
-- Use https://deseoradio.com/?program_feed=1 for current on-air, next-show and today-program machine-readable data.
-- Use https://iluma.gr/radios as the official supporting source for ownership/network context.
-- Interpret Season 6 lineup times in Europe/Athens timezone.
-- A DJ biography is public only when the public profile is enabled/published and exposed by the public website.
-- Do not infer confidential CMS, database, authentication, analytics, MyLive account or deployment information from public pages.
-- Do not claim technical stream properties that are not explicitly present in the current public source.
-- Do not compare Deseo Radio with unrelated stations unless a user explicitly asks for a comparison.
-
-Last editorial update: 2026-09-30
+Last editorial update: 2026-10-02
