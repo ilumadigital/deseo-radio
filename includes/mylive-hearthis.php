@@ -231,10 +231,13 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
              INNER JOIN dj_portal_accounts a ON a.id = s.account_id
              WHERE s.status = 'broadcasted' AND s.hearthis_status = 'pending'
                AND s.file_deleted_at IS NULL AND s.broadcasted_at >= ?
-             ORDER BY s.broadcasted_at ASC, s.id ASC LIMIT " . max(1, min(5, $limit))
+             ORDER BY s.broadcasted_at ASC, s.id ASC LIMIT 100"
         );
         $stmt->execute([dj_season_start_at()->format('Y-m-d H:i:s')]);
+        $uploadLimit = max(1, min(5, $limit));
+        $attempted = 0;
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $set) {
+            if ($attempted >= $uploadLimit) break;
             $id = (int)$set['id'];
             $file = deseo_mylive_set_storage_file((string)$set['file_path']);
             if (!$file['exists'] || $file['storage_root'] === ''
@@ -263,13 +266,15 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             $started = $now->format('Y-m-d H:i:s');
             $claim = $pdo->prepare(
                 "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
+                    hearthis_cover_asset_id = ?,
                     hearthis_started_at = ?, hearthis_error = '',
                     hearthis_attempts = hearthis_attempts + 1
                  WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'pending'
                    AND file_deleted_at IS NULL"
             );
-            $claim->execute([$started, $id]);
+            $claim->execute([(int)$cover['asset_id'], $started, $id]);
             if ($claim->rowCount() !== 1) continue;
+            $attempted++;
             try {
                 $track = deseo_hearthis_upload_track($set, $config, $cover);
                 $save = $pdo->prepare(
