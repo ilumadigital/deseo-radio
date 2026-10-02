@@ -578,6 +578,62 @@ function deseo_mylive_next_show_end(PDO $pdo, int $accountId, DateTimeImmutable 
     return null;
 }
 
+/**
+ * Backfill legacy SCHEDULED Resident episodes whose show end was never reserved.
+ * This is independent of HEARTHIS_UPLOAD_ENABLED: it ONLY populates NULL
+ * scheduled_show_end. Never changes statuses, files, podcast fields or uploads.
+ *
+ * Episode order and the existing next-slot reservation check ensure separate
+ * weekly dates for multiple episodes from the same DJ. Explicit dates are
+ * preserved; Guests are skipped because their appearances are one-off.
+ */
+function deseo_mylive_backfill_scheduled_show_ends(PDO $pdo, ?DateTimeImmutable $reference = null): array {
+    $reference = ($reference ?? new DateTimeImmutable('now', dj_season_athens_timezone()))
+        ->setTimezone(dj_season_athens_timezone());
+    if ($reference > dj_season_end_at()) return ['assigned' => 0, 'unresolved' => 0, 'locked' => false];
+
+    $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_show_end_backfill', 0)");
+    if (!$lock || (int)$lock->fetchColumn() !== 1) {
+        return ['assigned' => 0, 'unresolved' => 0, 'locked' => true];
+    }
+    try {
+        $query = $pdo->query(
+            "SELECT s.id, s.account_id, b.status AS application_status
+             FROM dj_portal_sets s
+             INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+             LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+             WHERE s.status = 'scheduled' AND s.scheduled_show_end IS NULL
+               AND s.file_deleted_at IS NULL AND s.hearthis_status = 'pending'
+               AND s.hearthis_track_id IS NULL
+             ORDER BY s.account_id ASC, s.episode_no ASC, s.id ASC"
+        );
+        $save = $pdo->prepare(
+            "UPDATE dj_portal_sets SET scheduled_show_end = ?
+             WHERE id = ? AND account_id = ? AND status = 'scheduled'
+               AND scheduled_show_end IS NULL AND file_deleted_at IS NULL
+               AND hearthis_status = 'pending' AND hearthis_track_id IS NULL"
+        );
+        $assigned = 0;
+        $unresolved = 0;
+        foreach ($query->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (strtolower((string)($row['application_status'] ?? '')) === 'guest') {
+                // Guests have no recurring weekly date. Preserve manual input.
+                continue;
+            }
+            $end = deseo_mylive_next_show_end($pdo, (int)$row['account_id'], $reference);
+            if ($end === null) {
+                $unresolved++;
+                continue;
+            }
+            $save->execute([$end, (int)$row['id'], (int)$row['account_id']]);
+            $assigned += $save->rowCount();
+        }
+        return ['assigned' => $assigned, 'unresolved' => $unresolved, 'locked' => false];
+    } finally {
+        $pdo->query("SELECT RELEASE_LOCK('deseo_mylive_show_end_backfill')");
+    }
+}
+
 function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, string $note = '', string $showEndInput = ''): array {
     if (!in_array($status, deseo_mylive_set_statuses(), true)) {
         throw new RuntimeException('Μη έγκυρο status.');
