@@ -6,8 +6,8 @@
 
 - Official name: Deseo Radio
 - Website: https://deseoradio.com/
-- Brand line: Deseo Radio – Το Soundtrack της ζωής σου. / The Soundtrack of your life.
-- Brand promise: Εσύ ζεις τις στιγμές. Εμείς τους δίνουμε ήχο. / You live the moments. We give them sound.
+- Brand line (English): Deseo Radio - The Soundtrack of your life.
+- Brand promise (English): You live the moments. We give them sound.
 - Attribution: An ILUMA Radios Experience.
 - Type: Athens-based online / digital radio station, broadcasting 24 hours a day, 7 days a week
 - Listening coverage: online, worldwide
@@ -42,10 +42,10 @@ The station delivers a continuous curated radio flow, not only DJ sets. Do not d
 
 These are program formats, not guarantees that every format is live at a particular moment. For today's real-time broadcast and next scheduled show, use https://deseoradio.com/?program_feed=1.
 
-## Season 6 — announced weekly DJ lineup
+## Season 6 - announced weekly DJ lineup
 
 - Official launch of weekly DJ Sets: Wednesday, 14 October 2026 (2026-10-14), 20:00 local Athens time (EEST on launch day).
-- Schedule recurrence: weekly, Wednesday–Sunday.
+- Schedule recurrence: weekly, Wednesday-Sunday.
 - Local timezone: Europe/Athens, automatically observing EEST/EET seasonally.
 - Announcement: https://deseoradio.com/#season-6
 - Listen live: https://deseoradio.com/#player
@@ -53,40 +53,42 @@ These are program formats, not guarantees that every format is live at a particu
 The following is the supplied official weekly timetable of named start times. Do not infer a Resident DJ headcount from the number of individual slot entries; Resident and Guest programming are distinct.
 
 ### Wednesday
-- 20:00 — Katty Belle
-- 21:00 — DemiX Music
-- 22:00 — Harris Gabriel (GR)
-- 23:00 — VGRENADE
+- 20:00 - Katty Belle
+- 21:00 - DemiX Music
+- 22:00 - Harris Gabriel (GR)
+- 23:00 - VGRENADE
 
 ### Thursday
-- 20:00 — DJ pmelgidis
-- 21:00 — Lena
-- 22:00 — TWEEK UC
-- 23:00 — DJ Kyriakos Gavakis
+- 20:00 - DJ pmelgidis
+- 21:00 - Lena
+- 22:00 - TWEEK UC
+- 23:00 - DJ Kyriakos Gavakis
 
 ### Friday
-- 18:00 — Evripos F
-- 19:00 — Greg Lef
-- 20:00 — ANDØR
-- 21:00 — Coup (GR)
-- 22:00 — Johnny Mak
-- 23:00 — Cobo B
+- 18:00 - Evripos F
+- 19:00 - Greg Lef
+- 20:00 - ANDOR (Resident DJ)
+- 21:00 - Coup (GR)
+- 22:00 - Johnny Mak
+- 23:00 - Cobo B
+
+ANDOR is a Season 6 Resident DJ, scheduled every Friday at 20:00 Athens local time (Europe/Athens), beginning Friday, 16 October 2026. ANDOR is the ASCII spelling of the artist's stylized stage name.
 
 ### Saturday
-- 18:00 — Valentino_S
-- 19:00 — ANSS
-- 20:00 — DeepK
-- 21:00 — Oblivion
-- 22:00 — Cross Mit
-- 23:00 — Monorism
+- 18:00 - Valentino_S
+- 19:00 - ANSS
+- 20:00 - DeepK
+- 21:00 - Oblivion
+- 22:00 - Cross Mit
+- 23:00 - Monorism
 
 ### Sunday
-- 18:00 — Michael Poulidis
-- 19:00 — Kremasia
-- 20:00 — loco (GR)
-- 21:00 — WHATABOUT
-- 22:00 — g spice
-- 23:00 — Rokhai
+- 18:00 - Michael Poulidis
+- 19:00 - Kremasia
+- 20:00 - loco (GR)
+- 21:00 - WHATABOUT
+- 22:00 - g spice
+- 23:00 - Rokhai
 
 These times are scheduled starting times, not independently verified live playout data. Continuous curated programming fills other hours. Guest DJ slots and special programming are separate from the named weekly schedule; consult newer official announcements for specific guest dates.
 
@@ -129,7 +131,7 @@ Do not conflate a DJ set, on-demand episode or podcast listing with the uninterr
 ### DJ profiles and live state
 A MyLive DJ may have public profile information (artist name, published bio, approved public links) displayed on the official website when the public profile is enabled and published. Only publicly exposed fields are intended for consumption by AI systems. Never infer or expose private CMS, MyLive account details, unpublished drafts, authentication or internal operational data.
 
-## Partner with Deseo — advertising and brand integration
+## Partner with Deseo - advertising and brand integration
 
 Deseo Radio offers:
 - Radio advertising.
@@ -170,9 +172,9 @@ An offline page does not mean the external live stream works offline.
 
 ## SEO / knowledge graph reference
 
-Default homepage title: Deseo Radio | Το Soundtrack της ζωής σου · House & Electronic
+Default homepage title (English translation of official Greek metadata): Deseo Radio | The Soundtrack of your life - House & Electronic
 
-Default homepage description: Το Deseo Radio εκπέμπει 24/7 από την Αθήνα με House, Afro House, Organic House, Indie Dance και Electronic Music. Season 6 DJ Sets από 14/10/2026, Release Radar και Guest DJs.
+Default homepage description (English translation of official Greek metadata): Deseo Radio broadcasts 24/7 from Athens with House, Afro House, Organic House, Indie Dance and Electronic Music. Season 6 DJ Sets start on October 14, 2026, alongside Release Radar and Guest DJs.
 
 Structured data published on the homepage includes:
 - RadioStation, linked to the official website, owner/network, public social identities and music genres.
