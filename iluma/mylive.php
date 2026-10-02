@@ -1029,9 +1029,17 @@ $managedAccounts = array_values(array_filter(
 
 $assetsByAccount = [];
 $setsByAccount = [];
+$hearthisCoverByAccount = [];
+$hearthisCoverErrorByAccount = [];
 foreach ($accounts as $account) {
     $accountId = (int)$account['id'];
     $assetsByAccount[$accountId] = deseo_mylive_assets($pdo, $accountId);
+    try {
+        $hearthisCoverByAccount[$accountId] = deseo_hearthis_cover($pdo, $accountId);
+    } catch (Throwable $coverLookupError) {
+        $hearthisCoverByAccount[$accountId] = null;
+        $hearthisCoverErrorByAccount[$accountId] = $coverLookupError->getMessage();
+    }
 
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
@@ -1568,6 +1576,23 @@ admin_page_start('MyLive', 'mylive');
                                 <b>+</b>
                             </summary>
                             <div class="mylive-v3-detail-body">
+                                <div class="mylive-hearthis-cover" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px;border:1px solid #38383c;border-radius:8px;margin-bottom:14px;">
+                                    <?php $djCover = $hearthisCoverByAccount[$accountId] ?? null; ?>
+                                    <?php if ($djCover !== null): ?>
+                                        <img src="<?= admin_e((string)$djCover['preview_url']) ?>" loading="lazy" width="86" height="86" alt="<?= admin_e((string)$account['artist_name']) ?> · HearThis artwork 02" style="width:86px;height:86px;aspect-ratio:1;object-fit:cover;border-radius:6px;">
+                                        <div style="min-width:0;flex:1">
+                                            <strong>HEARTHIS ARTWORK 02 · READY</strong>
+                                            <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($djCover['source_path'] ?: $djCover['name'])) ?></small>
+                                            <small style="display:block;">This DJ-specific square image will be used automatically for future HearThis DJ Sets.</small>
+                                        </div>
+                                    <?php else: ?>
+                                        <div>
+                                            <strong>HEARTHIS ARTWORK 02 · MISSING</strong>
+                                            <small style="display:block;overflow-wrap:anywhere;"><?= admin_e((string)($hearthisCoverErrorByAccount[$accountId] ?? 'Square DJ image 02 is unavailable.')) ?></small>
+                                            <small style="display:block;">Check the DJ's weekday File Manager folder or assign artwork 02 below. No station-logo fallback.</small>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                                 <form method="post" enctype="multipart/form-data" class="mylive-asset-upload mylive-v3-asset-upload">
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="upload_asset">
@@ -1584,7 +1609,7 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
                                     <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
                                     <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
-                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Upload νέο αρχείο ή επίλεξε υπάρχον από τον server. Για HearThis επίλεξε το square artwork 02 του συγκεκριμένου DJ. Δεν γίνεται fallback στο station logo ή στο artwork 01.</small>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Η εικόνα 02 αναζητείται αυτόματα στον φάκελο ημέρας/DJ του File Manager, δίπλα στο καταχωρισμένο 01. Αν δεν βρεθεί, μπορείς να επιλέξεις χειροκίνητα το square artwork 02 εδώ. Καμία αντικατάσταση από το station logo.</small>
                                     <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
