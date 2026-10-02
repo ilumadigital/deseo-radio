@@ -303,6 +303,17 @@ $record['set_confirmed_at'] = gmdate('c');
 deseo_s6_cli_save($receiptPath, $record);
 if (!deseo_s6_cli_public_ready($url, $id)) deseo_s6_cli_fail('Public audio no longer available: source retained.');
 if (!deseo_hearthis_s6_contains_track($id, $setId)) deseo_s6_cli_fail('Season 6 membership changed: source retained.');
+if ((string)$record['state'] === 'finalizing' && !file_exists($expected)
+    && !empty($record['cleanup_authorized_at'])) {
+    // Recover a successful unlink followed by an interrupted receipt update.
+    // Both remote checks above have passed again; never unlink another file.
+    $record['state'] = 'completed';
+    $record['deleted_at'] = gmdate('c');
+    $record['receipt_recovered_after_unlink'] = true;
+    deseo_s6_cli_save($receiptPath, $record);
+    echo 'SUCCESS: public track and set still verified; prior file cleanup recovered.' . PHP_EOL;
+    exit(0);
+}
 if (!$file || $file !== $expected || !is_file($file) || is_link($expected)
     || hash_file('sha256', $file) !== (string)$record['file_sha256']) {
     deseo_s6_cli_fail('Local file absent/changed. No deletion performed.');
