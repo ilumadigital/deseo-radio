@@ -829,7 +829,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $title = trim((string)($_POST['title'] ?? ''));
                 $serverAssetPath = trim((string)($_POST['server_asset_path'] ?? ''));
 
-                if (!in_array($type, ['artwork', 'dj_spot', 'dj_spot_30', 'other'], true)) $type = 'other';
+                if (!in_array($type, ['artwork', 'hearthis_cover', 'dj_spot', 'dj_spot_30', 'other'], true)) $type = 'other';
                 if ($title === '') $title = deseo_mylive_asset_label($type);
 
                 $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'wav'];
@@ -885,6 +885,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mime = (string)$serverAsset['mime'];
                 } else {
                     throw new RuntimeException('Ανέβασε νέο αρχείο ή επίλεξε ένα από το File Manager.');
+                }
+
+                if ($type === 'hearthis_cover') {
+                    // The HearThis cover is the DJ's dedicated square 02 asset.
+                    // Never allow the station logo or promotional 01 by accident.
+                    if (!preg_match('/(?:^|[^0-9])02\\.(?:png|jpe?g|webp)$/i', $originalName)) {
+                        throw new RuntimeException('Επίλεξε το τετράγωνο DJ artwork 02 (π.χ. GregLef02.png), όχι το 01 ή το λογότυπο του σταθμού.');
+                    }
+                    $imageSource = $sourceMode === 'upload' ? $tmp : $sourceAbsolute;
+                    $imageInfo = @getimagesize($imageSource);
+                    if (!is_array($imageInfo) || empty($imageInfo[0])
+                        || (int)$imageInfo[0] !== (int)$imageInfo[1]
+                        || !in_array((string)($imageInfo['mime'] ?? ''), ['image/png', 'image/jpeg', 'image/webp'], true)) {
+                        throw new RuntimeException('Το HearThis artwork 02 πρέπει να είναι έγκυρη τετράγωνη εικόνα PNG, JPG ή WEBP.');
+                    }
+                    $mime = (string)$imageInfo['mime'];
                 }
 
                 $dir = dirname(__DIR__) . '/mylive/storage/assets/' . $accountId;
@@ -1558,7 +1574,8 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="account_id" value="<?= $accountId ?>">
 
                                     <select name="asset_type">
-                                        <option value="artwork">Promotional Artwork</option>
+                                        <option value="artwork">Promotional Artwork · 01</option>
+                                        <option value="hearthis_cover">HearThis Square Cover · 02</option>
                                         <option value="dj_spot">Personal DJ Imaging</option>
                                         <option value="dj_spot_30">30' Imaging</option>
                                         <option value="other">Additional Asset</option>
@@ -1567,7 +1584,7 @@ admin_page_start('MyLive', 'mylive');
                                     <input type="hidden" name="server_asset_path" value="" data-mylive-server-asset-path>
                                     <input class="file-input" type="file" name="asset_file" accept=".jpg,.jpeg,.png,.webp,.pdf,.mp3,.wav">
                                     <button class="button button-secondary" type="button" data-mylive-asset-browser>Browse server / File Manager</button>
-                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Upload νέο αρχείο ή επίλεξε υπάρχον από τον server.</small>
+                                    <small data-mylive-server-asset-label style="grid-column:1/-1;color:#66666b;font-size:8px;line-height:1.45;">Upload νέο αρχείο ή επίλεξε υπάρχον από τον server. Για HearThis επίλεξε το square artwork 02 του συγκεκριμένου DJ. Δεν γίνεται fallback στο station logo ή στο artwork 01.</small>
                                     <button class="button button-primary" type="submit">Add Asset</button>
                                 </form>
 
