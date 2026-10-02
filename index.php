@@ -493,7 +493,7 @@ $partners = [
                                     <path d="M8.5 16h3l1.4-3.5 2.8 7 2.2-5 1.2 1.5h4.4"/>
                                 </svg>
                             </a>
-                            <a href="https://podcasts.apple.com/us/podcast/deseo-casts/id1711008342" target="_blank" rel="noopener noreferrer" aria-label="Apple Podcasts" title="Apple Podcasts" data-analytics-event="season_apple_podcasts_click">
+                            <a href="https://podcasts.apple.com/us/podcast/deseo-radioshows/id1711008342" target="_blank" rel="noopener noreferrer" aria-label="Apple Podcasts" title="Apple Podcasts" data-analytics-event="season_apple_podcasts_click">
                                 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <circle cx="16" cy="14" r="2.3"/><path d="M13.2 21c.2-2 1.3-3.4 2.8-3.4s2.6 1.4 2.8 3.4l-.6 6h-4.4l-.6-6ZM9.5 19a9 9 0 1 1 13 0M12 17a5.5 5.5 0 1 1 8 0"/>
                                 </svg>
