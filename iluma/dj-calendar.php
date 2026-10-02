@@ -197,7 +197,7 @@ admin_page_start('DJ Calendar', 'dj-calendar');
                                     <article class="dj-calendar-set <?= $hasOverlap ? 'has-overlap' : '' ?>">
                                         <div class="dj-calendar-set-time">
                                             <strong><?= admin_e(dj_season_format_time((string)$set['effective_start'])) ?></strong>
-                                            <span>→ <?= admin_e(dj_season_format_time((string)$set['effective_end'])) ?></span>
+                                            <span>– <?= admin_e(dj_season_format_time((string)$set['effective_end'])) ?></span>
                                         </div>
 
                                         <div class="dj-calendar-set-person">
@@ -213,7 +213,7 @@ admin_page_start('DJ Calendar', 'dj-calendar');
                                             <?php if ($hasOverlap): ?>
                                                 <b>OVERLAP</b>
                                             <?php endif; ?>
-                                            <a href="dj-season.php#application-<?= (int)$set['id'] ?>">Open ↗</a>
+                                            <a href="dj-season.php#application-<?= (int)$set['id'] ?>">Open</a>
                                         </div>
                                     </article>
                                 <?php endforeach; ?>
