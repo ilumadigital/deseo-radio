@@ -151,6 +151,7 @@ $clientKeys = [
     'lineup.kicker','lineup.title','lineup.tagline','lineup.schedule','lineup.start_label','lineup.start_value','lineup.days','lineup.hours','lineup.minutes','lineup.platforms','lineup.zoom','lineup.open','lineup.close',
     'faq.kicker','faq.title','faq.text',
     'faq.q1','faq.a1','faq.q2','faq.a2','faq.q3','faq.a3','faq.q4','faq.a4','faq.q5','faq.a5',
+    'faq.q6','faq.a6','faq.q7','faq.a7','faq.q8','faq.a8','faq.q9','faq.a9',
     'advertise.kicker','advertise.title','advertise.text','advertise.cta',
     'footer.tagline','footer.contact','footer.follow','footer.listen','footer.live_player','footer.today_program','footer.playlists','footer.faq','footer.powered','footer.media_kit',
     'ai.kicker','ai.title_start','ai.title_end','ai.text','ai.sources','ai.metrics','ai.open',
