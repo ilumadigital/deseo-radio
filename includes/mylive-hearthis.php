@@ -36,7 +36,67 @@ function deseo_hearthis_public_url(string $url): bool {
         && !isset($parts['user']) && !isset($parts['pass']);
 }
 
-function deseo_hearthis_upload_track(array $set, array $config): array {
+/**
+ * Resolve a DJ-specific, square 02 cover only from that DJ's assigned MyLive
+ * assets. The station logo and promotional 01 artwork are NEVER fallbacks.
+ */
+function deseo_hearthis_cover(PDO $pdo, int $accountId): array {
+    $stmt = $pdo->prepare(
+        "SELECT id, asset_type, original_name, file_path, mime_type
+         FROM dj_portal_assets WHERE account_id = ?
+         ORDER BY CASE WHEN asset_type = 'hearthis_cover' THEN 0 ELSE 1 END,
+                  id DESC"
+    );
+    $stmt->execute([$accountId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $storageRoot = realpath(dirname(__DIR__) . '/mylive/storage/assets');
+    foreach ($rows as $asset) {
+        $original = (string)$asset['original_name'];
+        // 01 assets are specifically NOT cover art; require source filename 02.
+        if (!preg_match('/(?:^|[^0-9])02\\.(?:png|jpe?g|webp)$/i', $original)) continue;
+        $filePath = (string)$asset['file_path'];
+        $relative = ltrim($filePath, '/');
+        if (!preg_match('~^storage/assets/' . $accountId . '/[^/]+$~D', $relative)) continue;
+        $absolute = realpath(dirname(__DIR__) . '/mylive/' . $relative);
+        if (!$storageRoot || !$absolute || !is_file($absolute)
+            || !str_starts_with($absolute, $storageRoot . DIRECTORY_SEPARATOR . $accountId . DIRECTORY_SEPARATOR)) continue;
+        $info = @getimagesize($absolute);
+        if (!is_array($info) || empty($info[0]) || (int)$info[0] !== (int)$info[1]) continue;
+        $mime = (string)($info['mime'] ?? '');
+        if (!in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true)) continue;
+        return ['path' => $absolute, 'mime' => $mime, 'name' => $original, 'asset_id' => (int)$asset['id']];
+    }
+    throw new RuntimeException(
+        'Missing square DJ artwork 02 in MyLive assets; assign the correct image before HearThis upload.'
+    );
+}
+
+function deseo_hearthis_metadata(array $set): array {
+    $artist = trim((string)$set['artist_name']);
+    $episode = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
+    $dateLine = '';
+    if (!empty($set['scheduled_show_end'])) {
+        try {
+            $end = new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone());
+            // Midnight belongs to the preceding broadcast day.
+            $dateLine = 'Original broadcast: ' . $end->modify('-1 second')->format('d.m.Y')
+                . ' (Athens local time)' . "\\n";
+        } catch (Throwable $ignored) {
+            // Never fabricate a broadcast date from an invalid value.
+        }
+    }
+    return [
+        'title' => $artist . ' – Deseo Radio | S06 ' . $episode,
+        'description' => 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.' . "\\n\\n"
+            . $dateLine
+            . 'Listen Live: https://deseoradio.com' . "\\n"
+            . 'Season 6 DJ Sets: https://hearthis.at/deseoradio/set/season-6/' . "\\n\\n"
+            . 'Stay Tuned, στο Soundtrack της ζωής σου!',
+        'genre' => 'Radioshow',
+    ];
+}
+
+function deseo_hearthis_upload_track(array $set, array $config, array $cover): array {
     if (!function_exists('curl_init') || !class_exists('CURLFile')) {
         throw new RuntimeException('PHP cURL extension is required.');
     }
@@ -45,14 +105,15 @@ function deseo_hearthis_upload_track(array $set, array $config): array {
         || !str_starts_with((string)$file['real_file'], (string)$file['storage_root'] . DIRECTORY_SEPARATOR)) {
         throw new RuntimeException('Audio file unavailable inside protected MyLive storage.');
     }
-    $episode = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
-    $artist = trim((string)$set['artist_name']);
-    $title = 'Deseo Radio · ' . $artist . ' · ' . $episode;
-    $description = 'Deseo Radio Season 6 | ' . $artist . ' | ' . $episode
-        . ' | Broadcast: ' . (string)$set['broadcasted_at'] . ' (Athens)';
+    $metadata = deseo_hearthis_metadata($set);
+    // Field names are provisional until the HearThis write API is verified.
+    // Config remains fail-closed; no default logo or 01 cover is ever sent.
     $fields = [
         'file' => new CURLFile((string)$file['real_file'], 'audio/mpeg', (string)$set['stored_name']),
-        'title' => $title, 'description' => $description,
+        'artwork' => new CURLFile((string)$cover['path'], (string)$cover['mime'], (string)$cover['name']),
+        'title' => $metadata['title'],
+        'description' => $metadata['description'],
+        'genre' => $metadata['genre'],
         'username' => $config['username'],
     ];
     $headers = ['Accept: application/json'];
@@ -164,8 +225,8 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             return $summary;
         }
         $stmt = $pdo->prepare(
-            "SELECT s.id, s.episode_no, s.file_path, s.stored_name, s.broadcasted_at,
-                    a.artist_name
+            "SELECT s.id, s.account_id, s.episode_no, s.file_path, s.stored_name,
+                    s.broadcasted_at, s.scheduled_show_end, a.artist_name
              FROM dj_portal_sets s
              INNER JOIN dj_portal_accounts a ON a.id = s.account_id
              WHERE s.status = 'broadcasted' AND s.hearthis_status = 'pending'
@@ -186,6 +247,19 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                 $summary['review_required']++;
                 continue;
             }
+            // Do not upload audio without the exact DJ-specific 02 image.
+            // Missing/invalid cover is a reversible pending condition; an assigned
+            // cover will be picked up automatically on the next cron iteration.
+            try {
+                $cover = deseo_hearthis_cover($pdo, (int)$set['account_id']);
+            } catch (Throwable $coverError) {
+                $pdo->prepare(
+                    "UPDATE dj_portal_sets SET hearthis_error = ?
+                     WHERE id = ? AND hearthis_status = 'pending'"
+                )->execute([substr($coverError->getMessage(), 0, 500), $id]);
+                $summary['missing_artwork'] = ($summary['missing_artwork'] ?? 0) + 1;
+                continue;
+            }
             $started = $now->format('Y-m-d H:i:s');
             $claim = $pdo->prepare(
                 "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
@@ -197,7 +271,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             $claim->execute([$started, $id]);
             if ($claim->rowCount() !== 1) continue;
             try {
-                $track = deseo_hearthis_upload_track($set, $config);
+                $track = deseo_hearthis_upload_track($set, $config, $cover);
                 $save = $pdo->prepare(
                     "UPDATE dj_portal_sets SET hearthis_status = 'synced',
                          hearthis_url = ?, hearthis_track_id = ?,
