@@ -574,8 +574,8 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
     $now = new DateTimeImmutable('now', dj_season_athens_timezone());
     $nowSql = $now->format('Y-m-d H:i:s');
 
-    if ((string)$set['hearthis_status'] === 'uploading') {
-        throw new RuntimeException('Το HearThis upload είναι σε εξέλιξη. Δεν μπορεί να αλλάξει το status.');
+    if (in_array((string)$set['hearthis_status'], ['uploading', 'verifying'], true)) {
+        throw new RuntimeException('Το HearThis upload ή η δημόσια επαλήθευση είναι σε εξέλιξη. Δεν μπορεί να αλλάξει το status.');
     }
     if ((string)$set['hearthis_status'] === 'synced' && $status !== 'broadcasted') {
         throw new RuntimeException('Το DJ Set έχει ήδη δημοσιευθεί στο HearThis. Δεν μπορεί να επιστρέψει σε προηγούμενο status.');
