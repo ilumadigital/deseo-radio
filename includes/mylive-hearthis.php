@@ -80,17 +80,17 @@ function deseo_hearthis_metadata(array $set): array {
             $end = new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone());
             // Midnight belongs to the preceding broadcast day.
             $dateLine = 'Original broadcast: ' . $end->modify('-1 second')->format('d.m.Y')
-                . ' (Athens local time)' . "\\n";
+                . ' (Athens local time)' . "\n";
         } catch (Throwable $ignored) {
             // Never fabricate a broadcast date from an invalid value.
         }
     }
     return [
         'title' => $artist . ' – Deseo Radio | S06 ' . $episode,
-        'description' => 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.' . "\\n\\n"
+        'description' => 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.' . "\n\n"
             . $dateLine
-            . 'Listen Live: https://deseoradio.com' . "\\n"
-            . 'Season 6 DJ Sets: https://hearthis.at/deseoradio/set/season-6/' . "\\n\\n"
+            . 'Listen Live: https://deseoradio.com' . "\n"
+            . 'Season 6 DJ Sets: https://hearthis.at/deseoradio/set/season-6/' . "\n\n"
             . 'Stay Tuned, στο Soundtrack της ζωής σου!',
         'genre' => 'Radioshow',
     ];
