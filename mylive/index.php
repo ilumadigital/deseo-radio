@@ -1333,7 +1333,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                                 <?php
                                 // Owned, ID-backed URL is available immediately
                                 // after upload acceptance; RSS may still be pending.
-                                $episodeHearThisUrl = deseo_mylive_hearthis_episode_link($set);
+                                $episodeHearThisUrl = deseo_mylive_hearthis_episode_link($set, (int)$account['id']);
                                 ?>
                                 <?php if ($episodeHearThisUrl !== ''): ?>
                                     <a href="<?= deseo_mylive_e($episodeHearThisUrl) ?>" target="_blank" rel="noopener noreferrer" aria-label="Listen to EP<?= (int)$set['episode_no'] ?> on HearThis">Listen on HearThis</a>
