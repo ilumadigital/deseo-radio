@@ -158,6 +158,9 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_cover_source_path VARCHAR(500) NULL,
         hearthis_error VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_meta_warning VARCHAR(500) NOT NULL DEFAULT '',
+        hearthis_set_id VARCHAR(120) NULL,
+        hearthis_set_status VARCHAR(24) NOT NULL DEFAULT 'pending',
+        hearthis_set_started_at DATETIME NULL,
         hearthis_attempts INT NOT NULL DEFAULT 0,
         hearthis_started_at DATETIME NULL,
         hearthis_synced_at DATETIME NULL,
@@ -180,7 +183,10 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'hearthis_cover_source_path' => "VARCHAR(500) NULL AFTER hearthis_cover_asset_id",
         'hearthis_error' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_cover_source_path",
         'hearthis_meta_warning' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER hearthis_error",
-        'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_meta_warning",
+        'hearthis_set_id' => "VARCHAR(120) NULL AFTER hearthis_meta_warning",
+        'hearthis_set_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER hearthis_set_id",
+        'hearthis_set_started_at' => "DATETIME NULL AFTER hearthis_set_status",
+        'hearthis_attempts' => "INT NOT NULL DEFAULT 0 AFTER hearthis_set_started_at",
         'hearthis_started_at' => "DATETIME NULL AFTER hearthis_attempts",
         'hearthis_synced_at' => "DATETIME NULL AFTER hearthis_started_at"
     ];
@@ -453,7 +459,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning, hearthis_synced_at, uploaded_at
+                hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning, hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
          ORDER BY episode_no DESC"
@@ -658,6 +664,7 @@ function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
         "SELECT id, file_path, hearthis_url
          FROM dj_portal_sets
          WHERE status = 'broadcasted' AND hearthis_status = 'synced'
+           AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
            AND hearthis_synced_at IS NOT NULL AND file_deleted_at IS NULL
          ORDER BY id ASC"
     );
@@ -677,7 +684,9 @@ function deseo_mylive_cleanup_broadcasted_sets(PDO $pdo): array {
             $pdo->prepare(
                 "UPDATE dj_portal_sets SET delete_after = NULL, file_deleted_at = ?
                  WHERE id = ? AND status = 'broadcasted'
-                   AND hearthis_status = 'synced' AND hearthis_synced_at IS NOT NULL
+                   AND hearthis_status = 'synced'
+                   AND hearthis_set_status = 'confirmed' AND hearthis_set_id IS NOT NULL
+                   AND hearthis_synced_at IS NOT NULL
                    AND hearthis_url = ? AND file_deleted_at IS NULL"
             )->execute([$nowSql, $id, $url]);
             if ($result === 'deleted') $deleted++;
