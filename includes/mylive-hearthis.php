@@ -188,7 +188,7 @@ function deseo_hearthis_metadata(array $set): array {
         'description' => 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.' . "\n\n"
             . $dateLine
             . 'Listen Live: https://deseoradio.com' . "\n"
-            . 'Season 6 DJ Sets: https://hearthis.at/deseoradio/set/season-6/' . "\n\n"
+            . 'Season 6 DJ Sets: ' . DESEO_HEARTHIS_SEASON6_URL . "\n\n"
             . 'Stay Tuned, στο Soundtrack της ζωής σου!',
         'genre' => 'Radioshow',
     ];
