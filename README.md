@@ -446,6 +446,31 @@ Configure one minute CLI cron via the hosting dashboard (replace with the real P
 
 The worker uses an advisory database lock and does not double-post concurrently. Uncertain network outcomes and missing/unrecognized response URLs become `review_required`, keep the MP3, and require checking HearThis before any manual retry. A successful `files[0]` result is stored as **`verifying`**, with remote track ID + URL. On later cron ticks an anonymous `GET https://api-v2.hearthis.at/{author}/{track}/` must agree on the returned ID, owner and public URL, indicate non-private content with positive duration and stream URL, and a bounded HTTPS audio-range probe must succeed. **Only then** is the row marked `synced` and `hearthis_synced_at` recorded; the retention hooks may then delete the local audio. Processing delays and temporary read outages leave the episode verifying without reupload or deletion. The status editor cannot change episodes while `uploading` or `verifying`. A pre-reserved slot remains recoverable after a >6-hour cron outage; manually broadcasted episodes with no recorded past `scheduled_show_end` are excluded from automatic publishing to prevent premature upload. Verify cron, storage permissions, cURL and the production MariaDB migration on a staging copy before merging. No production upload or deletion test has been performed.
 
+
+
+#### Isolated private upload smoke test (not the production worker)
+
+For the Hostinger layout below, the uploaded test audio is intentionally **outside** \`public_html\`:
+
+\`\`\`text
+domains/deseoradio.com/
+├── .env
+├── deseo-uploads/
+│   └── Deseo Radio - Season 6.mp3
+└── public_html/
+    └── iluma/
+        └── cli-hearthis-private-test.php
+\`\`\`
+
+After deploying the *single* CLI test script from this branch to its \`public_html/iluma/\` location, rotating the API key/secret previously pasted in chat, and setting \`HEARTHIS_UPLOAD_ENABLED=0\`, execute through Hostinger SSH/Terminal (replace \`/path/to/\` with the absolute account path):
+
+\`\`\`sh
+php /path/to/domains/deseoradio.com/public_html/iluma/cli-hearthis-private-test.php --check
+php /path/to/domains/deseoradio.com/public_html/iluma/cli-hearthis-private-test.php --upload-private
+\`\`\`
+
+\`--check\` only checks file header/type/size/path, presence of credentials and any prior test receipt; it never contacts the API. The second command requires explicit invocation and makes **one** Premium API call with \`private=1\`, without custom image; it does not connect to MyLive tables, install a cron, turn on the worker or delete audio. An attempt marker (\`deseo-uploads/.hearthis-private-test-receipt.json\`) is saved *before* sending the HTTP request, so interrupted/ambiguous outcomes cannot automatically duplicate the track. A successful response prints only the returned track ID and stores a minimal receipt (no credentials or raw response). A private upload alone does **not** establish public playback or production retention safety. Review the private track in the HearThis account after running; do not remove/retry the receipt without first reconciling that remote track. The exact user-supplied test audio must be owned or licensed appropriately.
+
 #### Artwork 02 and episode metadata (optional artwork with provider default)
 
 The per-DJ HearThis cover must be a **square, valid PNG/JPG/WEBP image whose original filename ends in 02** (e.g. `GregLef02.png`). The worker first resolves an explicitly assigned MyLive 02 asset for the same `account_id`. Otherwise it uses the existing `dj_portal_assets.original_name` of that account's registered promotional 01 image plus its `dj_portal_accounts.day_of_week` to discover the matching square **02 sibling** in `/iluma/uploads/deseo_djs/<number>. <weekday>/<number>. <DJ>/` (e.g. `/iluma/uploads/deseo_djs/3. Fri/2. GregLef/GregLef02.png`). Discovery requires the original 01 file in that same directory, or (if the 01 source has since been moved) an exact normalized match between the numbered DJ folder label and that account's registered 01 filename stem; it also requires exactly one qualifying 02 candidate. It never fuzzy-searches all DJ photos. Existing 02 files therefore do **not** need to be copied, moved, renamed, or assigned individually when the matching 01 sibling is available. MyLive CMS > Assets shows each DJ's actual artwork 02 preview and exact resolved relative path. If discovery is ambiguous/unavailable, choose the existing server 02 via `HearThis Square Cover · 02 > Browse server / File Manager` or upload it manually; the explicit per-account asset wins. There is **NO** fallback to another DJ's image, the promotional 01, or a guessed local station-logo file. When an upload attempt starts, `hearthis_cover_asset_id` or `hearthis_cover_source_path` stores the exact chosen source for audit. **Custom artwork is optional**: if the exact square 02 cannot be uniquely resolved (including a missing, invalid, ambiguous or broken explicitly assigned image), the worker continues the episode upload while omitting the multipart `image` field. Per the API docs, HearThis can also extract embedded ID3 artwork; otherwise the site may apply its own account/platform default. The CMS explicitly says `HEARTHIS ARTWORK · DEFAULT FALLBACK` instead of marking this as an upload-blocking error. Provider-side default artwork behavior needs to be verified in staging.
