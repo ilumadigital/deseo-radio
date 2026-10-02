@@ -1008,6 +1008,70 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
     <meta name="apple-mobile-web-app-title" content="MyLive App">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="/mylive/style.css?v=<?= @filemtime(__DIR__ . '/style.css') ?: 1 ?>">
+
+    <!-- Critical dashboard styles: platform icons must remain bounded even with a stale external CSS cache. -->
+    <style>
+      .mylive-dashboard-page .mylive-episode-platforms{
+        display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+        align-items:center;gap:24px;min-width:0;margin-top:24px;padding:24px;
+        border:1px solid rgba(255,255,255,.1);border-radius:24px;
+        background:linear-gradient(118deg,rgba(255,43,54,.065),rgba(255,255,255,.018) 40%,#101012);
+      }
+      .mylive-dashboard-page .mylive-episode-platforms-copy{min-width:0}
+      .mylive-dashboard-page .mylive-episode-platforms-copy .eyebrow{
+        display:block;color:var(--red,#ff2b36);font-size:10px;font-weight:800;letter-spacing:.13em;
+      }
+      .mylive-dashboard-page .mylive-episode-platforms-copy h4{
+        margin:8px 0!important;color:#f4f4f5;font-size:clamp(21px,2.3vw,27px)!important;
+        line-height:1.15;letter-spacing:-.035em;
+      }
+      .mylive-dashboard-page .mylive-episode-platforms-copy p{
+        max-width:380px;margin:0;color:#a6a6ae;font-size:13px!important;line-height:1.55;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links{
+        display:grid!important;grid-template-columns:repeat(3,minmax(0,112px))!important;
+        gap:10px;min-width:0;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links>a{
+        display:flex!important;flex-direction:column!important;align-items:center;justify-content:center;
+        gap:10px;box-sizing:border-box;min-width:0;width:100%;min-height:110px;padding:12px 8px;
+        border:1px solid rgba(255,255,255,.13);border-radius:17px;
+        background:rgba(255,255,255,.025);color:#e4e4e9;text-align:center;text-decoration:none;
+        font-size:12px!important;font-weight:700;line-height:1.3;overflow-wrap:anywhere;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links>a:hover{
+        border-color:rgba(255,43,54,.48);background:rgba(255,43,54,.075);color:#fff;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links>a:focus-visible{
+        outline:2px solid var(--red,#ff2b36);outline-offset:3px;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links .mylive-episode-platform-icon{
+        display:flex!important;flex:0 0 38px!important;align-items:center;justify-content:center;
+        width:38px!important;height:38px!important;max-width:38px!important;max-height:38px!important;
+        padding:0!important;color:#eeeef0;
+      }
+      .mylive-dashboard-page .mylive-episode-platform-links .mylive-episode-platform-icon>svg{
+        display:block!important;flex:none!important;box-sizing:content-box;
+        width:31px!important;height:31px!important;min-width:31px!important;min-height:31px!important;
+        max-width:31px!important;max-height:31px!important;overflow:visible;
+      }
+      @media(max-width:800px){
+        .mylive-dashboard-page .mylive-episode-platforms{
+          grid-template-columns:minmax(0,1fr)!important;gap:20px;
+        }
+        .mylive-dashboard-page .mylive-episode-platforms-copy p{max-width:560px}
+        .mylive-dashboard-page .mylive-episode-platform-links{
+          grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        }
+      }
+      @media(max-width:420px){
+        .mylive-dashboard-page .mylive-episode-platforms{padding:19px 15px;border-radius:21px}
+        .mylive-dashboard-page .mylive-episode-platform-links{gap:7px}
+        .mylive-dashboard-page .mylive-episode-platform-links>a{
+          min-height:102px;padding:10px 4px;font-size:11px!important;
+        }
+      }
+    </style>
     <script src="/assets/js/deseo-lockdown.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-lockdown.js') ?: 1 ?>"></script>
     <script src="/assets/js/deseo-dialogs.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/js/deseo-dialogs.js') ?: 1 ?>"></script>
     <script src="/mylive/app.js?v=<?= @filemtime(__DIR__ . '/app.js') ?: 1 ?>" defer></script>
@@ -1361,7 +1425,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                 <div class="mylive-episode-platform-links">
                     <a href="https://podcasts.apple.com/us/podcast/deseo-radioshows/id1711008342" target="_blank" rel="noopener noreferrer" aria-label="Apple Podcasts · Deseo RadioShows">
                         <span class="mylive-episode-platform-icon" aria-hidden="true">
-                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <svg width="31" height="31" style="display:block;width:31px!important;height:31px!important;max-width:31px!important;max-height:31px!important;flex:none!important" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                                 <circle cx="16" cy="14" r="2.3"/><path d="M13.2 21c.2-2 1.3-3.4 2.8-3.4s2.6 1.4 2.8 3.4l-.6 6h-4.4l-.6-6ZM9.5 19a9 9 0 1 1 13 0M12 17a5.5 5.5 0 1 1 8 0"/>
                             </svg>
                         </span>
@@ -1369,7 +1433,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                     </a>
                     <a href="https://hearthis.at/deseoradio/set/season-6/" target="_blank" rel="noopener noreferrer" aria-label="HearThis · Deseo Radio Season 6">
                         <span class="mylive-episode-platform-icon" aria-hidden="true">
-                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <svg width="31" height="31" style="display:block;width:31px!important;height:31px!important;max-width:31px!important;max-height:31px!important;flex:none!important" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                                 <path d="M16 27S4.5 20.2 4.5 12.5a6 6 0 0 1 11.5-2.4 6 6 0 0 1 11.5 2.4C27.5 20.2 16 27 16 27Z"/>
                                 <path d="M8.5 16h3l1.4-3.5 2.8 7 2.2-5 1.2 1.5h4.4"/>
                             </svg>
@@ -1378,7 +1442,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                     </a>
                     <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" aria-label="Mixcloud · Deseo Radio">
                         <span class="mylive-episode-platform-icon" aria-hidden="true">
-                            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <svg width="31" height="31" style="display:block;width:31px!important;height:31px!important;max-width:31px!important;max-height:31px!important;flex:none!important" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
                                 <path d="M3.5 20V12m4 11V9m4 15V7m4 17V11"/>
                                 <path d="M19 23h6a4 4 0 0 0 .3-8 6 6 0 0 0-10.2-3"/>
                             </svg>
