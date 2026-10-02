@@ -4539,3 +4539,106 @@ body{
     font-size: 11px;
   }
 }
+
+
+/* MYLIVE · PERSONAL DJ SET DISTRIBUTION (UI only) */
+.mylive-episode-platforms{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:24px;
+  min-width:0;
+  margin-top:24px;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:24px;
+  background:linear-gradient(118deg,rgba(255,43,54,.065),rgba(255,255,255,.018) 40%,#101012);
+}
+.mylive-episode-platforms-copy{min-width:0}
+.mylive-episode-platforms-copy .eyebrow{
+  display:block;
+  color:var(--red);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.13em;
+}
+.mylive-episode-platforms-copy h4{
+  margin:8px 0;
+  color:#f4f4f5;
+  font-size:clamp(21px,2.3vw,27px);
+  line-height:1.15;
+  letter-spacing:-.035em;
+}
+.mylive-episode-platforms-copy p{
+  max-width:380px;
+  margin:0;
+  color:#a6a6ae;
+  font-size:13px;
+  line-height:1.55;
+}
+.mylive-episode-platform-links{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,112px));
+  gap:10px;
+  min-width:0;
+}
+.mylive-episode-platform-links a{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-width:0;
+  min-height:110px;
+  padding:12px 8px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:17px;
+  background:rgba(255,255,255,.025);
+  color:#e4e4e9;
+  text-align:center;
+  text-decoration:none;
+  font-size:12px!important;
+  font-weight:700;
+  line-height:1.3;
+  overflow-wrap:anywhere;
+  transition:border-color .2s ease,background .2s ease,transform .2s ease;
+}
+.mylive-episode-platform-links a:hover{
+  transform:translateY(-2px);
+  border-color:rgba(255,43,54,.48);
+  background:rgba(255,43,54,.075);
+  color:#fff;
+}
+.mylive-episode-platform-links a:focus-visible{
+  outline:2px solid var(--red);
+  outline-offset:4px;
+}
+.mylive-episode-platform-icon{
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  color:#eeeef0;
+}
+.mylive-episode-platform-icon svg{
+  display:block;
+  width:31px;
+  height:31px;
+}
+@media(max-width:800px){
+  .mylive-episode-platforms{
+    grid-template-columns:minmax(0,1fr);
+    gap:20px;
+  }
+  .mylive-episode-platforms-copy p{max-width:560px}
+  .mylive-episode-platform-links{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:420px){
+  .mylive-episode-platforms{padding:19px 15px;border-radius:21px}
+  .mylive-episode-platform-links{gap:7px}
+  .mylive-episode-platform-links a{min-height:102px;padding:10px 4px;font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .mylive-episode-platform-links a{transition:none}
+  .mylive-episode-platform-links a:hover{transform:none}
+}
