@@ -9,8 +9,9 @@ declare(strict_types=1);
  *
  * --publish-public is an explicit, once-only upload. --finalize will NEVER
  * repeat a possibly successful upload/add request. The local source MP3 is
- * deleted ONLY after public playback, Season 6 membership and an exact
- * confirmed entry with audio enclosure in the station's official podcast RSS.
+ * deleted immediately after a durably recorded, unambiguously accepted
+ * HearThis upload with an owned public permalink and original SHA-256 match.
+ * Season 6 association and RSS propagation are reconciled independently.
  */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/../includes/env.php';
@@ -157,6 +158,55 @@ function deseo_s6_cli_valid_spot_mp3(string $path): bool {
     return in_array($mime, ['audio/mpeg', 'audio/mp3', 'application/octet-stream'], true);
 }
 
+/**
+ * Applies to an ACCEPTED public upload receipt only. Preserve the local file
+ * on errors/uncertain responses. Write deletion authorization BEFORE unlink to
+ * recover an interrupted run without ever deleting a different/replaced file.
+ * Playlist and RSS publication must NOT delay this local cleanup.
+ */
+function deseo_s6_cli_cleanup_accepted(string $expected, string $receiptPath, array &$record): bool {
+    $id = (string)($record['track_id'] ?? '');
+    $sha = strtolower((string)($record['file_sha256'] ?? ''));
+    $url = (string)($record['public_url'] ?? '');
+    if (!ctype_digit($id) || (int)$id < 1
+        || (string)($record['title'] ?? '') !== DESEO_S6_RELEASE_TITLE
+        || (string)($record['file'] ?? '') !== DESEO_S6_RELEASE_FILE
+        || (string)($record['visibility'] ?? '') !== 'public'
+        || !preg_match('/^[a-f0-9]{64}$/D', $sha)
+        || !in_array((string)($record['state'] ?? ''), ['upload_accepted', 'finalizing', 'completed'], true)
+        || deseo_s6_cli_track_url($url) !== $url) {
+        deseo_s6_cli_fail('No exact, accepted Spot receipt with owned permalink. Local file retained.');
+    }
+    if (!empty($record['local_deleted_at'])) {
+        // Never unlink a later file with the same basename.
+        return true;
+    }
+    if (!file_exists($expected)) {
+        if (empty($record['cleanup_authorized_at'])) {
+            deseo_s6_cli_fail('Original MP3 unexpectedly missing without cleanup authorization; investigate.');
+        }
+        $record['local_deleted_at'] = gmdate('c');
+        $record['local_cleanup_recovered'] = true;
+        deseo_s6_cli_save($receiptPath, $record);
+        return true;
+    }
+    $real = realpath($expected);
+    if (!$real || $real !== $expected || !is_file($expected)
+        || is_link($expected) || !deseo_s6_cli_valid_spot_mp3($expected)
+        || !hash_equals($sha, (string)hash_file('sha256', $expected))) {
+        deseo_s6_cli_fail('Expected source path/type/SHA-256 changed. No MP3 deletion.');
+    }
+    if (empty($record['cleanup_authorized_at'])) {
+        $record['cleanup_authorized_at'] = gmdate('c');
+        deseo_s6_cli_save($receiptPath, $record);
+    }
+    if (!unlink($expected)) deseo_s6_cli_fail('Unlink failed; accepted upload receipt remains, retry --finalize.');
+    $record['local_deleted_at'] = gmdate('c');
+    deseo_s6_cli_save($receiptPath, $record);
+    echo 'LOCAL SPOT MP3 REMOVED after confirmed upload response and SHA-256 match (RSS/playlist not awaited).' . PHP_EOL;
+    return true;
+}
+
 $command = $argv[1] ?? '';
 if (count($argv) !== 2 || !in_array($command, ['--check', '--publish-public', '--finalize'], true)) {
     deseo_s6_cli_fail('Usage: --check | --publish-public | --finalize', 2);
@@ -191,7 +241,7 @@ echo 'Season 6 existing set: ' . DESEO_HEARTHIS_SEASON6_URL . PHP_EOL;
 echo 'Set numeric ID resolved: ' . ($setId ?? 'NO (no network write will be made)') . PHP_EOL;
 echo 'Actual playlist URL: ' . ($playlist['url'] ?? 'UNKNOWN') . PHP_EOL;
 echo 'Podcast RSS: ' . DESEO_HEARTHIS_PODCAST_RSS . PHP_EOL;
-echo 'Podcast RSS readable: ' . ($podcastReadable ? 'YES' : 'NO (no upload/deletion allowed)') . PHP_EOL;
+echo 'Podcast RSS readable: ' . ($podcastReadable ? 'YES' : 'NO (non-blocking, RSS is monitored later)') . PHP_EOL;
 echo 'Canonical playlist track read: ' . ($setListing !== null
     ? 'OK (' . count($setListing['tracks']) . ' tracks)' : 'UNVERIFIED (no network write will be made)') . PHP_EOL;
 echo 'Old PRIVATE test receipt: unrelated; preserved without modification.' . PHP_EOL;
@@ -203,7 +253,7 @@ echo 'Credentials configured for deseoradio: ' . ($key !== '' && $secret !== '' 
 echo 'Automatic MyLive upload: ' . (getenv('HEARTHIS_UPLOAD_ENABLED') === '1' ? 'ON (STOP)' : 'OFF') . PHP_EOL;
 if ($command === '--check') {
     echo 'Dry run only: no upload, set modification or deletion.' . PHP_EOL;
-    if (!$sourceValid || $setId === null || $setListing === null || !$podcastReadable || $key === '' || $secret === ''
+    if ((!$sourceValid && !is_array($record)) || $setId === null || $setListing === null || $key === '' || $secret === ''
         || $username !== 'deseoradio' || getenv('HEARTHIS_UPLOAD_ENABLED') === '1') {
         deseo_s6_cli_fail('Preflight not ready; do not publish. Check exact Spot MP3, Season 6 set, credentials and disabled worker.');
     }
@@ -214,7 +264,7 @@ if (getenv('HEARTHIS_UPLOAD_ENABLED') === '1') deseo_s6_cli_fail('Keep the norma
 
 if ($command === '--publish-public') {
     if ($record !== null) deseo_s6_cli_fail('Release receipt exists; another upload is prohibited. Use --finalize or inspect receipt.');
-    if ($setId === null || $setListing === null || !$podcastReadable) deseo_s6_cli_fail('Season 6 set listing and the station podcast RSS must BOTH be readable before upload.');
+    if ($setId === null || $setListing === null) deseo_s6_cli_fail('The existing Season 6 playlist must be uniquely resolved before upload.');
     if (!$file || $file !== $expected || !is_file($file) || is_link($expected) || !is_readable($file)) {
         deseo_s6_cli_fail('Expected original MP3 must still exist outside public_html.');
     }
@@ -278,101 +328,98 @@ if ($command === '--publish-public') {
         echo 'PUBLIC upload accepted. Track ID: ' . $id . PHP_EOL;
         if ($record['public_url'] !== '') echo 'Public permalink: ' . $record['public_url'] . PHP_EOL;
         else echo 'Public URL is awaiting discovery from the account feed; file retained.' . PHP_EOL;
-        echo 'Next: run --finalize (this never uploads the MP3 again).' . PHP_EOL;
+        echo 'The same command will now clean up the accepted local MP3 and attempt Season 6 association.' . PHP_EOL;
     } else {
         $record['state'] = 'needs_manual_review';
         echo 'PUBLIC upload outcome uncertain / rejected (HTTP ' . $http . '). Inspect HearThis BEFORE any new attempt.' . PHP_EOL;
     }
     deseo_s6_cli_save($receiptPath, $record);
-    echo 'Private-test receipt remains unchanged. Season 6 Spot MP3 retained.' . PHP_EOL;
-    exit($record['state'] === 'upload_accepted' ? 0 : 1);
+    if ($record['state'] !== 'upload_accepted') {
+        echo 'Upload unconfirmed: Spot MP3 retained; never blindly repeat --publish-public.' . PHP_EOL;
+        exit(1);
+    }
+    // A successful upload proceeds DIRECTLY to local cleanup and the same
+    // playlist reconciliation as --finalize. No one-hour RSS wait.
 }
 
-// --finalize: public audio, Season 6 membership and exact podcast RSS item must ALL be proven.
+// Post-upload reconciliation: NEVER POST the MP3 a second time.
 if (!is_array($record) || !in_array((string)($record['state'] ?? ''), ['upload_accepted', 'finalizing', 'completed'], true)
     || !ctype_digit((string)($record['track_id'] ?? ''))
     || (string)($record['file'] ?? '') !== DESEO_S6_RELEASE_FILE
     || (string)($record['title'] ?? '') !== DESEO_S6_RELEASE_TITLE
     || (string)($record['visibility'] ?? '') !== 'public'
     || !preg_match('/^[a-f0-9]{64}$/D', (string)($record['file_sha256'] ?? ''))) {
-    deseo_s6_cli_fail('No accepted public release. STOP: never auto-retry an uncertain upload.');
-}
-if ($record['state'] === 'completed') {
-    echo 'Already completed. No additional POST or file deletion attempted.' . PHP_EOL;
-    exit(0);
+    deseo_s6_cli_fail('No accepted public Spot receipt. STOP: never automatically retry an uncertain upload.');
 }
 $id = (string)$record['track_id'];
-$recordedSet = (string)($record['set_id'] ?? '');
-if ($setId === null || $recordedSet !== $setId) deseo_s6_cli_fail('Public Season 6 set cannot be independently matched to recorded ID; source retained.');
 $url = deseo_s6_cli_track_url((string)($record['public_url'] ?? ''));
 if ($url === '') {
     $url = deseo_s6_cli_public_url_by_id($id);
-    if ($url === '') deseo_s6_cli_fail('The new PUBLIC track permalink is not yet retrievable; source retained.');
+    if ($url === '') {
+        echo 'Accepted Track ID saved, but owned public permalink not found. Local file retained for safety.' . PHP_EOL;
+        exit(0);
+    }
     $record['public_url'] = $url;
     deseo_s6_cli_save($receiptPath, $record);
 }
-if (!deseo_s6_cli_public_ready($url, $id)) {
-    echo 'Public track/audio is still processing or its playback check did not pass. Source retained; rerun --finalize later.' . PHP_EOL;
+// Delete the ORIGINAL immediately on accepted response, independent of RSS or
+// playlist. This same step safely handles the existing accepted Spot receipt.
+deseo_s6_cli_cleanup_accepted($expected, $receiptPath, $record);
+
+$recordedSet = (string)($record['set_id'] ?? '');
+if ($setId === null || $recordedSet !== $setId) {
+    echo 'Local MP3 already cleaned; unique Season 6 set unavailable/mismatch. Retry --finalize later; never reupload.' . PHP_EOL;
     exit(0);
 }
-echo 'Public track ID / ownership / audible stream verified: ' . $id . PHP_EOL;
 $membership = deseo_hearthis_s6_contains_track($id, $setId);
-if ($membership === null) deseo_s6_cli_fail('Season 6 set membership read unavailable or response unexpected; source retained.');
+if ($membership === null) {
+    echo 'Local MP3 already cleaned; Season 6 listing unavailable. Association still pending; retry --finalize later.' . PHP_EOL;
+    exit(0);
+}
 if ($membership === false) {
     $setState = (string)($record['set_state'] ?? 'pending');
-    if ($setState !== 'pending') deseo_s6_cli_fail('Previous add request might already have succeeded. Inspect set; NO repeated add. MP3 retained.');
+    if ($setState !== 'pending') {
+        echo 'Previous Season 6 add may have succeeded; checking only, NOT repeating an uncertain POST.' . PHP_EOL;
+        exit(0);
+    }
     $record['set_state'] = 'adding_uncertain';
     $record['set_started_at'] = gmdate('c');
     deseo_s6_cli_save($receiptPath, $record);
+    // No implicit set creation; only the ID verified from the owner playlist.
     $accepted = deseo_hearthis_s6_add_track($id, $setId, $config);
     $record['set_post_accepted'] = $accepted;
     deseo_s6_cli_save($receiptPath, $record);
-    echo 'Season 6 add requested; now confirming actual membership via public read.' . PHP_EOL;
+    echo 'Season 6 association requested; checking public membership.' . PHP_EOL;
     $membership = deseo_hearthis_s6_contains_track($id, $setId);
     if ($membership !== true) {
-        echo 'Membership not independently confirmed yet. Local MP3 retained. Re-run --finalize later; add will NOT be repeated.' . PHP_EOL;
+        echo 'Season 6 membership pending; retry --finalize later (READ only; no duplicate POST).' . PHP_EOL;
         exit(0);
     }
 }
-$record['set_state'] = 'confirmed';
-$record['set_confirmed_at'] = gmdate('c');
-deseo_s6_cli_save($receiptPath, $record);
-if (!deseo_hearthis_podcast_contains_track($id, $url, DESEO_S6_RELEASE_TITLE)) {
-    echo 'PODCAST RSS PENDING: the exact public Spot and audio enclosure are not confirmed in ' .
-        DESEO_HEARTHIS_PODCAST_RSS . '. Local MP3 retained. Check the HearThis dashboard toggle and retry --finalize later.' . PHP_EOL;
-    exit(0);
-}
-$record['podcast_state'] = 'confirmed';
-$record['podcast_confirmed_at'] = gmdate('c');
-deseo_s6_cli_save($receiptPath, $record);
-echo 'Podcast RSS: exact Spot episode with audio enclosure confirmed.' . PHP_EOL;
-if (!deseo_s6_cli_public_ready($url, $id)) deseo_s6_cli_fail('Public audio no longer available: source retained.');
-if (deseo_hearthis_s6_contains_track($id, $setId) !== true) deseo_s6_cli_fail('Season 6 membership changed: source retained.');
-if (($record['podcast_state'] ?? '') !== 'confirmed'
-    || !deseo_hearthis_podcast_contains_track($id, $url, DESEO_S6_RELEASE_TITLE)) {
-    deseo_s6_cli_fail('Podcast RSS item/enclosure no longer verified: source retained.');
-}
-if ((string)$record['state'] === 'finalizing' && !file_exists($expected)
-    && !empty($record['cleanup_authorized_at'])) {
-    // Recover a successful unlink followed by an interrupted receipt update.
-    // Both remote checks above have passed again; never unlink another file.
-    $record['state'] = 'completed';
-    $record['deleted_at'] = gmdate('c');
-    $record['receipt_recovered_after_unlink'] = true;
+if (($record['set_state'] ?? '') !== 'confirmed') {
+    $record['set_state'] = 'confirmed';
+    $record['set_confirmed_at'] = gmdate('c');
     deseo_s6_cli_save($receiptPath, $record);
-    echo 'SUCCESS: public track and set still verified; prior file cleanup recovered.' . PHP_EOL;
-    exit(0);
 }
-if (!$file || $file !== $expected || !is_file($file) || is_link($expected)
-    || hash_file('sha256', $file) !== (string)$record['file_sha256']) {
-    deseo_s6_cli_fail('Local file absent/changed. No deletion performed.');
+echo 'Season 6 membership: CONFIRMED for Track ID ' . $id . PHP_EOL;
+
+$playable = deseo_s6_cli_public_ready($url, $id);
+if ($playable) {
+    echo 'Public owned track/audio playback: CONFIRMED.' . PHP_EOL;
+    $record['state'] = 'completed';
+    deseo_s6_cli_save($receiptPath, $record);
+} else {
+    echo 'Public playback still processing or probe failed. Local MP3 already removed on accepted upload.' . PHP_EOL;
 }
-$record['state'] = 'finalizing';
-$record['cleanup_authorized_at'] = gmdate('c');
-deseo_s6_cli_save($receiptPath, $record);
-if (!unlink($file)) deseo_s6_cli_fail('Could not delete the verified MP3; manual check needed. Receipt retained.');
-$record['state'] = 'completed';
-$record['deleted_at'] = gmdate('c');
-deseo_s6_cli_save($receiptPath, $record);
-echo 'SUCCESS: public Spot, Season 6 set AND podcast RSS verified; exact Spot MP3 removed from deseo-uploads.' . PHP_EOL;
+// RSS is informational and does NOT delay the local deletion / set association.
+if (deseo_hearthis_podcast_contains_track($id, $url, DESEO_S6_RELEASE_TITLE)) {
+    if (($record['podcast_state'] ?? '') !== 'confirmed') {
+        $record['podcast_state'] = 'confirmed';
+        $record['podcast_confirmed_at'] = gmdate('c');
+        deseo_s6_cli_save($receiptPath, $record);
+    }
+    echo 'Podcast RSS: CONFIRMED.' . PHP_EOL;
+} else {
+    echo 'Podcast RSS: PENDING (normal propagation; does not prevent local cleanup).' . PHP_EOL;
+}
 echo 'HearThis URL: ' . $url . PHP_EOL;
