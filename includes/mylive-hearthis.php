@@ -492,7 +492,11 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
         // Publishing without the EXISTING official Season 6 set would create
         // orphan DJ tracks and violate the archive/cleanup contract.
         $season6SetId = deseo_hearthis_s6_playlist_id((string)$config['username']);
-        if ($season6SetId === null) {
+        // Do not create orphan releases when the canonical collection track
+        // endpoint is unreadable or contradicts the station's playlist listing.
+        $season6Listing = $season6SetId !== null
+            ? deseo_hearthis_s6_track_listing($season6SetId) : null;
+        if ($season6SetId === null || $season6Listing === null) {
             $summary['playlist_unavailable'] = true;
             $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
             return $summary;
