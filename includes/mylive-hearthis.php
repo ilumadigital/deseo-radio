@@ -460,12 +460,20 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
  * outcome is review_required, NOT an automatic retry that might double-post.
  */
 function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
-    deseo_mylive_bootstrap($pdo);
     $summary = [
         'advanced' => 0, 'uploaded' => 0, 'local_deleted' => 0, 'synced' => 0,
         'verifying' => 0, 'podcast_pending' => 0, 'review_required' => 0, 'default_artwork' => 0,
         'disabled' => false, 'retention' => [],
     ];
+    // Production rollout hard-stop: a disabled/misconfigured uploader must
+    // perform ZERO MyLive changes. Previously, the scheduled->broadcasted
+    // transition ran before this guard; that was unsafe for a prelaunch cron.
+    $config = deseo_hearthis_upload_config();
+    if ($config === null) {
+        $summary['disabled'] = true;
+        return $summary;
+    }
+    deseo_mylive_bootstrap($pdo);
     $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_hearthis_worker', 0)");
     if (!$lock || (int)$lock->fetchColumn() !== 1) {
         $summary['locked'] = true;
@@ -483,12 +491,8 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
              WHERE hearthis_status = 'uploading' AND hearthis_started_at < ?"
         )->execute([$now->modify('-2 hours')->format('Y-m-d H:i:s')]);
 
-        $config = deseo_hearthis_upload_config();
-        if ($config === null) {
-            $summary['disabled'] = true;
-            $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
-            return $summary;
-        }
+        // The validated upload config was checked BEFORE bootstrap and before
+        // any status transition. Normal read/verification starts only when ON.
         // Publishing without the EXISTING official Season 6 set would create
         // orphan DJ tracks and violate the archive/cleanup contract.
         $season6SetId = deseo_hearthis_s6_playlist_id((string)$config['username']);
