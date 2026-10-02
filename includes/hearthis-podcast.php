@@ -13,6 +13,19 @@ declare(strict_types=1);
  */
 const DESEO_HEARTHIS_PODCAST_RSS = 'https://hearthis.at/deseoradio/podcast.xml';
 
+/**
+ * Hostinger's live anonymous API read for Season 6 Spot (track 14703494)
+ * confirmed stream_url=https://hearthis.app/... . Restrict to the exact
+ * provider-controlled hosts seen/documented for stream/enclosure media,
+ * never arbitrary URLs or wildcard subdomains.
+ */
+function deseo_hearthis_media_host_allowed(string $host): bool {
+    return in_array(strtolower($host), [
+        'hearthis.at', 'www.hearthis.at', 'download.hearthis.at', 'hearthis.app',
+    ], true);
+}
+
+
 function deseo_hearthis_podcast_canonical_track(string $candidate): string {
     $candidate = trim($candidate);
     if (!filter_var($candidate, FILTER_VALIDATE_URL)) return '';
@@ -33,9 +46,7 @@ function deseo_hearthis_podcast_enclosure_ok(string $url, string $mime, string $
     if (!filter_var($url, FILTER_VALIDATE_URL)) return false;
     $parts = parse_url($url);
     if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https'
-        || !in_array(strtolower((string)($parts['host'] ?? '')), [
-            'hearthis.at', 'www.hearthis.at', 'download.hearthis.at'
-        ], true)
+        || !deseo_hearthis_media_host_allowed((string)($parts['host'] ?? ''))
         || isset($parts['user']) || isset($parts['pass'])
         || isset($parts['port']) || isset($parts['fragment'])
         || !ctype_digit($length) || (float)$length < 1024) return false;
