@@ -248,7 +248,7 @@ admin_page_start('Season 6 DJs', 'dj-season');
         <h1>DJ Applications</h1>
         <p>Οι νεότερες αιτήσεις εμφανίζονται πρώτες. Άνοιξε μόνο όποια θέλεις να αξιολογήσεις και διαχειρίσου slot, status και MyLive flow από ένα σημείο.</p>
     </div>
-    <a class="button button-secondary" href="/dj" target="_blank" rel="noopener">Open public form ↗</a>
+    <a class="button button-secondary" href="/dj" target="_blank" rel="noopener">Open public form</a>
 </div>
 
 <?php if ($notice): ?><div class="notice notice-success"><?= admin_e($notice) ?></div><?php endif; ?>
@@ -371,15 +371,15 @@ admin_page_start('Season 6 DJs', 'dj-season');
                             </section>
 
                             <div class="season6-link-actions">
-                                <a class="button button-primary button-compact" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Photo ↓</a>
+                                <a class="button button-primary button-compact" href="dj-photo.php?id=<?= (int)$booking['id'] ?>">Photo</a>
                                 <?php if (!empty($booking['work_sample_url'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['work_sample_url']) ?>" target="_blank" rel="noopener noreferrer">Listen / view sample ↗</a>
+                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['work_sample_url']) ?>" target="_blank" rel="noopener noreferrer">Listen / view sample</a>
                                 <?php endif; ?>
                                 <?php if (!empty($booking['instagram'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['instagram']) ?>" target="_blank" rel="noopener">Social ↗</a>
+                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['instagram']) ?>" target="_blank" rel="noopener">Social</a>
                                 <?php endif; ?>
                                 <?php if (!empty($booking['website'])): ?>
-                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['website']) ?>" target="_blank" rel="noopener">Website ↗</a>
+                                    <a class="button button-secondary button-compact" href="<?= admin_e((string)$booking['website']) ?>" target="_blank" rel="noopener">Website</a>
                                 <?php endif; ?>
                             </div>
 
