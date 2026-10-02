@@ -99,6 +99,21 @@ if ($mode === '--check') {
         $eligibleStmt->execute([
             $now->format('Y-m-d H:i:s'), dj_season_start_at()->format('Y-m-d H:i:s')
         ]);
+        // Cross-check any remaining legacy late-hour reservation, including
+        // malformed account mappings the narrow automatic repair cannot infer.
+        $legacyStmt = $pdo->query(
+            "SELECT COUNT(*) FROM dj_portal_sets s
+             INNER JOIN dj_portal_accounts a ON a.id = s.account_id
+             LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
+             WHERE s.status = 'scheduled' AND s.file_deleted_at IS NULL
+               AND s.hearthis_status = 'pending'
+               AND s.hearthis_track_id IS NULL
+               AND a.start_time = '23:00:00'
+               AND TIME(s.scheduled_show_end) IN ('23:59:00', '23:59:59')
+               AND COALESCE(b.status, '') <> 'guest'"
+        );
+        echo 'Resident 23:00 legacy Show Ends still requiring review: '
+            . (int)$legacyStmt->fetchColumn() . PHP_EOL;
         echo 'SCHEDULED slots already elapsed: ' . $elapsedSlots . PHP_EOL;
         echo 'SCHEDULED original MP3 files unavailable: ' . $unavailableFiles . PHP_EOL;
         echo 'Already BROADCASTED eligible pending uploads: ' . (int)$eligibleStmt->fetchColumn() . PHP_EOL;
