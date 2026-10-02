@@ -822,7 +822,7 @@
     ['Upload EP', 'Ανέβασμα EP'],
     ['YOUR REPOSITORY', 'ΤΟ ΑΡΧΕΙΟ ΣΟΥ'],
     ['Episodes', 'Episodes'],
-    ['Τα BROADCASTED episodes παραμένουν στο ιστορικό σου, αλλά το audio file αφαιρείται αμέσως από τον server μόλις ολοκληρωθεί η μετάδοση.', 'BROADCASTED episodes remain in your history, but the audio file is removed from the server as soon as the broadcast is complete.'],
+    ['Τα BROADCASTED episodes παραμένουν στο ιστορικό σου. Το MP3 διαγράφεται μόνο μετά από επιτυχημένο HearThis sync και αποθήκευση του URL στο PMS.', 'BROADCASTED episodes stay in your history. Their MP3 is removed only after the HearThis URL is successfully stored in the PMS.'],
     ['Δεν έχεις ανεβάσει ακόμη κάποιο set.', 'You have not uploaded a set yet.'],
     ['Το πρώτο σου upload θα εμφανιστεί εδώ ως EP001.', 'Your first upload will appear here as EP001.'],
     ['FILE REMOVED · episode retained', 'ΤΟ ΑΡΧΕΙΟ ΑΦΑΙΡΕΘΗΚΕ · το episode διατηρήθηκε'],
