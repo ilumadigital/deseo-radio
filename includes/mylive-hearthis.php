@@ -95,10 +95,16 @@ function deseo_hearthis_file_manager_cover(array $account, array $assets): array
         $folder = $directory->getRealPath();
         if (!$folder || !str_starts_with($folder, $day . DIRECTORY_SEPARATOR)) continue;
         foreach ($seeds as $original01 => $stem) {
-            // Original 01 must still be present in this source folder. That is
-            // our account-specific provenance check, not a fuzzy name search.
-            if (!is_file($folder . DIRECTORY_SEPARATOR . $original01)
-                || is_link($folder . DIRECTORY_SEPARATOR . $original01)) continue;
+            // The same-folder 01 source is strongest evidence. In case the
+            // original 01 was removed after copying it into MyLive, accept
+            // only an exact normalized folder-label = account's 01 basename.
+            // Never accept a fuzzy or partial match.
+            $original01Path = $folder . DIRECTORY_SEPARATOR . $original01;
+            $hasOriginal01 = is_file($original01Path) && !is_link($original01Path);
+            $folderLabel = preg_replace('/^[0-9]+\.\s*/u', '', $folderName);
+            $folderToken = strtolower((string)preg_replace('/[^a-z0-9]/i', '', (string)$folderLabel));
+            $originalToken = strtolower((string)preg_replace('/[^a-z0-9]/i', '', $stem));
+            if (!$hasOriginal01 && ($originalToken === '' || $folderToken !== $originalToken)) continue;
             foreach (new DirectoryIterator($folder) as $candidate) {
                 if (!$candidate->isFile() || $candidate->isLink()) continue;
                 $name = $candidate->getFilename();
