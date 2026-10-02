@@ -462,7 +462,7 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
 function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     deseo_mylive_bootstrap($pdo);
     $summary = [
-        'advanced' => 0, 'uploaded' => 0, 'synced' => 0,
+        'advanced' => 0, 'uploaded' => 0, 'local_deleted' => 0, 'synced' => 0,
         'verifying' => 0, 'podcast_pending' => 0, 'review_required' => 0, 'default_artwork' => 0,
         'disabled' => false, 'retention' => [],
     ];
@@ -548,11 +548,18 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                 }
             }
             if ($cover === null) $summary['default_artwork']++;
+            // Persist the source fingerprint BEFORE the upload attempt.
+            $sourceSha = hash_file('sha256', (string)$file['real_file']);
+            if (!is_string($sourceSha) || !preg_match('/^[a-f0-9]{64}$/D', $sourceSha)) {
+                $summary['review_required']++;
+                continue;
+            }
             $started = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
             $claim = $pdo->prepare(
                 "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
                     hearthis_cover_asset_id = ?, hearthis_cover_source_path = ?,
                     hearthis_started_at = ?, hearthis_error = '', hearthis_meta_warning = '',
+                    hearthis_source_sha256 = ?, hearthis_upload_accepted_at = NULL,
                     hearthis_attempts = hearthis_attempts + 1
                  WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'pending'
                    AND file_deleted_at IS NULL"
@@ -560,7 +567,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             $claim->execute([
                 $cover !== null ? $cover['asset_id'] : null,
                 $cover !== null ? (string)$cover['source_path'] : null,
-                $started, $id
+                $started, $sourceSha, $id
             ]);
             if ($claim->rowCount() !== 1) continue;
             $attempted++;
@@ -582,21 +589,28 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                     "UPDATE dj_portal_sets SET hearthis_status = 'verifying',
                          hearthis_url = ?, hearthis_track_id = ?,
                          hearthis_error = '', hearthis_meta_warning = ?,
-                         hearthis_title = ?, hearthis_podcast_status = 'pending',
+                         hearthis_title = ?, hearthis_upload_accepted_at = ?,
+                         hearthis_podcast_status = 'pending',
                          hearthis_podcast_verified_at = NULL,
                          hearthis_set_id = ?, hearthis_set_status = 'pending',
                          hearthis_set_started_at = NULL
                      WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'uploading'
                        AND file_deleted_at IS NULL"
                 );
+                $acceptedAt = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
                 $save->execute([$track['url'], $track['id'],
-                    (string)$track['warning'], (string)$metadata['title'], $season6SetId, $id]);
+                    (string)$track['warning'], (string)$metadata['title'], $acceptedAt, $season6SetId, $id]);
                 if ($save->rowCount() !== 1) {
                     throw new RuntimeException('Database state changed after remote upload; manual verification required.');
                 }
-                // Remote upload accepted; the local MP3 must remain until the
-                // separately fetched public track and stream pass verification.
                 $summary['uploaded']++;
+                // The accepted ID, owned permalink, title and source SHA are
+                // durable now. Clean only this MP3 without waiting for RSS/set.
+                $cleanup = deseo_mylive_cleanup_broadcasted_sets($pdo, $id);
+                $summary['local_deleted'] += (int)$cleanup['deleted'];
+                if ((int)$cleanup['failed'] > 0) {
+                    error_log('Accepted upload saved; local cleanup pending for episode ' . $id);
+                }
             } catch (Throwable $error) {
                 // Never log raw API bodies, credentials or private file paths.
                 error_log('HearThis upload needs review for set ' . $id . ': ' . $error->getMessage());
@@ -608,14 +622,14 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             }
         }
 
-        // Check processed public tracks separately (including prior cron runs).
-        // Both playable PUBLIC audio and proven presence in the EXACT Season 6
-        // set are required before marking any row as synced/deletion-eligible.
+        // Remote reconciliation is independent of the local source file, which
+        // is normally already deleted after the accepted upload response.
         $verify = $pdo->prepare(
             "SELECT id, hearthis_url, hearthis_track_id, hearthis_set_id,
                     hearthis_set_status, hearthis_set_started_at, hearthis_title
              FROM dj_portal_sets WHERE status = 'broadcasted'
-               AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
+               AND hearthis_status = 'verifying'
+               AND hearthis_upload_accepted_at IS NOT NULL
                AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
              ORDER BY hearthis_started_at ASC, id ASC LIMIT 5"
         );
@@ -652,7 +666,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                          SET hearthis_set_status = 'adding', hearthis_set_started_at = ?
                          WHERE id = ? AND hearthis_status = 'verifying'
                            AND hearthis_set_status = 'pending' AND hearthis_set_id = ?
-                           AND file_deleted_at IS NULL"
+                           AND hearthis_upload_accepted_at IS NOT NULL"
                     );
                     $claim->execute([$started, $id, $assignedSetId]);
                     if ($claim->rowCount() !== 1) continue;
@@ -669,10 +683,8 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                         continue;
                     }
                 }
-                // HearThis's "Show Mix inside Podcast / RSS feed" control is
-                // NOT a documented upload/edit API parameter. The actual RSS
-                // item and its audio enclosure are the authoritative proof;
-                // absence must retain the MP3 rather than assume upload = RSS.
+                // Monitor RSS separately. Its eventual appearance updates the
+                // archive status but is NOT a condition for local MP3 cleanup.
                 $publishedTitle = trim((string)($track['hearthis_title'] ?? ''));
                 if ($publishedTitle === '' || !deseo_hearthis_podcast_contains_track(
                     $remoteId, (string)$track['hearthis_url'], $publishedTitle
@@ -689,7 +701,8 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                          hearthis_podcast_verified_at = ?,
                          hearthis_synced_at = ?, hearthis_error = ''
                      WHERE id = ? AND status = 'broadcasted'
-                       AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
+                       AND hearthis_status = 'verifying'
+                       AND hearthis_upload_accepted_at IS NOT NULL
                        AND hearthis_url = ? AND hearthis_track_id = ?
                        AND hearthis_set_id = ? AND hearthis_title = ?"
                 );
