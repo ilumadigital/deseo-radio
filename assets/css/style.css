@@ -2888,8 +2888,7 @@ body.dj-profile-modal-open{overflow:hidden}
 }
 
 /* Deseo Podcasts · simple editorial teaser */
-.brand-cta-before-podcasts{padding-bottom:42px}
-.deseo-podcasts-section{padding:0 0 92px;background:#070708}
+.deseo-podcasts-section{padding:76px 0 0;background:#070708}
 .deseo-podcasts-panel{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(320px,.64fr);
@@ -2949,8 +2948,7 @@ body.dj-profile-modal-open{overflow:hidden}
   .deseo-podcasts-story{padding-top:0}
 }
 @media(max-width:620px){
-  .brand-cta-before-podcasts{padding-bottom:24px}
-  .deseo-podcasts-section{padding-bottom:70px}
+  .deseo-podcasts-section{padding-top:48px}
   .deseo-podcasts-panel{gap:26px;padding:30px 22px;border-radius:24px}
   .deseo-podcasts-meta{align-items:flex-start;flex-direction:column;gap:13px}
   .deseo-podcasts-intro .section-title{font-size:clamp(43px,10vw,56px);line-height:.97}
