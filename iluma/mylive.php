@@ -71,6 +71,27 @@ function mylive_admin_hearthis_payload(array $set, string $artistName): array {
     return $preview;
 }
 
+/** Match the actual optional multipart image choice, never imply a fallback was uploaded. */
+function mylive_admin_hearthis_artwork_label(array $set, ?array $resolvedCover): string {
+    if (trim((string)($set['hearthis_description'] ?? '')) !== '') {
+        $snapshotSource = (string)($set['hearthis_cover_source_path'] ?? '');
+        if ($snapshotSource !== '') return 'DJ 02: ' . basename($snapshotSource) . ' (saved upload choice)';
+        if ((int)($set['hearthis_cover_asset_id'] ?? 0) > 0) {
+            return 'DJ 02: MyLive asset #' . (int)$set['hearthis_cover_asset_id'] . ' (saved upload choice)';
+        }
+        return 'No custom image supplied (HearThis may use embedded ID3 / account default)';
+    }
+    if ($resolvedCover !== null
+        && in_array((string)($resolvedCover['mime'] ?? ''), ['image/png', 'image/jpeg'], true)
+        && is_file((string)($resolvedCover['path'] ?? ''))) {
+        $size = filesize((string)$resolvedCover['path']);
+        if ($size !== false && $size > 0 && $size <= 10 * 1024 * 1024) {
+            return 'DJ 02: ' . basename((string)($resolvedCover['name'] ?? '02')) . ' (preview)';
+        }
+    }
+    return 'No eligible custom image (HearThis may use embedded ID3 / account default)';
+}
+
 function mylive_admin_account(PDO $pdo, int $id): array {
     $stmt = $pdo->prepare(
         "SELECT a.*, b.status AS application_status
@@ -1078,6 +1099,7 @@ foreach ($accounts as $account) {
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
                 hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_description, hearthis_genre, hearthis_tags,
+                hearthis_cover_asset_id, hearthis_cover_source_path,
                 hearthis_set_status, hearthis_set_id, hearthis_podcast_status,
                 hearthis_podcast_verified_at, uploaded_at
          FROM dj_portal_sets WHERE account_id = ? ORDER BY episode_no DESC LIMIT 8"
@@ -1093,6 +1115,7 @@ $receivedSetsStmt = $pdo->query(
             s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
             s.hearthis_title, s.hearthis_description, s.hearthis_genre, s.hearthis_tags,
+            s.hearthis_cover_asset_id, s.hearthis_cover_source_path,
             s.hearthis_set_status, s.hearthis_set_id, s.hearthis_podcast_status,
             s.hearthis_podcast_verified_at, s.uploaded_at, a.artist_name,
             b.status AS application_status
@@ -1594,7 +1617,7 @@ admin_page_start('MyLive', 'mylive');
                                                             <small><b>SEASON 6 SET:</b> <?= admin_e(DESEO_HEARTHIS_SEASON6_URL) ?></small>
                                                             <small><b>DESCRIPTION:</b></small>
                                                             <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
-                                                            <small>Artwork: τετράγωνο DJ 02 όταν είναι έγκυρο/διαθέσιμο· διαφορετικά παραλείπεται το custom image.</small>
+                                                            <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[$accountId] ?? null)) ?></small>
                                                         </div>
                                                     </details>
                                                 <?php if (!empty($set['file_deleted_at'])): ?>
@@ -1786,7 +1809,7 @@ admin_page_start('MyLive', 'mylive');
                                                             <small><b>SEASON 6 SET:</b> <?= admin_e(DESEO_HEARTHIS_SEASON6_URL) ?></small>
                                                             <small><b>DESCRIPTION:</b></small>
                                                             <pre style="white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:inherit;font-size:12px;line-height:1.55;"><?= admin_e((string)$hearthisPayload['description']) ?></pre>
-                                                            <small>Artwork: τετράγωνο DJ 02 όταν είναι έγκυρο/διαθέσιμο· διαφορετικά παραλείπεται το custom image.</small>
+                                                            <small><b>ARTWORK:</b> <?= admin_e(mylive_admin_hearthis_artwork_label($set, $hearthisCoverByAccount[(int)$set['account_id']] ?? null)) ?></small>
                                                         </div>
                                                     </details>
                             <?php if (deseo_hearthis_public_url((string)($set['hearthis_url'] ?? ''))): ?><a href="<?= admin_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">Open HearThis episode</a><?php endif; ?>
