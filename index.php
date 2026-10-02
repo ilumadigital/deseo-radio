@@ -584,49 +584,6 @@ $partners = [
         </div>
     </section>
 
-    <section class="content-section faq-section" id="faq">
-        <div class="wide-shell">
-            <div class="section-head reveal">
-                <div>
-                    <span class="kicker" data-i18n="faq.kicker"><?= deseo_e(deseo_t('faq.kicker')) ?></span>
-                    <h2 class="metal-title section-title" data-i18n="faq.title"><?= deseo_e(deseo_t('faq.title')) ?></h2>
-                </div>
-                <p data-i18n="faq.text"><?= deseo_e(deseo_t('faq.text')) ?></p>
-            </div>
-
-            <div class="faq-list">
-                <?php for ($i = 1; $i <= DESEO_PUBLIC_FAQ_COUNT; $i++): ?>
-                    <details class="faq-item reveal">
-                        <summary>
-                            <span><?= str_pad((string)$i, 2, '0', STR_PAD_LEFT) ?></span>
-                            <strong data-i18n="faq.q<?= $i ?>"><?= deseo_e(deseo_t('faq.q' . $i)) ?></strong>
-                            <i aria-hidden="true">+</i>
-                        </summary>
-                        <p data-i18n="faq.a<?= $i ?>"><?= deseo_e(deseo_t('faq.a' . $i)) ?></p>
-                    </details>
-                <?php endfor; ?>
-            </div>
-        </div>
-    </section>
-
-    <section class="brand-cta brand-cta-before-podcasts">
-        <div class="wide-shell brand-cta-card reveal">
-            <div>
-                <span class="kicker" data-i18n="advertise.kicker"><?= deseo_e(deseo_t('advertise.kicker')) ?></span>
-                <h2 class="metal-title" data-i18n="advertise.title"><?= deseo_e(deseo_t('advertise.title')) ?></h2>
-            </div>
-            <div>
-                <p data-i18n="advertise.text"><?= deseo_e(deseo_t('advertise.text')) ?></p>
-                <a class="button button-red"
-                   href="https://iluma.gr/contact/"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   data-i18n="advertise.cta"
-                   data-analytics-event="advertising_cta_click"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
-            </div>
-        </div>
-    </section>
-
     <section class="deseo-podcasts-section" id="deseo-podcasts" aria-labelledby="deseo-podcasts-title">
         <div class="wide-shell">
             <div class="deseo-podcasts-panel reveal">
@@ -652,6 +609,50 @@ $partners = [
             </div>
         </div>
     </section>
+
+    <section class="content-section faq-section" id="faq">
+        <div class="wide-shell">
+            <div class="section-head reveal">
+                <div>
+                    <span class="kicker" data-i18n="faq.kicker"><?= deseo_e(deseo_t('faq.kicker')) ?></span>
+                    <h2 class="metal-title section-title" data-i18n="faq.title"><?= deseo_e(deseo_t('faq.title')) ?></h2>
+                </div>
+                <p data-i18n="faq.text"><?= deseo_e(deseo_t('faq.text')) ?></p>
+            </div>
+
+            <div class="faq-list">
+                <?php for ($i = 1; $i <= DESEO_PUBLIC_FAQ_COUNT; $i++): ?>
+                    <details class="faq-item reveal">
+                        <summary>
+                            <span><?= str_pad((string)$i, 2, '0', STR_PAD_LEFT) ?></span>
+                            <strong data-i18n="faq.q<?= $i ?>"><?= deseo_e(deseo_t('faq.q' . $i)) ?></strong>
+                            <i aria-hidden="true">+</i>
+                        </summary>
+                        <p data-i18n="faq.a<?= $i ?>"><?= deseo_e(deseo_t('faq.a' . $i)) ?></p>
+                    </details>
+                <?php endfor; ?>
+            </div>
+        </div>
+    </section>
+
+    <section class="brand-cta">
+        <div class="wide-shell brand-cta-card reveal">
+            <div>
+                <span class="kicker" data-i18n="advertise.kicker"><?= deseo_e(deseo_t('advertise.kicker')) ?></span>
+                <h2 class="metal-title" data-i18n="advertise.title"><?= deseo_e(deseo_t('advertise.title')) ?></h2>
+            </div>
+            <div>
+                <p data-i18n="advertise.text"><?= deseo_e(deseo_t('advertise.text')) ?></p>
+                <a class="button button-red"
+                   href="https://iluma.gr/contact/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   data-i18n="advertise.cta"
+                   data-analytics-event="advertising_cta_click"><?= deseo_e(deseo_t('advertise.cta')) ?></a>
+            </div>
+        </div>
+    </section>
+
     <?php require __DIR__ . '/includes/ai-discovery.php'; ?>
 </main>
 
