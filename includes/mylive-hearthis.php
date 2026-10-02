@@ -196,7 +196,7 @@ function deseo_hearthis_metadata(array $set): array {
     ];
 }
 
-function deseo_hearthis_upload_track(array $set, array $config, array $cover): array {
+function deseo_hearthis_upload_track(array $set, array $config, ?array $cover): array {
     if (!function_exists('curl_init') || !class_exists('CURLFile')) {
         throw new RuntimeException('PHP cURL extension is required.');
     }
@@ -207,15 +207,19 @@ function deseo_hearthis_upload_track(array $set, array $config, array $cover): a
     }
     $metadata = deseo_hearthis_metadata($set);
     // Field names are provisional until the HearThis write API is verified.
-    // Config remains fail-closed; no default logo or 01 cover is ever sent.
+    // Custom artwork is optional: when unavailable, omit it entirely and let
+    // HearThis apply its account/platform default. Never send another DJ's
+    // image, promotional 01, or a locally guessed station-logo file.
     $fields = [
         'file' => new CURLFile((string)$file['real_file'], 'audio/mpeg', (string)$set['stored_name']),
-        'artwork' => new CURLFile((string)$cover['path'], (string)$cover['mime'], (string)$cover['name']),
         'title' => $metadata['title'],
         'description' => $metadata['description'],
         'genre' => $metadata['genre'],
         'username' => $config['username'],
     ];
+    if ($cover !== null) {
+        $fields['artwork'] = new CURLFile((string)$cover['path'], (string)$cover['mime'], (string)$cover['name']);
+    }
     $headers = ['Accept: application/json'];
     $curl = curl_init($config['endpoint']);
     if ($curl === false) throw new RuntimeException('Could not initialize upload.');
@@ -350,18 +354,17 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                 $summary['review_required']++;
                 continue;
             }
-            // Do not upload audio without the exact DJ-specific 02 image.
-            // Missing/invalid cover is a reversible pending condition; an assigned
-            // cover will be picked up automatically on the next cron iteration.
+            // Prefer the DJ's exact square 02, but an unavailable/ambiguous
+            // image must not block an otherwise valid episode publication.
+            $cover = null;
             try {
                 $cover = deseo_hearthis_cover($pdo, (int)$set['account_id']);
-            } catch (Throwable $coverError) {
-                $pdo->prepare(
-                    "UPDATE dj_portal_sets SET hearthis_error = ?
-                     WHERE id = ? AND hearthis_status = 'pending'"
-                )->execute([substr($coverError->getMessage(), 0, 500), $id]);
-                $summary['missing_artwork'] = ($summary['missing_artwork'] ?? 0) + 1;
-                continue;
+            } catch (PDOException $databaseError) {
+                // A database failure is not a missing-artwork condition.
+                throw $databaseError;
+            } catch (RuntimeException $coverError) {
+                // No supplied image: the HearThis account/platform default wins.
+                $summary['default_artwork'] = ($summary['default_artwork'] ?? 0) + 1;
             }
             $started = $now->format('Y-m-d H:i:s');
             $claim = $pdo->prepare(
@@ -372,7 +375,11 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                  WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'pending'
                    AND file_deleted_at IS NULL"
             );
-            $claim->execute([$cover['asset_id'], (string)$cover['source_path'], $started, $id]);
+            $claim->execute([
+                $cover !== null ? $cover['asset_id'] : null,
+                $cover !== null ? (string)$cover['source_path'] : null,
+                $started, $id
+            ]);
             if ($claim->rowCount() !== 1) continue;
             $attempted++;
             try {
