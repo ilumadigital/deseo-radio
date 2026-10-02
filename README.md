@@ -440,27 +440,27 @@ The CLI worker `iluma/cron-mylive-hearthis.php` runs every minute under **Europe
 
 The HearThis [official API documentation](https://hearthis.at/api) documents the Premium write operation `POST https://xhr.hearthis.at/upload_api.php` and authentication with `key` and `secret` as **HTTPS multipart POST fields**. The transport now implements that exact endpoint (blank `HEARTHIS_UPLOAD_ENDPOINT` uses the official value; any non-empty override must equal that URL). Blank `HEARTHIS_UPLOAD_AUTH_MODE` defaults to `post`; `post` is the only supported mode. Its multipart request includes `key`, `secret`, `file`, `title`, `private=0`, `description`, `genre`, and `tags`, plus optional JPG/PNG image in the documented **`image`** field (not `artwork`). It reads `files[0]`, checks the per-file `error`, captures `id`, `full.permalink_url` and an optional `meta_error`. Keys and secrets are never committed, sent to a public GET endpoint, or put in a URL. **Do not turn on `HEARTHIS_UPLOAD_ENABLED` until a separate staging track has proved the endpoint, published metadata, artwork fallback and public stream checks using rotated production credentials.**
 
-**Hostinger cron protected rollout (October 2026):** CLI entrypoint \`iluma/cron-mylive-hearthis.php\` now accepts \`--check\` (strict SELECT/SHOW inspection only, no bootstrap or writes, no HearThis network calls) and \`--run\` (normal worker; the legacy no-argument invocation remains supported). The worker checks \`deseo_hearthis_upload_config()\` BEFORE MyLive migrations, stale-upload reviews, \`SCHEDULED\` → \`BROADCASTED\` transitions, and retention. When \`HEARTHIS_UPLOAD_ENABLED=0\` or the config is invalid it returns \`disabled=true\`, with zero state changes. Do not confuse cron deployment with activating uploads; an actual Scheduled Task in hPanel must be configured separately.
+**Hostinger cron protected rollout (October 2026):** CLI entrypoint `iluma/cron-mylive-hearthis.php` now accepts `--check` (strict SELECT/SHOW inspection only, no bootstrap or writes, no HearThis network calls) and `--run` (normal worker; the legacy no-argument invocation remains supported). The worker checks `deseo_hearthis_upload_config()` BEFORE MyLive migrations, stale-upload reviews, `SCHEDULED` → `BROADCASTED` transitions, and retention. When `HEARTHIS_UPLOAD_ENABLED=0` or the config is invalid it returns `disabled=true`, with zero state changes. Do not confuse cron deployment with activating uploads; an actual Scheduled Task in hPanel must be configured separately.
 
 Before installing the cron, run (via Hostinger SSH/Terminal):
 
-\`\`\`sh
+```sh
 cd ~/domains/deseoradio.com/public_html
 command -v php
 php -l iluma/cron-mylive-hearthis.php
 php iluma/cron-mylive-hearthis.php --check
 php iluma/cron-mylive-hearthis.php --run
-\`\`\`
+```
 
-The precheck prints the local Athens time, Season 6 start, worker switch, PHP extensions, required DB column readiness, episode status counts, missing Show Ends count, and earliest scheduled end. It must report the switch OFF; the \`--run\` result must have \`disabled=true\`, \`advanced=0\`, \`uploaded=0\`, \`local_deleted=0\`. Neither invocation posts audio while OFF. Do NOT paste raw \`.env\`, API keys, secrets or user-upload file paths.
+The precheck prints the local Athens time, Season 6 start, worker switch, PHP extensions, required DB column readiness, episode status counts, missing Show Ends count, and earliest scheduled end. It must report the switch OFF; the `--run` result must have `disabled=true`, `advanced=0`, `uploaded=0`, `local_deleted=0`. Neither invocation posts audio while OFF. Do NOT paste raw `.env`, API keys, secrets or user-upload file paths.
 
 Set exactly ONE once-per-minute CLI cron task in Hostinger hPanel, after confirming the real PHP executable and absolute home directory (this is a template, not a claim that it was installed):
 
-\`\`\`cron
-* * * * * /usr/bin/php /home/u707476285/domains/deseoradio.com/public_html/iluma/cron-mylive-hearthis.php --run
-\`\`\`
+```cron
+* * * * * /usr/bin/php /home/ACCOUNT_USER/domains/deseoradio.com/public_html/iluma/cron-mylive-hearthis.php --run
+```
 
-Use the actual PHP executable from \`command -v php\` if different. Check Hostinger Scheduled Tasks execution history/output: each tick should show \`disabled=true\` while OFF. Check for pre-existing duplicate tasks. Keep \`HEARTHIS_UPLOAD_ENABLED=0\` until a separately authorized readiness/activation step. If the provider does not support one-minute tasks on this plan, do not silently substitute another schedule without confirming the intended frequency.
+Use the actual PHP executable from `command -v php` if different. Check Hostinger Scheduled Tasks execution history/output: each tick should show `disabled=true` while OFF. Check for pre-existing duplicate tasks. Keep `HEARTHIS_UPLOAD_ENABLED=0` until a separately authorized readiness/activation step. If the provider does not support one-minute tasks on this plan, do not silently substitute another schedule without confirming the intended frequency.
 
 The worker uses an advisory database lock and does not double-post concurrently. Unknown network results or missing/unrecognized owner URLs become `review_required`, retain the MP3 and require manual reconciliation before any new attempt. A successful upload response is recorded as `verifying` with Track ID, owned URL, exact title, source SHA-256 and `hearthis_upload_accepted_at`; local cleanup follows immediately. Later cron ticks independently check public playback, membership in existing Season 6, and the exact RSS item/enclosure, even after original audio has been deleted. Missing RSS for an hour does NOT postpone local cleanup. The editor locks uploaded/verifying episodes against status regression. Test the production MariaDB migration on a staging copy before merging; the five already scheduled production sets must not be used for testing.
 
