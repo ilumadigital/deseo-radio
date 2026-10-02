@@ -1333,6 +1333,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                                 <?php if (!empty($set['hearthis_url']) && (string)$set['hearthis_status'] === 'synced'): ?><a href="<?= deseo_mylive_e((string)$set['hearthis_url']) ?>" target="_blank" rel="noopener noreferrer">HearThis</a><?php endif; ?>
                                 <?php if ((string)($set['status'] ?? '') === 'broadcasted' && empty($set['file_deleted_at'])): ?><small>HEARTHIS: <?= deseo_mylive_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?></small><?php endif; ?>
                                 <?php if (!empty($set['file_deleted_at'])): ?>
+                                    <small class="set-retention is-deleted">
                                         FILE REMOVED · episode retained
                                     </small>
                                 <?php else: ?>
