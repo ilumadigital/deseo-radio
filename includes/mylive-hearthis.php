@@ -411,7 +411,7 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
     );
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $nowSql = $now->format('Y-m-d H:i:s');
-    $cutoff = $now->modify('-6 hours')->format('Y-m-d H:i:s');
+    // Never strand a completed, pre-reserved slot after a cron/server outage.
     $advanced = 0;
     foreach ($rows as $row) {
         $end = (string)($row['scheduled_show_end'] ?? '');
@@ -425,7 +425,7 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
                 )->execute([$end, (int)$row['id']]);
             }
         }
-        if ($end === '' || $end > $nowSql || $end < $cutoff
+        if ($end === '' || $end > $nowSql
             || $end < dj_season_start_at()->format('Y-m-d H:i:s')) continue;
         // A slot was planned and its broadcast window has completed.
         $pdo->prepare(
@@ -445,7 +445,11 @@ function deseo_hearthis_advance_broadcasts(PDO $pdo, DateTimeImmutable $now): in
  */
 function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     deseo_mylive_bootstrap($pdo);
-    $summary = ['advanced' => 0, 'uploaded' => 0, 'review_required' => 0, 'disabled' => false, 'retention' => []];
+    $summary = [
+        'advanced' => 0, 'uploaded' => 0, 'synced' => 0,
+        'verifying' => 0, 'review_required' => 0, 'default_artwork' => 0,
+        'disabled' => false, 'retention' => [],
+    ];
     $lock = $pdo->query("SELECT GET_LOCK('deseo_mylive_hearthis_worker', 0)");
     if (!$lock || (int)$lock->fetchColumn() !== 1) {
         $summary['locked'] = true;
@@ -453,20 +457,23 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
     }
     try {
         $now = new DateTimeImmutable('now', dj_season_athens_timezone());
+        $nowSql = $now->format('Y-m-d H:i:s');
         $summary['advanced'] = deseo_hearthis_advance_broadcasts($pdo, $now);
-        // A PHP process killed mid-request may have succeeded remotely.
-        // Quarantine that attempt rather than uploading the same episode again.
+        // A terminated request may have published remotely. Never auto-retry
+        // this uncertain result, even if no URL came back to the worker.
         $pdo->prepare(
             "UPDATE dj_portal_sets SET hearthis_status = 'review_required',
-                hearthis_error = 'Interrupted upload: verify the account before retrying'
+                hearthis_error = 'Interrupted upload: verify account before retrying'
              WHERE hearthis_status = 'uploading' AND hearthis_started_at < ?"
         )->execute([$now->modify('-2 hours')->format('Y-m-d H:i:s')]);
+
         $config = deseo_hearthis_upload_config();
         if ($config === null) {
             $summary['disabled'] = true;
             $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
             return $summary;
         }
+        $uploadLimit = max(1, min(5, $limit));
         $stmt = $pdo->prepare(
             "SELECT s.id, s.account_id, s.episode_no, s.file_path, s.stored_name,
                     s.broadcasted_at, s.scheduled_show_end, a.artist_name
@@ -474,10 +481,10 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
              INNER JOIN dj_portal_accounts a ON a.id = s.account_id
              WHERE s.status = 'broadcasted' AND s.hearthis_status = 'pending'
                AND s.file_deleted_at IS NULL AND s.broadcasted_at >= ?
+               AND s.scheduled_show_end IS NOT NULL AND s.scheduled_show_end <= ?
              ORDER BY s.broadcasted_at ASC, s.id ASC LIMIT 100"
         );
-        $stmt->execute([dj_season_start_at()->format('Y-m-d H:i:s')]);
-        $uploadLimit = max(1, min(5, $limit));
+        $stmt->execute([dj_season_start_at()->format('Y-m-d H:i:s'), $nowSql]);
         $attempted = 0;
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $set) {
             if ($attempted >= $uploadLimit) break;
@@ -493,19 +500,27 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
                 $summary['review_required']++;
                 continue;
             }
-            // Prefer the DJ's exact square 02, but an unavailable/ambiguous
-            // image must not block an otherwise valid episode publication.
+
+            // Artwork is optional, never a reason to withhold the audio archive.
             $cover = null;
             try {
                 $cover = deseo_hearthis_cover($pdo, (int)$set['account_id']);
             } catch (PDOException $databaseError) {
-                // A database failure is not a missing-artwork condition.
                 throw $databaseError;
             } catch (RuntimeException $coverError) {
-                // No supplied image: the HearThis account/platform default wins.
-                $summary['default_artwork'] = ($summary['default_artwork'] ?? 0) + 1;
+                // Omit custom image: provider default or embedded ID3 will apply.
             }
-            $started = $now->format('Y-m-d H:i:s');
+            if ($cover !== null) {
+                $path = (string)$cover['path'];
+                $bytes = is_file($path) ? filesize($path) : false;
+                if (!in_array((string)$cover['mime'], ['image/png', 'image/jpeg'], true)
+                    || $bytes === false || $bytes < 1 || $bytes > 10 * 1024 * 1024) {
+                    // Documented upload API accepts only <= 10 MB JPG/PNG.
+                    $cover = null;
+                }
+            }
+            if ($cover === null) $summary['default_artwork']++;
+            $started = (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s');
             $claim = $pdo->prepare(
                 "UPDATE dj_portal_sets SET hearthis_status = 'uploading',
                     hearthis_cover_asset_id = ?, hearthis_cover_source_path = ?,
@@ -523,27 +538,77 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
             $attempted++;
             try {
                 $track = deseo_hearthis_upload_track($set, $config, $cover);
+                if ($track['url'] === '') {
+                    // The API confirms an ID but not a usable permalink. Never
+                    // blindly re-upload; save the ID for manual reconciliation.
+                    $pdo->prepare(
+                        "UPDATE dj_portal_sets SET hearthis_status = 'review_required',
+                             hearthis_track_id = ?, hearthis_error = ?
+                         WHERE id = ? AND hearthis_status = 'uploading'"
+                    )->execute([$track['id'], substr((string)$track['warning'], 0, 500), $id]);
+                    $summary['review_required']++;
+                    continue;
+                }
                 $save = $pdo->prepare(
-                    "UPDATE dj_portal_sets SET hearthis_status = 'synced',
-                         hearthis_url = ?, hearthis_track_id = ?,
-                         hearthis_synced_at = ?, hearthis_error = ''
+                    "UPDATE dj_portal_sets SET hearthis_status = 'verifying',
+                         hearthis_url = ?, hearthis_track_id = ?, hearthis_error = ?
                      WHERE id = ? AND status = 'broadcasted' AND hearthis_status = 'uploading'
                        AND file_deleted_at IS NULL"
                 );
                 $save->execute([$track['url'], $track['id'],
-                    (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s'), $id]);
+                    (string)$track['warning'], $id]);
                 if ($save->rowCount() !== 1) {
-                    throw new RuntimeException('Database sync state was changed; manual verification required.');
+                    throw new RuntimeException('Database state changed after remote upload; manual verification required.');
                 }
+                // Remote upload accepted; the local MP3 must remain until the
+                // separately fetched public track and stream pass verification.
                 $summary['uploaded']++;
             } catch (Throwable $error) {
-                // Do not log response bodies, auth tokens or private storage paths.
+                // Never log raw API bodies, credentials or private file paths.
                 error_log('HearThis upload needs review for set ' . $id . ': ' . $error->getMessage());
                 $pdo->prepare(
                     "UPDATE dj_portal_sets SET hearthis_status = 'review_required', hearthis_error = ?
                      WHERE id = ? AND hearthis_status = 'uploading'"
                 )->execute([substr($error->getMessage(), 0, 500), $id]);
                 $summary['review_required']++;
+            }
+        }
+
+        // Check processed public tracks separately (including prior cron runs).
+        // No upload is ever repeated while awaiting provider-side processing.
+        $verify = $pdo->prepare(
+            "SELECT id, hearthis_url, hearthis_track_id
+             FROM dj_portal_sets WHERE status = 'broadcasted'
+               AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
+               AND hearthis_url IS NOT NULL AND hearthis_track_id IS NOT NULL
+             ORDER BY hearthis_started_at ASC, id ASC LIMIT 5"
+        );
+        $verify->execute();
+        foreach ($verify->fetchAll(PDO::FETCH_ASSOC) as $track) {
+            $id = (int)$track['id'];
+            try {
+                if (!deseo_hearthis_public_track_ready(
+                    (string)$track['hearthis_url'], (string)$track['hearthis_track_id'],
+                    (string)$config['username']
+                )) {
+                    $summary['verifying']++;
+                    continue;
+                }
+                $pdo->prepare(
+                    "UPDATE dj_portal_sets SET hearthis_status = 'synced',
+                         hearthis_synced_at = ?, hearthis_error = ''
+                     WHERE id = ? AND status = 'broadcasted'
+                       AND hearthis_status = 'verifying' AND file_deleted_at IS NULL
+                       AND hearthis_url = ? AND hearthis_track_id = ?"
+                )->execute([
+                    (new DateTimeImmutable('now', dj_season_athens_timezone()))->format('Y-m-d H:i:s'),
+                    $id, $track['hearthis_url'], $track['hearthis_track_id']
+                ]);
+                $summary['synced']++;
+            } catch (Throwable $verifyError) {
+                // Never turn an uncertain verification into an upload retry.
+                $summary['verifying']++;
+                error_log('HearThis public verification postponed for set ' . $id . '.');
             }
         }
         $summary['retention'] = deseo_mylive_cleanup_broadcasted_sets($pdo);
