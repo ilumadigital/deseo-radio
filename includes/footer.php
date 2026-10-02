@@ -4,7 +4,7 @@
             <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
             <p class="metal-title footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
             <div class="footer-brand-actions">
-                <a class="footer-iluma" href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS ↗</a>
+                <a class="footer-iluma" href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS</a>
                 <a class="footer-media-kit" href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer" data-i18n="footer.media_kit" data-analytics-event="media_kit_footer_click"><?= deseo_e(deseo_t('footer.media_kit')) ?></a>
             </div>
         </div>
@@ -28,11 +28,11 @@
 
             <div>
                 <span data-i18n="footer.follow"><?= deseo_e(deseo_t('footer.follow')) ?></span>
-                <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
-                <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
-                <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_mixcloud_click">Mixcloud ↗</a>
-                <a href="https://soundcloud.com/deseo-radio" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_soundcloud_click">SoundCloud ↗</a>
-                <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios ↗</a>
+                <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook</a>
+                <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_mixcloud_click">Mixcloud</a>
+                <a href="https://soundcloud.com/deseo-radio" target="_blank" rel="noopener noreferrer" data-analytics-event="footer_soundcloud_click">SoundCloud</a>
+                <a href="https://play.iradios.gr/station/deseo-radio" target="_blank" rel="noopener noreferrer">iRadios</a>
             </div>
         </div>
     </div>
@@ -55,7 +55,6 @@
 
     <span class="install-prompt-cta" aria-hidden="true">
         <span>INSTALL</span>
-        <i>↗</i>
     </span>
 </button>
 
@@ -79,7 +78,6 @@
                 <small>FOR BRANDS</small>
                 <strong>Διαφήμιση</strong>
             </span>
-            <i aria-hidden="true">↗</i>
         </a>
 
         <a href="https://play.iradios.gr/station/deseo-radio"
@@ -91,7 +89,6 @@
                 <small>LIVE RADIO</small>
                 <strong>Άκου στο iRadios</strong>
             </span>
-            <i aria-hidden="true">↗</i>
         </a>
 
         <a href="https://iluma.gr/contact/"
@@ -103,7 +100,6 @@
                 <small>ILUMA DIGITAL AGENCY</small>
                 <strong>Επικοινωνία</strong>
             </span>
-            <i aria-hidden="true">↗</i>
         </a>
     </div>
 
@@ -459,7 +455,7 @@ window.DESEO_LANGUAGE = <?= json_encode(deseo_lang()) ?>;
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                link.textContent = item[0] + ' ↗';
+                link.textContent = item[0];
                 djProfileSocials.appendChild(link);
             });
         }
