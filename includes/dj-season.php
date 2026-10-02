@@ -32,6 +32,23 @@ function dj_season_schedule_visible(?DateTimeImmutable $at = null): bool {
     return $at >= dj_season_schedule_visible_from();
 }
 
+/**
+ * The strict weekly roster stores full-hour slots as HH:59:59 (including
+ * 23:59:59). In MyLive the actual on-air end is the next HH:00:00, which
+ * must be treated as NEXT DAY when a show starts at 23:00.
+ */
+function dj_season_normalized_resident_end_time(string $startTime, string $endTime): string {
+    $start = DateTimeImmutable::createFromFormat('!H:i:s', $startTime);
+    $end = DateTimeImmutable::createFromFormat('!H:i:s', $endTime);
+    if ($start && $end
+        && $start->format('H:i:s') === $startTime
+        && $end->format('H:i:s') === $endTime
+        && $end->format('H:i:s') === $start->modify('+1 hour -1 second')->format('H:i:s')) {
+        return $start->modify('+1 hour')->format('H:i:s');
+    }
+    return $endTime;
+}
+
 function dj_season_weekly_occurrence(
     int $dayOfWeek,
     string $startTime,
