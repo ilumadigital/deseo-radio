@@ -475,7 +475,7 @@ function deseo_mylive_is_guest_account(array $account): bool {
 
 function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
-        "SELECT id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
+        "SELECT id, account_id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
