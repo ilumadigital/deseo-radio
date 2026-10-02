@@ -386,10 +386,18 @@ if ($membership === false) {
     $record['set_started_at'] = gmdate('c');
     deseo_s6_cli_save($receiptPath, $record);
     // No implicit set creation; only the ID verified from the owner playlist.
-    $accepted = deseo_hearthis_s6_add_track($id, $setId, $config);
-    $record['set_post_accepted'] = $accepted;
-    deseo_s6_cli_save($receiptPath, $record);
-    echo 'Season 6 association requested; checking public membership.' . PHP_EOL;
+    try {
+        $accepted = deseo_hearthis_s6_add_track($id, $setId, $config);
+        $record['set_post_accepted'] = $accepted;
+        deseo_s6_cli_save($receiptPath, $record);
+        echo 'Season 6 association requested; checking public membership.' . PHP_EOL;
+    } catch (Throwable $error) {
+        $record['set_post_accepted'] = false;
+        deseo_s6_cli_save($receiptPath, $record);
+        echo 'Season 6 association outcome uncertain. Local MP3 already cleaned after accepted upload;'
+           . ' inspect the set and retry --finalize for READ-only membership checks.' . PHP_EOL;
+        exit(0);
+    }
     $membership = deseo_hearthis_s6_contains_track($id, $setId);
     if ($membership !== true) {
         echo 'Season 6 membership pending; retry --finalize later (READ only; no duplicate POST).' . PHP_EOL;
