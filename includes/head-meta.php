@@ -2,10 +2,19 @@
 require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/i18n.php';
 
-$meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου · House & Electronic";
-$meta_desc = $meta_desc ?? "Το Deseo Radio εκπέμπει 24/7 από την Αθήνα με House, Afro House, Organic House, Indie Dance και Electronic Music. Season 6 DJ Sets από 14/10/2026, Release Radar και Guest DJs.";
+$meta_title = $meta_title ?? (deseo_lang() === 'en'
+    ? 'Deseo Radio | The Soundtrack of your life · House & Electronic'
+    : 'Deseo Radio | Το Soundtrack της ζωής σου · House & Electronic');
+$meta_desc = $meta_desc ?? (deseo_lang() === 'en'
+    ? 'Listen to Deseo Radio, the Athens-based 24/7 House, Afro House, Organic House, Indie Dance and Electronic Music station. Season 6 DJ Sets launch October 14, 2026, with Release Radar and Guest DJs.'
+    : 'Το Deseo Radio εκπέμπει 24/7 από την Αθήνα με House, Afro House, Organic House, Indie Dance και Electronic Music. Season 6 DJ Sets από 14/10/2026, Release Radar και Guest DJs.');
 $meta_keywords = $meta_keywords ?? "Deseo Radio, House, Afro House, Organic House, Indie Dance, Electronic Music, Athens online radio, digital radio, 24/7 music, Season 6, Resident DJ Sets, Guest DJs, Release Radar, radio streaming";
 $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
+$meta_canonical_el = $meta_canonical;
+$meta_canonical_en = $meta_canonical_el . (str_contains($meta_canonical_el, '?') ? '&' : '?') . 'lang=en';
+if ($meta_canonical_el === 'https://deseoradio.com/' && deseo_lang() === 'en') {
+    $meta_canonical = $meta_canonical_en;
+}
 $meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
 $meta_image_path = __DIR__ . '/../assets/img/deseoradio-seo-branded.png';
 $meta_image_version = is_file($meta_image_path) ? (int)filemtime($meta_image_path) : 1;
@@ -120,7 +129,9 @@ $schema = [
         ],
         [
             '@type' => 'FAQPage',
-            '@id' => 'https://deseoradio.com/#faq',
+            '@id' => $meta_canonical . '#faq',
+            'url' => $meta_canonical . '#faq',
+            'inLanguage' => deseo_lang() === 'en' ? 'en' : 'el',
             'mainEntity' => $faqSchema,
         ],
     ],
@@ -200,7 +211,7 @@ foreach ($season6Lineup as $slotIndex => $slot) {
         '@type' => 'MusicEvent',
         '@id' => $slotId,
         'name' => $slot['dj'] . ' — Deseo Radio Season 6',
-        'description' => 'Scheduled weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6. Starts from October 14, 2026; times are local to Athens (Europe/Athens).',
+        'description' => 'Scheduled weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6. First airing: ' . $season6FirstAiring[$slot['day']] . '; weekly start times follow Europe/Athens.',
         'url' => 'https://deseoradio.com/#season-6',
         'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
         'location' => [
@@ -336,9 +347,9 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <meta name="twitter:image" content="<?= deseo_e($meta_image) ?>">
     <meta name="twitter:image:alt" content="<?= deseo_e($meta_image_alt) ?>">
 
-    <link rel="alternate" hreflang="el" href="<?= deseo_e($meta_canonical) ?>">
-    <link rel="alternate" hreflang="en" href="<?= deseo_e($meta_canonical . (str_contains($meta_canonical, '?') ? '&' : '?') . 'lang=en') ?>">
-    <link rel="alternate" hreflang="x-default" href="<?= deseo_e($meta_canonical) ?>">
+    <link rel="alternate" hreflang="el" href="<?= deseo_e($meta_canonical_el) ?>">
+    <link rel="alternate" hreflang="en" href="<?= deseo_e($meta_canonical_en) ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= deseo_e($meta_canonical_el) ?>">
 
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <link rel="apple-touch-icon" href="/assets/img/favicon.png">
