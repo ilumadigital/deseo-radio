@@ -2,9 +2,9 @@
 require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/i18n.php';
 
-$meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου! | House Music";
-$meta_desc = $meta_desc ?? "Άκου live το Deseo Radio. Το κορυφαίο ραδιόφωνο για House music, Afro House και Organic Tech. Το Deseo Radio είναι digital radio της ILUMA Digital Agency και μέρος του ILUMA Radios network, με επιλεγμένη electronic sophisticated μουσική 24/7.";
-$meta_keywords = $meta_keywords ?? "deseo radio, ραδιόφωνο, δεσεο, deseo, radio, house music, afro house, fly104, best radio, radio must, house radio, online radio, internet radio, live radio, web radio, greek radio, athens radio, electronic radio, electronic music, deep house, organic house, tech house, melodic house, dance radio, dj radio, house music radio, afro house radio, 24/7 radio, radio streaming, live streaming radio, music radio";
+$meta_title = $meta_title ?? "Deseo Radio | Το Soundtrack της ζωής σου · House & Electronic";
+$meta_desc = $meta_desc ?? "Το Deseo Radio εκπέμπει 24/7 από την Αθήνα με House, Afro House, Organic House, Indie Dance και Electronic Music. Season 6 DJ Sets από 14/10/2026, Release Radar και Guest DJs.";
+$meta_keywords = $meta_keywords ?? "Deseo Radio, House, Afro House, Organic House, Indie Dance, Electronic Music, Athens online radio, digital radio, 24/7 music, Season 6, Resident DJ Sets, Guest DJs, Release Radar, radio streaming";
 $meta_canonical = $meta_canonical ?? 'https://deseoradio.com/';
 $meta_robots = $meta_robots ?? 'index,follow,max-image-preview:large';
 $meta_image_path = __DIR__ . '/../assets/img/deseoradio-seo-branded.png';
@@ -41,7 +41,7 @@ if (!headers_sent()) {
 }
 
 $faqSchema = [];
-for ($i = 1; $i <= 5; $i++) {
+for ($i = 1; $i <= DESEO_PUBLIC_FAQ_COUNT; $i++) {
     $faqSchema[] = [
         '@type' => 'Question',
         'name' => deseo_t('faq.q' . $i),
@@ -64,13 +64,18 @@ $schema = [
                 '@id' => 'https://deseoradio.com/#primaryimage',
             ],
             'logo' => 'https://deseoradio.com/assets/img/favicon.png',
-            'description' => 'Το κορυφαίο ραδιόφωνο για house music, deep house και organic tech.',
-            'genre' => ['House', 'Afro House', 'Organic House', 'Electronic music'],
+            'description' => deseo_lang() === 'en'
+                ? 'Athens-based 24/7 digital radio featuring contemporary House, Afro House, Organic House, Indie Dance and selected Electronic Music, with curated programming, Resident and Guest DJ Sets and the weekly Release Radar.'
+                : 'Digital radio από την Αθήνα, 24/7, με House, Afro House, Organic House, Indie Dance και επιλεγμένη Electronic Music. Μουσική επιμέλεια, Resident και Guest DJ Sets και εβδομαδιαίο Release Radar.',
+            'genre' => ['House', 'Afro House', 'Organic House', 'Indie Dance', 'Electronic Music'],
+            'slogan' => 'Το Soundtrack της ζωής σου',
             'areaServed' => 'Worldwide',
             'sameAs' => [
                 'https://iluma.gr/radios',
                 'https://www.instagram.com/deseoradio/',
                 'https://www.facebook.com/deseoradiogr/',
+                'https://www.mixcloud.com/deseoradio/',
+                'https://soundcloud.com/deseo-radio',
                 'https://play.iradios.gr/station/deseo-radio',
             ],
             'parentOrganization' => [
@@ -78,6 +83,12 @@ $schema = [
                 '@id' => 'https://iluma.gr/#organization',
                 'name' => 'ILUMA Digital Agency',
                 'url' => 'https://iluma.gr/',
+            ],
+            'memberOf' => [
+                '@type' => 'Organization',
+                '@id' => 'https://iluma.gr/radios#network',
+                'name' => 'ILUMA Radios',
+                'url' => 'https://iluma.gr/radios',
             ],
         ],
         [
@@ -122,15 +133,15 @@ $season6Lineup = [
     ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '22:00:00', 'dj' => 'Harris Gabriel (GR)'],
     ['day' => 'Wednesday', 'schema_day' => 'https://schema.org/Wednesday', 'start' => '23:00:00', 'dj' => 'VGRENADE'],
 
-    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '20:00:00', 'dj' => 'Dj pmelgidis'],
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '20:00:00', 'dj' => 'DJ pmelgidis'],
     ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '21:00:00', 'dj' => 'Lena'],
     ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '22:00:00', 'dj' => 'TWEEK UC'],
-    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '23:00:00', 'dj' => 'Dj Kyriakos Gavakis'],
+    ['day' => 'Thursday', 'schema_day' => 'https://schema.org/Thursday', 'start' => '23:00:00', 'dj' => 'DJ Kyriakos Gavakis'],
 
     ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '18:00:00', 'dj' => 'Evripos F'],
     ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '19:00:00', 'dj' => 'Greg Lef'],
     ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '20:00:00', 'dj' => 'ANDØR'],
-    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '21:00:00', 'dj' => 'Coup(GR)'],
+    ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '21:00:00', 'dj' => 'Coup (GR)'],
     ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '22:00:00', 'dj' => 'Johnny Mak'],
     ['day' => 'Friday', 'schema_day' => 'https://schema.org/Friday', 'start' => '23:00:00', 'dj' => 'Cobo B'],
 
@@ -154,7 +165,8 @@ $schema['@graph'][] = [
     '@type' => 'EventSeries',
     '@id' => $season6SeriesId,
     'name' => 'Deseo Radio Season 6 — Weekly DJ Sets',
-    'description' => 'Official announced Season 6 weekly DJ lineup for Deseo Radio. Weekly sets run Wednesday through Sunday in Europe/Athens time. DJ sets start date is TBA.',
+    'description' => 'Season 6 weekly Resident DJ Sets begin on October 14, 2026 at 20:00 Athens time. The announced weekly lineup runs Wednesday through Sunday in Europe/Athens time, alongside separate Guest DJ programming.',
+    'startDate' => '2026-10-14T20:00:00+03:00',
     'url' => 'https://deseoradio.com/#season-6',
     'image' => 'https://deseoradio.com/assets/img/season6%20lineup.png',
     'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
@@ -170,6 +182,14 @@ $schema['@graph'][] = [
     ],
 ];
 
+$season6FirstAiring = [
+    'Wednesday' => '2026-10-14',
+    'Thursday' => '2026-10-15',
+    'Friday' => '2026-10-16',
+    'Saturday' => '2026-10-17',
+    'Sunday' => '2026-10-18',
+];
+
 foreach ($season6Lineup as $slotIndex => $slot) {
     $slotId = sprintf(
         'https://deseoradio.com/#season-6-slot-%02d',
@@ -180,7 +200,7 @@ foreach ($season6Lineup as $slotIndex => $slot) {
         '@type' => 'MusicEvent',
         '@id' => $slotId,
         'name' => $slot['dj'] . ' — Deseo Radio Season 6',
-        'description' => 'Weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6.',
+        'description' => 'Scheduled weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6. Starts from October 14, 2026; times are local to Athens (Europe/Athens).',
         'url' => 'https://deseoradio.com/#season-6',
         'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
         'location' => [
@@ -202,6 +222,7 @@ foreach ($season6Lineup as $slotIndex => $slot) {
         ],
         'eventSchedule' => [
             '@type' => 'Schedule',
+            'startDate' => $season6FirstAiring[$slot['day']],
             'repeatFrequency' => 'P1W',
             'byDay' => $slot['schema_day'],
             'startTime' => $slot['start'],
