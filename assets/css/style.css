@@ -2958,3 +2958,33 @@ body.dj-profile-modal-open{overflow:hidden}
   .deseo-podcasts-spotify-button{transition:none}
   .deseo-podcasts-spotify-button:hover{transform:none}
 }
+
+/* Home live player: same iframe morphs into a corner mini-player on desktop /
+   landscape tablet. The hero itself must not clip a viewport-fixed descendant. */
+@media (min-width:781px){
+  .classic-hero{overflow:visible;isolation:auto}
+  .classic-hero-grid{z-index:auto}
+  .hero-player-surface.is-floating{
+    position:fixed;
+    z-index:10001;
+    left:calc(20px + var(--safe-left));
+    bottom:calc(18px + var(--safe-bottom));
+    width:min(300px,calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
+    transform-origin:top left;
+    filter:drop-shadow(0 18px 38px rgba(0,0,0,.72));
+  }
+  .hero-player-surface.is-floating .hero-deck-label{
+    min-height:21px;
+    margin-bottom:8px;
+    font-size:8px;
+  }
+  .hero-player-surface.is-floating .hero-player-card{
+    border-radius:23px;
+    border-color:rgba(255,255,255,.18);
+    box-shadow:0 0 0 1px rgba(255,255,255,.035),0 22px 56px rgba(0,0,0,.68);
+  }
+  .hero-player-surface.is-floating .hero-player-card iframe{
+    border-radius:23px!important;
+    box-shadow:none!important;
+  }
+}
