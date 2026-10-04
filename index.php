@@ -333,8 +333,8 @@ $partners = [
         .classic-hero { overflow:visible; isolation:auto; }
         .classic-hero-grid {
             z-index:auto;
-            --deseo-mini-card-size:min(192px, calc((100vh - 148px) / 3), calc(100vw - 40px));
-            --deseo-mini-card-size:min(192px, calc((100dvh - 148px) / 3), calc(100vw - 40px));
+            --deseo-mini-card-size:min(192px, calc(33.333vh - 49.333px), calc(100vw - 40px));
+            --deseo-mini-card-size:min(192px, calc(33.333dvh - 49.333px), calc(100vw - 40px));
             --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 24px);
         }
         #deseo-live-player.is-floating,
