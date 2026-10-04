@@ -2959,28 +2959,38 @@ body.dj-profile-modal-open{overflow:hidden}
   .deseo-podcasts-spotify-button:hover{transform:none}
 }
 
-/* Home NOW ON AIR: compact corner card on desktop / landscape tablets only.
-   No duplicated player and no clipping of the fixed card by the hero. */
+/* Home NOW ON AIR + SPONSOR: compact stacked cards on desktop / landscape tablet.
+   Each original card stays mounted, without clipping or duplicated links/players. */
 @media (min-width:781px){
   .classic-hero{overflow:visible;isolation:auto}
   .classic-hero-grid{z-index:auto}
-  .hero-onair-surface.is-floating{
+  .hero-onair-surface.is-floating,
+  .hero-sponsor-surface.is-floating{
     position:fixed;
-    z-index:10001;
     right:calc(18px + var(--safe-right));
     bottom:calc(18px + var(--safe-bottom));
     width:min(214px,calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
+    /* Keep the complete two-card stack in view on shorter desktop windows. */
+    width:min(214px,calc((100dvh - 104px) / 2),calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
     transform-origin:top left;
     filter:drop-shadow(0 16px 32px rgba(0,0,0,.68));
   }
-  .hero-onair-surface.is-floating .hero-deck-label{
+  .hero-onair-surface.is-floating{z-index:10001}
+  .hero-sponsor-surface.is-floating{z-index:10002}
+  .hero-sponsor-surface.is-floating.is-stacked{
+    bottom:calc(30px + var(--safe-bottom) + var(--deseo-onair-float-height, 238px));
+  }
+  .hero-onair-surface.is-floating .hero-deck-label,
+  .hero-sponsor-surface.is-floating .hero-deck-label{
     min-height:17px;
     margin:0 0 7px 3px;
+    padding-left:0;
     gap:8px;
     font-size:8px;
     letter-spacing:.16em;
   }
-  .hero-onair-surface.is-floating .hero-square{
+  .hero-onair-surface.is-floating .hero-square,
+  .hero-sponsor-surface.is-floating .hero-square{
     border-radius:19px;
     border-color:rgba(255,255,255,.16);
     box-shadow:0 14px 35px rgba(0,0,0,.65);
