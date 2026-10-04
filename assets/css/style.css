@@ -2959,32 +2959,42 @@ body.dj-profile-modal-open{overflow:hidden}
   .deseo-podcasts-spotify-button:hover{transform:none}
 }
 
-/* Home live player: same iframe morphs into a corner mini-player on desktop /
-   landscape tablet. The hero itself must not clip a viewport-fixed descendant. */
+/* Home NOW ON AIR: compact corner card on desktop / landscape tablets only.
+   No duplicated player and no clipping of the fixed card by the hero. */
 @media (min-width:781px){
   .classic-hero{overflow:visible;isolation:auto}
   .classic-hero-grid{z-index:auto}
-  .hero-player-surface.is-floating{
+  .hero-onair-surface.is-floating{
     position:fixed;
     z-index:10001;
-    left:calc(20px + var(--safe-left));
+    right:calc(18px + var(--safe-right));
     bottom:calc(18px + var(--safe-bottom));
-    width:min(300px,calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
+    width:min(214px,calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
     transform-origin:top left;
-    filter:drop-shadow(0 18px 38px rgba(0,0,0,.72));
+    filter:drop-shadow(0 16px 32px rgba(0,0,0,.68));
   }
-  .hero-player-surface.is-floating .hero-deck-label{
-    min-height:21px;
-    margin-bottom:8px;
+  .hero-onair-surface.is-floating .hero-deck-label{
+    min-height:17px;
+    margin:0 0 7px 3px;
+    gap:8px;
     font-size:8px;
+    letter-spacing:.16em;
   }
-  .hero-player-surface.is-floating .hero-player-card{
-    border-radius:23px;
-    border-color:rgba(255,255,255,.18);
-    box-shadow:0 0 0 1px rgba(255,255,255,.035),0 22px 56px rgba(0,0,0,.68);
+  .hero-onair-surface.is-floating .hero-square{
+    border-radius:19px;
+    border-color:rgba(255,255,255,.16);
+    box-shadow:0 14px 35px rgba(0,0,0,.65);
   }
-  .hero-player-surface.is-floating .hero-player-card iframe{
-    border-radius:23px!important;
-    box-shadow:none!important;
+  .hero-onair-surface.is-floating .hero-cms-overlay{padding:13px}
+  .hero-onair-surface.is-floating .hero-cms-overlay>span{font-size:7px;margin-bottom:3px}
+  .hero-onair-surface.is-floating .hero-cms-overlay h2{
+    font-size:16px;
+    line-height:1.1;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
   }
+  .hero-onair-surface.is-floating .hero-cms-overlay p{font-size:9px;margin-top:4px}
+  .hero-onair-surface.is-floating .hero-cms-card.has-dj-profile::before{display:none}
 }
