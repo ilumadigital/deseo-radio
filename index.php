@@ -401,6 +401,8 @@ $partners = [
             sponsorSurface.style.setProperty('--deseo-onair-float-height', Math.ceil(surface.offsetHeight) + 'px');
             sponsorSurface.classList.toggle('is-stacked', cards[0].floating && nextStates[1]);
             setFloating(cards[1], nextStates[1], initialized);
+            // The player is the third card: activate its independent bottom-left mode.
+            setFloating(cards[2], nextStates[2], initialized);
             initialized = true;
         };
         const schedule = () => {
