@@ -257,16 +257,13 @@ $partners = [
 
         <div class="wide-shell classic-hero-grid">
             <div class="hero-deck" id="player">
-                <div class="hero-player-surface" id="deseo-live-player">
-                    <div class="hero-deck-label">
-                        <span class="live-pulse" aria-hidden="true"></span>
-                        <span>NOW PLAYING</span>
-                        <a class="deseo-player-full-link" href="#player" aria-label="View the full-size radio player">FULL SIZE ↗</a>
-                    </div>
+                <div class="hero-deck-label">
+                    <span class="live-pulse" aria-hidden="true"></span>
+                    <span>NOW PLAYING</span>
+                </div>
 
-                    <div class="hero-square hero-player-card">
-                        <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
-                    </div>
+                <div class="hero-square hero-player-card">
+                    <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
                 </div>
             </div>
 
@@ -321,11 +318,6 @@ $partners = [
                        data-analytics-event="sponsor_click"
                        data-iluma-signal-slot="hero-sponsor">
                         <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" data-iluma-signal-image>
-                        <span class="deseo-sponsor-mini-copy" aria-hidden="true">
-                            <small>SPONSOR</small>
-                            <strong>ILUMA Digital Agency</strong>
-                            <span>VISIT WEBSITE ↗</span>
-                        </span>
                     </a>
                 </div>
             </div>
@@ -333,27 +325,20 @@ $partners = [
     </section>
 
     <style>
-    /* Homepage content cap only; backgrounds remain edge-to-edge. */
+    /* Only the homepage content is capped; full-width backgrounds are unchanged. */
     .wide-shell { max-width:1300px; }
-    .deseo-player-full-link, .deseo-sponsor-mini-copy { display:none; }
 
-    /*
-     * The floating experience uses the three ORIGINAL cards without DOM moves.
-     * A full-size square player + two legible horizontal preview rows gives
-     * controls real space without a three-square stack hitting the site header.
-     * All sizes adapt to CSS viewport height (including 125% OS/browser scaling).
-     */
+    /* Existing live show and original square sponsor float together, not the player. */
     @media (min-width:781px) and (min-height:440px) {
         .classic-hero { overflow:visible; isolation:auto; }
         .classic-hero-grid {
             z-index:auto;
-            --deseo-dock-width:min(320px, 34vw, calc(100vw - 36px));
-            --deseo-dock-bar:clamp(72px, 13dvh, 104px);
-            --deseo-dock-player:min(var(--deseo-dock-width), max(140px, calc(100dvh - 290px)));
+            /* Fit both panels below the header even on laptops with 125% scaling. */
+            --deseo-dock-width:min(320px, calc(100dvh - 178px), calc(100vw - 36px));
+            --deseo-dock-bar:clamp(72px, 13dvh, 100px);
             --deseo-dock-gap:10px;
             --deseo-dock-bottom:calc(14px + var(--safe-bottom, 0px));
         }
-        #deseo-live-player.is-floating,
         #deseo-onair-card.is-floating,
         #deseo-sponsor-card.is-floating {
             position:fixed !important;
@@ -369,81 +354,16 @@ $partners = [
             transform-origin:top right;
             filter:drop-shadow(0 14px 28px rgba(0,0,0,.68));
         }
-
-        /* Order, top to bottom: playing, on air, sponsor. */
         #deseo-sponsor-card.is-floating {
             bottom:var(--deseo-dock-bottom) !important;
         }
         #deseo-onair-card.is-floating {
-            bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-bar) + var(--deseo-dock-gap)) !important;
+            bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-width) + var(--deseo-dock-gap)) !important;
         }
-        #deseo-live-player.is-floating {
-            bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-bar) + var(--deseo-dock-bar) + var(--deseo-dock-gap) + var(--deseo-dock-gap)) !important;
-        }
-
-        /* Full provider player: render internally at 512px then scale the same
-           iframe uniformly. Its native track text and controls remain intact. */
-        #deseo-live-player.is-floating .hero-deck-label {
-            box-sizing:border-box;
-            width:var(--deseo-dock-player);
-            height:24px;
-            min-height:24px;
-            margin:0 0 5px auto;
-            padding:0 2px;
-            font-size:9px;
-            letter-spacing:.13em;
-            gap:7px;
-        }
-        #deseo-live-player.is-floating .deseo-player-full-link {
-            display:inline-flex;
-            margin-left:auto;
-            align-items:center;
-            color:rgba(255,255,255,.82);
-            font-size:8px;
-            font-weight:800;
-            letter-spacing:.08em;
-            white-space:nowrap;
-        }
-        #deseo-live-player.is-floating .deseo-player-full-link:hover { color:#fff; }
-        #deseo-live-player.is-floating .deseo-player-full-link:focus-visible {
-            outline:2px solid #ff2b36;
-            outline-offset:4px;
-            border-radius:2px;
-        }
-        #deseo-live-player.is-floating .hero-player-card {
-            display:block;
-            position:relative;
-            margin-left:auto;
-            width:var(--deseo-dock-player) !important;
-            height:var(--deseo-dock-player) !important;
-            min-height:0;
-            aspect-ratio:1 / 1;
-            overflow:hidden;
-            border-radius:20px;
-            border-color:rgba(255,255,255,.2);
-            box-shadow:0 20px 52px rgba(0,0,0,.74);
-        }
-        #deseo-live-player.is-floating .hero-player-card iframe {
-            display:block !important;
-            flex:none !important;
-            width:512px !important;
-            height:512px !important;
-            min-width:512px !important;
-            max-width:none !important;
-            max-height:none !important;
-            aspect-ratio:1 / 1;
-            margin:0 !important;
-            transform:scale(var(--deseo-iframe-scale, .625));
-            transform-origin:top left;
-            border-radius:0 !important;
-            box-shadow:none !important;
-        }
-
-        /* Compact NOW ON AIR: square artwork + complete, readable metadata. */
         #deseo-onair-card.is-floating .hero-deck-label,
         #deseo-sponsor-card.is-floating .hero-deck-label { display:none; }
-        #deseo-onair-card.is-floating .hero-cms-card,
-        #deseo-sponsor-card.is-floating .hero-sponsor-card {
+        /* Keep the horizontal NOW ON AIR layout and live DJ profile access. */
+        #deseo-onair-card.is-floating .hero-cms-card {
             position:relative;
             box-sizing:border-box;
             display:flex;
@@ -459,8 +379,7 @@ $partners = [
             box-shadow:0 14px 34px rgba(0,0,0,.65);
         }
         #deseo-onair-card.is-floating .hero-cms-card::after { display:none; }
-        #deseo-onair-card.is-floating .hero-cms-card > img,
-        #deseo-sponsor-card.is-floating .hero-sponsor-card > img {
+        #deseo-onair-card.is-floating .hero-cms-card > img {
             position:relative;
             inset:auto;
             display:block;
@@ -470,8 +389,8 @@ $partners = [
             max-width:var(--deseo-dock-bar);
             object-fit:cover;
             transform:none;
+            filter:brightness(.92) saturate(1.05);
         }
-        #deseo-onair-card.is-floating .hero-cms-card > img { filter:brightness(.92) saturate(1.05); }
         #deseo-onair-card.is-floating .hero-cms-overlay {
             position:relative;
             inset:auto;
@@ -497,7 +416,7 @@ $partners = [
         #deseo-onair-card.is-floating .hero-cms-overlay h2 {
             margin:0;
             width:100%;
-            font-size:clamp(13px, 1.2vw, 17px) !important;
+            font-size:clamp(13px,1.2vw,17px) !important;
             line-height:1.16;
             overflow-wrap:anywhere;
             white-space:normal;
@@ -510,54 +429,37 @@ $partners = [
         }
         #deseo-onair-card.is-floating .hero-cms-card.has-dj-profile::before { display:none; }
 
-        /* Compact sponsor still shows the whole partner artwork (contain, not crop),
-           plus an explicit name/CTA instead of illegible lettering in a tiny square. */
+        /* Original ILUMA artwork remains one complete square linked banner. */
+        #deseo-sponsor-card.is-floating .hero-sponsor-card {
+            position:relative;
+            display:block;
+            width:100%;
+            height:var(--deseo-dock-width) !important;
+            min-height:0;
+            aspect-ratio:1 / 1;
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:18px;
+            background:#09090a;
+            box-shadow:0 14px 34px rgba(0,0,0,.65);
+        }
         #deseo-sponsor-card.is-floating .hero-sponsor-card > img {
-            object-fit:contain;
-            background:#181819;
-            border-right:1px solid rgba(255,255,255,.09);
-        }
-        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy {
-            display:flex;
-            flex:1 1 auto;
-            flex-direction:column;
-            justify-content:center;
-            min-width:0;
-            gap:3px;
-            padding:7px 12px;
-            color:#fff;
-            background:linear-gradient(110deg,#19191b,#0b0b0c);
-        }
-        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy small {
-            color:#ff4c55;
-            font-size:8px;
-            font-weight:800;
-            line-height:1.15;
-            letter-spacing:.14em;
-        }
-        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy strong {
-            font-size:clamp(13px, 1.1vw, 16px);
-            font-weight:800;
-            line-height:1.15;
-            overflow-wrap:anywhere;
-        }
-        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy > span {
-            margin-top:2px;
-            color:#b5b5bb;
-            font-size:9px;
-            font-weight:700;
-            letter-spacing:.07em;
+            position:absolute;
+            inset:0;
+            display:block;
+            width:100%;
+            height:100%;
+            max-width:none;
+            object-fit:cover;
+            border:0;
+            background:none;
         }
         #deseo-sponsor-card.is-floating .hero-sponsor-card:hover {
             transform:none;
             border-color:rgba(255,43,54,.36);
         }
-        /* The DJ profile and lineup must remain fully unobstructed. Hiding these
-           existing elements never pauses or recreates the radio iframe. */
-        body.dj-profile-modal-open #deseo-live-player.is-floating,
         body.dj-profile-modal-open #deseo-onair-card.is-floating,
         body.dj-profile-modal-open #deseo-sponsor-card.is-floating,
-        body.lineup-lightbox-open #deseo-live-player.is-floating,
         body.lineup-lightbox-open #deseo-onair-card.is-floating,
         body.lineup-lightbox-open #deseo-sponsor-card.is-floating {
             visibility:hidden !important;
@@ -567,17 +469,14 @@ $partners = [
     </style>
 
     <script>
-    // Keep a single iRadios iframe and the existing CMS / sponsor links mounted.
-    // All three cards enter and leave the floating column together.
+    // No changes to the player iframe. Only the existing CMS and sponsor cards float.
     (() => {
         const heroGrid = document.querySelector('.classic-hero-grid');
         const cards = [
-            { anchor:document.getElementById('player'), surface:document.getElementById('deseo-live-player'), labelSpace:39 },
             { anchor:document.getElementById('live-program-deck'), surface:document.getElementById('deseo-onair-card'), labelSpace:39 },
             { anchor:document.getElementById('sponsor-deck'), surface:document.getElementById('deseo-sponsor-card'), labelSpace:39 }
         ];
         if (!heroGrid || cards.some(card => !card.anchor || !card.surface)) return;
-
         const desktop = window.matchMedia('(min-width: 781px) and (min-height: 440px) and (hover: hover) and (pointer: fine)');
         const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 440px) and (orientation: landscape)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -585,41 +484,23 @@ $partners = [
         let floating = false;
         let initialized = false;
         let pendingFrame = false;
-        const playerCard = cards[0].surface.querySelector('.hero-player-card');
-        const syncPlayerScale = () => {
-            if (!floating || !playerCard) {
-                cards[0].surface.style.removeProperty('--deseo-iframe-scale');
-                return;
-            }
-            // Offset width is independent of the FLIP animation transform.
-            const square = playerCard.clientWidth;
-            if (square > 0) {
-                cards[0].surface.style.setProperty('--deseo-iframe-scale', String(square / 512));
-            }
-        };
 
         const setFloating = (next, animate) => {
             if (next === floating) return;
-            // Measure all three before changing styles. Never reparent or clone an iframe.
-            const before = cards.map(card => {
+            cards.forEach(card => {
                 if (card.surface.getAnimations) card.surface.getAnimations().forEach(animation => animation.cancel());
-                return card.surface.getBoundingClientRect();
             });
             if (next) {
-                cards.forEach((card, i) => {
-                    card.labelSpace = before[i].height - before[i].width;
-                    card.anchor.style.minHeight = Math.ceil(before[i].height) + 'px';
+                cards.forEach(card => {
+                    const before = card.surface.getBoundingClientRect();
+                    card.labelSpace = before.height - before.width;
+                    card.anchor.style.minHeight = Math.ceil(before.height) + 'px';
                 });
             }
             cards.forEach(card => card.surface.classList.toggle('is-floating', next));
             floating = next;
             if (!next) cards.forEach(card => { card.anchor.style.minHeight = ''; });
-            // Only CSS changes on the existing iframe: never change src or reparent it.
-            syncPlayerScale();
-
             if (!animate || reducedMotion.matches) return;
-            // A gentle fade/slide, rather than stretching a square card into a
-            // horizontal bar (which also distorted the provider iframe).
             cards.forEach(card => {
                 if (!card.surface.animate) return;
                 card.surface.animate([
@@ -637,20 +518,15 @@ $partners = [
                 return;
             }
             if (floating) {
-                // Preserve the original grid cells and adapt the provider's artwork/
-                // controls to the available height (including laptop display scaling).
                 cards.forEach(card => {
                     card.anchor.style.minHeight = Math.ceil(card.anchor.getBoundingClientRect().width + card.labelSpace) + 'px';
                 });
-                syncPlayerScale();
             }
             const bottom = heroGrid.getBoundingClientRect().bottom;
-            // One shared trigger prevents a missing player or overlapping right-side cards.
             const next = floating ? bottom < window.innerHeight * .75 : bottom < -8;
             setFloating(next, initialized);
             initialized = true;
         };
-
         const schedule = () => {
             if (pendingFrame) return;
             pendingFrame = true;
