@@ -327,17 +327,10 @@ $partners = [
     <style>
     /* Use the site's native --shell:1600px; do not override .wide-shell on Home. */
 
-    /* The sponsor is intentionally exclusive to >=1900 CSS-pixel viewports.
-       On smaller screens, balance the remaining player and ON AIR cards as two
-       normal hero columns; mobile keeps its existing single-column layout. */
+    /* Hide ONLY the floating sponsor on viewports below 1900 CSS px.
+       The original third hero card/banner always remains visible. */
     @media (max-width:1899px) {
-        #sponsor-deck { display:none !important; }
-    }
-    @media (min-width:781px) and (max-width:1899px) {
-        .classic-hero-grid {
-            grid-template-columns:repeat(2,minmax(0,1fr));
-            max-width:1060px;
-        }
+        #deseo-sponsor-card.is-floating { display:none !important; }
     }
 
     /* Existing live show and original square sponsor float together, not the player. */
