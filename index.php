@@ -257,13 +257,15 @@ $partners = [
 
         <div class="wide-shell classic-hero-grid">
             <div class="hero-deck" id="player">
-                <div class="hero-deck-label">
-                    <span class="live-pulse" aria-hidden="true"></span>
-                    <span>NOW PLAYING</span>
-                </div>
+                <div class="hero-player-surface" id="deseo-live-player">
+                    <div class="hero-deck-label">
+                        <span class="live-pulse" aria-hidden="true"></span>
+                        <span>NOW PLAYING</span>
+                    </div>
 
-                <div class="hero-square hero-player-card">
-                    <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
+                    <div class="hero-square hero-player-card">
+                        <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -325,13 +327,15 @@ $partners = [
     </section>
 
     <script>
-    // The existing NOW ON AIR and SPONSOR cards float together; radio iframe stays inline.
+    // Float the existing player at bottom left, and NOW ON AIR / SPONSOR at bottom right.
     (() => {
         const anchor = document.getElementById('live-program-deck');
         const surface = document.getElementById('deseo-onair-card');
         const sponsorAnchor = document.getElementById('sponsor-deck');
         const sponsorSurface = document.getElementById('deseo-sponsor-card');
-        if (!anchor || !surface || !sponsorAnchor || !sponsorSurface) return;
+        const playerAnchor = document.getElementById('player');
+        const playerSurface = document.getElementById('deseo-live-player');
+        if (!anchor || !surface || !sponsorAnchor || !sponsorSurface || !playerAnchor || !playerSurface) return;
 
         // Desktops and landscape tablets, never phone layouts.
         const desktop = window.matchMedia('(min-width: 781px) and (hover: hover) and (pointer: fine)');
@@ -340,7 +344,8 @@ $partners = [
         const canFloat = () => desktop.matches || tabletLandscape.matches;
         const cards = [
             { anchor, surface, floating: false, labelSpace: 39 },
-            { anchor: sponsorAnchor, surface: sponsorSurface, floating: false, labelSpace: 39 }
+            { anchor: sponsorAnchor, surface: sponsorSurface, floating: false, labelSpace: 39 },
+            { anchor: playerAnchor, surface: playerSurface, floating: false, labelSpace: 39 }
         ];
         let initialized = false;
         let pendingFrame = false;
