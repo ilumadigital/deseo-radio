@@ -261,6 +261,7 @@ $partners = [
                     <div class="hero-deck-label">
                         <span class="live-pulse" aria-hidden="true"></span>
                         <span>NOW PLAYING</span>
+                        <a class="deseo-player-full-link" href="#player" aria-label="View the full-size radio player">FULL SIZE ↗</a>
                     </div>
 
                     <div class="hero-square hero-player-card">
@@ -320,6 +321,11 @@ $partners = [
                        data-analytics-event="sponsor_click"
                        data-iluma-signal-slot="hero-sponsor">
                         <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" data-iluma-signal-image>
+                        <span class="deseo-sponsor-mini-copy" aria-hidden="true">
+                            <small>SPONSOR</small>
+                            <strong>ILUMA Digital Agency</strong>
+                            <span>VISIT WEBSITE ↗</span>
+                        </span>
                     </a>
                 </div>
             </div>
@@ -327,20 +333,25 @@ $partners = [
     </section>
 
     <style>
-    /* Homepage only: align header, hero, every content section and footer to 1300px.
-       Full-bleed section backgrounds and lightboxes stay viewport-wide. */
+    /* Homepage content cap only; backgrounds remain edge-to-edge. */
     .wide-shell { max-width:1300px; }
+    .deseo-player-full-link, .deseo-sponsor-mini-copy { display:none; }
 
-    /* The three original hero cards form a single right-hand floating column.
-       Critical styles live with the homepage so cached CSS cannot hide the iframe. */
-    @media (min-width:781px) {
+    /*
+     * The floating experience uses the three ORIGINAL cards without DOM moves.
+     * A full-size square player + two legible horizontal preview rows gives
+     * controls real space without a three-square stack hitting the site header.
+     * All sizes adapt to CSS viewport height (including 125% OS/browser scaling).
+     */
+    @media (min-width:781px) and (min-height:440px) {
         .classic-hero { overflow:visible; isolation:auto; }
         .classic-hero-grid {
             z-index:auto;
-            /* Cap at 218px but fit all three cards, two gaps and safe margins vertically. */
-            --deseo-mini-card-size:min(218px, calc(33.333vh - 36px), calc(100vw - 40px));
-            --deseo-mini-card-size:min(218px, calc(33.333dvh - 36px), calc(100vw - 40px));
-            --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 20px);
+            --deseo-dock-width:min(320px, 34vw, calc(100vw - 36px));
+            --deseo-dock-bar:clamp(72px, 13dvh, 104px);
+            --deseo-dock-player:min(var(--deseo-dock-width), max(140px, calc(100dvh - 290px)));
+            --deseo-dock-gap:10px;
+            --deseo-dock-bottom:calc(14px + var(--safe-bottom, 0px));
         }
         #deseo-live-player.is-floating,
         #deseo-onair-card.is-floating,
@@ -352,50 +363,65 @@ $partners = [
             z-index:10001 !important;
             top:auto !important;
             left:auto !important;
-            right:calc(18px + var(--safe-right, 0px)) !important;
-            width:var(--deseo-mini-card-size) !important;
-            max-width:calc(100vw - 40px);
-            transform-origin:top left;
-            filter:drop-shadow(0 14px 32px rgba(0,0,0,.70));
+            right:calc(16px + var(--safe-right, 0px)) !important;
+            width:var(--deseo-dock-width) !important;
+            max-width:calc(100vw - 36px);
+            transform-origin:top right;
+            filter:drop-shadow(0 14px 28px rgba(0,0,0,.68));
         }
-        /* From bottom to top: sponsor, on air, player. Compact 8px gaps preserve space on scaled laptop displays. */
+
+        /* Order, top to bottom: playing, on air, sponsor. */
         #deseo-sponsor-card.is-floating {
-            bottom:calc(12px + var(--safe-bottom, 0px)) !important;
+            bottom:var(--deseo-dock-bottom) !important;
         }
         #deseo-onair-card.is-floating {
-            bottom:calc(20px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height)) !important;
+            bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-bar) + var(--deseo-dock-gap)) !important;
         }
         #deseo-live-player.is-floating {
-            bottom:calc(28px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height) + var(--deseo-mini-card-height)) !important;
+            bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-bar) + var(--deseo-dock-bar) + var(--deseo-dock-gap) + var(--deseo-dock-gap)) !important;
         }
-        #deseo-live-player.is-floating .hero-deck-label,
-        #deseo-onair-card.is-floating .hero-deck-label,
-        #deseo-sponsor-card.is-floating .hero-deck-label {
+
+        /* Full provider player: render internally at 512px then scale the same
+           iframe uniformly. Its native track text and controls remain intact. */
+        #deseo-live-player.is-floating .hero-deck-label {
             box-sizing:border-box;
-            min-height:16px;
-            height:16px;
-            margin:0 0 4px 3px;
-            padding-left:0;
-            gap:8px;
+            width:var(--deseo-dock-player);
+            height:24px;
+            min-height:24px;
+            margin:0 0 5px auto;
+            padding:0 2px;
+            font-size:9px;
+            letter-spacing:.13em;
+            gap:7px;
+        }
+        #deseo-live-player.is-floating .deseo-player-full-link {
+            display:inline-flex;
+            margin-left:auto;
+            align-items:center;
+            color:rgba(255,255,255,.82);
             font-size:8px;
-            letter-spacing:.14em;
+            font-weight:800;
+            letter-spacing:.08em;
+            white-space:nowrap;
         }
-        #deseo-live-player.is-floating .hero-square,
-        #deseo-onair-card.is-floating .hero-square,
-        #deseo-sponsor-card.is-floating .hero-square {
-            aspect-ratio:1 / 1;
-            height:var(--deseo-mini-card-size);
-            min-height:0;
-            border-radius:17px;
-            border-color:rgba(255,255,255,.16);
-            box-shadow:0 14px 32px rgba(0,0,0,.62);
+        #deseo-live-player.is-floating .deseo-player-full-link:hover { color:#fff; }
+        #deseo-live-player.is-floating .deseo-player-full-link:focus-visible {
+            outline:2px solid #ff2b36;
+            outline-offset:4px;
+            border-radius:2px;
         }
-        /* Render the provider widget at its normal desktop dimensions, then
-           scale its entire view into the mini card. Directly narrowing the iframe
-           makes the provider's own controls and captions overflow/crop. */
         #deseo-live-player.is-floating .hero-player-card {
             display:block;
+            position:relative;
+            margin-left:auto;
+            width:var(--deseo-dock-player) !important;
+            height:var(--deseo-dock-player) !important;
+            min-height:0;
+            aspect-ratio:1 / 1;
             overflow:hidden;
+            border-radius:20px;
+            border-color:rgba(255,255,255,.2);
+            box-shadow:0 20px 52px rgba(0,0,0,.74);
         }
         #deseo-live-player.is-floating .hero-player-card iframe {
             display:block !important;
@@ -407,29 +433,125 @@ $partners = [
             max-height:none !important;
             aspect-ratio:1 / 1;
             margin:0 !important;
-            transform:scale(var(--deseo-iframe-scale, .4));
+            transform:scale(var(--deseo-iframe-scale, .625));
             transform-origin:top left;
             border-radius:0 !important;
             box-shadow:none !important;
         }
-        #deseo-onair-card.is-floating .hero-cms-overlay { padding:11px; }
+
+        /* Compact NOW ON AIR: square artwork + complete, readable metadata. */
+        #deseo-onair-card.is-floating .hero-deck-label,
+        #deseo-sponsor-card.is-floating .hero-deck-label { display:none; }
+        #deseo-onair-card.is-floating .hero-cms-card,
+        #deseo-sponsor-card.is-floating .hero-sponsor-card {
+            position:relative;
+            box-sizing:border-box;
+            display:flex;
+            align-items:stretch;
+            width:100%;
+            height:var(--deseo-dock-bar) !important;
+            min-height:0;
+            aspect-ratio:auto;
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:18px;
+            background:#111113;
+            box-shadow:0 14px 34px rgba(0,0,0,.65);
+        }
+        #deseo-onair-card.is-floating .hero-cms-card::after { display:none; }
+        #deseo-onair-card.is-floating .hero-cms-card > img,
+        #deseo-sponsor-card.is-floating .hero-sponsor-card > img {
+            position:relative;
+            inset:auto;
+            display:block;
+            flex:0 0 var(--deseo-dock-bar);
+            width:var(--deseo-dock-bar);
+            height:100%;
+            max-width:var(--deseo-dock-bar);
+            object-fit:cover;
+            transform:none;
+        }
+        #deseo-onair-card.is-floating .hero-cms-card > img { filter:brightness(.92) saturate(1.05); }
+        #deseo-onair-card.is-floating .hero-cms-overlay {
+            position:relative;
+            inset:auto;
+            z-index:2;
+            display:flex;
+            flex:1 1 auto;
+            flex-direction:column;
+            justify-content:center;
+            align-items:flex-start;
+            min-width:0;
+            max-height:100%;
+            overflow:auto;
+            padding:7px 12px;
+            background:linear-gradient(90deg,#1b1114,#0a0a0b);
+            scrollbar-width:thin;
+        }
         #deseo-onair-card.is-floating .hero-cms-overlay > span {
-            font-size:7px;
-            margin-bottom:3px;
+            margin:0 0 3px;
+            font-size:8px;
+            line-height:1.15;
+            letter-spacing:.11em;
         }
         #deseo-onair-card.is-floating .hero-cms-overlay h2 {
-            font-size:15px;
-            line-height:1.1;
-            display:-webkit-box;
-            -webkit-box-orient:vertical;
-            -webkit-line-clamp:2;
-            overflow:hidden;
+            margin:0;
+            width:100%;
+            font-size:clamp(13px, 1.2vw, 17px) !important;
+            line-height:1.16;
+            overflow-wrap:anywhere;
+            white-space:normal;
         }
         #deseo-onair-card.is-floating .hero-cms-overlay p {
-            font-size:9px;
-            margin-top:4px;
+            margin:4px 0 0;
+            color:#b1b1b6;
+            font-size:10px;
+            line-height:1.15;
         }
         #deseo-onair-card.is-floating .hero-cms-card.has-dj-profile::before { display:none; }
+
+        /* Compact sponsor still shows the whole partner artwork (contain, not crop),
+           plus an explicit name/CTA instead of illegible lettering in a tiny square. */
+        #deseo-sponsor-card.is-floating .hero-sponsor-card > img {
+            object-fit:contain;
+            background:#181819;
+            border-right:1px solid rgba(255,255,255,.09);
+        }
+        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy {
+            display:flex;
+            flex:1 1 auto;
+            flex-direction:column;
+            justify-content:center;
+            min-width:0;
+            gap:3px;
+            padding:7px 12px;
+            color:#fff;
+            background:linear-gradient(110deg,#19191b,#0b0b0c);
+        }
+        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy small {
+            color:#ff4c55;
+            font-size:8px;
+            font-weight:800;
+            line-height:1.15;
+            letter-spacing:.14em;
+        }
+        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy strong {
+            font-size:clamp(13px, 1.1vw, 16px);
+            font-weight:800;
+            line-height:1.15;
+            overflow-wrap:anywhere;
+        }
+        #deseo-sponsor-card.is-floating .deseo-sponsor-mini-copy > span {
+            margin-top:2px;
+            color:#b5b5bb;
+            font-size:9px;
+            font-weight:700;
+            letter-spacing:.07em;
+        }
+        #deseo-sponsor-card.is-floating .hero-sponsor-card:hover {
+            transform:none;
+            border-color:rgba(255,43,54,.36);
+        }
     }
     </style>
 
@@ -445,8 +567,8 @@ $partners = [
         ];
         if (!heroGrid || cards.some(card => !card.anchor || !card.surface)) return;
 
-        const desktop = window.matchMedia('(min-width: 781px) and (hover: hover) and (pointer: fine)');
-        const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 600px) and (orientation: landscape)');
+        const desktop = window.matchMedia('(min-width: 781px) and (min-height: 440px) and (hover: hover) and (pointer: fine)');
+        const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 440px) and (orientation: landscape)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const canFloat = () => desktop.matches || tabletLandscape.matches;
         let floating = false;
@@ -485,17 +607,14 @@ $partners = [
             syncPlayerScale();
 
             if (!animate || reducedMotion.matches) return;
-            cards.forEach((card, i) => {
+            // A gentle fade/slide, rather than stretching a square card into a
+            // horizontal bar (which also distorted the provider iframe).
+            cards.forEach(card => {
                 if (!card.surface.animate) return;
-                const after = card.surface.getBoundingClientRect();
-                if (!after.width || !after.height) return;
                 card.surface.animate([
-                    {
-                        transform:'translate3d(' + (before[i].left - after.left) + 'px,' + (before[i].top - after.top) + 'px,0) scale(' + (before[i].width / after.width) + ',' + (before[i].height / after.height) + ')',
-                        opacity:.94
-                    },
-                    { transform:'translate3d(0,0,0) scale(1,1)', opacity:1 }
-                ], { duration:440, easing:'cubic-bezier(.22,1,.36,1)' });
+                    { transform:'translate3d(0,12px,0)', opacity:.68 },
+                    { transform:'translate3d(0,0,0)', opacity:1 }
+                ], { duration:300, easing:'cubic-bezier(.22,1,.36,1)' });
             });
         };
 
