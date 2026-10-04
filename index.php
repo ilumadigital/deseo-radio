@@ -326,6 +326,45 @@ $partners = [
         </div>
     </section>
 
+    <style>
+    /* Critical inline positioning: never depends on a stale cached stylesheet.
+       This is the original player/iframe, not a second instance. */
+    @media (min-width:781px) {
+        .classic-hero { overflow:visible; isolation:auto; }
+        .classic-hero-grid { z-index:auto; }
+        #deseo-live-player.is-floating {
+            position:fixed !important;
+            z-index:2147483000 !important;
+            display:block !important;
+            visibility:visible !important;
+            opacity:1 !important;
+            left:calc(20px + var(--safe-left, 0px)) !important;
+            right:auto !important;
+            top:auto !important;
+            bottom:calc(18px + var(--safe-bottom, 0px)) !important;
+            width:min(300px, calc(100vw - 40px)) !important;
+            max-width:calc(100vw - 40px);
+            isolation:isolate;
+            transform-origin:top left;
+            filter:drop-shadow(0 18px 38px rgba(0,0,0,.72));
+        }
+        #deseo-live-player.is-floating .hero-deck-label {
+            min-height:21px;
+            margin:0 0 8px 3px;
+            font-size:8px;
+        }
+        #deseo-live-player.is-floating .hero-player-card {
+            border-radius:23px;
+            border-color:rgba(255,255,255,.18);
+            box-shadow:0 22px 56px rgba(0,0,0,.68);
+        }
+        #deseo-live-player.is-floating .hero-player-card iframe {
+            border-radius:23px !important;
+            box-shadow:none !important;
+        }
+    }
+    </style>
+
     <script>
     // Float the existing player at bottom left, and NOW ON AIR / SPONSOR at bottom right.
     (() => {
@@ -401,8 +440,9 @@ $partners = [
             sponsorSurface.style.setProperty('--deseo-onair-float-height', Math.ceil(surface.offsetHeight) + 'px');
             sponsorSurface.classList.toggle('is-stacked', cards[0].floating && nextStates[1]);
             setFloating(cards[1], nextStates[1], initialized);
-            // The player is the third card: activate its independent bottom-left mode.
-            setFloating(cards[2], nextStates[2], initialized);
+            // Both cards start in the same hero row. Mirror the working NOW ON AIR
+            // state so the player cannot remain off-screen while the right stack floats.
+            setFloating(cards[2], cards[0].floating, initialized);
             initialized = true;
         };
         const schedule = () => {
