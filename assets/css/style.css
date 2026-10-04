@@ -2959,8 +2959,8 @@ body.dj-profile-modal-open{overflow:hidden}
   .deseo-podcasts-spotify-button:hover{transform:none}
 }
 
-/* Home NOW ON AIR + SPONSOR: compact stacked cards on desktop / landscape tablet.
-   Each original card stays mounted, without clipping or duplicated links/players. */
+/* Desktop / landscape tablet: radio player bottom-left; NOW ON AIR + SPONSOR bottom-right.
+   All three original elements stay mounted, without clipping or duplicates. */
 @media (min-width:781px){
   .classic-hero{overflow:visible;isolation:auto}
   .classic-hero-grid{z-index:auto}
@@ -3007,4 +3007,29 @@ body.dj-profile-modal-open{overflow:hidden}
   }
   .hero-onair-surface.is-floating .hero-cms-overlay p{font-size:9px;margin-top:4px}
   .hero-onair-surface.is-floating .hero-cms-card.has-dj-profile::before{display:none}
+
+  /* Keep the original iRadios iframe mounted; only resize/position its wrapper. */
+  .hero-player-surface.is-floating{
+    position:fixed;
+    z-index:10001;
+    left:calc(20px + var(--safe-left));
+    bottom:calc(18px + var(--safe-bottom));
+    width:min(300px,calc(100vw - 40px - var(--safe-left) - var(--safe-right)));
+    transform-origin:top left;
+    filter:drop-shadow(0 18px 38px rgba(0,0,0,.72));
+  }
+  .hero-player-surface.is-floating .hero-deck-label{
+    min-height:21px;
+    margin:0 0 8px 3px;
+    font-size:8px;
+  }
+  .hero-player-surface.is-floating .hero-player-card{
+    border-radius:23px;
+    border-color:rgba(255,255,255,.18);
+    box-shadow:0 0 0 1px rgba(255,255,255,.035),0 22px 56px rgba(0,0,0,.68);
+  }
+  .hero-player-surface.is-floating .hero-player-card iframe{
+    border-radius:23px!important;
+    box-shadow:none!important;
+  }
 }
