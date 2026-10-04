@@ -552,6 +552,17 @@ $partners = [
             transform:none;
             border-color:rgba(255,43,54,.36);
         }
+        /* The DJ profile and lineup must remain fully unobstructed. Hiding these
+           existing elements never pauses or recreates the radio iframe. */
+        body.dj-profile-modal-open #deseo-live-player.is-floating,
+        body.dj-profile-modal-open #deseo-onair-card.is-floating,
+        body.dj-profile-modal-open #deseo-sponsor-card.is-floating,
+        body.lineup-lightbox-open #deseo-live-player.is-floating,
+        body.lineup-lightbox-open #deseo-onair-card.is-floating,
+        body.lineup-lightbox-open #deseo-sponsor-card.is-floating {
+            visibility:hidden !important;
+            pointer-events:none !important;
+        }
     }
     </style>
 
