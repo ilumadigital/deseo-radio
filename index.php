@@ -338,9 +338,9 @@ $partners = [
         .classic-hero-grid {
             z-index:auto;
             /* Cap at 218px but fit all three cards, two gaps and safe margins vertically. */
-            --deseo-mini-card-size:min(218px, calc(33.333vh - 50px), calc(100vw - 40px));
-            --deseo-mini-card-size:min(218px, calc(33.333dvh - 50px), calc(100vw - 40px));
-            --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 24px);
+            --deseo-mini-card-size:min(218px, calc(33.333vh - 36px), calc(100vw - 40px));
+            --deseo-mini-card-size:min(218px, calc(33.333dvh - 36px), calc(100vw - 40px));
+            --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 20px);
         }
         #deseo-live-player.is-floating,
         #deseo-onair-card.is-floating,
@@ -358,23 +358,23 @@ $partners = [
             transform-origin:top left;
             filter:drop-shadow(0 14px 32px rgba(0,0,0,.70));
         }
-        /* From bottom to top: sponsor, on air, player. 12px between cards. */
+        /* From bottom to top: sponsor, on air, player. Compact 8px gaps preserve space on scaled laptop displays. */
         #deseo-sponsor-card.is-floating {
-            bottom:calc(18px + var(--safe-bottom, 0px)) !important;
+            bottom:calc(12px + var(--safe-bottom, 0px)) !important;
         }
         #deseo-onair-card.is-floating {
-            bottom:calc(30px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height)) !important;
+            bottom:calc(20px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height)) !important;
         }
         #deseo-live-player.is-floating {
-            bottom:calc(42px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height) + var(--deseo-mini-card-height)) !important;
+            bottom:calc(28px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height) + var(--deseo-mini-card-height)) !important;
         }
         #deseo-live-player.is-floating .hero-deck-label,
         #deseo-onair-card.is-floating .hero-deck-label,
         #deseo-sponsor-card.is-floating .hero-deck-label {
             box-sizing:border-box;
-            min-height:18px;
-            height:18px;
-            margin:0 0 6px 3px;
+            min-height:16px;
+            height:16px;
+            margin:0 0 4px 3px;
             padding-left:0;
             gap:8px;
             font-size:8px;
