@@ -305,57 +305,63 @@ $partners = [
                 </div>
             </div>
 
-            <div class="hero-deck">
-                <div class="hero-deck-label hero-deck-label-muted">
-                    <span>SPONSOR</span>
-                </div>
+            <div class="hero-deck" id="sponsor-deck">
+                <div class="hero-sponsor-surface" id="deseo-sponsor-card">
+                    <div class="hero-deck-label hero-deck-label-muted">
+                        <span>SPONSOR</span>
+                    </div>
 
-                <a class="hero-square hero-sponsor-card"
-                   href="https://iluma.gr/"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   data-analytics-event="sponsor_click"
-                   data-iluma-signal-slot="hero-sponsor">
-                    <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" data-iluma-signal-image>
-                </a>
+                    <a class="hero-square hero-sponsor-card"
+                       href="https://iluma.gr/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       data-analytics-event="sponsor_click"
+                       data-iluma-signal-slot="hero-sponsor">
+                        <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" data-iluma-signal-image>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
     <script>
-    // Only the CMS-driven NOW ON AIR card floats; the radio iframe stays in place.
+    // The existing NOW ON AIR and SPONSOR cards float together; radio iframe stays inline.
     (() => {
         const anchor = document.getElementById('live-program-deck');
         const surface = document.getElementById('deseo-onair-card');
-        if (!anchor || !surface) return;
+        const sponsorAnchor = document.getElementById('sponsor-deck');
+        const sponsorSurface = document.getElementById('deseo-sponsor-card');
+        if (!anchor || !surface || !sponsorAnchor || !sponsorSurface) return;
 
-        // Desktops and landscape tablets, but not phones (even in landscape).
+        // Desktops and landscape tablets, never phone layouts.
         const desktop = window.matchMedia('(min-width: 781px) and (hover: hover) and (pointer: fine)');
         const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 600px) and (orientation: landscape)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const canFloat = () => desktop.matches || tabletLandscape.matches;
-        let floating = false;
+        const cards = [
+            { anchor, surface, floating: false, labelSpace: 39 },
+            { anchor: sponsorAnchor, surface: sponsorSurface, floating: false, labelSpace: 39 }
+        ];
         let initialized = false;
         let pendingFrame = false;
-        let naturalLabelSpace = 39;
 
-        const setFloating = (next, animate) => {
-            if (next === floating) return;
-            // FLIP animation on the existing card; no clone or removal from the DOM.
-            if (surface.getAnimations) surface.getAnimations().forEach(animation => animation.cancel());
-            const before = surface.getBoundingClientRect();
+        const setFloating = (card, next, animate) => {
+            if (next === card.floating) return;
+            // FLIP on the original DOM element; no duplicates or link/iframe reinitialization.
+            if (card.surface.getAnimations) card.surface.getAnimations().forEach(animation => animation.cancel());
+            const before = card.surface.getBoundingClientRect();
             if (next) {
-                naturalLabelSpace = before.height - before.width;
-                anchor.style.minHeight = Math.ceil(before.height) + 'px';
+                card.labelSpace = before.height - before.width;
+                card.anchor.style.minHeight = Math.ceil(before.height) + 'px';
             }
-            surface.classList.toggle('is-floating', next);
-            floating = next;
-            if (!next) anchor.style.minHeight = '';
+            card.surface.classList.toggle('is-floating', next);
+            card.floating = next;
+            if (!next) card.anchor.style.minHeight = '';
 
-            if (!animate || reducedMotion.matches || !surface.animate) return;
-            const after = surface.getBoundingClientRect();
+            if (!animate || reducedMotion.matches || !card.surface.animate) return;
+            const after = card.surface.getBoundingClientRect();
             if (!after.width || !after.height) return;
-            surface.animate([
+            card.surface.animate([
                 {
                     transform: 'translate3d(' + (before.left - after.left) + 'px,' + (before.top - after.top) + 'px,0) scale(' + (before.width / after.width) + ',' + (before.height / after.height) + ')',
                     opacity: .94
@@ -367,20 +373,29 @@ $partners = [
         const update = () => {
             pendingFrame = false;
             if (!canFloat()) {
-                setFloating(false, false);
+                cards.forEach(card => setFloating(card, false, false));
+                sponsorSurface.classList.remove('is-stacked');
                 initialized = true;
                 return;
             }
-            if (floating) {
-                // Reserve the full-size card's place as the responsive grid changes.
-                anchor.style.minHeight = Math.ceil(anchor.getBoundingClientRect().width + naturalLabelSpace) + 'px';
-            }
-            const bounds = anchor.getBoundingClientRect();
-            // Return once the original card can be seen comfortably, not at the viewport edge.
-            const next = floating
-                ? bounds.bottom < window.innerHeight * .75
-                : bounds.bottom < -8;
-            setFloating(next, initialized);
+
+            const nextStates = cards.map(card => {
+                if (card.floating) {
+                    // Reserve each full-size grid cell while its child is fixed.
+                    card.anchor.style.minHeight = Math.ceil(card.anchor.getBoundingClientRect().width + card.labelSpace) + 'px';
+                }
+                const bounds = card.anchor.getBoundingClientRect();
+                // Leave only after the whole card is past the viewport; return without flicker.
+                return card.floating
+                    ? bounds.bottom < window.innerHeight * .75
+                    : bounds.bottom < -8;
+            });
+
+            // NOW ON AIR is the bottom card. SPONSOR sits 12px above its measured height.
+            setFloating(cards[0], nextStates[0], initialized);
+            sponsorSurface.style.setProperty('--deseo-onair-float-height', Math.ceil(surface.offsetHeight) + 'px');
+            sponsorSurface.classList.toggle('is-stacked', cards[0].floating && nextStates[1]);
+            setFloating(cards[1], nextStates[1], initialized);
             initialized = true;
         };
         const schedule = () => {
