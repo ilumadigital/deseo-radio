@@ -471,16 +471,11 @@ $partners = [
             pointer-events:none !important;
         }
     }
-    /* Final override AFTER the general floating display:block rule.
-       Only the sticky clone-style presentation disappears under 1900 CSS px;
-       the actual original SPONSOR hero card is always present. */
-    @media (min-width:781px) and (min-height:440px) and (max-width:1899px) {
-        #deseo-sponsor-card.is-floating { display:none !important; }
-    }
     </style>
 
     <script>
-    // No changes to the player iframe. Only the existing CMS and sponsor cards float.
+    // The player stays inline. NOW ON AIR floats on desktop; SPONSOR joins it
+    // only at >=1900 CSS px, otherwise its original hero card remains untouched.
     (() => {
         const heroGrid = document.querySelector('.classic-hero-grid');
         const cards = [
@@ -490,52 +485,57 @@ $partners = [
         if (!heroGrid || cards.some(card => !card.anchor || !card.surface)) return;
         const desktop = window.matchMedia('(min-width: 781px) and (min-height: 440px) and (hover: hover) and (pointer: fine)');
         const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 440px) and (orientation: landscape)');
+        const sponsorWide = window.matchMedia('(min-width: 1900px)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const canFloat = () => desktop.matches || tabletLandscape.matches;
-        let floating = false;
         let initialized = false;
         let pendingFrame = false;
+        cards.forEach(card => { card.floating = false; });
 
-        const setFloating = (next, animate) => {
-            if (next === floating) return;
-            cards.forEach(card => {
-                if (card.surface.getAnimations) card.surface.getAnimations().forEach(animation => animation.cancel());
-            });
-            if (next) {
-                cards.forEach(card => {
-                    const before = card.surface.getBoundingClientRect();
-                    card.labelSpace = before.height - before.width;
-                    card.anchor.style.minHeight = Math.ceil(before.height) + 'px';
-                });
+        const setFloating = (card, next, animate) => {
+            if (next === card.floating) return;
+            if (card.surface.getAnimations) {
+                card.surface.getAnimations().forEach(animation => animation.cancel());
             }
-            cards.forEach(card => card.surface.classList.toggle('is-floating', next));
-            floating = next;
-            if (!next) cards.forEach(card => { card.anchor.style.minHeight = ''; });
-            if (!animate || reducedMotion.matches) return;
-            cards.forEach(card => {
-                if (!card.surface.animate) return;
-                card.surface.animate([
-                    { transform:'translate3d(0,12px,0)', opacity:.68 },
-                    { transform:'translate3d(0,0,0)', opacity:1 }
-                ], { duration:300, easing:'cubic-bezier(.22,1,.36,1)' });
-            });
+            if (next) {
+                const before = card.surface.getBoundingClientRect();
+                card.labelSpace = before.height - before.width;
+                card.anchor.style.minHeight = Math.ceil(before.height) + 'px';
+            }
+            card.surface.classList.toggle('is-floating', next);
+            card.floating = next;
+            if (!next) card.anchor.style.minHeight = '';
+
+            if (!animate || reducedMotion.matches || !card.surface.animate) return;
+            card.surface.animate([
+                { transform:'translate3d(0,12px,0)', opacity:.68 },
+                { transform:'translate3d(0,0,0)', opacity:1 }
+            ], { duration:300, easing:'cubic-bezier(.22,1,.36,1)' });
         };
 
         const update = () => {
             pendingFrame = false;
             if (!canFloat()) {
-                setFloating(false, false);
+                cards.forEach(card => setFloating(card, false, false));
                 initialized = true;
                 return;
             }
-            if (floating) {
-                cards.forEach(card => {
-                    card.anchor.style.minHeight = Math.ceil(card.anchor.getBoundingClientRect().width + card.labelSpace) + 'px';
-                });
-            }
+            cards.forEach(card => {
+                if (!card.floating) return;
+                card.anchor.style.minHeight = Math.ceil(
+                    card.anchor.getBoundingClientRect().width + card.labelSpace
+                ) + 'px';
+            });
             const bottom = heroGrid.getBoundingClientRect().bottom;
-            const next = floating ? bottom < window.innerHeight * .75 : bottom < -8;
-            setFloating(next, initialized);
+            // The shared scroll trigger uses NOW ON AIR, which floats at every
+            // eligible desktop width. Sponsor never affects this decision.
+            const next = cards[0].floating
+                ? bottom < window.innerHeight * .75
+                : bottom < -8;
+            setFloating(cards[0], next, initialized);
+            // Never apply is-floating to the sponsor below 1900px: hiding it via
+            // CSS after making it fixed also hides its ONLY original DOM element.
+            setFloating(cards[1], next && sponsorWide.matches, initialized && sponsorWide.matches);
             initialized = true;
         };
         const schedule = () => {
