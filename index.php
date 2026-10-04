@@ -327,132 +327,172 @@ $partners = [
     </section>
 
     <style>
-    /* Critical inline positioning: never depends on a stale cached stylesheet.
-       This is the original player/iframe, not a second instance. */
+    /* The three original hero cards form a single right-hand floating column.
+       Critical styles live with the homepage so cached CSS cannot hide the iframe. */
     @media (min-width:781px) {
         .classic-hero { overflow:visible; isolation:auto; }
-        .classic-hero-grid { z-index:auto; }
-        #deseo-live-player.is-floating {
+        .classic-hero-grid {
+            z-index:auto;
+            --deseo-mini-card-size:min(192px, calc((100vh - 148px) / 3), calc(100vw - 40px));
+            --deseo-mini-card-size:min(192px, calc((100dvh - 148px) / 3), calc(100vw - 40px));
+            --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 24px);
+        }
+        #deseo-live-player.is-floating,
+        #deseo-onair-card.is-floating,
+        #deseo-sponsor-card.is-floating {
             position:fixed !important;
-            z-index:2147483000 !important;
             display:block !important;
             visibility:visible !important;
             opacity:1 !important;
-            left:calc(20px + var(--safe-left, 0px)) !important;
-            right:auto !important;
+            z-index:10001 !important;
             top:auto !important;
-            bottom:calc(18px + var(--safe-bottom, 0px)) !important;
-            width:min(300px, calc(100vw - 40px)) !important;
+            left:auto !important;
+            right:calc(18px + var(--safe-right, 0px)) !important;
+            width:var(--deseo-mini-card-size) !important;
             max-width:calc(100vw - 40px);
-            isolation:isolate;
             transform-origin:top left;
-            filter:drop-shadow(0 18px 38px rgba(0,0,0,.72));
+            filter:drop-shadow(0 14px 32px rgba(0,0,0,.70));
         }
-        #deseo-live-player.is-floating .hero-deck-label {
-            min-height:21px;
-            margin:0 0 8px 3px;
+        /* From bottom to top: sponsor, on air, player. 12px between cards. */
+        #deseo-sponsor-card.is-floating {
+            bottom:calc(18px + var(--safe-bottom, 0px)) !important;
+        }
+        #deseo-onair-card.is-floating {
+            bottom:calc(30px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height)) !important;
+        }
+        #deseo-live-player.is-floating {
+            bottom:calc(42px + var(--safe-bottom, 0px) + var(--deseo-mini-card-height) + var(--deseo-mini-card-height)) !important;
+        }
+        #deseo-live-player.is-floating .hero-deck-label,
+        #deseo-onair-card.is-floating .hero-deck-label,
+        #deseo-sponsor-card.is-floating .hero-deck-label {
+            box-sizing:border-box;
+            min-height:18px;
+            height:18px;
+            margin:0 0 6px 3px;
+            padding-left:0;
+            gap:8px;
             font-size:8px;
+            letter-spacing:.14em;
         }
-        #deseo-live-player.is-floating .hero-player-card {
-            border-radius:23px;
-            border-color:rgba(255,255,255,.18);
-            box-shadow:0 22px 56px rgba(0,0,0,.68);
+        #deseo-live-player.is-floating .hero-square,
+        #deseo-onair-card.is-floating .hero-square,
+        #deseo-sponsor-card.is-floating .hero-square {
+            aspect-ratio:1 / 1;
+            height:var(--deseo-mini-card-size);
+            min-height:0;
+            border-radius:17px;
+            border-color:rgba(255,255,255,.16);
+            box-shadow:0 14px 32px rgba(0,0,0,.62);
         }
         #deseo-live-player.is-floating .hero-player-card iframe {
-            border-radius:23px !important;
+            width:100% !important;
+            height:100% !important;
+            max-width:none !important;
+            aspect-ratio:1 / 1;
+            border-radius:17px !important;
             box-shadow:none !important;
         }
+        #deseo-onair-card.is-floating .hero-cms-overlay { padding:11px; }
+        #deseo-onair-card.is-floating .hero-cms-overlay > span {
+            font-size:7px;
+            margin-bottom:3px;
+        }
+        #deseo-onair-card.is-floating .hero-cms-overlay h2 {
+            font-size:15px;
+            line-height:1.1;
+            display:-webkit-box;
+            -webkit-box-orient:vertical;
+            -webkit-line-clamp:2;
+            overflow:hidden;
+        }
+        #deseo-onair-card.is-floating .hero-cms-overlay p {
+            font-size:9px;
+            margin-top:4px;
+        }
+        #deseo-onair-card.is-floating .hero-cms-card.has-dj-profile::before { display:none; }
     }
     </style>
 
     <script>
-    // Float the existing player at bottom left, and NOW ON AIR / SPONSOR at bottom right.
+    // Keep a single iRadios iframe and the existing CMS / sponsor links mounted.
+    // All three cards enter and leave the floating column together.
     (() => {
-        const anchor = document.getElementById('live-program-deck');
-        const surface = document.getElementById('deseo-onair-card');
-        const sponsorAnchor = document.getElementById('sponsor-deck');
-        const sponsorSurface = document.getElementById('deseo-sponsor-card');
-        const playerAnchor = document.getElementById('player');
-        const playerSurface = document.getElementById('deseo-live-player');
-        if (!anchor || !surface || !sponsorAnchor || !sponsorSurface || !playerAnchor || !playerSurface) return;
+        const heroGrid = document.querySelector('.classic-hero-grid');
+        const cards = [
+            { anchor:document.getElementById('player'), surface:document.getElementById('deseo-live-player'), labelSpace:39 },
+            { anchor:document.getElementById('live-program-deck'), surface:document.getElementById('deseo-onair-card'), labelSpace:39 },
+            { anchor:document.getElementById('sponsor-deck'), surface:document.getElementById('deseo-sponsor-card'), labelSpace:39 }
+        ];
+        if (!heroGrid || cards.some(card => !card.anchor || !card.surface)) return;
 
-        // Desktops and landscape tablets, never phone layouts.
         const desktop = window.matchMedia('(min-width: 781px) and (hover: hover) and (pointer: fine)');
         const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 600px) and (orientation: landscape)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const canFloat = () => desktop.matches || tabletLandscape.matches;
-        const cards = [
-            { anchor, surface, floating: false, labelSpace: 39 },
-            { anchor: sponsorAnchor, surface: sponsorSurface, floating: false, labelSpace: 39 },
-            { anchor: playerAnchor, surface: playerSurface, floating: false, labelSpace: 39 }
-        ];
+        let floating = false;
         let initialized = false;
         let pendingFrame = false;
 
-        const setFloating = (card, next, animate) => {
-            if (next === card.floating) return;
-            // FLIP on the original DOM element; no duplicates or link/iframe reinitialization.
-            if (card.surface.getAnimations) card.surface.getAnimations().forEach(animation => animation.cancel());
-            const before = card.surface.getBoundingClientRect();
+        const setFloating = (next, animate) => {
+            if (next === floating) return;
+            // Measure all three before changing styles. Never reparent or clone an iframe.
+            const before = cards.map(card => {
+                if (card.surface.getAnimations) card.surface.getAnimations().forEach(animation => animation.cancel());
+                return card.surface.getBoundingClientRect();
+            });
             if (next) {
-                card.labelSpace = before.height - before.width;
-                card.anchor.style.minHeight = Math.ceil(before.height) + 'px';
+                cards.forEach((card, i) => {
+                    card.labelSpace = before[i].height - before[i].width;
+                    card.anchor.style.minHeight = Math.ceil(before[i].height) + 'px';
+                });
             }
-            card.surface.classList.toggle('is-floating', next);
-            card.floating = next;
-            if (!next) card.anchor.style.minHeight = '';
+            cards.forEach(card => card.surface.classList.toggle('is-floating', next));
+            floating = next;
+            if (!next) cards.forEach(card => { card.anchor.style.minHeight = ''; });
 
-            if (!animate || reducedMotion.matches || !card.surface.animate) return;
-            const after = card.surface.getBoundingClientRect();
-            if (!after.width || !after.height) return;
-            card.surface.animate([
-                {
-                    transform: 'translate3d(' + (before.left - after.left) + 'px,' + (before.top - after.top) + 'px,0) scale(' + (before.width / after.width) + ',' + (before.height / after.height) + ')',
-                    opacity: .94
-                },
-                { transform: 'translate3d(0,0,0) scale(1,1)', opacity: 1 }
-            ], { duration: 440, easing: 'cubic-bezier(.22,1,.36,1)' });
+            if (!animate || reducedMotion.matches) return;
+            cards.forEach((card, i) => {
+                if (!card.surface.animate) return;
+                const after = card.surface.getBoundingClientRect();
+                if (!after.width || !after.height) return;
+                card.surface.animate([
+                    {
+                        transform:'translate3d(' + (before[i].left - after.left) + 'px,' + (before[i].top - after.top) + 'px,0) scale(' + (before[i].width / after.width) + ',' + (before[i].height / after.height) + ')',
+                        opacity:.94
+                    },
+                    { transform:'translate3d(0,0,0) scale(1,1)', opacity:1 }
+                ], { duration:440, easing:'cubic-bezier(.22,1,.36,1)' });
+            });
         };
 
         const update = () => {
             pendingFrame = false;
             if (!canFloat()) {
-                cards.forEach(card => setFloating(card, false, false));
-                sponsorSurface.classList.remove('is-stacked');
+                setFloating(false, false);
                 initialized = true;
                 return;
             }
-
-            const nextStates = cards.map(card => {
-                if (card.floating) {
-                    // Reserve each full-size grid cell while its child is fixed.
+            if (floating) {
+                // Preserve the three original grid cells on responsive desktop resize.
+                cards.forEach(card => {
                     card.anchor.style.minHeight = Math.ceil(card.anchor.getBoundingClientRect().width + card.labelSpace) + 'px';
-                }
-                const bounds = card.anchor.getBoundingClientRect();
-                // Leave only after the whole card is past the viewport; return without flicker.
-                return card.floating
-                    ? bounds.bottom < window.innerHeight * .75
-                    : bounds.bottom < -8;
-            });
-
-            // NOW ON AIR is the bottom card. SPONSOR sits 12px above its measured height.
-            setFloating(cards[0], nextStates[0], initialized);
-            sponsorSurface.style.setProperty('--deseo-onair-float-height', Math.ceil(surface.offsetHeight) + 'px');
-            sponsorSurface.classList.toggle('is-stacked', cards[0].floating && nextStates[1]);
-            setFloating(cards[1], nextStates[1], initialized);
-            // Both cards start in the same hero row. Mirror the working NOW ON AIR
-            // state so the player cannot remain off-screen while the right stack floats.
-            setFloating(cards[2], cards[0].floating, initialized);
+                });
+            }
+            const bottom = heroGrid.getBoundingClientRect().bottom;
+            // One shared trigger prevents a missing player or overlapping right-side cards.
+            const next = floating ? bottom < window.innerHeight * .75 : bottom < -8;
+            setFloating(next, initialized);
             initialized = true;
         };
+
         const schedule = () => {
             if (pendingFrame) return;
             pendingFrame = true;
             window.requestAnimationFrame(update);
         };
-
-        window.addEventListener('scroll', schedule, { passive: true });
-        window.addEventListener('resize', schedule, { passive: true });
+        window.addEventListener('scroll', schedule, { passive:true });
+        window.addEventListener('resize', schedule, { passive:true });
         window.addEventListener('pageshow', schedule);
         schedule();
     })();
