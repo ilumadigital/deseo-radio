@@ -325,8 +325,20 @@ $partners = [
     </section>
 
     <style>
-    /* Only the homepage content is capped; full-width backgrounds are unchanged. */
-    .wide-shell { max-width:1300px; }
+    /* Use the site's native --shell:1600px; do not override .wide-shell on Home. */
+
+    /* The sponsor is intentionally exclusive to >=1900 CSS-pixel viewports.
+       On smaller screens, balance the remaining player and ON AIR cards as two
+       normal hero columns; mobile keeps its existing single-column layout. */
+    @media (max-width:1899px) {
+        #sponsor-deck { display:none !important; }
+    }
+    @media (min-width:781px) and (max-width:1899px) {
+        .classic-hero-grid {
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            max-width:1060px;
+        }
+    }
 
     /* Existing live show and original square sponsor float together, not the player. */
     @media (min-width:781px) and (min-height:440px) {
@@ -359,6 +371,12 @@ $partners = [
         }
         #deseo-onair-card.is-floating {
             bottom:calc(var(--deseo-dock-bottom) + var(--deseo-dock-width) + var(--deseo-dock-gap)) !important;
+        }
+        /* Without the banner, NOW ON AIR is the only floating widget. */
+        @media (max-width:1899px) {
+            #deseo-onair-card.is-floating {
+                bottom:var(--deseo-dock-bottom) !important;
+            }
         }
         #deseo-onair-card.is-floating .hero-deck-label,
         #deseo-sponsor-card.is-floating .hero-deck-label { display:none; }
