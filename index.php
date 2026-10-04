@@ -327,14 +327,19 @@ $partners = [
     </section>
 
     <style>
+    /* Homepage only: align header, hero, every content section and footer to 1300px.
+       Full-bleed section backgrounds and lightboxes stay viewport-wide. */
+    .wide-shell { max-width:1300px; }
+
     /* The three original hero cards form a single right-hand floating column.
        Critical styles live with the homepage so cached CSS cannot hide the iframe. */
     @media (min-width:781px) {
         .classic-hero { overflow:visible; isolation:auto; }
         .classic-hero-grid {
             z-index:auto;
-            --deseo-mini-card-size:min(192px, calc(33.333vh - 49.333px), calc(100vw - 40px));
-            --deseo-mini-card-size:min(192px, calc(33.333dvh - 49.333px), calc(100vw - 40px));
+            /* Cap at 218px but fit all three cards, two gaps and safe margins vertically. */
+            --deseo-mini-card-size:min(218px, calc(33.333vh - 50px), calc(100vw - 40px));
+            --deseo-mini-card-size:min(218px, calc(33.333dvh - 50px), calc(100vw - 40px));
             --deseo-mini-card-height:calc(var(--deseo-mini-card-size) + 24px);
         }
         #deseo-live-player.is-floating,
@@ -385,12 +390,26 @@ $partners = [
             border-color:rgba(255,255,255,.16);
             box-shadow:0 14px 32px rgba(0,0,0,.62);
         }
+        /* Render the provider widget at its normal desktop dimensions, then
+           scale its entire view into the mini card. Directly narrowing the iframe
+           makes the provider's own controls and captions overflow/crop. */
+        #deseo-live-player.is-floating .hero-player-card {
+            display:block;
+            overflow:hidden;
+        }
         #deseo-live-player.is-floating .hero-player-card iframe {
-            width:100% !important;
-            height:100% !important;
+            display:block !important;
+            flex:none !important;
+            width:512px !important;
+            height:512px !important;
+            min-width:512px !important;
             max-width:none !important;
+            max-height:none !important;
             aspect-ratio:1 / 1;
-            border-radius:17px !important;
+            margin:0 !important;
+            transform:scale(var(--deseo-iframe-scale, .4));
+            transform-origin:top left;
+            border-radius:0 !important;
             box-shadow:none !important;
         }
         #deseo-onair-card.is-floating .hero-cms-overlay { padding:11px; }
@@ -433,6 +452,18 @@ $partners = [
         let floating = false;
         let initialized = false;
         let pendingFrame = false;
+        const playerCard = cards[0].surface.querySelector('.hero-player-card');
+        const syncPlayerScale = () => {
+            if (!floating || !playerCard) {
+                cards[0].surface.style.removeProperty('--deseo-iframe-scale');
+                return;
+            }
+            // Offset width is independent of the FLIP animation transform.
+            const square = playerCard.clientWidth;
+            if (square > 0) {
+                cards[0].surface.style.setProperty('--deseo-iframe-scale', String(square / 512));
+            }
+        };
 
         const setFloating = (next, animate) => {
             if (next === floating) return;
@@ -450,6 +481,8 @@ $partners = [
             cards.forEach(card => card.surface.classList.toggle('is-floating', next));
             floating = next;
             if (!next) cards.forEach(card => { card.anchor.style.minHeight = ''; });
+            // Only CSS changes on the existing iframe: never change src or reparent it.
+            syncPlayerScale();
 
             if (!animate || reducedMotion.matches) return;
             cards.forEach((card, i) => {
@@ -474,10 +507,12 @@ $partners = [
                 return;
             }
             if (floating) {
-                // Preserve the three original grid cells on responsive desktop resize.
+                // Preserve the original grid cells and adapt the provider's artwork/
+                // controls to the available height (including laptop display scaling).
                 cards.forEach(card => {
                     card.anchor.style.minHeight = Math.ceil(card.anchor.getBoundingClientRect().width + card.labelSpace) + 'px';
                 });
+                syncPlayerScale();
             }
             const bottom = heroGrid.getBoundingClientRect().bottom;
             // One shared trigger prevents a missing player or overlapping right-side cards.
