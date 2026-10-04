@@ -257,20 +257,19 @@ $partners = [
 
         <div class="wide-shell classic-hero-grid">
             <div class="hero-deck" id="player">
-                <div class="hero-player-surface" id="deseo-live-player">
-                    <div class="hero-deck-label">
-                        <span class="live-pulse" aria-hidden="true"></span>
-                        <span>NOW PLAYING</span>
-                    </div>
+                <div class="hero-deck-label">
+                    <span class="live-pulse" aria-hidden="true"></span>
+                    <span>NOW PLAYING</span>
+                </div>
 
-                    <div class="hero-square hero-player-card">
-                        <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
-                    </div>
+                <div class="hero-square hero-player-card">
+                    <iframe title="Deseo Radio live player" src="https://play.iradios.gr/widget/deseo-radio?autoplay=true" width="100%" frameborder="0" allow="autoplay; encrypted-media; clipboard-write;" style="border:none; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; display: block; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-radius: 32px; overflow: hidden;"></iframe>
                 </div>
             </div>
 
             <div class="hero-deck" id="live-program-deck" aria-live="polite">
-                <div class="hero-deck-label">
+                <div class="hero-onair-surface" id="deseo-onair-card">
+                    <div class="hero-deck-label">
                     <span class="live-pulse <?= $live_dj ? '' : 'is-muted' ?>" aria-hidden="true"></span>
                     <span>NOW ON AIR</span>
                 </div>
@@ -303,6 +302,7 @@ $partners = [
                         </div>
                     <?php endif; ?>
                 </div>
+                </div>
             </div>
 
             <div class="hero-deck">
@@ -323,13 +323,13 @@ $partners = [
     </section>
 
     <script>
-    // One iRadios iframe stays mounted throughout every transition: audio never restarts.
+    // Only the CMS-driven NOW ON AIR card floats; the radio iframe stays in place.
     (() => {
-        const anchor = document.getElementById('player');
-        const player = document.getElementById('deseo-live-player');
-        if (!anchor || !player || !player.querySelector('iframe')) return;
+        const anchor = document.getElementById('live-program-deck');
+        const surface = document.getElementById('deseo-onair-card');
+        if (!anchor || !surface) return;
 
-        // Fine-pointer desktops and landscape tablets; exclude landscape phones.
+        // Desktops and landscape tablets, but not phones (even in landscape).
         const desktop = window.matchMedia('(min-width: 781px) and (hover: hover) and (pointer: fine)');
         const tabletLandscape = window.matchMedia('(min-width: 900px) and (min-height: 600px) and (orientation: landscape)');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -337,31 +337,31 @@ $partners = [
         let floating = false;
         let initialized = false;
         let pendingFrame = false;
+        let naturalLabelSpace = 39;
 
         const setFloating = (next, animate) => {
             if (next === floating) return;
-            // Cancel any unfinished visual animation before measuring the real box.
-            if (player.getAnimations) player.getAnimations().forEach(animation => animation.cancel());
-            const before = player.getBoundingClientRect();
-
-            // Keep the hero grid at exactly the same height while its child is fixed.
-            if (next) anchor.style.minHeight = Math.ceil(before.height) + 'px';
-            player.classList.toggle('is-floating', next);
+            // FLIP animation on the existing card; no clone or removal from the DOM.
+            if (surface.getAnimations) surface.getAnimations().forEach(animation => animation.cancel());
+            const before = surface.getBoundingClientRect();
+            if (next) {
+                naturalLabelSpace = before.height - before.width;
+                anchor.style.minHeight = Math.ceil(before.height) + 'px';
+            }
+            surface.classList.toggle('is-floating', next);
             floating = next;
             if (!next) anchor.style.minHeight = '';
 
-            if (!animate || reducedMotion.matches || !player.animate) return;
-            const after = player.getBoundingClientRect();
+            if (!animate || reducedMotion.matches || !surface.animate) return;
+            const after = surface.getBoundingClientRect();
             if (!after.width || !after.height) return;
-
-            // FLIP: animate only the existing element; never replace or move its iframe.
-            player.animate([
+            surface.animate([
                 {
                     transform: 'translate3d(' + (before.left - after.left) + 'px,' + (before.top - after.top) + 'px,0) scale(' + (before.width / after.width) + ',' + (before.height / after.height) + ')',
                     opacity: .94
                 },
                 { transform: 'translate3d(0,0,0) scale(1,1)', opacity: 1 }
-            ], { duration: 460, easing: 'cubic-bezier(.22,1,.36,1)' });
+            ], { duration: 440, easing: 'cubic-bezier(.22,1,.36,1)' });
         };
 
         const update = () => {
@@ -372,12 +372,14 @@ $partners = [
                 return;
             }
             if (floating) {
-                // The inline placeholder follows changes to the original grid width.
-                anchor.style.minHeight = Math.ceil(anchor.getBoundingClientRect().width + 39) + 'px';
+                // Reserve the full-size card's place as the responsive grid changes.
+                anchor.style.minHeight = Math.ceil(anchor.getBoundingClientRect().width + naturalLabelSpace) + 'px';
             }
             const bounds = anchor.getBoundingClientRect();
-            // Hysteresis prevents flicker at the viewport edge on slow scrolling.
-            const next = floating ? bounds.bottom < 110 : bounds.bottom < -8;
+            // Return once the original card can be seen comfortably, not at the viewport edge.
+            const next = floating
+                ? bounds.bottom < window.innerHeight * .75
+                : bounds.bottom < -8;
             setFloating(next, initialized);
             initialized = true;
         };
