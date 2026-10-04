@@ -327,12 +327,6 @@ $partners = [
     <style>
     /* Use the site's native --shell:1600px; do not override .wide-shell on Home. */
 
-    /* Hide ONLY the floating sponsor on viewports below 1900 CSS px.
-       The original third hero card/banner always remains visible. */
-    @media (max-width:1899px) {
-        #deseo-sponsor-card.is-floating { display:none !important; }
-    }
-
     /* Existing live show and original square sponsor float together, not the player. */
     @media (min-width:781px) and (min-height:440px) {
         .classic-hero { overflow:visible; isolation:auto; }
@@ -476,6 +470,12 @@ $partners = [
             visibility:hidden !important;
             pointer-events:none !important;
         }
+    }
+    /* Final override AFTER the general floating display:block rule.
+       Only the sticky clone-style presentation disappears under 1900 CSS px;
+       the actual original SPONSOR hero card is always present. */
+    @media (min-width:781px) and (min-height:440px) and (max-width:1899px) {
+        #deseo-sponsor-card.is-floating { display:none !important; }
     }
     </style>
 
