@@ -351,6 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $uploadIsGuest = deseo_mylive_is_guest_account($account);
+            $targetWeeklySlotId = null;
             $targetProgramId = null;
             $targetShowStart = null;
             $targetShowEnd = null;
@@ -390,7 +391,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('Επίλεξε σε ποιο weekly slot ανήκει αυτό το DJ Set.');
                     }
 
-                    $targetProgramId = (int)($selectedDelivery['program_id'] ?? 0);
+                    $targetWeeklySlotId = (int)($selectedDelivery['weekly_slot_id'] ?? $selectedDelivery['program_id'] ?? 0);
+                    $targetProgramId = !empty($selectedDelivery['source_program_id'])
+                        ? (int)$selectedDelivery['source_program_id']
+                        : null;
                     $targetShowStart = $selectedDelivery['show_start']->format('Y-m-d H:i:s');
                     $targetShowEnd = $selectedDelivery['show_end']->format('Y-m-d H:i:s');
                 }
@@ -445,13 +449,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lock->execute([$accountId]);
             if (!$lock->fetchColumn()) throw new RuntimeException('Το account δεν βρέθηκε.');
 
-            if ($targetShowStart !== null && $targetProgramId !== null) {
+            if ($targetShowStart !== null && $targetWeeklySlotId !== null) {
                 $duplicateTarget = $pdo->prepare(
                     "SELECT id FROM dj_portal_sets
-                     WHERE account_id = ? AND target_program_id = ? AND target_show_start = ?
+                     WHERE account_id = ? AND target_weekly_slot_id = ? AND target_show_start = ?
                      LIMIT 1"
                 );
-                $duplicateTarget->execute([$accountId, $targetProgramId, $targetShowStart]);
+                $duplicateTarget->execute([$accountId, $targetWeeklySlotId, $targetShowStart]);
                 if ($duplicateTarget->fetchColumn()) {
                     throw new RuntimeException('Έχει ήδη ανέβει DJ Set για αυτή τη συγκεκριμένη μετάδοση.');
                 }
@@ -476,8 +480,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $insert = $pdo->prepare(
                     "INSERT INTO dj_portal_sets
                      (account_id, episode_no, original_name, stored_name, file_path, file_size, mime_type, status,
-                      target_program_id, target_show_start, target_show_end, episode_dj_name)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?)"
+                      target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?)"
                 );
                 $insert->execute([
                     $accountId,
@@ -487,6 +491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $relativeDir . '/' . $storedName,
                     $size,
                     $mime,
+                    $targetWeeklySlotId,
                     $targetProgramId,
                     $targetShowStart,
                     $targetShowEnd,
@@ -958,7 +963,7 @@ $nowAthens = new DateTimeImmutable('now', $athensTz);
 $nextShowSeasonComplete = false;
 $nextShowStart = null;
 $nextShowEnd = null;
-$nextShowProgramId = null;
+$nextShowWeeklySlotId = null;
 $nextShowIsLive = false;
 $nextShowWhen = 'Schedule pending';
 $nextShowDate = '—';
@@ -973,7 +978,7 @@ if ($isGuestAccount) {
     $nearest = $upcomingShows[0];
     $nextShowStart = $nearest['show_start'];
     $nextShowEnd = $nearest['show_end'];
-    $nextShowProgramId = (int)($nearest['program_id'] ?? 0);
+    $nextShowWeeklySlotId = (int)($nearest['weekly_slot_id'] ?? $nearest['program_id'] ?? 0);
     $nextShowIsLive = $nowAthens >= $nextShowStart && $nowAthens < $nextShowEnd;
     $nextShowDay = dj_season_day_label((int)$nearest['day_of_week']);
     $nextShowDate = $nextShowStart->format('d.m.Y');
@@ -1000,9 +1005,9 @@ if ($isGuestAccount) {
 }
 
 $nextShowSet = null;
-if (!$isGuestAccount && $nextShowStart instanceof DateTimeImmutable && $nextShowProgramId !== null) {
+if (!$isGuestAccount && $nextShowStart instanceof DateTimeImmutable && $nextShowWeeklySlotId !== null) {
     foreach ($sets as $setCandidate) {
-        if ((int)($setCandidate['target_program_id'] ?? -1) !== $nextShowProgramId) continue;
+        if ((int)($setCandidate['target_weekly_slot_id'] ?? -1) !== $nextShowWeeklySlotId) continue;
         if ((string)($setCandidate['target_show_start'] ?? '') !== $nextShowStart->format('Y-m-d H:i:s')) continue;
         $nextShowSet = $setCandidate;
         break;
