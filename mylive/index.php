@@ -364,11 +364,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!$uploadIsGuest) {
+                $uploadSlots = deseo_mylive_program_slots($pdo, $accountId);
                 $deliveryShows = deseo_mylive_delivery_shows(
                     $pdo,
                     $accountId,
                     new DateTimeImmutable('now', dj_season_athens_timezone())
                 );
+                if ($uploadSlots && !$deliveryShows) {
+                    throw new RuntimeException('Δεν υπάρχει διαθέσιμη επόμενη μετάδοση για νέο DJ Set μέσα στη Season 6.');
+                }
                 if ($deliveryShows) {
                     $requestedProgramId = isset($_POST['program_id']) ? (int)$_POST['program_id'] : -1;
                     if ($requestedProgramId === -1 && count($deliveryShows) === 1) {
