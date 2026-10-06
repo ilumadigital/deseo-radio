@@ -168,19 +168,35 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
            AND end_time IS NOT NULL"
     );
 
-    // Preserve multi-slot accounts created by the earlier implementation.
-    // Import only Program rows whose show name matches the account, so generic
-    // zones linked for public-profile purposes do not become upload obligations.
+    // One-time compatibility import for multi-slot accounts created before
+    // MyLive weekly slots were decoupled from Radio Program. It must never run
+    // repeatedly, otherwise a slot intentionally removed in MyLive could be
+    // silently recreated from a still-existing Program row.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_migrations (
+        migration_key VARCHAR(120) PRIMARY KEY,
+        applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     try {
-        $pdo->exec(
-            "INSERT IGNORE INTO dj_portal_weekly_slots
-             (account_id, day_of_week, start_time, end_time, source_program_id)
-             SELECT p.mylive_account_id, p.day_of_week, p.start_time, p.end_time, p.id
-             FROM program p
-             INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
-             WHERE p.mylive_account_id IS NOT NULL
-               AND LOWER(TRIM(p.dj_name)) = LOWER(TRIM(a.artist_name))"
+        $migrationKey = '2026-10-mylive-weekly-slots-decoupled';
+        $migrationStmt = $pdo->prepare(
+            "SELECT migration_key FROM dj_portal_migrations WHERE migration_key = ? LIMIT 1"
         );
+        $migrationStmt->execute([$migrationKey]);
+        if (!$migrationStmt->fetchColumn()) {
+            $pdo->exec(
+                "INSERT IGNORE INTO dj_portal_weekly_slots
+                 (account_id, day_of_week, start_time, end_time, source_program_id)
+                 SELECT p.mylive_account_id, p.day_of_week, p.start_time, p.end_time, p.id
+                 FROM program p
+                 INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
+                 WHERE p.mylive_account_id IS NOT NULL
+                   AND LOWER(TRIM(p.dj_name)) = LOWER(TRIM(a.artist_name))"
+            );
+            $pdo->prepare(
+                "INSERT IGNORE INTO dj_portal_migrations (migration_key) VALUES (?)"
+            )->execute([$migrationKey]);
+        }
     } catch (Throwable $e) {
         error_log('MyLive weekly-slot legacy Program import: ' . $e->getMessage());
     }
@@ -604,9 +620,8 @@ function deseo_mylive_set_statuses(): array {
 
 
 /**
- * Weekly slots linked to a MyLive account. The Radio Program is the canonical
- * source for multi-slot accounts. A virtual legacy slot is returned only when
- * no Program row is linked, preserving existing Resident accounts unchanged.
+ * Weekly delivery slots belonging to a MyLive account.
+ * These are intentionally independent from the public Radio Program.
  */
 function deseo_mylive_program_slots(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
