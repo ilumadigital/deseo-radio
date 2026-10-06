@@ -8,6 +8,7 @@ require_once __DIR__ . '/hearthis-season6.php';
 
 function deseo_hearthis_metadata(array $set): array {
     $artist = trim((string)$set['artist_name']);
+    $episodeArtist = trim((string)($set['episode_dj_name'] ?? ''));
     $episode = 'EP' . str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT);
     $dateLine = '';
     if (!empty($set['scheduled_show_end'])) {
@@ -20,9 +21,16 @@ function deseo_hearthis_metadata(array $set): array {
             // Never fabricate a broadcast date from an invalid value.
         }
     }
+    $titleArtist = $episodeArtist !== ''
+        ? $episodeArtist . ' – ' . $artist
+        : $artist;
+    $descriptionLead = $episodeArtist !== ''
+        ? 'Exclusive DJ Set by ' . $episodeArtist . ' for ' . $artist . ' on Deseo Radio · Season 6.'
+        : 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.';
+
     return [
-        'title' => $artist . ' – Deseo Radio | S06 ' . $episode,
-        'description' => 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.' . "\n\n"
+        'title' => $titleArtist . ' | Deseo Radio · S06 ' . $episode,
+        'description' => $descriptionLead . "\n\n"
             . $dateLine
             . 'Listen Live: https://deseoradio.com' . "\n"
             . 'Season 6 DJ Sets: ' . DESEO_HEARTHIS_SEASON6_URL . "\n\n"
