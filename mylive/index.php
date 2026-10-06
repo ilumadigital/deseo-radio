@@ -390,10 +390,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('Η φωτογραφία του DJ δεν αναγνωρίστηκε ως έγκυρο upload.');
                     }
 
+                    $photoImageInfo = @getimagesize($photoTmp);
+                    if ($photoImageInfo === false) {
+                        throw new RuntimeException('Η φωτογραφία του DJ πρέπει να είναι πραγματικό JPG, PNG ή WEBP.');
+                    }
+
                     $photoMime = '';
                     if (class_exists('finfo')) {
                         $photoFinfo = new finfo(FILEINFO_MIME_TYPE);
                         $photoMime = (string)$photoFinfo->file($photoTmp);
+                    }
+                    if ($photoMime === '') {
+                        $photoMime = (string)($photoImageInfo['mime'] ?? '');
                     }
 
                     $photoAllowed = [
@@ -401,7 +409,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'image/png' => 'png',
                         'image/webp' => 'webp',
                     ];
-                    if (!isset($photoAllowed[$photoMime]) || @getimagesize($photoTmp) === false) {
+                    if (!isset($photoAllowed[$photoMime])) {
                         throw new RuntimeException('Η φωτογραφία του DJ πρέπει να είναι πραγματικό JPG, PNG ή WEBP.');
                     }
 
