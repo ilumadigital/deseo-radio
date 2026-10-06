@@ -489,7 +489,7 @@ function deseo_hearthis_run(PDO $pdo, int $limit = 2): array {
         $uploadLimit = max(1, min(5, $limit));
         $stmt = $pdo->prepare(
             "SELECT s.id, s.account_id, s.episode_no, s.file_path, s.stored_name,
-                    s.broadcasted_at, s.scheduled_show_end, a.artist_name
+                    s.broadcasted_at, s.scheduled_show_end, s.episode_dj_name, a.artist_name
              FROM dj_portal_sets s
              INNER JOIN dj_portal_accounts a ON a.id = s.account_id
              WHERE s.status = 'broadcasted' AND s.hearthis_status = 'pending'
