@@ -1560,25 +1560,71 @@ admin_page_start('MyLive', 'mylive');
                     </div>
                 </div>
 
-                <div class="mylive-slot-editor">
-                    <div class="field">
-                        <label>Day</label>
-                        <select name="day_of_week" required>
-                            <option value="">Select day</option>
-                            <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
-                                <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                <div class="mylive-manual-slots-head">
+                    <div>
+                        <span>WEEKLY SLOTS</span>
+                        <strong>Πρόσθεσε όλες τις ημέρες που θα παίζει αυτό το account.</strong>
                     </div>
-                    <div class="field">
-                        <label>Start</label>
-                        <input type="time" name="start_time" required>
-                    </div>
-                    <div class="field">
-                        <label>End</label>
-                        <input type="time" name="end_time" required>
+                    <button class="button button-secondary" type="button" id="manualAddWeeklySlot">+ Add Weekly Slot</button>
+                </div>
+
+                <div id="manualWeeklySlots">
+                    <div class="mylive-manual-slot-row">
+                        <div class="mylive-slot-editor">
+                            <div class="field">
+                                <label>Day</label>
+                                <select name="slot_day_of_week[]" required>
+                                    <option value="">Select day</option>
+                                    <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
+                                        <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Start</label>
+                                <input type="time" name="slot_start_time[]" required>
+                            </div>
+                            <div class="field">
+                                <label>End</label>
+                                <input type="time" name="slot_end_time[]" required>
+                            </div>
+                        </div>
+                        <button class="mylive-manual-slot-remove" type="button" data-remove-manual-slot aria-label="Remove weekly slot" hidden>×</button>
                     </div>
                 </div>
+
+                <template id="manualWeeklySlotTemplate">
+                    <div class="mylive-manual-slot-row">
+                        <div class="mylive-slot-editor">
+                            <div class="field">
+                                <label>Day</label>
+                                <select name="slot_day_of_week[]" required>
+                                    <option value="">Select day</option>
+                                    <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
+                                        <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Start</label>
+                                <input type="time" name="slot_start_time[]" required>
+                            </div>
+                            <div class="field">
+                                <label>End</label>
+                                <input type="time" name="slot_end_time[]" required>
+                            </div>
+                        </div>
+                        <button class="mylive-manual-slot-remove" type="button" data-remove-manual-slot aria-label="Remove weekly slot">×</button>
+                    </div>
+                </template>
+
+                <label class="toggle-row mylive-manual-episode-dj-toggle">
+                    <input type="checkbox" name="requires_episode_artist" value="1">
+                    <span>
+                        <strong>Require DJ name on every episode</strong>
+                        <small>Για radioshows / agencies όπως το DJ SA Radioshow. Πριν από κάθε upload θα ζητά υποχρεωτικά ποιος DJ παίζει στο συγκεκριμένο slot.</small>
+                    </span>
+                </label>
 
                 <div class="mylive-email-preview-strip">
                     <div><span>WHAT HAPPENS NEXT</span><strong>Creates access · generates temporary password · sends onboarding email</strong></div>
