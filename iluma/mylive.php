@@ -586,6 +586,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
 
+                    $overlap = $pdo->prepare(
+                        "SELECT id, dj_name, start_time, end_time
+                         FROM program
+                         WHERE day_of_week = ?
+                           AND start_time < ?
+                           AND end_time > ?
+                         ORDER BY start_time ASC
+                         LIMIT 1"
+                    );
+                    $overlap->execute([$day, $end, $start]);
+                    $overlapRow = $overlap->fetch(PDO::FETCH_ASSOC);
+                    if ($overlapRow) {
+                        throw new RuntimeException(
+                            'Το νέο slot επικαλύπτεται με το υπάρχον show "'
+                            . (string)$overlapRow['dj_name'] . '" ('
+                            . substr((string)$overlapRow['start_time'], 0, 5) . '–'
+                            . substr((string)$overlapRow['end_time'], 0, 5) . ').'
+                        );
+                    }
+
                     $occupied = $pdo->prepare(
                         "SELECT id, mylive_account_id, dj_name FROM program
                          WHERE day_of_week = ? AND start_time = ? LIMIT 1"
