@@ -755,7 +755,7 @@ function deseo_mylive_backfill_scheduled_show_ends(PDO $pdo, ?DateTimeImmutable 
         }
 
         $query = $pdo->query(
-            "SELECT s.id, s.account_id, b.status AS application_status
+            "SELECT s.id, s.account_id, s.target_show_end, b.status AS application_status
              FROM dj_portal_sets s
              INNER JOIN dj_portal_accounts a ON a.id = s.account_id
              LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
@@ -777,8 +777,11 @@ function deseo_mylive_backfill_scheduled_show_ends(PDO $pdo, ?DateTimeImmutable 
                 // Guests have no recurring weekly date. Preserve manual input.
                 continue;
             }
-            $end = deseo_mylive_next_show_end($pdo, (int)$row['account_id'], $reference);
-            if ($end === null) {
+            $end = trim((string)($row['target_show_end'] ?? ''));
+            if ($end === '') {
+                $end = (string)(deseo_mylive_next_show_end($pdo, (int)$row['account_id'], $reference) ?? '');
+            }
+            if ($end === '') {
                 $unresolved++;
                 continue;
             }
@@ -797,7 +800,7 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
     }
     $stmt = $pdo->prepare(
         "SELECT id, account_id, status, broadcasted_at, scheduled_show_end,
-                file_deleted_at, hearthis_status
+                target_show_end, file_deleted_at, hearthis_status
          FROM dj_portal_sets WHERE id = ? LIMIT 1"
     );
     $stmt->execute([$setId]);
@@ -832,7 +835,9 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
         if ($status === 'scheduled') {
             $scheduledEnd = $previous === 'scheduled' && !empty($set['scheduled_show_end'])
                 ? (string)$set['scheduled_show_end']
-                : deseo_mylive_next_show_end($pdo, (int)$set['account_id'], $now);
+                : (trim((string)($set['target_show_end'] ?? '')) !== ''
+                    ? (string)$set['target_show_end']
+                    : deseo_mylive_next_show_end($pdo, (int)$set['account_id'], $now));
             // Admin may supply an actual end date/time for a one-off Guest DJ slot.
             if (trim($showEndInput) !== '') {
                 $given = DateTimeImmutable::createFromFormat(
