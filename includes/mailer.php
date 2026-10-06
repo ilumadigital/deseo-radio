@@ -764,8 +764,13 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $weeklySlotLabels = [];
     foreach ($weeklySlots as $weeklySlot) {
         $slotDay = (int)($weeklySlot['day_of_week'] ?? 0);
-        $slotStart = deseo_mylive_format_time((string)($weeklySlot['start_time'] ?? ''));
-        $slotEnd = deseo_mylive_format_time((string)($weeklySlot['end_time'] ?? ''));
+        $slotStartRaw = substr((string)($weeklySlot['start_time'] ?? ''), 0, 8);
+        $slotEndRaw = substr((string)($weeklySlot['end_time'] ?? ''), 0, 8);
+        if ($slotEndRaw !== '') {
+            $slotEndRaw = dj_season_normalized_resident_end_time($slotStartRaw, $slotEndRaw);
+        }
+        $slotStart = deseo_mylive_format_time($slotStartRaw);
+        $slotEnd = deseo_mylive_format_time($slotEndRaw);
         if ($slotDay < 1 || $slotDay > 7 || $slotStart === '') continue;
         $weeklySlotLabels[] = dj_season_day_label($slotDay)
             . ' · ' . $slotStart
