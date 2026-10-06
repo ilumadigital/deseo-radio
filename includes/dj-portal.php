@@ -221,6 +221,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         target_show_start DATETIME NULL,
         target_show_end DATETIME NULL,
         episode_dj_name VARCHAR(180) NOT NULL DEFAULT '',
+        episode_dj_photo_path VARCHAR(500) NOT NULL DEFAULT '',
         hearthis_status VARCHAR(24) NOT NULL DEFAULT 'pending',
         hearthis_url VARCHAR(500) NULL,
         hearthis_track_id VARCHAR(120) NULL,
@@ -262,7 +263,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'target_show_start' => "DATETIME NULL AFTER target_program_id",
         'target_show_end' => "DATETIME NULL AFTER target_show_start",
         'episode_dj_name' => "VARCHAR(180) NOT NULL DEFAULT '' AFTER target_show_end",
-        'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER episode_dj_name",
+        'episode_dj_photo_path' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER episode_dj_name",
+        'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER episode_dj_photo_path",
         'hearthis_url' => "VARCHAR(500) NULL AFTER hearthis_status",
         'hearthis_track_id' => "VARCHAR(120) NULL AFTER hearthis_url",
         'hearthis_cover_asset_id' => "BIGINT NULL AFTER hearthis_track_id",
@@ -602,7 +604,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, account_id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name,
+                target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name, episode_dj_photo_path,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
                 hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
