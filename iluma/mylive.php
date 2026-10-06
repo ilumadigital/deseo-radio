@@ -108,6 +108,30 @@ function mylive_admin_account(PDO $pdo, int $id): array {
 }
 
 
+function mylive_admin_slot_label(PDO $pdo, array $account): string {
+    $accountId = (int)($account['id'] ?? 0);
+    if ($accountId > 0) {
+        $stmt = $pdo->prepare(
+            "SELECT day_of_week, start_time
+             FROM program
+             WHERE mylive_account_id = ?
+             ORDER BY day_of_week ASC, start_time ASC, id ASC"
+        );
+        $stmt->execute([$accountId]);
+        $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($slots) {
+            return implode(' / ', array_map(
+                static fn(array $slot): string =>
+                    dj_season_day_label((int)$slot['day_of_week'])
+                    . ' · ' . deseo_mylive_format_time((string)$slot['start_time']),
+                $slots
+            ));
+        }
+    }
+    return deseo_mylive_slot($account);
+}
+
+
 function mylive_admin_email_test_context(PDO $pdo, array $account): array {
     $accountId = (int)($account['id'] ?? 0);
 
@@ -1449,7 +1473,7 @@ admin_page_start('MyLive', 'mylive');
                     <?php foreach ($managedAccounts as $rosterAccount): ?>
                         <?php
                         $rosterId = (int)$rosterAccount['id'];
-                        $rosterSlot = deseo_mylive_slot($rosterAccount);
+                        $rosterSlot = mylive_admin_slot_label($pdo, $rosterAccount);
                         $rosterStatus = (string)($rosterAccount['account_status'] ?? (!empty($rosterAccount['is_active']) ? 'active' : 'disabled'));
                         $rosterAssets = (int)($rosterAccount['asset_count'] ?? 0);
                         $rosterSets = (int)($rosterAccount['set_count'] ?? 0);
@@ -1504,7 +1528,7 @@ admin_page_start('MyLive', 'mylive');
             <?php foreach ($managedAccounts as $account): ?>
                 <?php
                 $accountId = (int)$account['id'];
-                $slot = deseo_mylive_slot($account);
+                $slot = mylive_admin_slot_label($pdo, $account);
                 $accountStatus = (string)($account['account_status'] ?? (!empty($account['is_active']) ? 'active' : 'disabled'));
                 $accountSearch = strtolower(trim(
                     (string)$account['artist_name'] . ' ' .
