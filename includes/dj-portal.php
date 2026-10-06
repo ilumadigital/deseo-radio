@@ -182,6 +182,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_synced_at DATETIME NULL,
         uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_portal_episode (account_id, episode_no),
+        UNIQUE KEY uniq_portal_target (account_id, target_program_id, target_show_start),
         KEY idx_portal_sets_account (account_id, uploaded_at),
         KEY idx_portal_sets_target (account_id, target_program_id, target_show_start),
         CONSTRAINT fk_portal_sets_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
@@ -223,6 +224,18 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         if (!deseo_mylive_column_exists($pdo, 'dj_portal_sets', $name)) {
             $pdo->exec("ALTER TABLE dj_portal_sets ADD COLUMN " . $name . " " . $definition);
         }
+    }
+
+    try {
+        $targetIndexStmt = $pdo->query("SHOW INDEX FROM dj_portal_sets WHERE Key_name = 'uniq_portal_target'");
+        if (!$targetIndexStmt || !$targetIndexStmt->fetch(PDO::FETCH_ASSOC)) {
+            $pdo->exec(
+                "ALTER TABLE dj_portal_sets
+                 ADD UNIQUE KEY uniq_portal_target (account_id, target_program_id, target_show_start)"
+            );
+        }
+    } catch (Throwable $e) {
+        error_log('MyLive target slot index migration: ' . $e->getMessage());
     }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_assets (
