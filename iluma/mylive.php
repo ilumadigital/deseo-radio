@@ -1001,6 +1001,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $account = mylive_admin_account($pdo, $accountId);
 
+                $photoStmt = $pdo->prepare(
+                    "SELECT episode_dj_photo_path
+                     FROM dj_portal_sets
+                     WHERE account_id = ?
+                       AND episode_dj_photo_path <> ''"
+                );
+                $photoStmt->execute([$accountId]);
+                $episodeDjPhotos = array_values(array_filter(array_map(
+                    static fn($value): string => trim((string)$value),
+                    $photoStmt->fetchAll(PDO::FETCH_COLUMN)
+                )));
+
                 $pdo->beginTransaction();
                 try {
                     $pdo->prepare("UPDATE program SET mylive_account_id = NULL WHERE mylive_account_id = ?")
@@ -1015,6 +1027,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $storageRoot = dirname(__DIR__) . '/mylive/storage';
                 mylive_admin_remove_tree($storageRoot . '/' . $accountId, $storageRoot);
                 mylive_admin_remove_tree($storageRoot . '/assets/' . $accountId, $storageRoot);
+
+                $episodeDjPhotoRoot = __DIR__ . '/uploads/djs';
+                foreach ($episodeDjPhotos as $episodeDjPhotoPath) {
+                    if (!str_starts_with($episodeDjPhotoPath, '/iluma/uploads/djs/')) continue;
+                    $photoFile = $episodeDjPhotoRoot . '/' . basename($episodeDjPhotoPath);
+                    if (is_file($photoFile)) @unlink($photoFile);
+                }
 
                 $notice = 'Το MyLive account του ' . (string)$account['artist_name'] . ' διαγράφηκε μαζί με τα DJ Sets και τα προσωπικά assets. Η DJ αίτηση και το Radio Program δεν επηρεάστηκαν.';
 
