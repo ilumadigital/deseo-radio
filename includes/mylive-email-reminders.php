@@ -102,11 +102,40 @@ function deseo_mylive_email_program_occurrence(array $show, DateTimeImmutable $n
     );
 }
 
-function deseo_mylive_email_pending_set(PDO $pdo, int $accountId): ?array {
+function deseo_mylive_email_pending_set(
+    PDO $pdo,
+    int $accountId,
+    ?int $programId = null,
+    ?DateTimeImmutable $showStart = null
+): ?array {
+    if ($programId !== null && $showStart instanceof DateTimeImmutable) {
+        $stmt = $pdo->prepare(
+            "SELECT id, episode_no, status, uploaded_at
+             FROM dj_portal_sets
+             WHERE account_id = ?
+               AND target_program_id = ?
+               AND target_show_start = ?
+               AND status <> 'broadcasted'
+               AND file_deleted_at IS NULL
+             ORDER BY episode_no DESC
+             LIMIT 1"
+        );
+        $stmt->execute([$accountId, $programId, $showStart->format('Y-m-d H:i:s')]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) return $row;
+
+        // Legacy target-less episodes remain valid only for true single-slot
+        // accounts. Never let one upload satisfy two different weekly shows.
+        $count = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
+        $count->execute([$accountId]);
+        if ((int)$count->fetchColumn() > 1) return null;
+    }
+
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, status, uploaded_at
          FROM dj_portal_sets
          WHERE account_id = ?
+           AND target_show_start IS NULL
            AND status <> 'broadcasted'
            AND file_deleted_at IS NULL
          ORDER BY episode_no DESC
@@ -114,7 +143,6 @@ function deseo_mylive_email_pending_set(PDO $pdo, int $accountId): ?array {
     );
     $stmt->execute([$accountId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
     return $row ?: null;
 }
 
@@ -216,7 +244,7 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
             }
             [$showStart, $showEnd] = $occurrence;
 
-            $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
+            $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId, $programId, $showStart);
             $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
             $nextEpisode = $pendingSet
                 ? (int)$pendingSet['episode_no']
