@@ -540,6 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // First multi-slot conversion: materialize the legacy primary
                     // slot into Radio Program before adding the second one.
                     if ($linkedCount === 0) {
+                        $primaryProgramId = 0;
                         $legacyDay = (int)($account['day_of_week'] ?? 0);
                         $legacyStart = (string)($account['start_time'] ?? '');
                         $legacyEnd = (string)($account['end_time'] ?? '');
@@ -559,15 +560,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     && strcasecmp(trim((string)($existingRow['dj_name'] ?? '')), trim((string)$account['artist_name'])) !== 0) {
                                     throw new RuntimeException('Το primary day/time χρησιμοποιείται ήδη από άλλο show στο Radio Program.');
                                 }
+                                $primaryProgramId = (int)$existingRow['id'];
                                 $pdo->prepare(
                                     "UPDATE program SET mylive_account_id = ?, dj_name = ?
                                      WHERE id = ?"
-                                )->execute([$accountId, (string)$account['artist_name'], (int)$existingRow['id']]);
+                                )->execute([$accountId, (string)$account['artist_name'], $primaryProgramId]);
                             } else {
                                 $pdo->prepare(
                                     "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
                                      VALUES (?, '', ?, ?, ?, ?)"
                                 )->execute([(string)$account['artist_name'], $accountId, $legacyDay, $legacyStart, $legacyEnd]);
+                                $primaryProgramId = (int)$pdo->lastInsertId();
+                            }
+
+                            if ($primaryProgramId > 0) {
+                                $pdo->prepare(
+                                    "UPDATE dj_portal_sets
+                                     SET target_program_id = ?
+                                     WHERE account_id = ?
+                                       AND target_program_id = 0
+                                       AND target_show_start IS NOT NULL
+                                       AND status <> 'broadcasted'"
+                                )->execute([$primaryProgramId, $accountId]);
                             }
                         }
                     }
