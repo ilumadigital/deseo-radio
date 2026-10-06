@@ -488,7 +488,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $account,
                     $episode,
                     $storedName,
-                    $originalName
+                    $originalName,
+                    $episodeDjName,
+                    (string)($targetShowStart ?? '')
                 );
 
                 foreach (deseo_mylive_internal_notification_recipients() as $recipient) {
