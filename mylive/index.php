@@ -1544,6 +1544,11 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                                        placeholder="π.χ. John Doe">
                                 <small>Υποχρεωτικό για αυτό το radioshow πριν από κάθε upload.</small>
                             </div>
+                            <div class="field full">
+                                <label>DJ Photo <span style="font-weight:500;opacity:.6;">· optional</span></label>
+                                <input type="file" name="episode_dj_photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                                <small>Προαιρετικό · JPG, PNG ή WEBP έως 5 MB. Η φωτογραφία αποθηκεύεται μαζί με το συγκεκριμένο episode.</small>
+                            </div>
                         <?php endif; ?>
                     </div>
                 <?php elseif ($requiresEpisodeArtist): ?>
@@ -1552,6 +1557,11 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                             <label>DJ / Artist playing this slot</label>
                             <input type="text" name="episode_dj_name" maxlength="180" required
                                    placeholder="π.χ. John Doe">
+                        </div>
+                        <div class="field full">
+                            <label>DJ Photo <span style="font-weight:500;opacity:.6;">· optional</span></label>
+                            <input type="file" name="episode_dj_photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                            <small>Προαιρετικό · JPG, PNG ή WEBP έως 5 MB. Η φωτογραφία αποθηκεύεται μαζί με το συγκεκριμένο episode.</small>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -1594,6 +1604,10 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                             <div class="set-details">
                                 <strong><?= deseo_mylive_e($set['stored_name']) ?></strong>
                                 <span><?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?> · <?= deseo_mylive_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?></span>
+                                <?php if (!empty($set['episode_dj_photo_path'])): ?>
+                                    <img class="episode-dj-photo" src="<?= deseo_mylive_e((string)$set['episode_dj_photo_path']) ?>"
+                                         alt="<?= deseo_mylive_e((string)($set['episode_dj_name'] ?: 'DJ')) ?>" loading="lazy">
+                                <?php endif; ?>
                                 <?php if (!empty($set['episode_dj_name'])): ?>
                                     <small><b>DJ:</b> <?= deseo_mylive_e((string)$set['episode_dj_name']) ?></small>
                                 <?php endif; ?>
