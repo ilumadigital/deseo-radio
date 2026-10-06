@@ -2818,6 +2818,30 @@ body{
   font:700 13px/1.2 Inter,Arial,sans-serif;
   outline:none;
 }
+#uploadForm .field input[type="file"]{
+  width:100%;
+  min-height:46px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:8px 10px;
+  background:#08080a;
+  color:#9b9ba2;
+  font:700 11px/1.2 Inter,Arial,sans-serif;
+}
+#uploadForm .field input[type="file"]::file-selector-button{
+  min-height:30px;
+  margin-right:10px;
+  border:0;
+  border-radius:10px;
+  padding:0 12px;
+  background:#202024;
+  color:#fff;
+  font:800 10px/1 Inter,Arial,sans-serif;
+  cursor:pointer;
+}
+#uploadForm .field input[type="file"]:hover::file-selector-button{
+  background:#2b2b30;
+}
 #uploadForm .field select:focus,
 #uploadForm .field input[type="text"]:focus{
   border-color:rgba(255,43,54,.72);
@@ -2855,6 +2879,15 @@ body{
 }
 .repository-head p{
   overflow-wrap:anywhere;
+}
+.episode-dj-photo{
+  width:58px;
+  height:58px;
+  object-fit:cover;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#111;
+  margin:4px 0 2px;
 }
 .set-row{
   grid-template-columns:78px minmax(0,1fr) minmax(150px,auto);
