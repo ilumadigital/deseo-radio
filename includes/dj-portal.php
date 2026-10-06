@@ -580,6 +580,36 @@ function deseo_mylive_target_show(PDO $pdo, int $accountId, int $programId, Date
     return null;
 }
 
+
+/**
+ * First still-unfilled delivery occurrence for each weekly slot.
+ */
+function deseo_mylive_delivery_shows(PDO $pdo, int $accountId, DateTimeImmutable $now): array {
+    $result = [];
+    foreach (deseo_mylive_upcoming_shows($pdo, $accountId, $now) as $show) {
+        $candidate = $show;
+        for ($i = 0; $i < 40; $i++) {
+            $existing = deseo_mylive_set_for_show(
+                $pdo,
+                $accountId,
+                (int)($candidate['program_id'] ?? 0),
+                $candidate['show_start']
+            );
+            if (!$existing) {
+                $result[] = $candidate;
+                break;
+            }
+            $candidate['show_start'] = $candidate['show_start']->modify('+7 days');
+            $candidate['show_end'] = $candidate['show_end']->modify('+7 days');
+            if ($candidate['show_start'] > dj_season_end_at()) break;
+        }
+    }
+    usort($result, static fn(array $a, array $b): int =>
+        $a['show_start'] <=> $b['show_start']
+    );
+    return $result;
+}
+
 function deseo_mylive_set_for_show(
     PDO $pdo,
     int $accountId,
