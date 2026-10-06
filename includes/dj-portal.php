@@ -553,12 +553,6 @@ function deseo_mylive_upcoming_shows(PDO $pdo, int $accountId, DateTimeImmutable
         );
         if (!$occurrence) continue;
         [$start, $end] = $occurrence;
-
-        // Never attach a newly uploaded episode to a show already in progress.
-        if ($start <= $now) {
-            $start = $start->modify('+7 days');
-            $end = $end->modify('+7 days');
-        }
         if ($start > dj_season_end_at()) continue;
 
         $shows[] = array_merge($slot, [
@@ -588,6 +582,11 @@ function deseo_mylive_delivery_shows(PDO $pdo, int $accountId, DateTimeImmutable
     $result = [];
     foreach (deseo_mylive_upcoming_shows($pdo, $accountId, $now) as $show) {
         $candidate = $show;
+        // A delivery can target only a future show, never one already on air.
+        if ($candidate['show_start'] <= $now) {
+            $candidate['show_start'] = $candidate['show_start']->modify('+7 days');
+            $candidate['show_end'] = $candidate['show_end']->modify('+7 days');
+        }
         for ($i = 0; $i < 40; $i++) {
             $existing = deseo_mylive_set_for_show(
                 $pdo,
