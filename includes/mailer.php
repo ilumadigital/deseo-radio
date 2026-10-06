@@ -867,8 +867,9 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
                 . ($hasMultipleSlots ? 'Τα ' . $weeklySlotCount . ' weekly slots είναι διαφορετικές παραδόσεις.' : 'Το upload συνδέεται με τη συγκεκριμένη μετάδοση.'))
             . ($requiresEpisodeArtist
                 ? $bullet('<strong style="color:#fff;">2. Δήλωσε υποχρεωτικά ποιος DJ παίζει</strong> στο συγκεκριμένο slot. Το MyLive δεν θα δεχτεί το MP3 αν το πεδίο DJ / Artist είναι κενό.')
+                . $bullet('<strong style="color:#fff;">3. Προαιρετικά ανέβασε φωτογραφία του DJ</strong> σε JPG, PNG ή WEBP έως 5 MB. Η φωτογραφία αποθηκεύεται μαζί με το συγκεκριμένο episode.')
                 : '')
-            . $bullet('<strong style="color:#fff;">' . ($requiresEpisodeArtist ? '3' : '2') . '. Ανέβασε το MP3 που αντιστοιχεί σε αυτό το slot.</strong> '
+            . $bullet('<strong style="color:#fff;">' . ($requiresEpisodeArtist ? '4' : '2') . '. Ανέβασε το MP3 που αντιστοιχεί σε αυτό το slot.</strong> '
                 . ($hasMultipleSlots ? 'Το set του ενός slot δεν χρησιμοποιείται ως set του άλλου.' : 'Το episode αποθηκεύεται στη σωστή ημερομηνία μετάδοσης.'))
             . '</table>';
 
@@ -956,6 +957,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
                 : '')
             . ($requiresEpisodeArtist
                 ? 'Στη συνέχεια συμπλήρωσε το υποχρεωτικό πεδίο <strong style="color:#fff;">DJ / Artist playing this slot</strong> με τον DJ που θα ακουστεί σε αυτή τη μετάδοση. '
+                . 'Μπορείς επίσης να ανεβάσεις <strong style="color:#fff;">προαιρετικά τη φωτογραφία του DJ</strong> σε JPG, PNG ή WEBP έως 5 MB. '
                 : '')
             . 'Μετά ανέβασε το τελικό MP3.<br><br>'
             . 'Το MyLive κρατά αυτόματα το episode numbering και το σωστό filename:<br>'
@@ -1015,7 +1017,7 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
 
     $body .= $section('BEFORE UPLOAD', 'Ένας τελευταίος έλεγχος',
         ($hasMultipleSlots ? '<strong style="color:#fff;">Σωστό Broadcast Slot:</strong> βεβαιώσου ότι έχεις επιλέξει τη σωστή ημέρα / μετάδοση.<br>' : '')
-        . ($requiresEpisodeArtist ? '<strong style="color:#fff;">DJ / Artist:</strong> γράψε το πραγματικό όνομα του DJ που παίζει σε αυτό το slot.<br>' : '')
+        . ($requiresEpisodeArtist ? '<strong style="color:#fff;">DJ / Artist:</strong> γράψε το πραγματικό όνομα του DJ που παίζει σε αυτό το slot.<br><strong style="color:#fff;">DJ Photo:</strong> προαιρετικά πρόσθεσε JPG, PNG ή WEBP έως 5 MB.<br>' : '')
         . 'Πριν πατήσεις Upload, βεβαιώσου ότι ανεβάζεις το <strong style="color:#fff;">final on-air master</strong>: σωστό MP3 192 kbps Stereo, χωρίς IDs άλλων stations, χωρίς μη εγκεκριμένα commercial messages, χωρίς μεγάλα κενά ή distortion και με τα Deseo Imaging Spots σωστά τοποθετημένα όπου απαιτείται.');
 
     $credentials = '<tr><td style="padding:8px 0 0;">'
@@ -1069,8 +1071,9 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         }
         if ($requiresEpisodeArtist) {
             $managedText .= ($hasMultipleSlots ? "2" : "1") . ". Δήλωσε υποχρεωτικά τον DJ / Artist που παίζει στο συγκεκριμένο slot.\n";
+            $managedText .= ($hasMultipleSlots ? "3" : "2") . ". Προαιρετικά ανέβασε φωτογραφία DJ (JPG/PNG/WEBP έως 5 MB).\n";
         }
-        $managedText .= (($hasMultipleSlots ? 1 : 0) + ($requiresEpisodeArtist ? 1 : 0) + 1)
+        $managedText .= (($hasMultipleSlots ? 1 : 0) + ($requiresEpisodeArtist ? 2 : 0) + 1)
             . ". Ανέβασε το MP3 που αντιστοιχεί στη συγκεκριμένη μετάδοση.\n\n";
     }
 
@@ -1142,13 +1145,18 @@ function deseo_mylive_set_uploaded_internal_email(
     string $storedName,
     string $originalName = '',
     string $episodeDjName = '',
-    string $targetShowStart = ''
+    string $targetShowStart = '',
+    string $episodeDjPhotoPath = ''
 ): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
     $slot = deseo_mylive_slot($account);
     $episodeDjName = trim($episodeDjName);
     $targetShowStart = trim($targetShowStart);
+    $episodeDjPhotoPath = trim($episodeDjPhotoPath);
+    $episodeDjPhotoUrl = $episodeDjPhotoPath !== ''
+        ? 'https://deseoradio.com' . $episodeDjPhotoPath
+        : '';
     $broadcastLabel = $targetShowStart !== ''
         ? date('d.m.Y · H:i', strtotime($targetShowStart))
         : '';
@@ -1172,6 +1180,7 @@ function deseo_mylive_set_uploaded_internal_email(
         'Στοιχεία μετάδοσης',
         '<strong style="color:#fff;">MyLive account:</strong> ' . $e($artist) . '<br>'
         . ($episodeDjName !== '' ? '<strong style="color:#fff;">DJ playing:</strong> ' . $e($episodeDjName) . '<br>' : '')
+        . ($episodeDjPhotoUrl !== '' ? '<strong style="color:#fff;">DJ photo:</strong> <a href="' . $e($episodeDjPhotoUrl) . '" style="color:#ff737b;">Open photo</a><br>' : '')
         . ($broadcastLabel !== '' ? '<strong style="color:#fff;">Broadcast:</strong> ' . $e($broadcastLabel) . '<br>' : '<strong style="color:#fff;">Weekly slot:</strong> ' . $e($slot) . '<br>')
         . '<strong style="color:#fff;">Episode:</strong> ' . $e($episodeLabel) . '<br>'
         . '<strong style="color:#fff;">Stored file:</strong> ' . $e($storedName)
@@ -1198,6 +1207,7 @@ function deseo_mylive_set_uploaded_internal_email(
     $text = "DESEO RADIO · MYLIVE · NEW DJ SET UPLOAD\n\n"
         . "MyLive account: {$artist}\n"
         . ($episodeDjName !== '' ? "DJ playing: {$episodeDjName}\n" : '')
+        . ($episodeDjPhotoUrl !== '' ? "DJ photo: {$episodeDjPhotoUrl}\n" : '')
         . ($broadcastLabel !== '' ? "Broadcast: {$broadcastLabel}\n" : "Weekly slot: {$slot}\n")
         . "Episode: {$episodeLabel}\n"
         . "Stored file: {$storedName}\n"
