@@ -833,12 +833,16 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         }
         $body = '<tr><td style="padding:0 0 18px;">'
             . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
-            . '<div style="font:900 11px/1.4 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;">'
-            . $weeklySlotCount . ' WEEKLY SLOTS · DESEO RADIO'
+            . '<div style="font:900 10px/1.4 Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;">DESEO RADIO · WEEKLY SCHEDULE</div>'
+            . '<div style="margin-top:5px;font:900 30px/1.08 Arial,sans-serif;letter-spacing:-.025em;">'
+            . $weeklySlotCount . ' WEEKLY SLOTS'
             . '</div>'
-            . '<div style="margin-top:5px;font:800 15px/1.45 Arial,sans-serif;">Παίζεις κάθε εβδομάδα στα παρακάτω δύο ανεξάρτητα slots:</div>'
+            . '<div style="margin-top:7px;font:800 14px/1.45 Arial,sans-serif;">Κάθε slot είναι ανεξάρτητη εβδομαδιαία μετάδοση:</div>'
             . $slotRows
-            . '<div style="margin-top:11px;font:800 12px/1.5 Arial,sans-serif;">Κάθε slot έχει το δικό του DJ Set delivery. Ένα upload δεν καλύπτει και τα δύο.</div>'
+            . ($requiresEpisodeArtist
+                ? '<div style="display:inline-block;margin-top:12px;padding:8px 10px;border-radius:999px;background:#080808;color:#fff;font:900 9px/1 Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;">DJ NAME REQUIRED ON EVERY UPLOAD</div>'
+                : '')
+            . '<div style="margin-top:11px;font:800 12px/1.5 Arial,sans-serif;">Κάθε slot έχει το δικό του DJ Set delivery. Ένα upload δεν καλύπτει άλλο slot.</div>'
             . '</div></td></tr>';
     } else {
         $singleSlotLabel = $weeklySlotLabels[0] ?? $slot;
@@ -846,13 +850,16 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
             . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
             . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">Παίζεις στον Deseo κάθε:</div>'
             . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($singleSlotLabel) . '</div>'
+            . ($requiresEpisodeArtist
+                ? '<div style="display:inline-block;margin-top:12px;padding:8px 10px;border-radius:999px;background:#080808;color:#fff;font:900 9px/1 Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;">DJ NAME REQUIRED ON EVERY UPLOAD</div>'
+                : '')
             . '</div></td></tr>';
     }
 
     if ($managedDeliveryMode) {
         $managedSteps = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
             . $bullet('<strong style="color:#fff;">1. Επίλεξε το σωστό Broadcast Slot</strong> πριν από κάθε upload. '
-                . ($hasMultipleSlots ? 'Σάββατο και Κυριακή είναι δύο διαφορετικές παραδόσεις.' : 'Το upload συνδέεται με τη συγκεκριμένη μετάδοση.'))
+                . ($hasMultipleSlots ? 'Τα ' . $weeklySlotCount . ' weekly slots είναι διαφορετικές παραδόσεις.' : 'Το upload συνδέεται με τη συγκεκριμένη μετάδοση.'))
             . ($requiresEpisodeArtist
                 ? $bullet('<strong style="color:#fff;">2. Δήλωσε υποχρεωτικά ποιος DJ παίζει</strong> στο συγκεκριμένο slot. Το MyLive δεν θα δεχτεί το MP3 αν το πεδίο DJ / Artist είναι κενό.')
                 : '')
@@ -861,13 +868,13 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
             . '</table>';
 
         $body .= $section(
-            'IMPORTANT · MULTI-SLOT DELIVERY',
+            $hasMultipleSlots ? 'IMPORTANT · MULTI-SLOT DELIVERY' : 'IMPORTANT · DJ IDENTIFICATION',
             $requiresEpisodeArtist
                 ? 'Slot → DJ Name → MP3. Αυτή είναι η σειρά κάθε upload.'
                 : 'Κάθε weekly slot χρειάζεται τη δική του παράδοση.',
             $managedSteps
             . ($hasMultipleSlots
-                ? '<div style="margin-top:9px;padding:11px 13px;border-radius:12px;background:#1b0c0e;color:#ff7a82;font:800 12px/1.55 Arial,sans-serif;">ΠΡΟΣΟΧΗ: Upload για το Σάββατο ≠ upload για την Κυριακή. Πρέπει να υπάρχει ξεχωριστό DJ Set για κάθε slot.</div>'
+                ? '<div style="margin-top:9px;padding:11px 13px;border-radius:12px;background:#1b0c0e;color:#ff7a82;font:800 12px/1.55 Arial,sans-serif;">ΠΡΟΣΟΧΗ: Τα ' . $weeklySlotCount . ' slots είναι ανεξάρτητα. Πρέπει να υπάρχει ξεχωριστό DJ Set για κάθε slot.</div>'
                 : '')
         );
     }
