@@ -113,7 +113,7 @@ function deseo_mylive_email_pending_set(
             "SELECT id, episode_no, status, uploaded_at
              FROM dj_portal_sets
              WHERE account_id = ?
-               AND target_program_id = ?
+               AND target_weekly_slot_id = ?
                AND target_show_start = ?
                AND status <> 'broadcasted'
                AND file_deleted_at IS NULL
@@ -126,7 +126,7 @@ function deseo_mylive_email_pending_set(
 
         // Legacy target-less episodes remain valid only for true single-slot
         // accounts. Never let one upload satisfy two different weekly shows.
-        $count = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
+        $count = $pdo->prepare("SELECT COUNT(*) FROM dj_portal_weekly_slots WHERE account_id = ?");
         $count->execute([$accountId]);
         if ((int)$count->fetchColumn() > 1) return null;
     }
@@ -211,23 +211,22 @@ function deseo_mylive_run_email_scheduler(PDO $pdo, bool $force = false): array 
         )->execute([$now->format('Y-m-d H:i:s')]);
 
         $stmt = $pdo->query(
-            "SELECT p.id AS program_id,
-                    p.day_of_week,
-                    p.start_time,
-                    p.end_time,
+            "SELECT w.id AS program_id,
+                    w.day_of_week,
+                    w.start_time,
+                    w.end_time,
                     a.id AS account_id,
                     a.artist_name,
                     a.full_name,
                     a.email
-             FROM program p
-             INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
+             FROM dj_portal_weekly_slots w
+             INNER JOIN dj_portal_accounts a ON a.id = w.account_id
              LEFT JOIN dj_season_bookings b ON b.id = a.booking_id
-             WHERE p.mylive_account_id IS NOT NULL
-               AND a.is_active = 1
+             WHERE a.is_active = 1
                AND a.account_status = 'active'
                AND (a.booking_id IS NULL OR b.status IS NULL OR b.status <> 'guest')
                AND a.email <> ''
-             ORDER BY p.day_of_week ASC, p.start_time ASC"
+             ORDER BY w.day_of_week ASC, w.start_time ASC, w.id ASC"
         );
 
         $shows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
