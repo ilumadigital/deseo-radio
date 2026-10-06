@@ -493,8 +493,107 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      SET artist_name = ?, full_name = ?, email = ?, day_of_week = ?, start_time = ?, end_time = ?
                      WHERE id = ?"
                 );
-                $stmt->execute([$artistName, $fullName, $email, $day, $start, $end, $accountId]);
+                $requiresEpisodeArtist = isset($_POST['requires_episode_artist']) ? 1 : 0;
+                $stmt = $pdo->prepare(
+                    "UPDATE dj_portal_accounts
+                     SET artist_name = ?, full_name = ?, email = ?, day_of_week = ?, start_time = ?, end_time = ?,
+                         requires_episode_artist = ?
+                     WHERE id = ?"
+                );
+                $stmt->execute([$artistName, $fullName, $email, $day, $start, $end, $requiresEpisodeArtist, $accountId]);
                 $notice = 'Τα στοιχεία του MyLive account ενημερώθηκαν.';
+
+            } elseif ($action === 'add_weekly_slot') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
+                $day = (int)($_POST['slot_day_of_week'] ?? 0);
+                $start = mylive_admin_time((string)($_POST['slot_start_time'] ?? ''), 'Start');
+                $end = mylive_admin_time((string)($_POST['slot_end_time'] ?? ''), 'End');
+                if ($day < 1 || $day > 7) throw new RuntimeException('Επίλεξε ημέρα για το νέο slot.');
+                if ($end <= $start) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
+
+                $pdo->beginTransaction();
+                try {
+                    $slotCountStmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
+                    $slotCountStmt->execute([$accountId]);
+                    $linkedCount = (int)$slotCountStmt->fetchColumn();
+
+                    // First multi-slot conversion: materialize the legacy primary
+                    // slot into Radio Program before adding the second one.
+                    if ($linkedCount === 0) {
+                        $legacyDay = (int)($account['day_of_week'] ?? 0);
+                        $legacyStart = (string)($account['start_time'] ?? '');
+                        $legacyEnd = (string)($account['end_time'] ?? '');
+                        if ($legacyDay >= 1 && $legacyDay <= 7 && $legacyStart !== '') {
+                            $existing = $pdo->prepare(
+                                "SELECT id, mylive_account_id FROM program
+                                 WHERE day_of_week = ? AND start_time = ? LIMIT 1"
+                            );
+                            $existing->execute([$legacyDay, $legacyStart]);
+                            $existingRow = $existing->fetch(PDO::FETCH_ASSOC);
+                            if ($existingRow) {
+                                $owner = (int)($existingRow['mylive_account_id'] ?? 0);
+                                if ($owner !== 0 && $owner !== $accountId) {
+                                    throw new RuntimeException('Το υπάρχον primary slot είναι συνδεδεμένο με άλλο MyLive account.');
+                                }
+                                $pdo->prepare(
+                                    "UPDATE program SET mylive_account_id = ?, dj_name = ?
+                                     WHERE id = ?"
+                                )->execute([$accountId, (string)$account['artist_name'], (int)$existingRow['id']]);
+                            } else {
+                                $pdo->prepare(
+                                    "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
+                                     VALUES (?, '', ?, ?, ?, ?)"
+                                )->execute([(string)$account['artist_name'], $accountId, $legacyDay, $legacyStart, $legacyEnd]);
+                            }
+                        }
+                    }
+
+                    $occupied = $pdo->prepare(
+                        "SELECT id, mylive_account_id, dj_name FROM program
+                         WHERE day_of_week = ? AND start_time = ? LIMIT 1"
+                    );
+                    $occupied->execute([$day, $start]);
+                    $occupiedRow = $occupied->fetch(PDO::FETCH_ASSOC);
+                    if ($occupiedRow) {
+                        if ((int)($occupiedRow['mylive_account_id'] ?? 0) === $accountId) {
+                            throw new RuntimeException('Αυτό το weekly slot υπάρχει ήδη στο συγκεκριμένο account.');
+                        }
+                        throw new RuntimeException('Το συγκεκριμένο day/time χρησιμοποιείται ήδη στο Radio Program.');
+                    }
+
+                    $photoStmt = $pdo->prepare(
+                        "SELECT photo_path FROM program
+                         WHERE mylive_account_id = ? AND photo_path <> ''
+                         ORDER BY id ASC LIMIT 1"
+                    );
+                    $photoStmt->execute([$accountId]);
+                    $photo = (string)($photoStmt->fetchColumn() ?: '');
+
+                    $pdo->prepare(
+                        "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
+                         VALUES (?, ?, ?, ?, ?, ?)"
+                    )->execute([(string)$account['artist_name'], $photo, $accountId, $day, $start, $end]);
+
+                    $pdo->commit();
+                    $notice = 'Το δεύτερο weekly slot προστέθηκε και συνδέθηκε με το ίδιο MyLive account.';
+                } catch (Throwable $slotError) {
+                    if ($pdo->inTransaction()) $pdo->rollBack();
+                    throw $slotError;
+                }
+
+            } elseif ($action === 'delete_weekly_slot') {
+                $accountId = (int)($_POST['account_id'] ?? 0);
+                $programId = (int)($_POST['program_id'] ?? 0);
+                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
+                $countStmt->execute([$accountId]);
+                if ((int)$countStmt->fetchColumn() <= 1) {
+                    throw new RuntimeException('Το account πρέπει να διατηρεί τουλάχιστον ένα weekly slot.');
+                }
+                $delete = $pdo->prepare("DELETE FROM program WHERE id = ? AND mylive_account_id = ?");
+                $delete->execute([$programId, $accountId]);
+                if ($delete->rowCount() !== 1) throw new RuntimeException('Το weekly slot δεν βρέθηκε.');
+                $notice = 'Το weekly slot αφαιρέθηκε από το MyLive account.';
 
             } elseif ($action === 'reset_access') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -1098,6 +1197,7 @@ foreach ($accounts as $account) {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
+                target_program_id, target_show_start, target_show_end, episode_dj_name,
                 hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_description, hearthis_genre, hearthis_tags,
                 hearthis_cover_asset_id, hearthis_cover_source_path,
@@ -1113,7 +1213,9 @@ foreach ($accounts as $account) {
 // eight-episode limit used by each DJ's management panel.
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
-            s.status, s.file_deleted_at, s.scheduled_show_end, s.hearthis_status,
+            s.status, s.file_deleted_at, s.scheduled_show_end,
+            s.target_program_id, s.target_show_start, s.target_show_end, s.episode_dj_name,
+            s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
             s.hearthis_title, s.hearthis_description, s.hearthis_genre, s.hearthis_tags,
             s.hearthis_cover_asset_id, s.hearthis_cover_source_path,
@@ -1502,7 +1604,7 @@ admin_page_start('MyLive', 'mylive');
 
                                     <div class="mylive-slot-editor">
                                         <div class="field">
-                                            <label>Day</label>
+                                            <label>Primary / legacy day</label>
                                             <select name="day_of_week" required>
                                                 <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
                                                     <option value="<?= $day ?>" <?= (int)$account['day_of_week'] === $day ? 'selected' : '' ?>><?= admin_e(dj_season_day_label($day)) ?></option>
@@ -1518,7 +1620,77 @@ admin_page_start('MyLive', 'mylive');
                                             <input type="time" name="end_time" value="<?= admin_e(deseo_mylive_format_time((string)$account['end_time'])) ?>" required>
                                         </div>
                                     </div>
+
+                                    <label class="mylive-toggle-row" style="margin-top:14px;">
+                                        <input type="checkbox" name="requires_episode_artist" value="1" <?= !empty($account['requires_episode_artist']) ? 'checked' : '' ?>>
+                                        <span>
+                                            <strong>Require DJ name on every episode</strong>
+                                            <small>Για radioshows / agencies: πριν από κάθε MP3 upload ζητά υποχρεωτικά ποιος DJ παίζει στο συγκεκριμένο slot.</small>
+                                        </span>
+                                    </label>
+
                                     <div class="form-actions"><button class="button button-primary" type="submit">Save changes</button></div>
+                                </form>
+
+                                <?php
+                                $accountWeeklySlots = deseo_mylive_program_slots($pdo, $accountId);
+                                $realWeeklySlots = array_values(array_filter(
+                                    $accountWeeklySlots,
+                                    static fn(array $slot): bool => (int)($slot['program_id'] ?? 0) > 0
+                                ));
+                                ?>
+                                <div class="mylive-email-preview-strip" style="margin-top:18px;">
+                                    <div>
+                                        <span>WEEKLY SLOTS</span>
+                                        <strong><?= count($accountWeeklySlots) ?> slot<?= count($accountWeeklySlots) === 1 ? '' : 's' ?> linked to this account</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mylive-admin-actions" style="align-items:stretch;">
+                                    <?php foreach ($accountWeeklySlots as $weeklySlot): ?>
+                                        <div class="button button-secondary" style="cursor:default;">
+                                            <?= admin_e(dj_season_day_label((int)$weeklySlot['day_of_week'])) ?>
+                                            · <?= admin_e(deseo_mylive_format_time((string)$weeklySlot['start_time'])) ?>
+                                            — <?= admin_e(deseo_mylive_format_time((string)$weeklySlot['end_time'])) ?>
+                                        </div>
+                                        <?php if ((int)($weeklySlot['program_id'] ?? 0) > 0 && count($realWeeklySlots) > 1): ?>
+                                            <form method="post" data-deseo-confirm="Να αφαιρεθεί αυτό το weekly slot από το account;" data-deseo-confirm-title="Remove weekly slot" data-deseo-confirm-label="Remove" data-deseo-confirm-danger>
+                                                <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                                <input type="hidden" name="action" value="delete_weekly_slot">
+                                                <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                                <input type="hidden" name="program_id" value="<?= (int)$weeklySlot['program_id'] ?>">
+                                                <button class="button button-danger" type="submit">Remove</button>
+                                            </form>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+
+                                <form method="post" style="margin-top:14px;">
+                                    <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="add_weekly_slot">
+                                    <input type="hidden" name="account_id" value="<?= $accountId ?>">
+                                    <div class="mylive-slot-editor">
+                                        <div class="field">
+                                            <label>Add day</label>
+                                            <select name="slot_day_of_week" required>
+                                                <option value="">Select day</option>
+                                                <?php foreach ([1,2,3,4,5,6,7] as $day): ?>
+                                                    <option value="<?= $day ?>"><?= admin_e(dj_season_day_label($day)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label>Start</label>
+                                            <input type="time" name="slot_start_time" required>
+                                        </div>
+                                        <div class="field">
+                                            <label>End</label>
+                                            <input type="time" name="slot_end_time" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button class="button button-secondary" type="submit">+ Add Weekly Slot</button>
+                                    </div>
                                 </form>
 
                                 <div class="mylive-admin-actions">
