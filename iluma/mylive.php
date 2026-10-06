@@ -1450,6 +1450,7 @@ admin_page_start('MyLive', 'mylive');
                     <div>
                         <span>WEEKLY SLOTS</span>
                         <strong>Πρόσθεσε όλες τις ημέρες που θα παίζει αυτό το account.</strong>
+                        <small>Αφορά μόνο MyLive uploads & reminders. Το Radio Program το ρυθμίζεις ξεχωριστά.</small>
                     </div>
                     <button class="button button-secondary" type="button" id="manualAddWeeklySlot">+ Add Weekly Slot</button>
                 </div>
