@@ -112,14 +112,7 @@ function mylive_admin_account(PDO $pdo, int $id): array {
 function mylive_admin_slot_label(PDO $pdo, array $account): string {
     $accountId = (int)($account['id'] ?? 0);
     if ($accountId > 0) {
-        $stmt = $pdo->prepare(
-            "SELECT day_of_week, start_time
-             FROM program
-             WHERE mylive_account_id = ?
-             ORDER BY day_of_week ASC, start_time ASC, id ASC"
-        );
-        $stmt->execute([$accountId]);
-        $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $slots = deseo_mylive_program_slots($pdo, $accountId);
         if ($slots) {
             return implode(' / ', array_map(
                 static fn(array $slot): string =>
@@ -138,9 +131,9 @@ function mylive_admin_email_test_context(PDO $pdo, array $account): array {
 
     $programStmt = $pdo->prepare(
         "SELECT id AS program_id, day_of_week, start_time, end_time
-         FROM program
-         WHERE mylive_account_id = ?
-         ORDER BY day_of_week ASC, start_time ASC
+         FROM dj_portal_weekly_slots
+         WHERE account_id = ?
+         ORDER BY day_of_week ASC, start_time ASC, id ASC
          LIMIT 1"
     );
     $programStmt->execute([$accountId]);
@@ -435,32 +428,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $check->execute([$email]);
                 if ($check->fetchColumn()) throw new RuntimeException('Υπάρχει ήδη MyLive account με αυτό το email.');
 
-                // Validate Program conflicts before creating access.
-                foreach ($slots as $slot) {
-                    $conflicts = $pdo->prepare(
-                        "SELECT id, dj_name, mylive_account_id, start_time, end_time
-                         FROM program
-                         WHERE day_of_week = ?
-                           AND start_time < ?
-                           AND end_time > ?
-                         ORDER BY start_time ASC, id ASC"
-                    );
-                    $conflicts->execute([(int)$slot['day'], (string)$slot['end'], (string)$slot['start']]);
-                    foreach ($conflicts->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                        $isExactReusable = substr((string)$row['start_time'], 0, 5) === substr((string)$slot['start'], 0, 5)
-                            && substr((string)$row['end_time'], 0, 5) === substr((string)$slot['end'], 0, 5)
-                            && empty($row['mylive_account_id'])
-                            && strcasecmp(trim((string)$row['dj_name']), $artistName) === 0;
-                        if ($isExactReusable) continue;
-
-                        throw new RuntimeException(
-                            'Το slot ' . dj_season_day_label((int)$slot['day']) . ' '
-                            . substr((string)$slot['start'], 0, 5) . '–' . substr((string)$slot['end'], 0, 5)
-                            . ' επικαλύπτεται με το "' . (string)$row['dj_name'] . '".'
-                        );
-                    }
-                }
-
                 $primarySlot = $slots[0];
                 $temporaryPassword = mylive_admin_temp_password();
 
@@ -485,37 +452,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
                     $accountId = (int)$pdo->lastInsertId();
 
+                    $insertWeeklySlot = $pdo->prepare(
+                        "INSERT INTO dj_portal_weekly_slots
+                         (account_id, day_of_week, start_time, end_time)
+                         VALUES (?, ?, ?, ?)"
+                    );
                     foreach ($slots as $slot) {
-                        $exact = $pdo->prepare(
-                            "SELECT id, dj_name, mylive_account_id
-                             FROM program
-                             WHERE day_of_week = ? AND start_time = ? AND end_time = ?
-                             LIMIT 1"
-                        );
-                        $exact->execute([(int)$slot['day'], (string)$slot['start'], (string)$slot['end']]);
-                        $existingProgram = $exact->fetch(PDO::FETCH_ASSOC);
-
-                        if ($existingProgram) {
-                            if (!empty($existingProgram['mylive_account_id'])
-                                || strcasecmp(trim((string)$existingProgram['dj_name']), $artistName) !== 0) {
-                                throw new RuntimeException('Ένα από τα weekly slots άλλαξε ενώ δημιουργούσες το account. Δοκίμασε ξανά.');
-                            }
-                            $pdo->prepare(
-                                "UPDATE program SET mylive_account_id = ? WHERE id = ?"
-                            )->execute([$accountId, (int)$existingProgram['id']]);
-                        } else {
-                            $pdo->prepare(
-                                "INSERT INTO program
-                                 (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
-                                 VALUES (?, '', ?, ?, ?, ?)"
-                            )->execute([
-                                $artistName,
-                                $accountId,
-                                (int)$slot['day'],
-                                (string)$slot['start'],
-                                (string)$slot['end']
-                            ]);
-                        }
+                        $insertWeeklySlot->execute([
+                            $accountId,
+                            (int)$slot['day'],
+                            (string)$slot['start'],
+                            (string)$slot['end']
+                        ]);
                     }
 
                     $pdo->commit();
@@ -634,137 +582,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      WHERE id = ?"
                 );
                 $stmt->execute([$artistName, $fullName, $email, $day, $start, $end, $requiresEpisodeArtist, $accountId]);
+
+                $primarySlotStmt = $pdo->prepare(
+                    "SELECT id FROM dj_portal_weekly_slots
+                     WHERE account_id = ?
+                     ORDER BY day_of_week ASC, start_time ASC, id ASC
+                     LIMIT 1"
+                );
+                $primarySlotStmt->execute([$accountId]);
+                $primarySlotId = (int)($primarySlotStmt->fetchColumn() ?: 0);
+                if ($primarySlotId > 0) {
+                    $pdo->prepare(
+                        "UPDATE dj_portal_weekly_slots
+                         SET day_of_week = ?, start_time = ?, end_time = ?
+                         WHERE id = ? AND account_id = ?"
+                    )->execute([$day, $start, $end, $primarySlotId, $accountId]);
+                } else {
+                    $pdo->prepare(
+                        "INSERT INTO dj_portal_weekly_slots
+                         (account_id, day_of_week, start_time, end_time)
+                         VALUES (?, ?, ?, ?)"
+                    )->execute([$accountId, $day, $start, $end]);
+                }
+
                 $notice = 'Τα στοιχεία του MyLive account ενημερώθηκαν.';
 
             } elseif ($action === 'add_weekly_slot') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
-                $account = mylive_admin_account($pdo, $accountId);
+                mylive_admin_account($pdo, $accountId);
                 $day = (int)($_POST['slot_day_of_week'] ?? 0);
                 $start = mylive_admin_time((string)($_POST['slot_start_time'] ?? ''), 'Start');
                 $end = mylive_admin_time((string)($_POST['slot_end_time'] ?? ''), 'End');
                 if ($day < 1 || $day > 7) throw new RuntimeException('Επίλεξε ημέρα για το νέο slot.');
                 if ($end <= $start) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
 
-                $pdo->beginTransaction();
-                try {
-                    $slotCountStmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
-                    $slotCountStmt->execute([$accountId]);
-                    $linkedCount = (int)$slotCountStmt->fetchColumn();
-
-                    // First multi-slot conversion: materialize the legacy primary
-                    // slot into Radio Program before adding the second one.
-                    if ($linkedCount === 0) {
-                        $primaryProgramId = 0;
-                        $legacyDay = (int)($account['day_of_week'] ?? 0);
-                        $legacyStart = (string)($account['start_time'] ?? '');
-                        $legacyEnd = (string)($account['end_time'] ?? '');
-                        if ($legacyDay >= 1 && $legacyDay <= 7 && $legacyStart !== '') {
-                            $existing = $pdo->prepare(
-                                "SELECT id, mylive_account_id, dj_name FROM program
-                                 WHERE day_of_week = ? AND start_time = ? LIMIT 1"
-                            );
-                            $existing->execute([$legacyDay, $legacyStart]);
-                            $existingRow = $existing->fetch(PDO::FETCH_ASSOC);
-                            if ($existingRow) {
-                                $owner = (int)($existingRow['mylive_account_id'] ?? 0);
-                                if ($owner !== 0 && $owner !== $accountId) {
-                                    throw new RuntimeException('Το υπάρχον primary slot είναι συνδεδεμένο με άλλο MyLive account.');
-                                }
-                                if ($owner === 0
-                                    && strcasecmp(trim((string)($existingRow['dj_name'] ?? '')), trim((string)$account['artist_name'])) !== 0) {
-                                    throw new RuntimeException('Το primary day/time χρησιμοποιείται ήδη από άλλο show στο Radio Program.');
-                                }
-                                $primaryProgramId = (int)$existingRow['id'];
-                                $pdo->prepare(
-                                    "UPDATE program SET mylive_account_id = ?, dj_name = ?
-                                     WHERE id = ?"
-                                )->execute([$accountId, (string)$account['artist_name'], $primaryProgramId]);
-                            } else {
-                                $pdo->prepare(
-                                    "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
-                                     VALUES (?, '', ?, ?, ?, ?)"
-                                )->execute([(string)$account['artist_name'], $accountId, $legacyDay, $legacyStart, $legacyEnd]);
-                                $primaryProgramId = (int)$pdo->lastInsertId();
-                            }
-
-                            if ($primaryProgramId > 0) {
-                                $pdo->prepare(
-                                    "UPDATE dj_portal_sets
-                                     SET target_program_id = ?
-                                     WHERE account_id = ?
-                                       AND target_program_id = 0
-                                       AND target_show_start IS NOT NULL
-                                       AND status <> 'broadcasted'"
-                                )->execute([$primaryProgramId, $accountId]);
-                            }
-                        }
-                    }
-
-                    $overlap = $pdo->prepare(
-                        "SELECT id, dj_name, start_time, end_time
-                         FROM program
-                         WHERE day_of_week = ?
-                           AND start_time < ?
-                           AND end_time > ?
-                         ORDER BY start_time ASC
-                         LIMIT 1"
-                    );
-                    $overlap->execute([$day, $end, $start]);
-                    $overlapRow = $overlap->fetch(PDO::FETCH_ASSOC);
-                    if ($overlapRow) {
-                        throw new RuntimeException(
-                            'Το νέο slot επικαλύπτεται με το υπάρχον show "'
-                            . (string)$overlapRow['dj_name'] . '" ('
-                            . substr((string)$overlapRow['start_time'], 0, 5) . '–'
-                            . substr((string)$overlapRow['end_time'], 0, 5) . ').'
-                        );
-                    }
-
-                    $occupied = $pdo->prepare(
-                        "SELECT id, mylive_account_id, dj_name FROM program
-                         WHERE day_of_week = ? AND start_time = ? LIMIT 1"
-                    );
-                    $occupied->execute([$day, $start]);
-                    $occupiedRow = $occupied->fetch(PDO::FETCH_ASSOC);
-                    if ($occupiedRow) {
-                        if ((int)($occupiedRow['mylive_account_id'] ?? 0) === $accountId) {
-                            throw new RuntimeException('Αυτό το weekly slot υπάρχει ήδη στο συγκεκριμένο account.');
-                        }
-                        throw new RuntimeException('Το συγκεκριμένο day/time χρησιμοποιείται ήδη στο Radio Program.');
-                    }
-
-                    $photoStmt = $pdo->prepare(
-                        "SELECT photo_path FROM program
-                         WHERE mylive_account_id = ? AND photo_path <> ''
-                         ORDER BY id ASC LIMIT 1"
-                    );
-                    $photoStmt->execute([$accountId]);
-                    $photo = (string)($photoStmt->fetchColumn() ?: '');
-
-                    $pdo->prepare(
-                        "INSERT INTO program (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
-                         VALUES (?, ?, ?, ?, ?, ?)"
-                    )->execute([(string)$account['artist_name'], $photo, $accountId, $day, $start, $end]);
-
-                    $pdo->commit();
-                    $notice = 'Το δεύτερο weekly slot προστέθηκε και συνδέθηκε με το ίδιο MyLive account.';
-                } catch (Throwable $slotError) {
-                    if ($pdo->inTransaction()) $pdo->rollBack();
-                    throw $slotError;
+                $sameAccountOverlap = $pdo->prepare(
+                    "SELECT id, start_time, end_time
+                     FROM dj_portal_weekly_slots
+                     WHERE account_id = ?
+                       AND day_of_week = ?
+                       AND start_time < ?
+                       AND end_time > ?
+                     LIMIT 1"
+                );
+                $sameAccountOverlap->execute([$accountId, $day, $end, $start]);
+                if ($sameAccountOverlap->fetch(PDO::FETCH_ASSOC)) {
+                    throw new RuntimeException('Το νέο weekly slot επικαλύπτεται με άλλο slot του ίδιου MyLive account.');
                 }
+
+                $pdo->prepare(
+                    "INSERT INTO dj_portal_weekly_slots
+                     (account_id, day_of_week, start_time, end_time)
+                     VALUES (?, ?, ?, ?)"
+                )->execute([$accountId, $day, $start, $end]);
+
+                $notice = 'Το weekly slot προστέθηκε στο MyLive. Το Radio Program παραμένει ανεξάρτητο και το ρυθμίζεις από τη σελίδα Radio Program.';
 
             } elseif ($action === 'delete_weekly_slot') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
-                $programId = (int)($_POST['program_id'] ?? 0);
-                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM program WHERE mylive_account_id = ?");
+                $weeklySlotId = (int)($_POST['program_id'] ?? 0);
+                $countStmt = $pdo->prepare("SELECT COUNT(*) FROM dj_portal_weekly_slots WHERE account_id = ?");
                 $countStmt->execute([$accountId]);
                 if ((int)$countStmt->fetchColumn() <= 1) {
                     throw new RuntimeException('Το account πρέπει να διατηρεί τουλάχιστον ένα weekly slot.');
                 }
-                $delete = $pdo->prepare("DELETE FROM program WHERE id = ? AND mylive_account_id = ?");
-                $delete->execute([$programId, $accountId]);
+                $delete = $pdo->prepare("DELETE FROM dj_portal_weekly_slots WHERE id = ? AND account_id = ?");
+                $delete->execute([$weeklySlotId, $accountId]);
                 if ($delete->rowCount() !== 1) throw new RuntimeException('Το weekly slot δεν βρέθηκε.');
-                $notice = 'Το weekly slot αφαιρέθηκε από το MyLive account.';
+                $notice = 'Το weekly slot αφαιρέθηκε από το MyLive. Το Radio Program δεν επηρεάστηκε.';
 
             } elseif ($action === 'reset_access') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
