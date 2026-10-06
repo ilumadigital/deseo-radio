@@ -350,6 +350,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Δημιούργησε πρώτα το προσωπικό σου password.');
             }
 
+            $uploadIsGuest = deseo_mylive_is_guest_account($account);
+            $targetProgramId = null;
+            $targetShowStart = null;
+            $targetShowEnd = null;
+            $episodeDjName = trim((string)($_POST['episode_dj_name'] ?? ''));
+
+            if (mb_strlen($episodeDjName) > 180) {
+                throw new RuntimeException('Το όνομα του DJ είναι πολύ μεγάλο.');
+            }
+            if (!empty($account['requires_episode_artist']) && $episodeDjName === '') {
+                throw new RuntimeException('Συμπλήρωσε ποιος DJ παίζει σε αυτό το slot πριν ανεβάσεις το αρχείο.');
+            }
+
+            if (!$uploadIsGuest) {
+                $deliveryShows = deseo_mylive_delivery_shows(
+                    $pdo,
+                    $accountId,
+                    new DateTimeImmutable('now', dj_season_athens_timezone())
+                );
+                if ($deliveryShows) {
+                    $requestedProgramId = isset($_POST['program_id']) ? (int)$_POST['program_id'] : -1;
+                    if ($requestedProgramId === -1 && count($deliveryShows) === 1) {
+                        $requestedProgramId = (int)($deliveryShows[0]['program_id'] ?? 0);
+                    }
+
+                    $selectedDelivery = null;
+                    foreach ($deliveryShows as $deliveryShow) {
+                        if ((int)($deliveryShow['program_id'] ?? 0) === $requestedProgramId) {
+                            $selectedDelivery = $deliveryShow;
+                            break;
+                        }
+                    }
+                    if (!$selectedDelivery) {
+                        throw new RuntimeException('Επίλεξε σε ποιο weekly slot ανήκει αυτό το DJ Set.');
+                    }
+
+                    $targetProgramId = (int)($selectedDelivery['program_id'] ?? 0);
+                    $targetShowStart = $selectedDelivery['show_start']->format('Y-m-d H:i:s');
+                    $targetShowEnd = $selectedDelivery['show_end']->format('Y-m-d H:i:s');
+                }
+            }
+
             if (!isset($_FILES['dj_set']) || !is_array($_FILES['dj_set'])) {
                 throw new RuntimeException('Επίλεξε το DJ set που θέλεις να ανεβάσεις.');
             }
@@ -417,8 +459,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $insert = $pdo->prepare(
                     "INSERT INTO dj_portal_sets
-                     (account_id, episode_no, original_name, stored_name, file_path, file_size, mime_type, status)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received')"
+                     (account_id, episode_no, original_name, stored_name, file_path, file_size, mime_type, status,
+                      target_program_id, target_show_start, target_show_end, episode_dj_name)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?)"
                 );
                 $insert->execute([
                     $accountId,
@@ -427,7 +470,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $storedName,
                     $relativeDir . '/' . $storedName,
                     $size,
-                    $mime
+                    $mime,
+                    $targetProgramId,
+                    $targetShowStart,
+                    $targetShowEnd,
+                    $episodeDjName
                 ]);
                 $pdo->commit();
             } catch (Throwable $dbError) {
@@ -836,6 +883,18 @@ $publicProfileHasChanges = $publicProfile
     : false;
 
 $sets = deseo_mylive_sets($pdo, (int)$account['id']);
+$weeklySlots = $isGuestAccount ? [] : deseo_mylive_program_slots($pdo, (int)$account['id']);
+$upcomingShows = $isGuestAccount ? [] : deseo_mylive_upcoming_shows(
+    $pdo,
+    (int)$account['id'],
+    new DateTimeImmutable('now', dj_season_athens_timezone())
+);
+$deliveryShows = $isGuestAccount ? [] : deseo_mylive_delivery_shows(
+    $pdo,
+    (int)$account['id'],
+    new DateTimeImmutable('now', dj_season_athens_timezone())
+);
+$requiresEpisodeArtist = !empty($account['requires_episode_artist']);
 $assets = deseo_mylive_assets($pdo, (int)$account['id']);
 $rewards = deseo_rewards_for_account($pdo, (int)$account['id']);
 $rewardsSummary = deseo_rewards_summary($rewards);
@@ -855,6 +914,19 @@ $dayLabel = deseo_mylive_day_label($accountDay > 0 ? $accountDay : null);
 $startTime = deseo_mylive_format_time((string)$account['start_time']);
 $myliveSlotLabel = deseo_mylive_slot($account);
 
+if (!$isGuestAccount && $weeklySlots) {
+    $slotLabels = [];
+    foreach ($weeklySlots as $weeklySlot) {
+        $slotLabels[] = dj_season_day_label((int)$weeklySlot['day_of_week'])
+            . ' · ' . deseo_mylive_format_time((string)$weeklySlot['start_time']);
+    }
+    $myliveSlotLabel = implode('  /  ', $slotLabels);
+    $firstSlot = $weeklySlots[0];
+    $accountDay = (int)$firstSlot['day_of_week'];
+    $dayLabel = dj_season_day_label($accountDay);
+    $startTime = deseo_mylive_format_time((string)$firstSlot['start_time']);
+}
+
 if ($isGuestAccount && dj_season_is_guest_zone_slot($accountDay, (string)$account['start_time'])) {
     $displayDay = dj_season_slot_display_day($accountDay, (string)$account['start_time']);
     $dayLabel = dj_season_day_label($displayDay);
@@ -863,15 +935,12 @@ if ($isGuestAccount && dj_season_is_guest_zone_slot($accountDay, (string)$accoun
     $myliveSlotLabel = 'Guest DJ · ' . $myliveSlotLabel;
 }
 
-// NEXT SHOW · resident recurrence is visible immediately.
-// Before Season 6 starts, each resident DJ points to the first real weekly
-// occurrence on/after 14.10.2026. After each broadcast it rolls forward by +7 days.
-// Guest accounts remain one-off and never roll forward by +7 days.
 $athensTz = dj_season_athens_timezone();
 $nowAthens = new DateTimeImmutable('now', $athensTz);
 $nextShowSeasonComplete = false;
 $nextShowStart = null;
 $nextShowEnd = null;
+$nextShowProgramId = null;
 $nextShowIsLive = false;
 $nextShowWhen = 'Schedule pending';
 $nextShowDate = '—';
@@ -882,59 +951,52 @@ if ($isGuestAccount) {
     $nextShowWhen = 'One-time appearance';
     $nextShowDate = 'Date to be confirmed';
     $nextShowDay = 'Guest DJ Zone';
-}
+} elseif ($upcomingShows) {
+    $nearest = $upcomingShows[0];
+    $nextShowStart = $nearest['show_start'];
+    $nextShowEnd = $nearest['show_end'];
+    $nextShowProgramId = (int)($nearest['program_id'] ?? 0);
+    $nextShowIsLive = $nowAthens >= $nextShowStart && $nowAthens < $nextShowEnd;
+    $nextShowDay = dj_season_day_label((int)$nearest['day_of_week']);
+    $nextShowDate = $nextShowStart->format('d.m.Y');
+    $nextShowTime = $nextShowStart->format('H:i');
 
-$slotDay = (int)($account['day_of_week'] ?? 0);
-$slotStartRaw = trim((string)($account['start_time'] ?? ''));
-$slotEndRaw = trim((string)($account['end_time'] ?? ''));
-
-if (!$isGuestAccount && $slotDay >= 1 && $slotDay <= 7 && $slotStartRaw !== '') {
-    $occurrence = dj_season_weekly_occurrence(
-        $slotDay,
-        $slotStartRaw,
-        $slotEndRaw,
-        $nowAthens
-    );
-
-    if ($occurrence !== null) {
-        [$candidateStart, $candidateEnd] = $occurrence;
-
-        $nextShowStart = $candidateStart;
-        $nextShowEnd = $candidateEnd;
-        $nextShowIsLive = $nowAthens >= $candidateStart && $nowAthens < $candidateEnd;
-
-        $today = $nowAthens->setTime(0, 0, 0);
-        $todayKey = $nowAthens->format('Y-m-d');
-        $tomorrowKey = $nowAthens->modify('+1 day')->format('Y-m-d');
-        $showKey = $candidateStart->format('Y-m-d');
-
-        if ($nextShowIsLive) {
-            $nextShowWhen = 'LIVE NOW';
-        } elseif ($showKey === $todayKey) {
-            $nextShowWhen = 'Today';
-        } elseif ($showKey === $tomorrowKey) {
-            $nextShowWhen = 'Tomorrow';
-        } else {
-            $daysToShow = (int)$today->diff($candidateStart->setTime(0, 0))->format('%a');
-            $nextShowWhen = 'In ' . $daysToShow . ' days';
-        }
-
-        $nextShowDate = $candidateStart->format('d.m.Y');
-        $nextShowTime = $candidateStart->format('H:i');
-    } elseif ($nowAthens >= dj_season_start_at()) {
-        $nextShowSeasonComplete = true;
-        $nextShowDay = 'SEASON 6';
-        $nextShowTime = '';
-        $nextShowDate = '30.05.2027';
-        $nextShowWhen = 'Completed';
+    $today = $nowAthens->setTime(0, 0, 0);
+    $showKey = $nextShowStart->format('Y-m-d');
+    if ($nextShowIsLive) {
+        $nextShowWhen = 'LIVE NOW';
+    } elseif ($showKey === $nowAthens->format('Y-m-d')) {
+        $nextShowWhen = 'Today';
+    } elseif ($showKey === $nowAthens->modify('+1 day')->format('Y-m-d')) {
+        $nextShowWhen = 'Tomorrow';
+    } else {
+        $daysToShow = (int)$today->diff($nextShowStart->setTime(0, 0))->format('%a');
+        $nextShowWhen = 'In ' . $daysToShow . ' days';
     }
+} elseif ($nowAthens >= dj_season_start_at()) {
+    $nextShowSeasonComplete = true;
+    $nextShowDay = 'SEASON 6';
+    $nextShowTime = '';
+    $nextShowDate = '30.05.2027';
+    $nextShowWhen = 'Completed';
 }
 
 $nextShowSet = null;
-foreach ($sets as $setCandidate) {
-    if ((string)($setCandidate['status'] ?? '') !== 'broadcasted') {
+if (!$isGuestAccount && $nextShowStart instanceof DateTimeImmutable && $nextShowProgramId !== null) {
+    foreach ($sets as $setCandidate) {
+        if ((int)($setCandidate['target_program_id'] ?? -1) !== $nextShowProgramId) continue;
+        if ((string)($setCandidate['target_show_start'] ?? '') !== $nextShowStart->format('Y-m-d H:i:s')) continue;
         $nextShowSet = $setCandidate;
         break;
+    }
+}
+if ($nextShowSet === null && (count($weeklySlots) <= 1 || $isGuestAccount)) {
+    foreach ($sets as $setCandidate) {
+        if ((string)($setCandidate['status'] ?? '') !== 'broadcasted'
+            && empty($setCandidate['target_show_start'])) {
+            $nextShowSet = $setCandidate;
+            break;
+        }
     }
 }
 
@@ -1351,6 +1413,42 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
             <form id="uploadForm" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= deseo_mylive_e(deseo_mylive_csrf()) ?>">
                 <input type="hidden" name="action" value="upload">
+
+                <?php if (!$isGuestAccount && $deliveryShows): ?>
+                    <div class="form-grid" style="margin-bottom:14px;">
+                        <div class="field full">
+                            <label>Broadcast slot</label>
+                            <select name="program_id" required>
+                                <?php foreach ($deliveryShows as $deliveryShow): ?>
+                                    <option value="<?= (int)($deliveryShow['program_id'] ?? 0) ?>">
+                                        <?= deseo_mylive_e(
+                                            dj_season_day_label((int)$deliveryShow['day_of_week'])
+                                            . ' · ' . $deliveryShow['show_start']->format('d.m.Y')
+                                            . ' · ' . $deliveryShow['show_start']->format('H:i')
+                                        ) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php if ($requiresEpisodeArtist): ?>
+                            <div class="field full">
+                                <label>DJ / Artist playing this slot</label>
+                                <input type="text" name="episode_dj_name" maxlength="180" required
+                                       placeholder="π.χ. John Doe">
+                                <small>Υποχρεωτικό για αυτό το radioshow πριν από κάθε upload.</small>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php elseif ($requiresEpisodeArtist): ?>
+                    <div class="form-grid" style="margin-bottom:14px;">
+                        <div class="field full">
+                            <label>DJ / Artist playing this slot</label>
+                            <input type="text" name="episode_dj_name" maxlength="180" required
+                                   placeholder="π.χ. John Doe">
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <input id="setFile" type="file" name="dj_set" accept=".mp3,audio/mpeg" hidden required>
 
                 <label class="drop-zone" for="setFile" id="dropZone">
@@ -1389,6 +1487,12 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
                             <div class="set-details">
                                 <strong><?= deseo_mylive_e($set['stored_name']) ?></strong>
                                 <span><?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?> · <?= deseo_mylive_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?></span>
+                                <?php if (!empty($set['episode_dj_name'])): ?>
+                                    <small><b>DJ:</b> <?= deseo_mylive_e((string)$set['episode_dj_name']) ?></small>
+                                <?php endif; ?>
+                                <?php if (!empty($set['target_show_start'])): ?>
+                                    <small><b>Broadcast:</b> <?= deseo_mylive_e(date('d.m.Y · H:i', strtotime((string)$set['target_show_start']))) ?></small>
+                                <?php endif; ?>
                                 <?php if (!empty($set['admin_note'])): ?><small><?= deseo_mylive_e($set['admin_note']) ?></small><?php endif; ?>
                             </div>
                             <div class="set-status">
