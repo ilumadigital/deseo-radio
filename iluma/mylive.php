@@ -1775,6 +1775,8 @@ admin_page_start('MyLive', 'mylive');
                                                 <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
                                                 <strong><?= admin_e($set['stored_name']) ?></strong>
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                                <?php if (!empty($set['episode_dj_name'])): ?><small><b>DJ PLAYING:</b> <?= admin_e((string)$set['episode_dj_name']) ?></small><?php endif; ?>
+                                                <?php if (!empty($set['target_show_start'])): ?><small><b>BROADCAST:</b> <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['target_show_start']))) ?> — <?= admin_e(date('H:i', strtotime((string)$set['target_show_end']))) ?></small><?php endif; ?>
                                                 <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                                                 <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
                                                 <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
@@ -1968,7 +1970,7 @@ admin_page_start('MyLive', 'mylive');
                     ?>
                     <form method="post" class="mylive-library-row"
                           data-mylive-library-status="<?= admin_e($setStatus) ?>"
-                          data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
+                          data-mylive-library-search="<?= admin_e((string)$set['artist_name'] . ' ' . (string)($set['episode_dj_name'] ?? '') . ' ' . $episodeLabel . ' ' . (string)$set['stored_name']) ?>"
                           data-deseo-confirm="Να καταχωριστεί ως BROADCASTED; Το MP3 διαγράφεται μόνο μετά από επιβεβαιωμένη αποδοχή upload στο HearThis."
                           data-deseo-confirm-title="BROADCASTED · HearThis Sync"
                           data-deseo-confirm-label="BROADCASTED"
@@ -1984,6 +1986,8 @@ admin_page_start('MyLive', 'mylive');
                         <div class="mylive-library-file">
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
+                            <?php if (!empty($set['episode_dj_name'])): ?><small><b>DJ PLAYING:</b> <?= admin_e((string)$set['episode_dj_name']) ?></small><?php endif; ?>
+                            <?php if (!empty($set['target_show_start'])): ?><small><b>BROADCAST:</b> <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['target_show_start']))) ?> — <?= admin_e(date('H:i', strtotime((string)$set['target_show_end']))) ?></small><?php endif; ?>
                             <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                             <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
                             <small>PODCAST RSS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_podcast_status'] ?? 'pending')))) ?><?php if (!empty($set['hearthis_podcast_verified_at'])): ?> · <?= admin_e((string)$set['hearthis_podcast_verified_at']) ?> (Athens)<?php endif; ?></small>
