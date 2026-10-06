@@ -488,11 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($day < 1 || $day > 7) throw new RuntimeException('Επίλεξε ημέρα.');
                 if ($end <= $start) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
 
-                $stmt = $pdo->prepare(
-                    "UPDATE dj_portal_accounts
-                     SET artist_name = ?, full_name = ?, email = ?, day_of_week = ?, start_time = ?, end_time = ?
-                     WHERE id = ?"
-                );
                 $requiresEpisodeArtist = isset($_POST['requires_episode_artist']) ? 1 : 0;
                 $stmt = $pdo->prepare(
                     "UPDATE dj_portal_accounts
@@ -526,7 +521,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $legacyEnd = (string)($account['end_time'] ?? '');
                         if ($legacyDay >= 1 && $legacyDay <= 7 && $legacyStart !== '') {
                             $existing = $pdo->prepare(
-                                "SELECT id, mylive_account_id FROM program
+                                "SELECT id, mylive_account_id, dj_name FROM program
                                  WHERE day_of_week = ? AND start_time = ? LIMIT 1"
                             );
                             $existing->execute([$legacyDay, $legacyStart]);
@@ -535,6 +530,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $owner = (int)($existingRow['mylive_account_id'] ?? 0);
                                 if ($owner !== 0 && $owner !== $accountId) {
                                     throw new RuntimeException('Το υπάρχον primary slot είναι συνδεδεμένο με άλλο MyLive account.');
+                                }
+                                if ($owner === 0
+                                    && strcasecmp(trim((string)($existingRow['dj_name'] ?? '')), trim((string)$account['artist_name'])) !== 0) {
+                                    throw new RuntimeException('Το primary day/time χρησιμοποιείται ήδη από άλλο show στο Radio Program.');
                                 }
                                 $pdo->prepare(
                                     "UPDATE program SET mylive_account_id = ?, dj_name = ?
