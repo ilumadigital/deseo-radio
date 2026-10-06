@@ -23,6 +23,18 @@ foreach ($cases as [$artist, $episodeNo, $showEnd, $title, $expectedBroadcast]) 
         exit(1);
     }
 }
+$managedShow = deseo_hearthis_metadata([
+    'artist_name' => 'DJ SA Radioshow',
+    'episode_dj_name' => 'John Doe',
+    'episode_no' => 4,
+    'scheduled_show_end' => '2026-10-18 18:00:00',
+]);
+if ($managedShow['title'] !== 'John Doe – DJ SA Radioshow | Deseo Radio · S06 EP004'
+    || !str_contains($managedShow['description'], 'Exclusive DJ Set by John Doe for DJ SA Radioshow')) {
+    fwrite(STDERR, "FAIL: managed radioshow metadata did not use the episode DJ\n");
+    exit(1);
+}
+
 $pending = deseo_hearthis_metadata([
     'artist_name' => 'Katty Belle', 'episode_no' => 3, 'scheduled_show_end' => null,
 ]);
