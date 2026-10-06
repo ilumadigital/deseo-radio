@@ -21,15 +21,15 @@ function deseo_hearthis_metadata(array $set): array {
             // Never fabricate a broadcast date from an invalid value.
         }
     }
-    $titleArtist = $episodeArtist !== ''
-        ? $episodeArtist . ' – ' . $artist
-        : $artist;
+    $title = $episodeArtist !== ''
+        ? $episodeArtist . ' – ' . $artist . ' | Deseo Radio · S06 ' . $episode
+        : $artist . ' – Deseo Radio | S06 ' . $episode;
     $descriptionLead = $episodeArtist !== ''
         ? 'Exclusive DJ Set by ' . $episodeArtist . ' for ' . $artist . ' on Deseo Radio · Season 6.'
         : 'Exclusive DJ Set by ' . $artist . ' for Deseo Radio · Season 6.';
 
     return [
-        'title' => $titleArtist . ' | Deseo Radio · S06 ' . $episode,
+        'title' => $title,
         'description' => $descriptionLead . "\n\n"
             . $dateLine
             . 'Listen Live: https://deseoradio.com' . "\n"
