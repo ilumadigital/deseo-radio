@@ -2745,5 +2745,38 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
         if(event.key==='Escape'&&modal&&!modal.hidden)closeBrowser();
     });
 }());
+
+(function(){
+    var list=document.getElementById('manualWeeklySlots');
+    var addButton=document.getElementById('manualAddWeeklySlot');
+    var template=document.getElementById('manualWeeklySlotTemplate');
+    if(!list||!addButton||!template)return;
+
+    function refreshRemoveButtons(){
+        var rows=Array.prototype.slice.call(list.querySelectorAll('.mylive-manual-slot-row'));
+        rows.forEach(function(row,index){
+            var button=row.querySelector('[data-remove-manual-slot]');
+            if(button)button.hidden=rows.length===1||index===0;
+        });
+    }
+
+    addButton.addEventListener('click',function(){
+        if(list.querySelectorAll('.mylive-manual-slot-row').length>=14)return;
+        list.appendChild(template.content.cloneNode(true));
+        refreshRemoveButtons();
+    });
+
+    list.addEventListener('click',function(event){
+        var button=event.target.closest('[data-remove-manual-slot]');
+        if(!button)return;
+        var row=button.closest('.mylive-manual-slot-row');
+        if(row&&list.querySelectorAll('.mylive-manual-slot-row').length>1){
+            row.remove();
+            refreshRemoveButtons();
+        }
+    });
+
+    refreshRemoveButtons();
+}());
 </script>
 <?php admin_page_end(); ?>
