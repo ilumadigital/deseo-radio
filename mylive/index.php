@@ -595,7 +595,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $storedName,
                     $originalName,
                     $episodeDjName,
-                    (string)($targetShowStart ?? '')
+                    (string)($targetShowStart ?? ''),
+                    $episodeDjPhotoPath
                 );
 
                 foreach (deseo_mylive_internal_notification_recipients() as $recipient) {
