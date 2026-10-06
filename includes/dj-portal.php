@@ -140,6 +140,51 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         error_log('MyLive profile sync: ' . $e->getMessage());
     }
 
+    // MyLive delivery schedule is intentionally independent from the public
+    // Radio Program. Program rows may overlap broad music zones; MyLive slots
+    // describe only the account's upload/reminder obligations.
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_weekly_slots (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        account_id BIGINT NOT NULL,
+        day_of_week TINYINT NOT NULL,
+        start_time TIME NOT NULL,
+        end_time TIME NOT NULL,
+        source_program_id INT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_portal_weekly_slot (account_id, day_of_week, start_time),
+        KEY idx_portal_weekly_account (account_id, day_of_week, start_time),
+        CONSTRAINT fk_portal_weekly_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
+            ON UPDATE CASCADE ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Safe legacy seed: every account keeps its original primary MyLive slot.
+    $pdo->exec(
+        "INSERT IGNORE INTO dj_portal_weekly_slots
+         (account_id, day_of_week, start_time, end_time)
+         SELECT id, day_of_week, start_time, end_time
+         FROM dj_portal_accounts
+         WHERE day_of_week BETWEEN 1 AND 7
+           AND start_time IS NOT NULL
+           AND end_time IS NOT NULL"
+    );
+
+    // Preserve multi-slot accounts created by the earlier implementation.
+    // Import only Program rows whose show name matches the account, so generic
+    // zones linked for public-profile purposes do not become upload obligations.
+    try {
+        $pdo->exec(
+            "INSERT IGNORE INTO dj_portal_weekly_slots
+             (account_id, day_of_week, start_time, end_time, source_program_id)
+             SELECT p.mylive_account_id, p.day_of_week, p.start_time, p.end_time, p.id
+             FROM program p
+             INNER JOIN dj_portal_accounts a ON a.id = p.mylive_account_id
+             WHERE p.mylive_account_id IS NOT NULL
+               AND LOWER(TRIM(p.dj_name)) = LOWER(TRIM(a.artist_name))"
+        );
+    } catch (Throwable $e) {
+        error_log('MyLive weekly-slot legacy Program import: ' . $e->getMessage());
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_sets (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         account_id BIGINT NOT NULL,
@@ -155,6 +200,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         delete_after DATETIME NULL,
         file_deleted_at DATETIME NULL,
         scheduled_show_end DATETIME NULL,
+        target_weekly_slot_id BIGINT NULL,
         target_program_id INT NULL,
         target_show_start DATETIME NULL,
         target_show_end DATETIME NULL,
@@ -182,6 +228,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         hearthis_synced_at DATETIME NULL,
         uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_portal_episode (account_id, episode_no),
+        UNIQUE KEY uniq_portal_weekly_target (account_id, target_weekly_slot_id, target_show_start),
         UNIQUE KEY uniq_portal_target (account_id, target_program_id, target_show_start),
         KEY idx_portal_sets_account (account_id, uploaded_at),
         KEY idx_portal_sets_target (account_id, target_program_id, target_show_start),
@@ -194,7 +241,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'delete_after' => "DATETIME NULL AFTER broadcasted_at",
         'file_deleted_at' => "DATETIME NULL AFTER delete_after",
         'scheduled_show_end' => "DATETIME NULL AFTER file_deleted_at",
-        'target_program_id' => "INT NULL AFTER scheduled_show_end",
+        'target_weekly_slot_id' => "BIGINT NULL AFTER scheduled_show_end",
+        'target_program_id' => "INT NULL AFTER target_weekly_slot_id",
         'target_show_start' => "DATETIME NULL AFTER target_program_id",
         'target_show_end' => "DATETIME NULL AFTER target_show_start",
         'episode_dj_name' => "VARCHAR(180) NOT NULL DEFAULT '' AFTER target_show_end",
@@ -236,6 +284,43 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         }
     } catch (Throwable $e) {
         error_log('MyLive target slot index migration: ' . $e->getMessage());
+    }
+
+    try {
+        $weeklyTargetIndexStmt = $pdo->query("SHOW INDEX FROM dj_portal_sets WHERE Key_name = 'uniq_portal_weekly_target'");
+        if (!$weeklyTargetIndexStmt || !$weeklyTargetIndexStmt->fetch(PDO::FETCH_ASSOC)) {
+            $pdo->exec(
+                "ALTER TABLE dj_portal_sets
+                 ADD UNIQUE KEY uniq_portal_weekly_target (account_id, target_weekly_slot_id, target_show_start)"
+            );
+        }
+    } catch (Throwable $e) {
+        error_log('MyLive weekly target index migration: ' . $e->getMessage());
+    }
+
+    // Map already-targeted episodes to the new independent weekly-slot IDs.
+    try {
+        $pdo->exec(
+            "UPDATE dj_portal_sets s
+             INNER JOIN dj_portal_weekly_slots w
+               ON w.account_id = s.account_id
+              AND w.source_program_id = s.target_program_id
+             SET s.target_weekly_slot_id = w.id
+             WHERE s.target_weekly_slot_id IS NULL
+               AND s.target_program_id IS NOT NULL"
+        );
+        $pdo->exec(
+            "UPDATE dj_portal_sets s
+             INNER JOIN dj_portal_weekly_slots w
+               ON w.account_id = s.account_id
+              AND w.day_of_week = WEEKDAY(s.target_show_start) + 1
+              AND w.start_time = TIME(s.target_show_start)
+             SET s.target_weekly_slot_id = w.id
+             WHERE s.target_weekly_slot_id IS NULL
+               AND s.target_show_start IS NOT NULL"
+        );
+    } catch (Throwable $e) {
+        error_log('MyLive weekly target backfill: ' . $e->getMessage());
     }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS dj_portal_assets (
@@ -501,7 +586,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, account_id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                target_program_id, target_show_start, target_show_end, episode_dj_name,
+                target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
                 hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
@@ -525,28 +610,20 @@ function deseo_mylive_set_statuses(): array {
  */
 function deseo_mylive_program_slots(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
-        "SELECT id AS program_id, day_of_week, start_time, end_time, dj_name
-         FROM program
-         WHERE mylive_account_id = ?
-         ORDER BY day_of_week ASC, start_time ASC, id ASC"
+        "SELECT w.id AS weekly_slot_id,
+                w.id AS program_id,
+                w.source_program_id,
+                w.day_of_week,
+                w.start_time,
+                w.end_time,
+                a.artist_name AS dj_name
+         FROM dj_portal_weekly_slots w
+         INNER JOIN dj_portal_accounts a ON a.id = w.account_id
+         WHERE w.account_id = ?
+         ORDER BY w.day_of_week ASC, w.start_time ASC, w.id ASC"
     );
     $stmt->execute([$accountId]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if ($rows) return $rows;
-
-    $account = deseo_mylive_account($pdo, $accountId);
-    if (!$account) return [];
-    $day = (int)($account['day_of_week'] ?? 0);
-    $start = trim((string)($account['start_time'] ?? ''));
-    if ($day < 1 || $day > 7 || $start === '') return [];
-
-    return [[
-        'program_id' => 0,
-        'day_of_week' => $day,
-        'start_time' => (string)$account['start_time'],
-        'end_time' => (string)($account['end_time'] ?? ''),
-        'dj_name' => (string)($account['artist_name'] ?? ''),
-    ]];
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function deseo_mylive_upcoming_shows(PDO $pdo, int $accountId, DateTimeImmutable $now): array {
@@ -629,11 +706,11 @@ function deseo_mylive_set_for_show(
     DateTimeImmutable $showStart
 ): ?array {
     $stmt = $pdo->prepare(
-        "SELECT id, episode_no, status, uploaded_at, target_program_id,
-                target_show_start, target_show_end, episode_dj_name
+        "SELECT id, episode_no, status, uploaded_at, target_weekly_slot_id,
+                target_program_id, target_show_start, target_show_end, episode_dj_name
          FROM dj_portal_sets
          WHERE account_id = ?
-           AND target_program_id = ?
+           AND target_weekly_slot_id = ?
            AND target_show_start = ?
            AND file_deleted_at IS NULL
          ORDER BY id DESC
@@ -645,6 +722,28 @@ function deseo_mylive_set_for_show(
         $showStart->format('Y-m-d H:i:s'),
     ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row) return $row;
+
+    // Legacy fallback for episodes targeted before weekly slots were decoupled.
+    $legacy = $pdo->prepare(
+        "SELECT s.id, s.episode_no, s.status, s.uploaded_at, s.target_weekly_slot_id,
+                s.target_program_id, s.target_show_start, s.target_show_end, s.episode_dj_name
+         FROM dj_portal_sets s
+         INNER JOIN dj_portal_weekly_slots w ON w.id = ?
+         WHERE s.account_id = ?
+           AND s.target_weekly_slot_id IS NULL
+           AND s.target_program_id = w.source_program_id
+           AND s.target_show_start = ?
+           AND s.file_deleted_at IS NULL
+         ORDER BY s.id DESC
+         LIMIT 1"
+    );
+    $legacy->execute([
+        $programId,
+        $accountId,
+        $showStart->format('Y-m-d H:i:s'),
+    ]);
+    $row = $legacy->fetch(PDO::FETCH_ASSOC);
     return $row ?: null;
 }
 
@@ -842,7 +941,7 @@ function deseo_mylive_update_set_status(PDO $pdo, int $setId, string $status, st
     }
     $stmt = $pdo->prepare(
         "SELECT id, account_id, status, broadcasted_at, scheduled_show_end,
-                target_show_end, file_deleted_at, hearthis_status
+                target_weekly_slot_id, target_show_end, file_deleted_at, hearthis_status
          FROM dj_portal_sets WHERE id = ? LIMIT 1"
     );
     $stmt->execute([$setId]);
