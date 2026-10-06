@@ -104,6 +104,7 @@ function mylive_admin_account(PDO $pdo, int $id): array {
     $stmt->execute([$id]);
     $account = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$account) throw new RuntimeException('Το MyLive account δεν βρέθηκε.');
+    $account['weekly_slots'] = deseo_mylive_program_slots($pdo, $id);
     return $account;
 }
 
