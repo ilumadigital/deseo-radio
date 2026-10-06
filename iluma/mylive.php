@@ -381,35 +381,148 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $artistName = trim((string)($_POST['artist_name'] ?? ''));
                 $fullName = trim((string)($_POST['full_name'] ?? ''));
                 $email = strtolower(trim((string)($_POST['email'] ?? '')));
-                $day = (int)($_POST['day_of_week'] ?? 0);
-                $start = mylive_admin_time((string)($_POST['start_time'] ?? ''), 'Start');
-                $end = mylive_admin_time((string)($_POST['end_time'] ?? ''), 'End');
+                $requiresEpisodeArtist = isset($_POST['requires_episode_artist']) ? 1 : 0;
+
+                $slotDays = $_POST['slot_day_of_week'] ?? [];
+                $slotStarts = $_POST['slot_start_time'] ?? [];
+                $slotEnds = $_POST['slot_end_time'] ?? [];
+
+                // Backward-compatible fallback for older cached forms.
+                if (!is_array($slotDays) || !is_array($slotStarts) || !is_array($slotEnds)
+                    || count($slotDays) === 0) {
+                    $slotDays = [$_POST['day_of_week'] ?? ''];
+                    $slotStarts = [$_POST['start_time'] ?? ''];
+                    $slotEnds = [$_POST['end_time'] ?? ''];
+                }
 
                 if ($artistName === '') throw new RuntimeException('Συμπλήρωσε Artist / DJ Name.');
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('Συμπλήρωσε έγκυρο email.');
-                if ($day < 1 || $day > 7) throw new RuntimeException('Επίλεξε ημέρα.');
-                if ($end <= $start) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
+                if (count($slotDays) !== count($slotStarts) || count($slotDays) !== count($slotEnds)) {
+                    throw new RuntimeException('Τα weekly slots δεν είναι έγκυρα. Ανανέωσε τη σελίδα και δοκίμασε ξανά.');
+                }
+                if (count($slotDays) < 1 || count($slotDays) > 14) {
+                    throw new RuntimeException('Πρόσθεσε από 1 έως 14 weekly slots.');
+                }
+
+                $slots = [];
+                $slotKeys = [];
+                foreach ($slotDays as $index => $dayRaw) {
+                    $slotDay = (int)$dayRaw;
+                    $slotStart = mylive_admin_time((string)($slotStarts[$index] ?? ''), 'Start');
+                    $slotEnd = mylive_admin_time((string)($slotEnds[$index] ?? ''), 'End');
+
+                    if ($slotDay < 1 || $slotDay > 7) throw new RuntimeException('Επίλεξε ημέρα σε κάθε weekly slot.');
+                    if ($slotEnd <= $slotStart) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης σε κάθε weekly slot.');
+
+                    $slotKey = $slotDay . '|' . $slotStart;
+                    if (isset($slotKeys[$slotKey])) {
+                        throw new RuntimeException('Το ίδιο weekly slot έχει προστεθεί δύο φορές.');
+                    }
+                    $slotKeys[$slotKey] = true;
+
+                    foreach ($slots as $existingSubmitted) {
+                        if ((int)$existingSubmitted['day'] !== $slotDay) continue;
+                        if ($slotStart < (string)$existingSubmitted['end'] && $slotEnd > (string)$existingSubmitted['start']) {
+                            throw new RuntimeException('Δύο από τα weekly slots που πρόσθεσες επικαλύπτονται μεταξύ τους.');
+                        }
+                    }
+
+                    $slots[] = ['day' => $slotDay, 'start' => $slotStart, 'end' => $slotEnd];
+                }
 
                 $check = $pdo->prepare("SELECT id FROM dj_portal_accounts WHERE LOWER(email) = ? LIMIT 1");
                 $check->execute([$email]);
                 if ($check->fetchColumn()) throw new RuntimeException('Υπάρχει ήδη MyLive account με αυτό το email.');
 
+                // Validate Program conflicts before creating access.
+                foreach ($slots as $slot) {
+                    $conflicts = $pdo->prepare(
+                        "SELECT id, dj_name, mylive_account_id, start_time, end_time
+                         FROM program
+                         WHERE day_of_week = ?
+                           AND start_time < ?
+                           AND end_time > ?
+                         ORDER BY start_time ASC, id ASC"
+                    );
+                    $conflicts->execute([(int)$slot['day'], (string)$slot['end'], (string)$slot['start']]);
+                    foreach ($conflicts->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                        $isExactReusable = substr((string)$row['start_time'], 0, 5) === substr((string)$slot['start'], 0, 5)
+                            && substr((string)$row['end_time'], 0, 5) === substr((string)$slot['end'], 0, 5)
+                            && empty($row['mylive_account_id'])
+                            && strcasecmp(trim((string)$row['dj_name']), $artistName) === 0;
+                        if ($isExactReusable) continue;
+
+                        throw new RuntimeException(
+                            'Το slot ' . dj_season_day_label((int)$slot['day']) . ' '
+                            . substr((string)$slot['start'], 0, 5) . '–' . substr((string)$slot['end'], 0, 5)
+                            . ' επικαλύπτεται με το "' . (string)$row['dj_name'] . '".'
+                        );
+                    }
+                }
+
+                $primarySlot = $slots[0];
                 $temporaryPassword = mylive_admin_temp_password();
-                $insert = $pdo->prepare(
-                    "INSERT INTO dj_portal_accounts
-                     (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time, password_hash, must_change_password, is_active, account_status, show_audience_stats)
-                     VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1, 'active', 0)"
-                );
-                $insert->execute([
-                    $artistName,
-                    $fullName,
-                    $email,
-                    $day,
-                    $start,
-                    $end,
-                    password_hash($temporaryPassword, PASSWORD_DEFAULT)
-                ]);
-                $accountId = (int)$pdo->lastInsertId();
+
+                $pdo->beginTransaction();
+                try {
+                    $insert = $pdo->prepare(
+                        "INSERT INTO dj_portal_accounts
+                         (booking_id, artist_name, full_name, email, day_of_week, start_time, end_time,
+                          password_hash, must_change_password, is_active, account_status, show_audience_stats,
+                          requires_episode_artist)
+                         VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, 1, 1, 'active', 0, ?)"
+                    );
+                    $insert->execute([
+                        $artistName,
+                        $fullName,
+                        $email,
+                        (int)$primarySlot['day'],
+                        (string)$primarySlot['start'],
+                        (string)$primarySlot['end'],
+                        password_hash($temporaryPassword, PASSWORD_DEFAULT),
+                        $requiresEpisodeArtist
+                    ]);
+                    $accountId = (int)$pdo->lastInsertId();
+
+                    foreach ($slots as $slot) {
+                        $exact = $pdo->prepare(
+                            "SELECT id, dj_name, mylive_account_id
+                             FROM program
+                             WHERE day_of_week = ? AND start_time = ? AND end_time = ?
+                             LIMIT 1"
+                        );
+                        $exact->execute([(int)$slot['day'], (string)$slot['start'], (string)$slot['end']]);
+                        $existingProgram = $exact->fetch(PDO::FETCH_ASSOC);
+
+                        if ($existingProgram) {
+                            if (!empty($existingProgram['mylive_account_id'])
+                                || strcasecmp(trim((string)$existingProgram['dj_name']), $artistName) !== 0) {
+                                throw new RuntimeException('Ένα από τα weekly slots άλλαξε ενώ δημιουργούσες το account. Δοκίμασε ξανά.');
+                            }
+                            $pdo->prepare(
+                                "UPDATE program SET mylive_account_id = ? WHERE id = ?"
+                            )->execute([$accountId, (int)$existingProgram['id']]);
+                        } else {
+                            $pdo->prepare(
+                                "INSERT INTO program
+                                 (dj_name, photo_path, mylive_account_id, day_of_week, start_time, end_time)
+                                 VALUES (?, '', ?, ?, ?, ?)"
+                            )->execute([
+                                $artistName,
+                                $accountId,
+                                (int)$slot['day'],
+                                (string)$slot['start'],
+                                (string)$slot['end']
+                            ]);
+                        }
+                    }
+
+                    $pdo->commit();
+                } catch (Throwable $createError) {
+                    if ($pdo->inTransaction()) $pdo->rollBack();
+                    throw $createError;
+                }
+
                 $account = mylive_admin_account($pdo, $accountId);
 
                 $generatedCredentials = [
