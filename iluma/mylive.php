@@ -1253,7 +1253,7 @@ foreach ($accounts as $account) {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                target_program_id, target_show_start, target_show_end, episode_dj_name,
+                target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name,
                 hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_description, hearthis_genre, hearthis_tags,
                 hearthis_cover_asset_id, hearthis_cover_source_path,
@@ -1270,7 +1270,7 @@ foreach ($accounts as $account) {
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
             s.status, s.file_deleted_at, s.scheduled_show_end,
-            s.target_program_id, s.target_show_start, s.target_show_end, s.episode_dj_name,
+            s.target_weekly_slot_id, s.target_program_id, s.target_show_start, s.target_show_end, s.episode_dj_name,
             s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
             s.hearthis_title, s.hearthis_description, s.hearthis_genre, s.hearthis_tags,
