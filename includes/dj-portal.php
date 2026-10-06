@@ -34,6 +34,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         account_status VARCHAR(20) NOT NULL DEFAULT 'active',
         show_audience_stats TINYINT(1) NOT NULL DEFAULT 0,
         public_profile_enabled TINYINT(1) NOT NULL DEFAULT 0,
+        requires_episode_artist TINYINT(1) NOT NULL DEFAULT 0,
         onboarding_email_sent_at DATETIME NULL,
         access_email_sent_at DATETIME NULL,
         last_login_at DATETIME NULL,
@@ -55,7 +56,8 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'account_status' => "VARCHAR(20) NOT NULL DEFAULT 'active' AFTER is_active",
         'show_audience_stats' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER account_status",
         'public_profile_enabled' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER show_audience_stats",
-        'onboarding_email_sent_at' => "DATETIME NULL AFTER public_profile_enabled",
+        'requires_episode_artist' => "TINYINT(1) NOT NULL DEFAULT 0 AFTER public_profile_enabled",
+        'onboarding_email_sent_at' => "DATETIME NULL AFTER requires_episode_artist",
         'access_email_sent_at' => "DATETIME NULL AFTER onboarding_email_sent_at"
     ];
     foreach ($columns as $name => $definition) {
@@ -153,6 +155,10 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         delete_after DATETIME NULL,
         file_deleted_at DATETIME NULL,
         scheduled_show_end DATETIME NULL,
+        target_program_id INT NULL,
+        target_show_start DATETIME NULL,
+        target_show_end DATETIME NULL,
+        episode_dj_name VARCHAR(180) NOT NULL DEFAULT '',
         hearthis_status VARCHAR(24) NOT NULL DEFAULT 'pending',
         hearthis_url VARCHAR(500) NULL,
         hearthis_track_id VARCHAR(120) NULL,
@@ -177,6 +183,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uniq_portal_episode (account_id, episode_no),
         KEY idx_portal_sets_account (account_id, uploaded_at),
+        KEY idx_portal_sets_target (account_id, target_program_id, target_show_start),
         CONSTRAINT fk_portal_sets_account FOREIGN KEY (account_id) REFERENCES dj_portal_accounts(id)
             ON UPDATE CASCADE ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
@@ -186,7 +193,11 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         'delete_after' => "DATETIME NULL AFTER broadcasted_at",
         'file_deleted_at' => "DATETIME NULL AFTER delete_after",
         'scheduled_show_end' => "DATETIME NULL AFTER file_deleted_at",
-        'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER scheduled_show_end",
+        'target_program_id' => "INT NULL AFTER scheduled_show_end",
+        'target_show_start' => "DATETIME NULL AFTER target_program_id",
+        'target_show_end' => "DATETIME NULL AFTER target_show_start",
+        'episode_dj_name' => "VARCHAR(180) NOT NULL DEFAULT '' AFTER target_show_end",
+        'hearthis_status' => "VARCHAR(24) NOT NULL DEFAULT 'pending' AFTER episode_dj_name",
         'hearthis_url' => "VARCHAR(500) NULL AFTER hearthis_status",
         'hearthis_track_id' => "VARCHAR(120) NULL AFTER hearthis_url",
         'hearthis_cover_asset_id' => "BIGINT NULL AFTER hearthis_track_id",
@@ -456,7 +467,7 @@ function deseo_mylive_password_reset_consume(PDO $pdo, string $token, string $ne
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
         "SELECT a.id, a.booking_id, a.artist_name, a.full_name, a.email, a.day_of_week, a.start_time, a.end_time,
-                a.must_change_password, a.is_active, a.account_status, a.show_audience_stats, a.public_profile_enabled, a.onboarding_email_sent_at, a.access_email_sent_at,
+                a.must_change_password, a.is_active, a.account_status, a.show_audience_stats, a.public_profile_enabled, a.requires_episode_artist, a.onboarding_email_sent_at, a.access_email_sent_at,
                 a.last_login_at, a.created_at, a.updated_at,
                 b.status AS application_status
          FROM dj_portal_accounts a
@@ -477,6 +488,7 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
     $stmt = $pdo->prepare(
         "SELECT id, account_id, episode_no, original_name, stored_name, file_size, mime_type, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
+                target_program_id, target_show_start, target_show_end, episode_dj_name,
                 hearthis_status, hearthis_url, hearthis_track_id, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_upload_accepted_at, hearthis_podcast_status, hearthis_podcast_verified_at,
                 hearthis_set_status, hearthis_set_id, hearthis_synced_at, uploaded_at
@@ -490,6 +502,108 @@ function deseo_mylive_sets(PDO $pdo, int $accountId): array {
 
 function deseo_mylive_set_statuses(): array {
     return ['received', 'checked', 'scheduled', 'needs_changes', 'broadcasted'];
+}
+
+
+/**
+ * Weekly slots linked to a MyLive account. The Radio Program is the canonical
+ * source for multi-slot accounts. A virtual legacy slot is returned only when
+ * no Program row is linked, preserving existing Resident accounts unchanged.
+ */
+function deseo_mylive_program_slots(PDO $pdo, int $accountId): array {
+    $stmt = $pdo->prepare(
+        "SELECT id AS program_id, day_of_week, start_time, end_time, dj_name
+         FROM program
+         WHERE mylive_account_id = ?
+         ORDER BY day_of_week ASC, start_time ASC, id ASC"
+    );
+    $stmt->execute([$accountId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($rows) return $rows;
+
+    $account = deseo_mylive_account($pdo, $accountId);
+    if (!$account) return [];
+    $day = (int)($account['day_of_week'] ?? 0);
+    $start = trim((string)($account['start_time'] ?? ''));
+    if ($day < 1 || $day > 7 || $start === '') return [];
+
+    return [[
+        'program_id' => 0,
+        'day_of_week' => $day,
+        'start_time' => (string)$account['start_time'],
+        'end_time' => (string)($account['end_time'] ?? ''),
+        'dj_name' => (string)($account['artist_name'] ?? ''),
+    ]];
+}
+
+function deseo_mylive_upcoming_shows(PDO $pdo, int $accountId, DateTimeImmutable $now): array {
+    $now = $now->setTimezone(dj_season_athens_timezone());
+    $shows = [];
+    foreach (deseo_mylive_program_slots($pdo, $accountId) as $slot) {
+        $startTime = substr((string)($slot['start_time'] ?? ''), 0, 8);
+        $endTime = substr((string)($slot['end_time'] ?? ''), 0, 8);
+        if ($endTime !== '') {
+            $endTime = dj_season_normalized_resident_end_time($startTime, $endTime);
+        }
+        $occurrence = dj_season_weekly_occurrence(
+            (int)($slot['day_of_week'] ?? 0),
+            $startTime,
+            $endTime,
+            $now
+        );
+        if (!$occurrence) continue;
+        [$start, $end] = $occurrence;
+
+        // Never attach a newly uploaded episode to a show already in progress.
+        if ($start <= $now) {
+            $start = $start->modify('+7 days');
+            $end = $end->modify('+7 days');
+        }
+        if ($start > dj_season_end_at()) continue;
+
+        $shows[] = array_merge($slot, [
+            'show_start' => $start,
+            'show_end' => $end,
+        ]);
+    }
+
+    usort($shows, static fn(array $a, array $b): int =>
+        $a['show_start'] <=> $b['show_start']
+    );
+    return $shows;
+}
+
+function deseo_mylive_target_show(PDO $pdo, int $accountId, int $programId, DateTimeImmutable $now): ?array {
+    foreach (deseo_mylive_upcoming_shows($pdo, $accountId, $now) as $show) {
+        if ((int)($show['program_id'] ?? 0) === $programId) return $show;
+    }
+    return null;
+}
+
+function deseo_mylive_set_for_show(
+    PDO $pdo,
+    int $accountId,
+    int $programId,
+    DateTimeImmutable $showStart
+): ?array {
+    $stmt = $pdo->prepare(
+        "SELECT id, episode_no, status, uploaded_at, target_program_id,
+                target_show_start, target_show_end, episode_dj_name
+         FROM dj_portal_sets
+         WHERE account_id = ?
+           AND target_program_id = ?
+           AND target_show_start = ?
+           AND file_deleted_at IS NULL
+         ORDER BY id DESC
+         LIMIT 1"
+    );
+    $stmt->execute([
+        $accountId,
+        $programId,
+        $showStart->format('Y-m-d H:i:s'),
+    ]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
 }
 
 function deseo_mylive_set_storage_file(string $filePath): array {
