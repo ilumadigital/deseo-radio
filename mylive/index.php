@@ -1203,7 +1203,7 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
              data-weekly-slot="<?= deseo_mylive_e($myliveSlotLabel) ?>">
             <span class="slot-pill-kicker">
                 <i class="slot-live-bullet" aria-hidden="true"></i>
-                <b data-mylive-own-label><?= $isGuestAccount ? 'GUEST DJ ACCESS' : 'YOUR WEEKLY SLOT' ?></b>
+                <b data-mylive-own-label><?= $isGuestAccount ? 'GUEST DJ ACCESS' : (count($weeklySlots) > 1 ? 'YOUR WEEKLY SLOTS' : 'YOUR WEEKLY SLOT') ?></b>
             </span>
             <strong data-mylive-own-main><?= deseo_mylive_e($myliveSlotLabel) ?></strong>
             <small data-mylive-own-slot hidden><?= deseo_mylive_e($myliveSlotLabel) ?></small>
