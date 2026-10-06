@@ -441,6 +441,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lock->execute([$accountId]);
             if (!$lock->fetchColumn()) throw new RuntimeException('Το account δεν βρέθηκε.');
 
+            if ($targetShowStart !== null && $targetProgramId !== null) {
+                $duplicateTarget = $pdo->prepare(
+                    "SELECT id FROM dj_portal_sets
+                     WHERE account_id = ? AND target_program_id = ? AND target_show_start = ?
+                     LIMIT 1"
+                );
+                $duplicateTarget->execute([$accountId, $targetProgramId, $targetShowStart]);
+                if ($duplicateTarget->fetchColumn()) {
+                    throw new RuntimeException('Έχει ήδη ανέβει DJ Set για αυτή τη συγκεκριμένη μετάδοση.');
+                }
+            }
+
             $episode = deseo_mylive_next_episode($pdo, $accountId);
             $artist = deseo_mylive_slug((string)$account['artist_name']);
             $storedName = sprintf('%s_DESEO_S%02d_EP%03d.%s', $artist, DESEO_DJ_SEASON, $episode, $extension);
