@@ -1253,7 +1253,8 @@ foreach ($accounts as $account) {
     $stmt = $pdo->prepare(
         "SELECT id, episode_no, stored_name, file_size, status, admin_note,
                 broadcasted_at, delete_after, file_deleted_at, scheduled_show_end,
-                target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name,
+                target_weekly_slot_id, target_program_id, target_show_start, target_show_end,
+                episode_dj_name, episode_dj_photo_path,
                 hearthis_status, hearthis_url, hearthis_error, hearthis_meta_warning,
                 hearthis_title, hearthis_description, hearthis_genre, hearthis_tags,
                 hearthis_cover_asset_id, hearthis_cover_source_path,
@@ -1270,7 +1271,8 @@ foreach ($accounts as $account) {
 $receivedSetsStmt = $pdo->query(
     "SELECT s.id, s.account_id, s.episode_no, s.stored_name, s.file_size,
             s.status, s.file_deleted_at, s.scheduled_show_end,
-            s.target_weekly_slot_id, s.target_program_id, s.target_show_start, s.target_show_end, s.episode_dj_name,
+            s.target_weekly_slot_id, s.target_program_id, s.target_show_start, s.target_show_end,
+            s.episode_dj_name, s.episode_dj_photo_path,
             s.hearthis_status,
             s.hearthis_url, s.hearthis_error, s.hearthis_meta_warning,
             s.hearthis_title, s.hearthis_description, s.hearthis_genre, s.hearthis_tags,
@@ -1879,7 +1881,14 @@ admin_page_start('MyLive', 'mylive');
                                                 <span>EP<?= str_pad((string)(int)$set['episode_no'], 3, '0', STR_PAD_LEFT) ?></span>
                                                 <strong><?= admin_e($set['stored_name']) ?></strong>
                                                 <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e((string)$set['uploaded_at']) ?></small>
+                                                <?php if (!empty($set['episode_dj_photo_path'])): ?>
+                                                    <img src="<?= admin_e((string)$set['episode_dj_photo_path']) ?>"
+                                                         alt="<?= admin_e((string)($set['episode_dj_name'] ?: 'DJ')) ?>"
+                                                         loading="lazy"
+                                                         style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #343438;margin:5px 0;">
+                                                <?php endif; ?>
                                                 <?php if (!empty($set['episode_dj_name'])): ?><small><b>DJ PLAYING:</b> <?= admin_e((string)$set['episode_dj_name']) ?></small><?php endif; ?>
+                                                <?php if (!empty($set['episode_dj_photo_path'])): ?><small><b>DJ PHOTO:</b> <?= admin_e((string)$set['episode_dj_photo_path']) ?></small><?php endif; ?>
                                                 <?php if (!empty($set['target_show_start'])): ?><small><b>BROADCAST:</b> <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['target_show_start']))) ?> — <?= admin_e(date('H:i', strtotime((string)$set['target_show_end']))) ?></small><?php endif; ?>
                                                 <small>HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                                                 <?php if (!empty($set['hearthis_error'])): ?><small title="<?= admin_e((string)$set['hearthis_error']) ?>">Review: <?= admin_e((string)$set['hearthis_error']) ?></small><?php endif; ?>
@@ -2090,7 +2099,14 @@ admin_page_start('MyLive', 'mylive');
                         <div class="mylive-library-file">
                             <strong title="<?= admin_e((string)$set['stored_name']) ?>"><?= admin_e((string)$set['stored_name']) ?></strong>
                             <small><?= admin_e(deseo_mylive_format_bytes((int)$set['file_size'])) ?> · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['uploaded_at']))) ?></small>
+                            <?php if (!empty($set['episode_dj_photo_path'])): ?>
+                                <img src="<?= admin_e((string)$set['episode_dj_photo_path']) ?>"
+                                     alt="<?= admin_e((string)($set['episode_dj_name'] ?: 'DJ')) ?>"
+                                     loading="lazy"
+                                     style="width:58px;height:58px;object-fit:cover;border-radius:8px;border:1px solid #343438;margin:4px 0;">
+                            <?php endif; ?>
                             <?php if (!empty($set['episode_dj_name'])): ?><small><b>DJ PLAYING:</b> <?= admin_e((string)$set['episode_dj_name']) ?></small><?php endif; ?>
+                            <?php if (!empty($set['episode_dj_photo_path'])): ?><small><b>DJ PHOTO:</b> <?= admin_e((string)$set['episode_dj_photo_path']) ?></small><?php endif; ?>
                             <?php if (!empty($set['target_show_start'])): ?><small><b>BROADCAST:</b> <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['target_show_start']))) ?> — <?= admin_e(date('H:i', strtotime((string)$set['target_show_end']))) ?></small><?php endif; ?>
                             <small title="<?= admin_e((string)($set['hearthis_error'] ?? '')) ?>">HEARTHIS: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_status'] ?? 'pending')))) ?><?php if (!empty($set['scheduled_show_end'])): ?> · <?= admin_e((string)$set['scheduled_show_end']) ?> (Athens)<?php endif; ?></small>
                             <small>SEASON 6 SET: <?= admin_e(strtoupper(str_replace('_', ' ', (string)($set['hearthis_set_status'] ?? 'pending')))) ?></small>
