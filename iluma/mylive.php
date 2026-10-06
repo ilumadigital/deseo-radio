@@ -1658,7 +1658,7 @@ admin_page_start('MyLive', 'mylive');
                                         </div>
                                     </div>
 
-                                    <label class="mylive-toggle-row" style="margin-top:14px;">
+                                    <label class="toggle-row" style="margin-top:14px;">
                                         <input type="checkbox" name="requires_episode_artist" value="1" <?= !empty($account['requires_episode_artist']) ? 'checked' : '' ?>>
                                         <span>
                                             <strong>Require DJ name on every episode</strong>
