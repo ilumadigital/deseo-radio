@@ -2128,7 +2128,9 @@ $nextShowEndIso = $nextShowEnd instanceof DateTimeImmutable
     var ownAccountId = ownStatus ? Number(ownStatus.getAttribute('data-account-id') || 0) : 0;
     var ownAccountMode = ownStatus ? (ownStatus.getAttribute('data-account-mode') || 'resident') : 'resident';
     var ownWeeklySlot = ownStatus ? (ownStatus.getAttribute('data-weekly-slot') || '') : '';
-    var ownDefaultLabel = ownAccountMode === 'guest' ? 'GUEST DJ ACCESS' : 'YOUR WEEKLY SLOT';
+    var ownDefaultLabel = ownStatusLabel && ownStatusLabel.textContent.trim() !== ''
+        ? ownStatusLabel.textContent.trim()
+        : (ownAccountMode === 'guest' ? 'GUEST DJ ACCESS' : 'YOUR WEEKLY SLOT');
     var refreshTimer = null;
     var refreshMinute = Math.floor(Date.now() / 60000);
 
