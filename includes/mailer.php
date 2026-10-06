@@ -744,6 +744,37 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
     $email = trim((string)($account['email'] ?? ''));
     $isGuest = strtolower(trim((string)($account['application_status'] ?? ''))) === 'guest';
+    $requiresEpisodeArtist = !empty($account['requires_episode_artist']);
+    $weeklySlots = isset($account['weekly_slots']) && is_array($account['weekly_slots'])
+        ? array_values($account['weekly_slots'])
+        : [];
+
+    if (!$isGuest && !$weeklySlots) {
+        $legacyDay = (int)($account['day_of_week'] ?? 0);
+        $legacyStart = trim((string)($account['start_time'] ?? ''));
+        if ($legacyDay >= 1 && $legacyDay <= 7 && $legacyStart !== '') {
+            $weeklySlots[] = [
+                'day_of_week' => $legacyDay,
+                'start_time' => $legacyStart,
+                'end_time' => (string)($account['end_time'] ?? ''),
+            ];
+        }
+    }
+
+    $weeklySlotLabels = [];
+    foreach ($weeklySlots as $weeklySlot) {
+        $slotDay = (int)($weeklySlot['day_of_week'] ?? 0);
+        $slotStart = deseo_mylive_format_time((string)($weeklySlot['start_time'] ?? ''));
+        $slotEnd = deseo_mylive_format_time((string)($weeklySlot['end_time'] ?? ''));
+        if ($slotDay < 1 || $slotDay > 7 || $slotStart === '') continue;
+        $weeklySlotLabels[] = dj_season_day_label($slotDay)
+            . ' · ' . $slotStart
+            . ($slotEnd !== '' ? '–' . $slotEnd : '');
+    }
+
+    $weeklySlotCount = count($weeklySlotLabels);
+    $hasMultipleSlots = !$isGuest && $weeklySlotCount > 1;
+    $managedDeliveryMode = !$isGuest && ($hasMultipleSlots || $requiresEpisodeArtist);
     $slot = deseo_mylive_slot($account);
 
     if ($isGuest) {
@@ -784,31 +815,95 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . $bullet('<strong style="color:#fff;">My Rewards</strong> — έχεις προσωπικό referral link και μπορείς να κερδίζεις <strong style="color:#fff;">15%</strong> από νέα διαφημιστική καμπάνια που κλείνει μέσω της σύστασής σου.')
         . '</table>';
 
-    $body = '<tr><td style="padding:0 0 18px;">'
-        . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
-        . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">' . ($isGuest ? 'Guest DJ εμφάνιση:' : 'Παίζεις στον Deseo κάθε:') . '</div>'
-        . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($slot) . '</div>'
-        . '</div></td></tr>';
+    if ($isGuest) {
+        $body = '<tr><td style="padding:0 0 18px;">'
+            . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+            . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">Guest DJ εμφάνιση:</div>'
+            . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($slot) . '</div>'
+            . '</div></td></tr>';
+    } elseif ($hasMultipleSlots) {
+        $slotRows = '';
+        foreach ($weeklySlotLabels as $index => $weeklySlotLabel) {
+            $slotRows .= '<div style="margin-top:' . ($index === 0 ? '10' : '7') . 'px;padding:11px 13px;border-radius:13px;background:rgba(8,8,8,.10);font:800 21px/1.25 Arial,sans-serif;letter-spacing:-.01em;">'
+                . '<span style="display:inline-block;min-width:24px;margin-right:7px;font:900 10px Arial,sans-serif;letter-spacing:.08em;vertical-align:2px;">'
+                . str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT)
+                . '</span>'
+                . $e($weeklySlotLabel)
+                . '</div>';
+        }
+        $body = '<tr><td style="padding:0 0 18px;">'
+            . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+            . '<div style="font:900 11px/1.4 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;">'
+            . $weeklySlotCount . ' WEEKLY SLOTS · DESEO RADIO'
+            . '</div>'
+            . '<div style="margin-top:5px;font:800 15px/1.45 Arial,sans-serif;">Παίζεις κάθε εβδομάδα στα παρακάτω δύο ανεξάρτητα slots:</div>'
+            . $slotRows
+            . '<div style="margin-top:11px;font:800 12px/1.5 Arial,sans-serif;">Κάθε slot έχει το δικό του DJ Set delivery. Ένα upload δεν καλύπτει και τα δύο.</div>'
+            . '</div></td></tr>';
+    } else {
+        $singleSlotLabel = $weeklySlotLabels[0] ?? $slot;
+        $body = '<tr><td style="padding:0 0 18px;">'
+            . '<div style="padding:22px;border-radius:20px;background:#ff2b36;color:#080808;">'
+            . '<div style="font:800 14px/1.45 Arial,sans-serif;letter-spacing:.01em;">Παίζεις στον Deseo κάθε:</div>'
+            . '<div style="margin-top:8px;font:800 30px/1.16 Arial,sans-serif;letter-spacing:-.02em;">' . $e($singleSlotLabel) . '</div>'
+            . '</div></td></tr>';
+    }
+
+    if ($managedDeliveryMode) {
+        $managedSteps = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
+            . $bullet('<strong style="color:#fff;">1. Επίλεξε το σωστό Broadcast Slot</strong> πριν από κάθε upload. '
+                . ($hasMultipleSlots ? 'Σάββατο και Κυριακή είναι δύο διαφορετικές παραδόσεις.' : 'Το upload συνδέεται με τη συγκεκριμένη μετάδοση.'))
+            . ($requiresEpisodeArtist
+                ? $bullet('<strong style="color:#fff;">2. Δήλωσε υποχρεωτικά ποιος DJ παίζει</strong> στο συγκεκριμένο slot. Το MyLive δεν θα δεχτεί το MP3 αν το πεδίο DJ / Artist είναι κενό.')
+                : '')
+            . $bullet('<strong style="color:#fff;">' . ($requiresEpisodeArtist ? '3' : '2') . '. Ανέβασε το MP3 που αντιστοιχεί σε αυτό το slot.</strong> '
+                . ($hasMultipleSlots ? 'Το set του ενός slot δεν χρησιμοποιείται ως set του άλλου.' : 'Το episode αποθηκεύεται στη σωστή ημερομηνία μετάδοσης.'))
+            . '</table>';
+
+        $body .= $section(
+            'IMPORTANT · MULTI-SLOT DELIVERY',
+            $requiresEpisodeArtist
+                ? 'Slot → DJ Name → MP3. Αυτή είναι η σειρά κάθε upload.'
+                : 'Κάθε weekly slot χρειάζεται τη δική του παράδοση.',
+            $managedSteps
+            . ($hasMultipleSlots
+                ? '<div style="margin-top:9px;padding:11px 13px;border-radius:12px;background:#1b0c0e;color:#ff7a82;font:800 12px/1.55 Arial,sans-serif;">ΠΡΟΣΟΧΗ: Upload για το Σάββατο ≠ upload για την Κυριακή. Πρέπει να υπάρχει ξεχωριστό DJ Set για κάθε slot.</div>'
+                : '')
+        );
+    }
 
     if (!$isGuest) {
         $body .= '<tr><td style="padding:0 0 18px;">'
             . '<div style="padding:18px 20px;border:1px solid #3a3a3f;border-radius:17px;background:#101012;color:#bdbdc2;font:400 14px/1.7 Arial,sans-serif;">'
             . '<strong style="display:block;margin-bottom:6px;color:#fff;">Season 6 ξεκινά στις 14.10.2026</strong>'
-            . 'Το πρώτο σου DJ Set πρέπει να έχει σταλεί <strong style="color:#fff;">έως τις 14.10.2026</strong> μέσω του <strong style="color:#fff;">MyLive</strong>, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.'
+            . ($hasMultipleSlots
+                ? 'Για να είναι καλυμμένα και τα <strong style="color:#fff;">' . $weeklySlotCount . ' weekly slots</strong>, πρέπει να έχουν σταλεί <strong style="color:#fff;">' . $weeklySlotCount . ' ξεχωριστά DJ Sets — ένα για κάθε slot — έως τις 14.10.2026</strong> μέσω του <strong style="color:#fff;">MyLive</strong>.'
+                : 'Το πρώτο σου DJ Set πρέπει να έχει σταλεί <strong style="color:#fff;">έως τις 14.10.2026</strong> μέσω του <strong style="color:#fff;">MyLive</strong>, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.')
             . '</div></td></tr>';
     }
 
     $body .= $section('QUICK GUIDE', 'Τα βασικά με μια ματιά', $quick);
 
     if (!$isGuest) {
-        $body .= $section(
-            'WEEKLY BROADCAST',
-            'Η μετάδοση είναι εβδομαδιαία — το DJ Set δεν χρειάζεται να είναι νέο κάθε εβδομάδα',
-            'Όταν αναφερόμαστε σε <strong style="color:#fff;">weekly DJ Sets / weekly slot</strong>, εννοούμε την εβδομαδιαία μετάδοση του show σου. '
-            . 'Δεν χρειάζεται να ανεβάζεις νέο DJ Set κάθε εβδομάδα. Αν δεν έχεις στείλει νέο set, θα μεταδοθεί ξανά το <strong style="color:#fff;">DJ Set της προηγούμενης εβδομάδας</strong>, δηλαδή το πιο πρόσφατο διαθέσιμο set σου.<br><br>'
-            . 'Οι εβδομαδιαίες μεταδόσεις της <strong style="color:#fff;">Season 6</strong> ξεκινούν την <strong style="color:#fff;">Τετάρτη 14.10.2026</strong> και ολοκληρώνονται στις <strong style="color:#fff;">30.05.2027</strong>.<br><br>'
-            . 'Μπορείς να ανεβάζεις ακόμη και <strong style="color:#fff;">1 νέο DJ Set τον μήνα</strong>. Για να παραμένει όμως το show σου φρέσκο, προτείνουμε <strong style="color:#fff;">τουλάχιστον 2 νέα DJ Sets τον μήνα</strong>.'
-        );
+        if ($hasMultipleSlots) {
+            $body .= $section(
+                'WEEKLY BROADCAST · ' . $weeklySlotCount . ' SLOTS',
+                'Τα slots λειτουργούν ανεξάρτητα μεταξύ τους',
+                'Κάθε weekly slot έχει το <strong style="color:#fff;">δικό του τελευταίο διαθέσιμο DJ Set</strong>. '
+                . 'Όταν ανεβάζεις αρχείο, επιλέγεις πρώτα σε ποιο slot ανήκει. Το upload για ένα slot <strong style="color:#fff;">δεν καλύπτει</strong> κάποιο άλλο slot.<br><br>'
+                . 'Δεν είναι υποχρεωτικό να υπάρχει καινούργιο set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set για ένα συγκεκριμένο slot, μπορεί να επαναληφθεί το <strong style="color:#fff;">πιο πρόσφατο set αυτού του ίδιου slot</strong> — όχι το set της άλλης ημέρας.<br><br>'
+                . 'Οι εβδομαδιαίες μεταδόσεις της <strong style="color:#fff;">Season 6</strong> ξεκινούν στις <strong style="color:#fff;">14.10.2026</strong> και ολοκληρώνονται στις <strong style="color:#fff;">30.05.2027</strong>.'
+            );
+        } else {
+            $body .= $section(
+                'WEEKLY BROADCAST',
+                'Η μετάδοση είναι εβδομαδιαία — το DJ Set δεν χρειάζεται να είναι νέο κάθε εβδομάδα',
+                'Όταν αναφερόμαστε σε <strong style="color:#fff;">weekly DJ Sets / weekly slot</strong>, εννοούμε την εβδομαδιαία μετάδοση του show σου. '
+                . 'Δεν χρειάζεται να ανεβάζεις νέο DJ Set κάθε εβδομάδα. Αν δεν έχεις στείλει νέο set, θα μεταδοθεί ξανά το <strong style="color:#fff;">DJ Set της προηγούμενης εβδομάδας</strong>, δηλαδή το πιο πρόσφατο διαθέσιμο set σου.<br><br>'
+                . 'Οι εβδομαδιαίες μεταδόσεις της <strong style="color:#fff;">Season 6</strong> ξεκινούν την <strong style="color:#fff;">Τετάρτη 14.10.2026</strong> και ολοκληρώνονται στις <strong style="color:#fff;">30.05.2027</strong>.<br><br>'
+                . 'Μπορείς να ανεβάζεις ακόμη και <strong style="color:#fff;">1 νέο DJ Set τον μήνα</strong>. Για να παραμένει όμως το show σου φρέσκο, προτείνουμε <strong style="color:#fff;">τουλάχιστον 2 νέα DJ Sets τον μήνα</strong>.'
+            );
+        }
     }
 
     $dashboard = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0">'
@@ -842,12 +937,27 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . 'Αν κάνεις χειροκίνητη περικοπή, επίλεξε φυσικό μουσικό σημείο και ολοκλήρωσε με <strong style="color:#fff;">8-second fade out</strong>.<br><br>'
         . 'Το τελικό DJ Set πρέπει να παραδίδεται σε <strong style="color:#fff;">MP3 · 192 kbps · Stereo</strong>, χωρίς clipping, εμφανές distortion ή μεγάλα ανεπιθύμητα κενά.');
 
-    $body .= $section('MYLIVE AUTOMATION', 'Δεν χρειάζεται να μετονομάζεις τίποτα',
-        'Ανεβάζεις απλώς το τελικό MP3 από το κουμπί <strong style="color:#fff;">+ Upload DJ Set</strong>. '
-        . 'Το MyLive βρίσκει μόνο του ποιο episode ακολουθεί και αποθηκεύει το set με το σωστό naming format.<br><br>'
-        . '<strong style="color:#fff;">EP001, EP002, EP003…</strong><br>'
-        . '<strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong><br><br>'
-        . 'Δεν χρειάζεται να αλλάξεις μόνος σου filename, να γράψεις episode number ή να στείλεις WeTransfer / Drive link.');
+    if ($managedDeliveryMode) {
+        $body .= $section('MYLIVE AUTOMATION', 'Εσύ δηλώνεις τη μετάδοση — το MyLive αναλαμβάνει το υπόλοιπο',
+            ($hasMultipleSlots
+                ? 'Πριν διαλέξεις MP3, επίλεξε από το <strong style="color:#fff;">Broadcast Slot</strong> τη σωστή ημέρα / ημερομηνία. '
+                : '')
+            . ($requiresEpisodeArtist
+                ? 'Στη συνέχεια συμπλήρωσε το υποχρεωτικό πεδίο <strong style="color:#fff;">DJ / Artist playing this slot</strong> με τον DJ που θα ακουστεί σε αυτή τη μετάδοση. '
+                : '')
+            . 'Μετά ανέβασε το τελικό MP3.<br><br>'
+            . 'Το MyLive κρατά αυτόματα το episode numbering και το σωστό filename:<br>'
+            . '<strong style="color:#fff;">EP001, EP002, EP003…</strong><br>'
+            . '<strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong><br><br>'
+            . 'Δεν χρειάζεται να αλλάξεις filename, να γράψεις episode number ή να στείλεις WeTransfer / Drive link.');
+    } else {
+        $body .= $section('MYLIVE AUTOMATION', 'Δεν χρειάζεται να μετονομάζεις τίποτα',
+            'Ανεβάζεις απλώς το τελικό MP3 από το κουμπί <strong style="color:#fff;">+ Upload DJ Set</strong>. '
+            . 'Το MyLive βρίσκει μόνο του ποιο episode ακολουθεί και αποθηκεύει το set με το σωστό naming format.<br><br>'
+            . '<strong style="color:#fff;">EP001, EP002, EP003…</strong><br>'
+            . '<strong style="color:#fff;">' . $e($artistSlug) . '_DESEO_S06_EP001.mp3</strong><br><br>'
+            . 'Δεν χρειάζεται να αλλάξεις μόνος σου filename, να γράψεις episode number ή να στείλεις WeTransfer / Drive link.');
+    }
 
     $body .= $section('DESEO IMAGING', 'Τα προσωπικά branded DJ spots σου',
         'Το Deseo Radio σε συνεργασία με την <strong style="color:#fff;">ILUMA Digital Agency</strong> δημιουργεί το προσωπικό σου branded radio imaging. '
@@ -892,7 +1002,9 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         . 'Για ωριαίο show προτείνονται έως <strong style="color:#fff;">1–2 σύντομες sponsor αναφορές</strong>, κατόπιν έγκρισης.');
 
     $body .= $section('BEFORE UPLOAD', 'Ένας τελευταίος έλεγχος',
-        'Πριν πατήσεις Upload, βεβαιώσου ότι ανεβάζεις το <strong style="color:#fff;">final on-air master</strong>: σωστό MP3 192 kbps Stereo, χωρίς IDs άλλων stations, χωρίς μη εγκεκριμένα commercial messages, χωρίς μεγάλα κενά ή distortion και με τα Deseo Imaging Spots σωστά τοποθετημένα όπου απαιτείται.');
+        ($hasMultipleSlots ? '<strong style="color:#fff;">Σωστό Broadcast Slot:</strong> βεβαιώσου ότι έχεις επιλέξει τη σωστή ημέρα / μετάδοση.<br>' : '')
+        . ($requiresEpisodeArtist ? '<strong style="color:#fff;">DJ / Artist:</strong> γράψε το πραγματικό όνομα του DJ που παίζει σε αυτό το slot.<br>' : '')
+        . 'Πριν πατήσεις Upload, βεβαιώσου ότι ανεβάζεις το <strong style="color:#fff;">final on-air master</strong>: σωστό MP3 192 kbps Stereo, χωρίς IDs άλλων stations, χωρίς μη εγκεκριμένα commercial messages, χωρίς μεγάλα κενά ή distortion και με τα Deseo Imaging Spots σωστά τοποθετημένα όπου απαιτείται.');
 
     $credentials = '<tr><td style="padding:8px 0 0;">'
         . '<div style="padding:23px;border:1px solid #5a171e;border-radius:20px;background:#160b0d;">'
@@ -928,11 +1040,38 @@ function deseo_mylive_onboarding_email(array $account, string $temporaryPassword
         $body
     );
 
+    $weeklySlotsText = '';
+    if (!$isGuest && $weeklySlotLabels) {
+        $weeklySlotsText = "WEEKLY SLOTS (" . $weeklySlotCount . "):\n";
+        foreach ($weeklySlotLabels as $index => $weeklySlotLabel) {
+            $weeklySlotsText .= "- SLOT " . ($index + 1) . ": " . $weeklySlotLabel . "\n";
+        }
+        $weeklySlotsText .= "\n";
+    }
+
+    $managedText = '';
+    if ($managedDeliveryMode) {
+        $managedText .= "IMPORTANT UPLOAD FLOW:\n";
+        if ($hasMultipleSlots) {
+            $managedText .= "1. Επίλεξε το σωστό Broadcast Slot. Τα " . $weeklySlotCount . " slots είναι ανεξάρτητα και ένα upload δεν καλύπτει το άλλο.\n";
+        }
+        if ($requiresEpisodeArtist) {
+            $managedText .= ($hasMultipleSlots ? "2" : "1") . ". Δήλωσε υποχρεωτικά τον DJ / Artist που παίζει στο συγκεκριμένο slot.\n";
+        }
+        $managedText .= (($hasMultipleSlots ? 1 : 0) + ($requiresEpisodeArtist ? 1 : 0) + 1)
+            . ". Ανέβασε το MP3 που αντιστοιχεί στη συγκεκριμένη μετάδοση.\n\n";
+    }
+
     $text = "DESEO RADIO · SEASON 6 · MYLIVE\n\n"
         . "Artist: {$artist}\n"
-        . ($isGuest ? "Guest selection: {$slot}\n\n" : "Weekly slot: {$slot}\n\n")
-        . ($isGuest ? "" : "SEASON 6 START: Η Season 6 ξεκινά στις 14.10.2026. Το πρώτο σου DJ Set πρέπει να έχει σταλεί έως τις 14.10.2026 μέσω του MyLive, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.\n\n")
-        . ($isGuest ? "" : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Η Season 6 ξεκινά 14.10.2026 και ολοκληρώνεται 30.05.2027. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n")
+        . ($isGuest ? "Guest selection: {$slot}\n\n" : $weeklySlotsText)
+        . $managedText
+        . ($isGuest ? "" : ($hasMultipleSlots
+            ? "SEASON 6 START: Η Season 6 ξεκινά στις 14.10.2026. Για τα " . $weeklySlotCount . " weekly slots πρέπει να έχουν σταλεί " . $weeklySlotCount . " ξεχωριστά DJ Sets — ένα για κάθε slot — έως τις 14.10.2026 μέσω του MyLive.\n\n"
+            : "SEASON 6 START: Η Season 6 ξεκινά στις 14.10.2026. Το πρώτο σου DJ Set πρέπει να έχει σταλεί έως τις 14.10.2026 μέσω του MyLive, ώστε να είναι διαθέσιμο για την πρώτη σου μετάδοση.\n\n"))
+        . ($isGuest ? "" : ($hasMultipleSlots
+            ? "WEEKLY BROADCAST: Κάθε slot κρατά το δικό του τελευταίο διαθέσιμο DJ Set. Αν δεν ανεβάσεις νέο set για ένα slot, μπορεί να επαναληφθεί το τελευταίο set αυτού του ίδιου slot — όχι το set της άλλης ημέρας. Η Season 6 ολοκληρώνεται 30.05.2027.\n"
+            : "WEEKLY BROADCAST: Το weekly slot είναι η εβδομαδιαία μετάδοση του show σου, όχι υποχρεωτικά νέο DJ Set κάθε εβδομάδα. Αν δεν ανεβάσεις νέο set, θα μεταδοθεί ξανά το DJ Set της προηγούμενης εβδομάδας. Η Season 6 ξεκινά 14.10.2026 και ολοκληρώνεται 30.05.2027. Μπορείς να ανεβάζεις 1 νέο DJ Set τον μήνα, αλλά προτείνουμε τουλάχιστον 2 νέα DJ Sets τον μήνα.\n"))
         . "DJ SET: MP3 192 kbps Stereo · ιδανική διάρκεια 58–59 λεπτά.\n"
         . "Manual cut: 8-second fade out.\n"
         . "MyLive: κάνει αυτόματα episode numbering και filename (EP001, EP002...).\n"
