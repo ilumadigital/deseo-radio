@@ -123,7 +123,7 @@ function deseo_mylive_run_push_scheduler(PDO $pdo, bool $force = false): array {
             }
             [$showStart, $showEnd] = $occurrence;
 
-            $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId);
+            $pendingSet = deseo_mylive_email_pending_set($pdo, $accountId, $programId, $showStart);
             $latestEpisode = deseo_mylive_email_latest_episode($pdo, $accountId);
             $nextEpisode = $pendingSet
                 ? (int)$pendingSet['episode_no']
