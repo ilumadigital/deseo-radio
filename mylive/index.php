@@ -356,12 +356,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $targetShowStart = null;
             $targetShowEnd = null;
             $episodeDjName = trim((string)($_POST['episode_dj_name'] ?? ''));
+            $episodeDjPhotoUpload = null;
+            $episodeDjPhotoPath = '';
+            $episodeDjPhotoAbsolutePath = '';
 
             if (mb_strlen($episodeDjName) > 180) {
                 throw new RuntimeException('Το όνομα του DJ είναι πολύ μεγάλο.');
             }
             if (!empty($account['requires_episode_artist']) && $episodeDjName === '') {
                 throw new RuntimeException('Συμπλήρωσε ποιος DJ παίζει σε αυτό το slot πριν ανεβάσεις το αρχείο.');
+            }
+
+            if (!empty($account['requires_episode_artist'])) {
+                $photoFile = isset($_FILES['episode_dj_photo']) && is_array($_FILES['episode_dj_photo'])
+                    ? $_FILES['episode_dj_photo']
+                    : null;
+                $photoError = is_array($photoFile)
+                    ? (int)($photoFile['error'] ?? UPLOAD_ERR_NO_FILE)
+                    : UPLOAD_ERR_NO_FILE;
+
+                if ($photoError !== UPLOAD_ERR_NO_FILE) {
+                    if ($photoError !== UPLOAD_ERR_OK) {
+                        throw new RuntimeException('Η φωτογραφία του DJ δεν ανέβηκε σωστά.');
+                    }
+
+                    $photoSize = (int)($photoFile['size'] ?? 0);
+                    if ($photoSize < 1 || $photoSize > 5 * 1024 * 1024) {
+                        throw new RuntimeException('Η φωτογραφία του DJ πρέπει να είναι έως 5 MB.');
+                    }
+
+                    $photoTmp = (string)($photoFile['tmp_name'] ?? '');
+                    if ($photoTmp === '' || !is_uploaded_file($photoTmp)) {
+                        throw new RuntimeException('Η φωτογραφία του DJ δεν αναγνωρίστηκε ως έγκυρο upload.');
+                    }
+
+                    $photoMime = '';
+                    if (class_exists('finfo')) {
+                        $photoFinfo = new finfo(FILEINFO_MIME_TYPE);
+                        $photoMime = (string)$photoFinfo->file($photoTmp);
+                    }
+
+                    $photoAllowed = [
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/webp' => 'webp',
+                    ];
+                    if (!isset($photoAllowed[$photoMime]) || @getimagesize($photoTmp) === false) {
+                        throw new RuntimeException('Η φωτογραφία του DJ πρέπει να είναι πραγματικό JPG, PNG ή WEBP.');
+                    }
+
+                    $photoDirectory = dirname(__DIR__) . '/iluma/uploads/djs';
+                    if (!is_dir($photoDirectory)
+                        && !mkdir($photoDirectory, 0755, true)
+                        && !is_dir($photoDirectory)) {
+                        throw new RuntimeException('Δεν ήταν δυνατή η δημιουργία του φακέλου φωτογραφιών DJ.');
+                    }
+
+                    $episodeDjPhotoUpload = [
+                        'tmp' => $photoTmp,
+                        'extension' => $photoAllowed[$photoMime],
+                        'directory' => $photoDirectory,
+                    ];
+                }
             }
 
             if (!$uploadIsGuest) {
@@ -465,23 +521,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $artist = deseo_mylive_slug((string)$account['artist_name']);
             $storedName = sprintf('%s_DESEO_S%02d_EP%03d.%s', $artist, DESEO_DJ_SEASON, $episode, $extension);
 
+            if (is_array($episodeDjPhotoUpload)) {
+                $photoSlug = strtolower(deseo_mylive_slug($episodeDjName));
+                if ($photoSlug === '') $photoSlug = 'dj';
+                $photoName = sprintf(
+                    '%s_a%d_ep%03d_%s.%s',
+                    $photoSlug,
+                    $accountId,
+                    $episode,
+                    bin2hex(random_bytes(6)),
+                    (string)$episodeDjPhotoUpload['extension']
+                );
+                $episodeDjPhotoAbsolutePath = rtrim((string)$episodeDjPhotoUpload['directory'], DIRECTORY_SEPARATOR)
+                    . DIRECTORY_SEPARATOR . $photoName;
+                $episodeDjPhotoPath = '/iluma/uploads/djs/' . $photoName;
+            }
+
             $relativeDir = 'storage/' . $accountId;
             $absoluteDir = __DIR__ . '/' . $relativeDir;
             if (!is_dir($absoluteDir) && !mkdir($absoluteDir, 0750, true) && !is_dir($absoluteDir)) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 throw new RuntimeException('Δεν ήταν δυνατή η δημιουργία του προσωπικού φακέλου upload.');
             }
 
             $absolutePath = $absoluteDir . '/' . $storedName;
             if (!move_uploaded_file($tmpName, $absolutePath)) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση του DJ set.');
+            }
+
+            if (is_array($episodeDjPhotoUpload)
+                && !move_uploaded_file((string)$episodeDjPhotoUpload['tmp'], $episodeDjPhotoAbsolutePath)) {
+                @unlink($absolutePath);
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας του DJ.');
             }
 
             try {
                 $insert = $pdo->prepare(
                     "INSERT INTO dj_portal_sets
                      (account_id, episode_no, original_name, stored_name, file_path, file_size, mime_type, status,
-                      target_weekly_slot_id, target_program_id, target_show_start, target_show_end, episode_dj_name)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?)"
+                      target_weekly_slot_id, target_program_id, target_show_start, target_show_end,
+                      episode_dj_name, episode_dj_photo_path)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 'received', ?, ?, ?, ?, ?, ?)"
                 );
                 $insert->execute([
                     $accountId,
@@ -495,12 +577,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $targetProgramId,
                     $targetShowStart,
                     $targetShowEnd,
-                    $episodeDjName
+                    $episodeDjName,
+                    $episodeDjPhotoPath
                 ]);
                 $pdo->commit();
             } catch (Throwable $dbError) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
                 @unlink($absolutePath);
+                if ($episodeDjPhotoAbsolutePath !== '') @unlink($episodeDjPhotoAbsolutePath);
                 throw $dbError;
             }
 
