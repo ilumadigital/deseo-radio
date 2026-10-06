@@ -989,11 +989,18 @@ function deseo_mylive_set_uploaded_internal_email(
     array $account,
     int $episode,
     string $storedName,
-    string $originalName = ''
+    string $originalName = '',
+    string $episodeDjName = '',
+    string $targetShowStart = ''
 ): array {
     $e = static fn($value): string => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     $artist = trim((string)($account['artist_name'] ?? 'DJ'));
     $slot = deseo_mylive_slot($account);
+    $episodeDjName = trim($episodeDjName);
+    $targetShowStart = trim($targetShowStart);
+    $broadcastLabel = $targetShowStart !== ''
+        ? date('d.m.Y · H:i', strtotime($targetShowStart))
+        : '';
     $episodeLabel = 'EP' . str_pad((string)max(1, $episode), 3, '0', STR_PAD_LEFT);
 
     $body = '<tr><td style="padding:0 0 22px;">'
@@ -1012,8 +1019,9 @@ function deseo_mylive_set_uploaded_internal_email(
     $body .= deseo_mylive_email_section(
         'SHOW',
         'Στοιχεία μετάδοσης',
-        '<strong style="color:#fff;">DJ:</strong> ' . $e($artist) . '<br>'
-        . '<strong style="color:#fff;">Weekly slot:</strong> ' . $e($slot) . '<br>'
+        '<strong style="color:#fff;">MyLive account:</strong> ' . $e($artist) . '<br>'
+        . ($episodeDjName !== '' ? '<strong style="color:#fff;">DJ playing:</strong> ' . $e($episodeDjName) . '<br>' : '')
+        . ($broadcastLabel !== '' ? '<strong style="color:#fff;">Broadcast:</strong> ' . $e($broadcastLabel) . '<br>' : '<strong style="color:#fff;">Weekly slot:</strong> ' . $e($slot) . '<br>')
         . '<strong style="color:#fff;">Episode:</strong> ' . $e($episodeLabel) . '<br>'
         . '<strong style="color:#fff;">Stored file:</strong> ' . $e($storedName)
         . ($originalName !== '' ? '<br><strong style="color:#fff;">Original file:</strong> ' . $e($originalName) : '')
@@ -1037,8 +1045,9 @@ function deseo_mylive_set_uploaded_internal_email(
     );
 
     $text = "DESEO RADIO · MYLIVE · NEW DJ SET UPLOAD\n\n"
-        . "DJ: {$artist}\n"
-        . "Weekly slot: {$slot}\n"
+        . "MyLive account: {$artist}\n"
+        . ($episodeDjName !== '' ? "DJ playing: {$episodeDjName}\n" : '')
+        . ($broadcastLabel !== '' ? "Broadcast: {$broadcastLabel}\n" : "Weekly slot: {$slot}\n")
         . "Episode: {$episodeLabel}\n"
         . "Stored file: {$storedName}\n"
         . ($originalName !== '' ? "Original file: {$originalName}\n" : '')
