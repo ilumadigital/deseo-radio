@@ -1945,31 +1945,44 @@ admin_page_start('MyLive', 'mylive');
                                                     <em>Episode retained · audio file deleted from server</em>
                                                 <?php endif; ?>
                                             </div>
-                                            <select name="status">
-                                                <?php foreach (deseo_mylive_set_statuses() as $status): ?>
-                                                    <option value="<?= $status ?>" <?= $set['status'] === $status ? 'selected' : '' ?>><?= strtoupper(str_replace('_',' ', $status)) ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                            <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
-                                            <label>SHOW ENDS · ATHENS
-                                                <?php if (deseo_mylive_is_guest_account($account)): ?>
-                                                    <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Guest DJ show end date and time in Athens">
-                                                    <small>GUEST · Χειροκίνητη ημερομηνία</small>
+                                            <div class="mylive-set-controls">
+                                                <label class="mylive-set-field">
+                                                    <span>STATUS</span>
+                                                    <select name="status">
+                                                        <?php foreach (deseo_mylive_set_statuses() as $status): ?>
+                                                            <option value="<?= $status ?>" <?= $set['status'] === $status ? 'selected' : '' ?>><?= strtoupper(str_replace('_',' ', $status)) ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </label>
+
+                                                <label class="mylive-set-field mylive-set-field-note">
+                                                    <span>ADMIN NOTE</span>
+                                                    <input type="text" name="admin_note" value="<?= admin_e($set['admin_note']) ?>" placeholder="Optional note">
+                                                </label>
+
+                                                <div class="mylive-set-field mylive-set-field-show-end">
+                                                    <span>SHOW ENDS · ATHENS</span>
+                                                    <?php if (deseo_mylive_is_guest_account($account)): ?>
+                                                        <input type="datetime-local" name="scheduled_show_end" value="<?= admin_e(!empty($set['scheduled_show_end']) ? str_replace(' ', 'T', substr((string)$set['scheduled_show_end'], 0, 16)) : '') ?>" aria-label="Guest DJ show end date and time in Athens">
+                                                        <small>GUEST · Χειροκίνητη ημερομηνία</small>
+                                                    <?php else: ?>
+                                                        <strong><?= !empty($set['scheduled_show_end']) ? admin_e((new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone()))->format('d.m.Y · H:i')) : 'AUTO · Με τον προγραμματισμό' ?></strong>
+                                                        <small>RESIDENT · Αυτόματα από το εβδομαδιαίο slot</small>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+
+                                            <div class="mylive-set-actions">
+                                                <?php if (!empty($set['file_deleted_at'])): ?>
+                                                    <span class="mylive-retention-state is-deleted">
+                                                        FILE REMOVED · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['file_deleted_at']))) ?>
+                                                    </span>
                                                 <?php else: ?>
-                                                    <strong><?= !empty($set['scheduled_show_end']) ? admin_e((new DateTimeImmutable((string)$set['scheduled_show_end'], dj_season_athens_timezone()))->format('d.m.Y · H:i')) : 'AUTO · Με τον προγραμματισμό' ?></strong>
-                                                    <small>RESIDENT · Αυτόματα από το εβδομαδιαίο slot</small>
+                                                    <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
                                                 <?php endif; ?>
-                                            </label>
 
-                                            <?php if (!empty($set['file_deleted_at'])): ?>
-                                                <span class="mylive-retention-state is-deleted">
-                                                    FILE REMOVED · <?= admin_e(date('d.m.Y · H:i', strtotime((string)$set['file_deleted_at']))) ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <a class="button button-secondary" href="mylive-download.php?type=set&id=<?= (int)$set['id'] ?>">Download</a>
-                                            <?php endif; ?>
-
-                                            <button class="button button-secondary" type="submit">Save</button>
+                                                <button class="button button-primary" type="submit">Save changes</button>
+                                            </div>
                                         </form>
                                     <?php endforeach; ?>
                                     </div>
