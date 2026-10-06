@@ -2788,6 +2788,46 @@ body{
 .upload-actions{
   min-width:0;
 }
+
+#uploadForm .form-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+#uploadForm .field{
+  display:grid;
+  gap:7px;
+  min-width:0;
+}
+#uploadForm .field label{
+  color:#8e8e95;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+#uploadForm .field select,
+#uploadForm .field input[type="text"]{
+  width:100%;
+  min-height:46px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:0 14px;
+  background:#08080a;
+  color:#fff;
+  font:700 13px/1.2 Inter,Arial,sans-serif;
+  outline:none;
+}
+#uploadForm .field select:focus,
+#uploadForm .field input[type="text"]:focus{
+  border-color:rgba(255,43,54,.72);
+  box-shadow:0 0 0 3px rgba(255,43,54,.08);
+}
+#uploadForm .field small{
+  color:#6f6f77;
+  font-size:10px;
+  line-height:1.45;
+}
 .drop-zone{
   height:auto;
   padding:24px 18px;
