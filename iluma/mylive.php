@@ -1139,6 +1139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($action === 'delete_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
                 $account = mylive_admin_account($pdo, $accountId);
+                $accountProfilePhoto = trim((string)($account['profile_photo_path'] ?? ''));
 
                 $photoStmt = $pdo->prepare(
                     "SELECT episode_dj_photo_path
@@ -1166,6 +1167,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $storageRoot = dirname(__DIR__) . '/mylive/storage';
                 mylive_admin_remove_tree($storageRoot . '/' . $accountId, $storageRoot);
                 mylive_admin_remove_tree($storageRoot . '/assets/' . $accountId, $storageRoot);
+
+                mylive_admin_delete_managed_profile_photo($accountProfilePhoto);
 
                 $episodeDjPhotoRoot = __DIR__ . '/uploads/djs';
                 foreach ($episodeDjPhotos as $episodeDjPhotoPath) {
