@@ -38,7 +38,7 @@ $slotStmt = $pdo->prepare(
             a.booking_id,
             a.artist_name,
             a.full_name,
-            COALESCE(NULLIF(b.photo_path, ''), NULLIF(p.photo_path, ''), '') AS photo_path,
+            COALESCE(NULLIF(a.profile_photo_path, ''), NULLIF(b.photo_path, ''), NULLIF(p.photo_path, ''), '') AS photo_path,
             w.day_of_week AS final_day_of_week,
             w.start_time AS final_start_time,
             w.end_time AS final_end_time,
