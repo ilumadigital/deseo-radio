@@ -24,6 +24,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
         booking_id BIGINT NULL,
         artist_name VARCHAR(180) NOT NULL DEFAULT '',
         full_name VARCHAR(180) NOT NULL DEFAULT '',
+        profile_photo_path VARCHAR(500) NOT NULL DEFAULT '',
         email VARCHAR(254) NOT NULL,
         day_of_week TINYINT NULL,
         start_time TIME NULL,
@@ -49,6 +50,7 @@ function deseo_mylive_bootstrap(PDO $pdo): void {
     $columns = [
         'artist_name' => "VARCHAR(180) NOT NULL DEFAULT '' AFTER booking_id",
         'full_name' => "VARCHAR(180) NOT NULL DEFAULT '' AFTER artist_name",
+        'profile_photo_path' => "VARCHAR(500) NOT NULL DEFAULT '' AFTER full_name",
         'day_of_week' => "TINYINT NULL AFTER email",
         'start_time' => "TIME NULL AFTER day_of_week",
         'end_time' => "TIME NULL AFTER start_time",
@@ -582,7 +584,7 @@ function deseo_mylive_password_reset_consume(PDO $pdo, string $token, string $ne
 
 function deseo_mylive_account(PDO $pdo, int $accountId): ?array {
     $stmt = $pdo->prepare(
-        "SELECT a.id, a.booking_id, a.artist_name, a.full_name, a.email, a.day_of_week, a.start_time, a.end_time,
+        "SELECT a.id, a.booking_id, a.artist_name, a.full_name, a.profile_photo_path, a.email, a.day_of_week, a.start_time, a.end_time,
                 a.must_change_password, a.is_active, a.account_status, a.show_audience_stats, a.public_profile_enabled, a.requires_episode_artist, a.onboarding_email_sent_at, a.access_email_sent_at,
                 a.last_login_at, a.created_at, a.updated_at,
                 b.status AS application_status
