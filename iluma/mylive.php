@@ -342,6 +342,103 @@ function mylive_admin_resolve_server_asset(string $reference): array {
     throw new RuntimeException('Το αρχείο πρέπει να προέρχεται από ασφαλή φάκελο του File Manager.');
 }
 
+function mylive_admin_store_profile_photo(int $accountId, string $artistName, ?array $file, string $serverReference): ?string {
+    $serverReference = trim($serverReference);
+    $uploadError = is_array($file)
+        ? (int)($file['error'] ?? UPLOAD_ERR_NO_FILE)
+        : UPLOAD_ERR_NO_FILE;
+
+    if ($uploadError === UPLOAD_ERR_NO_FILE && $serverReference === '') {
+        return null;
+    }
+
+    $sourceMode = '';
+    $sourceAbsolute = '';
+    $tmp = '';
+    $originalName = '';
+    $size = 0;
+
+    if ($uploadError !== UPLOAD_ERR_NO_FILE) {
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            throw new RuntimeException('Το upload της φωτογραφίας προφίλ δεν ολοκληρώθηκε.');
+        }
+
+        $size = (int)($file['size'] ?? 0);
+        if ($size < 1 || $size > 15 * 1024 * 1024) {
+            throw new RuntimeException('Η φωτογραφία προφίλ πρέπει να είναι έως 15 MB.');
+        }
+
+        $originalName = basename((string)($file['name'] ?? ''));
+        $tmp = (string)($file['tmp_name'] ?? '');
+        if ($tmp === '' || !is_uploaded_file($tmp)) {
+            throw new RuntimeException('Μη έγκυρο upload φωτογραφίας προφίλ.');
+        }
+
+        $sourceMode = 'upload';
+        $sourceAbsolute = $tmp;
+    } else {
+        $serverAsset = mylive_admin_resolve_server_asset($serverReference);
+        $size = (int)$serverAsset['size'];
+        if ($size < 1 || $size > 15 * 1024 * 1024) {
+            throw new RuntimeException('Η φωτογραφία προφίλ πρέπει να είναι έως 15 MB.');
+        }
+
+        $originalName = (string)$serverAsset['name'];
+        $sourceMode = 'server';
+        $sourceAbsolute = (string)$serverAsset['absolute'];
+    }
+
+    $extension = mylive_admin_asset_extension($originalName);
+    if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+        throw new RuntimeException('Η φωτογραφία προφίλ πρέπει να είναι JPG, PNG ή WEBP.');
+    }
+
+    $imageInfo = @getimagesize($sourceAbsolute);
+    $mime = is_array($imageInfo) ? (string)($imageInfo['mime'] ?? '') : '';
+    if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+        throw new RuntimeException('Το επιλεγμένο αρχείο δεν είναι έγκυρη εικόνα JPG, PNG ή WEBP.');
+    }
+
+    $safeExtension = match ($mime) {
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        default => $extension,
+    };
+
+    $directory = __DIR__ . '/uploads/djs';
+    if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+        throw new RuntimeException('Δεν ήταν δυνατή η δημιουργία του φακέλου φωτογραφιών DJ.');
+    }
+
+    $artistSlug = deseo_mylive_slug($artistName);
+    if ($artistSlug === '') $artistSlug = 'dj';
+    $storedName = 'profile-' . $accountId . '-' . $artistSlug . '-' . date('Ymd-His') . '-' . bin2hex(random_bytes(3)) . '.' . $safeExtension;
+    $absolute = $directory . '/' . $storedName;
+
+    if ($sourceMode === 'upload') {
+        if (!move_uploaded_file($tmp, $absolute)) {
+            throw new RuntimeException('Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας προφίλ.');
+        }
+    } elseif (!copy($sourceAbsolute, $absolute)) {
+        throw new RuntimeException('Δεν ήταν δυνατή η αντιγραφή της φωτογραφίας από το File Manager.');
+    }
+
+    return '/iluma/uploads/djs/' . $storedName;
+}
+
+function mylive_admin_delete_managed_profile_photo(string $publicPath): void {
+    $publicPath = trim($publicPath);
+    if (!preg_match('#^/iluma/uploads/djs/(profile-[a-zA-Z0-9._-]+)$#', $publicPath, $match)) {
+        return;
+    }
+
+    $file = __DIR__ . '/uploads/djs/' . $match[1];
+    if (is_file($file)) {
+        @unlink($file);
+    }
+}
+
 function mylive_admin_remove_tree(string $directory, string $storageRoot): void {
     $storageRootReal = realpath($storageRoot);
     $directoryReal = realpath($directory);
@@ -562,6 +659,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             } elseif ($action === 'update_account') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
+                $account = mylive_admin_account($pdo, $accountId);
                 $artistName = trim((string)($_POST['artist_name'] ?? ''));
                 $fullName = trim((string)($_POST['full_name'] ?? ''));
                 $email = strtolower(trim((string)($_POST['email'] ?? '')));
@@ -575,37 +673,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($end <= $start) throw new RuntimeException('Η ώρα λήξης πρέπει να είναι μετά την ώρα έναρξης.');
 
                 $requiresEpisodeArtist = isset($_POST['requires_episode_artist']) ? 1 : 0;
-                $stmt = $pdo->prepare(
-                    "UPDATE dj_portal_accounts
-                     SET artist_name = ?, full_name = ?, email = ?, day_of_week = ?, start_time = ?, end_time = ?,
-                         requires_episode_artist = ?
-                     WHERE id = ?"
+                $oldProfilePhoto = trim((string)($account['profile_photo_path'] ?? ''));
+                $removeProfilePhoto = isset($_POST['remove_profile_photo']);
+                $profilePhotoFile = isset($_FILES['profile_photo_file']) && is_array($_FILES['profile_photo_file'])
+                    ? $_FILES['profile_photo_file']
+                    : null;
+                $profilePhotoServerPath = trim((string)($_POST['profile_photo_server_path'] ?? ''));
+                $newProfilePhoto = mylive_admin_store_profile_photo(
+                    $accountId,
+                    $artistName,
+                    $profilePhotoFile,
+                    $profilePhotoServerPath
                 );
-                $stmt->execute([$artistName, $fullName, $email, $day, $start, $end, $requiresEpisodeArtist, $accountId]);
 
-                $primarySlotStmt = $pdo->prepare(
-                    "SELECT id FROM dj_portal_weekly_slots
-                     WHERE account_id = ?
-                     ORDER BY day_of_week ASC, start_time ASC, id ASC
-                     LIMIT 1"
-                );
-                $primarySlotStmt->execute([$accountId]);
-                $primarySlotId = (int)($primarySlotStmt->fetchColumn() ?: 0);
-                if ($primarySlotId > 0) {
-                    $pdo->prepare(
-                        "UPDATE dj_portal_weekly_slots
-                         SET day_of_week = ?, start_time = ?, end_time = ?
-                         WHERE id = ? AND account_id = ?"
-                    )->execute([$day, $start, $end, $primarySlotId, $accountId]);
-                } else {
-                    $pdo->prepare(
-                        "INSERT INTO dj_portal_weekly_slots
-                         (account_id, day_of_week, start_time, end_time)
-                         VALUES (?, ?, ?, ?)"
-                    )->execute([$accountId, $day, $start, $end]);
+                $profilePhoto = $oldProfilePhoto;
+                if ($newProfilePhoto !== null) {
+                    $profilePhoto = $newProfilePhoto;
+                } elseif ($removeProfilePhoto) {
+                    $profilePhoto = '';
                 }
 
-                $notice = 'Τα στοιχεία του MyLive account ενημερώθηκαν.';
+                $startedTransaction = !$pdo->inTransaction();
+                if ($startedTransaction) $pdo->beginTransaction();
+
+                try {
+                    $stmt = $pdo->prepare(
+                        "UPDATE dj_portal_accounts
+                         SET artist_name = ?, full_name = ?, profile_photo_path = ?, email = ?, day_of_week = ?, start_time = ?, end_time = ?,
+                             requires_episode_artist = ?
+                         WHERE id = ?"
+                    );
+                    $stmt->execute([$artistName, $fullName, $profilePhoto, $email, $day, $start, $end, $requiresEpisodeArtist, $accountId]);
+
+                    $primarySlotStmt = $pdo->prepare(
+                        "SELECT id FROM dj_portal_weekly_slots
+                         WHERE account_id = ?
+                         ORDER BY day_of_week ASC, start_time ASC, id ASC
+                         LIMIT 1"
+                    );
+                    $primarySlotStmt->execute([$accountId]);
+                    $primarySlotId = (int)($primarySlotStmt->fetchColumn() ?: 0);
+                    if ($primarySlotId > 0) {
+                        $pdo->prepare(
+                            "UPDATE dj_portal_weekly_slots
+                             SET day_of_week = ?, start_time = ?, end_time = ?
+                             WHERE id = ? AND account_id = ?"
+                        )->execute([$day, $start, $end, $primarySlotId, $accountId]);
+                    } else {
+                        $pdo->prepare(
+                            "INSERT INTO dj_portal_weekly_slots
+                             (account_id, day_of_week, start_time, end_time)
+                             VALUES (?, ?, ?, ?)"
+                        )->execute([$accountId, $day, $start, $end]);
+                    }
+
+                    if ($startedTransaction) $pdo->commit();
+                } catch (Throwable $updateError) {
+                    if ($startedTransaction && $pdo->inTransaction()) $pdo->rollBack();
+                    if ($newProfilePhoto !== null) {
+                        mylive_admin_delete_managed_profile_photo($newProfilePhoto);
+                    }
+                    throw $updateError;
+                }
+
+                if ($oldProfilePhoto !== '' && $oldProfilePhoto !== $profilePhoto) {
+                    mylive_admin_delete_managed_profile_photo($oldProfilePhoto);
+                }
+
+                $notice = $newProfilePhoto !== null
+                    ? 'Τα στοιχεία και η φωτογραφία προφίλ του MyLive account ενημερώθηκαν.'
+                    : ($removeProfilePhoto
+                        ? 'Τα στοιχεία ενημερώθηκαν και αφαιρέθηκε η custom φωτογραφία προφίλ.'
+                        : 'Τα στοιχεία του MyLive account ενημερώθηκαν.');
 
             } elseif ($action === 'add_weekly_slot') {
                 $accountId = (int)($_POST['account_id'] ?? 0);
@@ -1578,6 +1717,8 @@ admin_page_start('MyLive', 'mylive');
                         $rosterStatus = (string)($rosterAccount['account_status'] ?? (!empty($rosterAccount['is_active']) ? 'active' : 'disabled'));
                         $rosterAssets = (int)($rosterAccount['asset_count'] ?? 0);
                         $rosterSets = (int)($rosterAccount['set_count'] ?? 0);
+                        $rosterPhoto = trim((string)($rosterAccount['profile_photo_path'] ?? ''));
+                        if ($rosterPhoto === '') $rosterPhoto = trim((string)($rosterAccount['application_photo'] ?? ''));
                         $rosterSearch = strtolower(trim(
                             (string)$rosterAccount['artist_name'] . ' ' .
                             (string)$rosterAccount['full_name'] . ' ' .
@@ -1591,8 +1732,8 @@ admin_page_start('MyLive', 'mylive');
                                 data-account-status="<?= admin_e($rosterStatus) ?>"
                                 data-account-assets="<?= $rosterAssets ?>"
                                 data-account-search="<?= admin_e($rosterSearch) ?>">
-                            <?php if (!empty($rosterAccount['application_photo'])): ?>
-                                <img src="<?= admin_e((string)$rosterAccount['application_photo']) ?>" alt="">
+                            <?php if ($rosterPhoto !== ''): ?>
+                                <img src="<?= admin_e($rosterPhoto) ?>" alt="">
                             <?php else: ?>
                                 <span class="mylive-roster-avatar"><?= admin_e(strtoupper(substr((string)$rosterAccount['artist_name'], 0, 1))) ?></span>
                             <?php endif; ?>
@@ -1631,6 +1772,8 @@ admin_page_start('MyLive', 'mylive');
                 $accountId = (int)$account['id'];
                 $slot = mylive_admin_slot_label($pdo, $account);
                 $accountStatus = (string)($account['account_status'] ?? (!empty($account['is_active']) ? 'active' : 'disabled'));
+                $accountPhoto = trim((string)($account['profile_photo_path'] ?? ''));
+                if ($accountPhoto === '') $accountPhoto = trim((string)($account['application_photo'] ?? ''));
                 $accountSearch = strtolower(trim(
                     (string)$account['artist_name'] . ' ' .
                     (string)$account['full_name'] . ' ' .
@@ -1648,8 +1791,8 @@ admin_page_start('MyLive', 'mylive');
                 >
                     <div class="mylive-account-top">
                         <div class="mylive-account-identity">
-                            <?php if (!empty($account['application_photo'])): ?>
-                                <img class="mylive-account-photo" src="<?= admin_e((string)$account['application_photo']) ?>" alt="">
+                            <?php if ($accountPhoto !== ''): ?>
+                                <img class="mylive-account-photo" src="<?= admin_e($accountPhoto) ?>" alt="">
                             <?php else: ?>
                                 <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></div>
                             <?php endif; ?>
@@ -1706,7 +1849,7 @@ admin_page_start('MyLive', 'mylive');
                                 <b>+</b>
                             </summary>
                             <div class="mylive-v3-detail-body">
-                                <form method="post">
+                                <form method="post" enctype="multipart/form-data" data-mylive-profile-photo-form>
                                     <input type="hidden" name="csrf_token" value="<?= admin_e(admin_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="update_account">
                                     <input type="hidden" name="account_id" value="<?= $accountId ?>">
@@ -1723,6 +1866,35 @@ admin_page_start('MyLive', 'mylive');
                                         <div class="field full">
                                             <label>Email</label>
                                             <input type="email" name="email" value="<?= admin_e($account['email']) ?>" required>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin:16px 0 18px;padding:16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.018);">
+                                        <div style="display:grid;grid-template-columns:86px minmax(0,1fr);gap:16px;align-items:center;">
+                                            <div style="width:86px;height:86px;border-radius:14px;overflow:hidden;background:#0a0a0b;border:1px solid rgba(255,255,255,.09);display:grid;place-items:center;">
+                                                <?php if ($accountPhoto !== ''): ?>
+                                                    <img data-mylive-profile-photo-preview src="<?= admin_e($accountPhoto) ?>" alt="<?= admin_e((string)$account['artist_name']) ?>" style="width:100%;height:100%;object-fit:cover;">
+                                                    <span data-mylive-profile-photo-fallback hidden style="font-weight:900;color:#77777d;font-size:22px;"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></span>
+                                                <?php else: ?>
+                                                    <img data-mylive-profile-photo-preview src="" alt="" hidden style="width:100%;height:100%;object-fit:cover;">
+                                                    <span data-mylive-profile-photo-fallback style="font-weight:900;color:#77777d;font-size:22px;"><?= admin_e(strtoupper(substr((string)$account['artist_name'], 0, 1))) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div style="min-width:0;">
+                                                <label style="display:block;margin-bottom:8px;font-size:10px;letter-spacing:.12em;color:#7d7d82;font-weight:800;">PROFILE PHOTO</label>
+                                                <input type="hidden" name="profile_photo_server_path" value="" data-mylive-profile-photo-server-path>
+                                                <input class="file-input" type="file" name="profile_photo_file" accept=".jpg,.jpeg,.png,.webp" data-mylive-profile-photo-file>
+                                                <div class="mylive-admin-actions" style="margin-top:9px;">
+                                                    <button class="button button-secondary" type="button" data-mylive-profile-photo-browser>Choose from File Manager</button>
+                                                </div>
+                                                <small data-mylive-profile-photo-label style="display:block;margin-top:8px;color:#66666b;line-height:1.45;">Upload JPG / PNG / WEBP ή επίλεξε εικόνα από το υπάρχον File Manager. Η custom φωτογραφία έχει προτεραιότητα από τη φωτογραφία του submission.</small>
+                                                <?php if (!empty($account['profile_photo_path'])): ?>
+                                                    <label style="display:flex;align-items:center;gap:8px;margin-top:10px;color:#929297;font-size:11px;">
+                                                        <input type="checkbox" name="remove_profile_photo" value="1">
+                                                        Remove custom profile photo και χρήση της φωτογραφίας submission, αν υπάρχει.
+                                                    </label>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -2219,8 +2391,12 @@ admin_page_start('MyLive', 'mylive');
                 <?php foreach ($pendingAccounts as $pending): ?>
                     <article class="mylive-pending-card mylive-v3-pending-card">
                         <div class="mylive-pending-main">
-                            <?php if (!empty($pending['application_photo'])): ?>
-                                <img src="<?= admin_e((string)$pending['application_photo']) ?>" alt="">
+                            <?php
+                            $pendingPhoto = trim((string)($pending['profile_photo_path'] ?? ''));
+                            if ($pendingPhoto === '') $pendingPhoto = trim((string)($pending['application_photo'] ?? ''));
+                            ?>
+                            <?php if ($pendingPhoto !== ''): ?>
+                                <img src="<?= admin_e($pendingPhoto) ?>" alt="">
                             <?php else: ?>
                                 <div class="mylive-avatar"><?= admin_e(strtoupper(substr((string)$pending['artist_name'], 0, 1))) ?></div>
                             <?php endif; ?>
@@ -2294,7 +2470,7 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
             <div>
                 <span>SERVER FILE MANAGER</span>
                 <h2 id="myliveAssetMediaTitle">Choose DJ asset</h2>
-                <p><?= count($assetMediaLibrary) ?> διαθέσιμα αρχεία από ασφαλείς φακέλους του Deseo Radio.</p>
+                <p id="myliveAssetMediaDescription"><?= count($assetMediaLibrary) ?> διαθέσιμα αρχεία από ασφαλείς φακέλους του Deseo Radio.</p>
             </div>
             <button type="button" class="schedule-media-close" data-mylive-media-close aria-label="Close">×</button>
         </header>
@@ -2334,6 +2510,7 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
                                 data-mylive-media-url="<?= admin_e((string)$media['url']) ?>"
                                 data-mylive-media-name="<?= admin_e((string)$media['name']) ?>"
                                 data-mylive-media-folder="<?= admin_e((string)$media['folder']) ?>"
+                                data-mylive-media-image="<?= !empty($media['is_image']) ? '1' : '0' ?>"
                                 data-mylive-media-search="<?= admin_e(strtolower((string)$media['name'] . ' ' . (string)$media['folder'])) ?>">
                             <span class="schedule-media-thumb">
                                 <?php if (!empty($media['is_image'])): ?>
@@ -2576,12 +2753,15 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
 
 (function(){
     var modal=document.getElementById('myliveAssetMediaModal');
+    var title=document.getElementById('myliveAssetMediaTitle');
+    var description=document.getElementById('myliveAssetMediaDescription');
     var search=document.getElementById('myliveAssetMediaSearch');
     var empty=document.getElementById('myliveAssetMediaEmpty');
     var items=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-media-item]'));
     var folders=Array.prototype.slice.call(document.querySelectorAll('[data-mylive-media-folder]'));
     var activeFolder='all';
     var activeForm=null;
+    var activeMode='asset';
 
     function closeBrowser(){
         if(!modal)return;
@@ -2590,9 +2770,20 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
         window.setTimeout(function(){modal.hidden=true;},160);
     }
 
-    function openBrowser(form){
+    function openBrowser(form,mode){
         if(!modal||!form)return;
         activeForm=form;
+        activeMode=mode||'asset';
+        activeFolder='all';
+        folders.forEach(function(item){
+            item.classList.toggle('is-active',(item.getAttribute('data-mylive-media-folder')||'all')==='all');
+        });
+        if(search)search.value='';
+        if(title)title.textContent=activeMode==='profile'?'Choose profile photo':'Choose DJ asset';
+        if(description)description.textContent=activeMode==='profile'
+            ? 'Επίλεξε JPG, PNG ή WEBP από το υπάρχον File Manager.'
+            : '<?= count($assetMediaLibrary) ?> διαθέσιμα αρχεία από ασφαλείς φακέλους του Deseo Radio.';
+        applyFilters();
         modal.hidden=false;
         document.body.classList.add('schedule-media-open');
         window.requestAnimationFrame(function(){
@@ -2608,9 +2799,11 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
         items.forEach(function(item){
             var folder=item.getAttribute('data-mylive-media-folder')||'';
             var haystack=item.getAttribute('data-mylive-media-search')||'';
+            var isImage=item.getAttribute('data-mylive-media-image')==='1';
             var folderMatch=activeFolder==='all'||folder===activeFolder;
             var searchMatch=!query||haystack.indexOf(query)!==-1;
-            var show=folderMatch&&searchMatch;
+            var modeMatch=activeMode!=='profile'||isImage;
+            var show=folderMatch&&searchMatch&&modeMatch;
             item.hidden=!show;
             if(show)visible++;
         });
@@ -2620,7 +2813,13 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
 
     document.querySelectorAll('[data-mylive-asset-browser]').forEach(function(button){
         button.addEventListener('click',function(){
-            openBrowser(button.closest('form'));
+            openBrowser(button.closest('form'),'asset');
+        });
+    });
+
+    document.querySelectorAll('[data-mylive-profile-photo-browser]').forEach(function(button){
+        button.addEventListener('click',function(){
+            openBrowser(button.closest('form'),'profile');
         });
     });
 
@@ -2638,21 +2837,47 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
 
     if(search)search.addEventListener('input',applyFilters);
 
+    function setProfilePreview(form,url,name){
+        var preview=form.querySelector('[data-mylive-profile-photo-preview]');
+        var fallback=form.querySelector('[data-mylive-profile-photo-fallback]');
+        var label=form.querySelector('[data-mylive-profile-photo-label]');
+        if(preview){
+            preview.src=url;
+            preview.hidden=false;
+            preview.alt=name||'Profile photo';
+        }
+        if(fallback)fallback.hidden=true;
+        if(label){
+            label.textContent='Selected profile photo: '+(name||'image');
+            label.style.color='var(--acid)';
+        }
+    }
+
     items.forEach(function(item){
         item.addEventListener('click',function(){
             if(!activeForm)return;
 
             var url=item.getAttribute('data-mylive-media-url')||'';
             var name=item.getAttribute('data-mylive-media-name')||url;
-            var hidden=activeForm.querySelector('[data-mylive-server-asset-path]');
-            var fileInput=activeForm.querySelector('input[name="asset_file"]');
-            var label=activeForm.querySelector('[data-mylive-server-asset-label]');
 
-            if(hidden)hidden.value=url;
-            if(fileInput)fileInput.value='';
-            if(label){
-                label.textContent='Selected from server: '+name;
-                label.style.color='var(--acid)';
+            if(activeMode==='profile'){
+                if(item.getAttribute('data-mylive-media-image')!=='1')return;
+                var profileHidden=activeForm.querySelector('[data-mylive-profile-photo-server-path]');
+                var profileInput=activeForm.querySelector('input[name="profile_photo_file"]');
+                if(profileHidden)profileHidden.value=url;
+                if(profileInput)profileInput.value='';
+                setProfilePreview(activeForm,url,name);
+            }else{
+                var hidden=activeForm.querySelector('[data-mylive-server-asset-path]');
+                var fileInput=activeForm.querySelector('input[name="asset_file"]');
+                var label=activeForm.querySelector('[data-mylive-server-asset-label]');
+
+                if(hidden)hidden.value=url;
+                if(fileInput)fileInput.value='';
+                if(label){
+                    label.textContent='Selected from server: '+name;
+                    label.style.color='var(--acid)';
+                }
             }
 
             closeBrowser();
@@ -2672,6 +2897,21 @@ dialog.mylive-artwork-modal::backdrop{background:rgba(0,0,0,.82);backdrop-filter
             if(label){
                 label.textContent=file?'New upload: '+file.name:'Upload νέο αρχείο ή επίλεξε υπάρχον από τον server.';
                 label.style.color=file?'var(--acid)':'#66666b';
+            }
+        });
+    });
+
+    document.querySelectorAll('input[name="profile_photo_file"]').forEach(function(input){
+        input.addEventListener('change',function(){
+            var form=input.closest('form');
+            if(!form)return;
+            var hidden=form.querySelector('[data-mylive-profile-photo-server-path]');
+            var file=input.files&&input.files[0];
+            if(file&&hidden)hidden.value='';
+            if(file&&file.type&&file.type.indexOf('image/')===0){
+                var objectUrl=URL.createObjectURL(file);
+                setProfilePreview(form,objectUrl,file.name);
+                window.setTimeout(function(){URL.revokeObjectURL(objectUrl);},30000);
             }
         });
     });
