@@ -1,6 +1,7 @@
 # Public site crawl policy
 
 User-agent: *
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -15,6 +16,7 @@ Disallow: /djterms.php
 # Search engines
 
 User-agent: Googlebot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -27,6 +29,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Bingbot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -41,6 +44,7 @@ Disallow: /djterms.php
 # AI / model crawlers
 
 User-agent: GPTBot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -53,6 +57,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: OAI-SearchBot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -65,6 +70,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: ChatGPT-User
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -77,6 +83,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: ClaudeBot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -89,6 +96,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: anthropic-ai
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -101,6 +109,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Google-Extended
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -113,6 +122,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: PerplexityBot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -125,6 +135,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: CCBot
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -137,6 +148,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Bytespider
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -149,6 +161,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: meta-externalagent
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
@@ -161,6 +174,7 @@ Disallow: /djterms/
 Disallow: /djterms.php
 
 User-agent: Applebot-Extended
+Disallow: /mydemo
 Disallow: /iluma
 Disallow: /iluma/
 Disallow: /mylive
