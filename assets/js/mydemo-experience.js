@@ -1,4 +1,4 @@
-/* Deseo /mydemo — three-stage logo preloader and static DJ SA feature.
+/* Deseo /mydemo — funky two-logo preloader and static DJ SA feature.
    Visual enhancement only: the official iRadios player is never touched. */
 (function () {
   'use strict';
@@ -13,7 +13,7 @@
   } else {
     window.setTimeout(function () {
       root.classList.remove('md-preloading');
-    }, 2650);
+    }, 2200);
   }
   window.addEventListener('pageshow', function (event) {
     if (event.persisted) root.classList.remove('md-preloading');
