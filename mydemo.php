@@ -539,7 +539,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       <span><?= $en ? 'THE ANSWERS BEHIND THE SOUND' : 'ΟΛΑ ΓΙΑ ΤΟΝ ΗΧΟ ΜΑΣ' ?></span>
     </div>
     <div class="md-section-heading md-faq-heading">
-      <h2 id="md-faq-title"><?= demo_e(deseo_t('faq.title')) ?><span class="md-faq-title-period">.</span></h2>
+      <h2 id="md-faq-title"><?= demo_e(deseo_t('faq.title')) ?></h2>
       <p><?= demo_e(deseo_t('faq.text')) ?></p>
     </div>
     <div class="md-faq-list">
