@@ -176,6 +176,12 @@ $season6Lineup = [
     ['day' => 'Sunday', 'schema_day' => 'https://schema.org/Sunday', 'start' => '23:00:00', 'dj' => 'Rokhai'],
 ];
 
+// For the CMS-driven new homepage, never publish a hardcoded artist-by-artist
+// roster: slots can change independently in ILUMA CMS. The HTML schedule
+// remains the up-to-date source; the Season 6 EventSeries remains stable.
+if ($deseo_next_layout) {
+    $season6Lineup = [];
+}
 $season6SeriesId = 'https://deseoradio.com/#season-6-lineup';
 $schema['@graph'][] = [
     '@type' => 'EventSeries',
@@ -183,7 +189,7 @@ $schema['@graph'][] = [
     'name' => 'Deseo Radio Season 6 — Weekly DJ Sets',
     'description' => 'Season 6 weekly Resident DJ Sets begin on October 14, 2026 at 20:00 Athens time. The announced weekly lineup runs Wednesday through Sunday in Europe/Athens time, alongside separate Guest DJ programming.',
     'startDate' => '2026-10-14T20:00:00+03:00',
-    'url' => 'https://deseoradio.com/#season-6',
+    'url' => $deseo_next_layout ? 'https://deseoradio.com/#lineup' : 'https://deseoradio.com/#season-6',
     'image' => 'https://deseoradio.com/assets/img/season6%20lineup.png',
     'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
     'location' => [
@@ -217,7 +223,7 @@ foreach ($season6Lineup as $slotIndex => $slot) {
         '@id' => $slotId,
         'name' => $slot['dj'] . ' — Deseo Radio Season 6',
         'description' => 'Scheduled weekly DJ set by ' . $slot['dj'] . ' on Deseo Radio Season 6. First airing: ' . $season6FirstAiring[$slot['day']] . '; weekly start times follow Europe/Athens.',
-        'url' => 'https://deseoradio.com/#season-6',
+        'url' => $deseo_next_layout ? 'https://deseoradio.com/#lineup' : 'https://deseoradio.com/#season-6',
         'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
         'location' => [
             '@type' => 'VirtualLocation',
@@ -262,7 +268,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
         '@type' => 'Person',
         '@id' => $livePersonId,
         'name' => $liveArtistName !== '' ? $liveArtistName : (string)$live_dj['dj_name'],
-        'url' => 'https://deseoradio.com/#live',
+        'url' => $deseo_next_layout ? 'https://deseoradio.com/#player' : 'https://deseoradio.com/#live',
     ];
 
     if ($livePublicProfile) {
@@ -289,7 +295,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
         '@type' => 'BroadcastEvent',
         '@id' => 'https://deseoradio.com/#current-broadcast',
         'name' => (string)$live_dj['dj_name'] . ' live on Deseo Radio',
-        'url' => 'https://deseoradio.com/#live',
+        'url' => $deseo_next_layout ? 'https://deseoradio.com/#player' : 'https://deseoradio.com/#live',
         'isLiveBroadcast' => true,
         'eventAttendanceMode' => 'https://schema.org/OnlineEventAttendanceMode',
         'location' => [
