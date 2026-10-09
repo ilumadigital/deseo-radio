@@ -223,6 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
+  <meta name="deseo-demo-build" content="v11-menu-brand-feature">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -232,7 +233,11 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v8.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v8.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v8.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v9.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v9.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v9.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v10.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v10.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v10.css') : 1 ?>">
-  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},840);</script>
+  <link rel="stylesheet" href="/assets/css/mydemo-v11.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v11.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v11.css') : 1 ?>">
+  <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
+  <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
+  <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
+  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},910);</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-cursor.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-cursor.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-cursor.js') : 1 ?>" defer></script>
@@ -258,7 +263,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <header class="md-header">
   <div class="md-shell md-header-inner">
-    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="150" height="43"></a>
+    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="330" height="100" fetchpriority="high"></a>
     <div class="md-header-actions">
       <div class="md-lang" aria-label="Language">
         <a <?= !$en ? 'aria-current="page"' : '' ?> href="/mydemo?lang=el">EL</a>
@@ -273,11 +278,13 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <div class="md-fs-menu" id="md-fs-menu" role="dialog" aria-modal="true" aria-labelledby="md-fs-menu-title" aria-hidden="true" hidden>
   <div class="md-fs-menu-glow" aria-hidden="true"></div>
   <div class="md-fs-menu-inner">
-    <div class="md-fs-menu-top"><span class="md-fs-menu-overline"><span class="md-dot"></span> DESEO RADIO / SEASON 06</span>
+    <div class="md-fs-menu-top">
+      <a class="md-fs-menu-brand" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="100" fetchpriority="high"></a>
+      <span class="md-fs-menu-overline"><span class="md-dot"></span> DESEO RADIO / SEASON 06</span>
       <button type="button" class="md-fs-close" id="md-fs-close" aria-label="<?= $en ? 'Close menu' : 'Κλείσιμο μενού' ?>"><span><?= $en ? 'CLOSE' : 'ΚΛΕΙΣΙΜΟ' ?></span><i aria-hidden="true"></i></button>
     </div>
     <div class="md-fs-menu-main">
-      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title">FIND YOUR<br><em>FREQUENCY.</em></h2>
+      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title"><span>THE</span><span class="md-fs-title-red">SOUNDTRACK</span><em>OF YOUR</em><span>LIFE</span></h2>
         <nav class="md-fs-menu-links" aria-label="Deseo Radio sections">
           <a href="#player"><span class="md-fs-menu-count">01</span>JUST LISTEN<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="#listen-everywhere"><span class="md-fs-menu-count">02</span>PARTNERS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
@@ -292,51 +299,15 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         </nav>
       </div>
       <aside class="md-fs-menu-side">
-        <span class="md-fs-side-kicker">DESEO / AFTER DARK</span>
-        <div class="md-fs-art" aria-hidden="true"><img src="/assets/img/favicon-nobg.png" alt="" width="150" height="150"><span>THE SOUNDTRACK<br>OF YOUR LIFE</span></div>
-        <section class="md-menu-showcase" aria-roledescription="carousel" aria-label="Deseo Radio highlights">
-          <div class="md-menu-showcase-head">
-            <span>DESEO / FEATURED ON AIR</span>
-            <div class="md-menu-carousel-controls">
-              <button type="button" class="md-menu-carousel-prev" aria-label="Previous feature"><i class="md-carousel-chevron" aria-hidden="true"></i></button>
-              <button type="button" class="md-menu-carousel-next" aria-label="Next feature"><i class="md-carousel-chevron" aria-hidden="true"></i></button>
-            </div>
-          </div>
-          <div class="md-menu-carousel-window" aria-live="off">
-            <div class="md-menu-carousel-track" id="md-menu-carousel-track">
-              <a class="md-menu-promo is-current" href="#schedule" data-slide="0" tabindex="0"
-                 aria-label="DJ SA Radioshow, every weekend at 17:00">
-                <img src="https://deseoradio.com/iluma/uploads/djs/profile-85-DJ_SA_RADIOSHOW-20261007-144654-0c15cd.png"
-                     alt="DJ SA Radioshow" loading="lazy">
-                <span class="md-menu-promo-shade"></span>
-                <span class="md-menu-promo-content"><small>DESEO / RESIDENT DJS</small>
-                  <strong>DJ SA<br>RADIOSHOW</strong><em>EVERY WEEKEND <b>@ 17:00</b></em></span>
-              </a>
-              <a class="md-menu-promo" href="#lineup" data-slide="1" tabindex="-1"
-                 aria-label="Deseo Radio Season 6 lineup">
-                <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 lineup" loading="lazy">
-                <span class="md-menu-promo-shade"></span>
-                <span class="md-menu-promo-content"><small>THE SEASON IS ON</small>
-                  <strong>SEASON<br>06</strong><em>RESIDENT DJS / GUEST SESSIONS</em></span>
-              </a>
-              <a class="md-menu-promo" href="#shows" data-slide="2" tabindex="-1"
-                 aria-label="Explore Deseo Radio shows">
-                <img src="/assets/img/deseoradio-djcallwebsite.png" alt="Deseo Radio DJs" loading="lazy">
-                <span class="md-menu-promo-shade"></span>
-                <span class="md-menu-promo-content"><small>DESEO RADIO / DJ CULTURE</small>
-                  <strong>THE SHOW<br>GOES ON</strong><em>DISCOVER RADIOSHOWS</em></span>
-              </a>
-            </div>
-          </div>
-          <div class="md-menu-carousel-bottom">
-            <span class="md-menu-carousel-current"><b id="md-menu-carousel-current">01</b> / 03</span>
-            <div class="md-menu-carousel-dots" aria-label="Choose featured story">
-              <button type="button" class="is-active" data-carousel-to="0" aria-label="DJ SA Radioshow" aria-current="true"></button>
-              <button type="button" data-carousel-to="1" aria-label="Season 6 lineup" aria-current="false"></button>
-              <button type="button" data-carousel-to="2" aria-label="Radioshows" aria-current="false"></button>
-            </div>
-          </div>
-        </section>
+        <a class="md-menu-showcase md-menu-feature" href="#schedule" aria-label="DJ SA Radioshow — Every weekend at 17:00">
+          <span class="md-menu-showcase-head">DESEO / FEATURED ON AIR <span class="md-fs-link-mark" aria-hidden="true"></span></span>
+          <span class="md-menu-feature-art">
+            <img src="https://deseoradio.com/iluma/uploads/djs/profile-85-DJ_SA_RADIOSHOW-20261007-144654-0c15cd.png" alt="DJ SA Radioshow" loading="eager" decoding="async" onerror="this.onerror=null;this.src='/assets/img/deseoradio-djcallwebsite.png'">
+            <span class="md-menu-promo-shade"></span>
+            <span class="md-menu-promo-content"><small>DESEO / RESIDENT DJS</small>
+              <strong>DJ SA<br>RADIOSHOW</strong><em>EVERY WEEKEND <b>@ 17:00</b></em></span>
+          </span>
+        </a>
       </aside>
     </div>
     <div class="md-fs-menu-bottom"><span>ATHENS / WORLDWIDE — 24/7 SOUND</span><span>AN <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA RADIOS</a> EXPERIENCE</span></div>
