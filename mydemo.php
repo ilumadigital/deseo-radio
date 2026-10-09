@@ -243,7 +243,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-cursor.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-cursor.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-cursor.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-menu.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-menu.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-menu.js') : 1 ?>" defer></script>
-  <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
+  <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.2" data-station="deseo" data-surface="station_website" defer></script>
 </head>
 <body>
 <a class="md-skip" href="#main">Skip to content</a>
