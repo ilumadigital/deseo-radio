@@ -20,6 +20,8 @@ $meta_image_path = __DIR__ . '/../assets/img/deseoradio-seo-branded.png';
 $meta_image_version = is_file($meta_image_path) ? (int)filemtime($meta_image_path) : 1;
 $meta_image = $meta_image ?? ('https://deseoradio.com/assets/img/deseoradio-seo-branded.png?v=' . $meta_image_version);
 $meta_image_alt = $meta_image_alt ?? 'Deseo Radio — Το Soundtrack της ζωής σου';
+$faviconPath = __DIR__ . '/../assets/img/favicon.png';
+$faviconVersion = is_file($faviconPath) ? (int)filemtime($faviconPath) : 1;
 $private_page = !empty($private_page);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 $cloudflareAnalyticsToken = trim((string)(getenv('CLOUDFLARE_WEB_ANALYTICS_TOKEN') ?: ''));
@@ -352,8 +354,8 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <link rel="alternate" hreflang="en" href="<?= deseo_e($meta_canonical_en) ?>">
     <link rel="alternate" hreflang="x-default" href="<?= deseo_e($meta_canonical_el) ?>">
 
-    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
-    <link rel="apple-touch-icon" href="/assets/img/favicon.png">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= $faviconVersion ?>">
+    <link rel="apple-touch-icon" href="/assets/img/favicon.png?v=<?= $faviconVersion ?>">
 
     <?php if ($cloudflareAnalyticsToken !== ''): ?>
     <!-- Cloudflare Web Analytics -->
