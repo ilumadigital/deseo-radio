@@ -347,3 +347,24 @@ html[lang="el"] .md-player-square-label {font-family:'Google Sans','Google Sans 
 @media(prefers-reduced-motion:reduce){
   .md-show-photo img,.md-dj-artwork img,.md-show-card,.md-partner-card,.md-partner-card img{transition:none!important}
 }
+
+/* Times are intentionally in the content column, never hidden in the art. */
+.md-show-hours{
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:9px;
+  font:800 clamp(17px,1.75vw,26px)/1.12 'Barlow Condensed','Google Sans Flex',Arial,sans-serif;
+  color:#f5f1f1;margin:0 0 13px;letter-spacing:.01em
+}
+.md-show-hours small{
+  font:600 10px/1.2 'Barlow','Google Sans',sans-serif;
+  letter-spacing:.12em;color:#858080
+}
+.md-show-photo span{font:700 10px/1.2 'Barlow',Arial,sans-serif;letter-spacing:.14em}
+article.md-show-card .md-show-details:after{display:none}
+@media(max-width:720px){
+  .md-show-hours{font-size:20px;margin-bottom:9px}
+  .md-show-hours small{font-size:9px}
+}
+@media(max-width:380px){
+  .md-show-hours{font-size:17px}
+  .md-show-hours small{display:none}
+}
