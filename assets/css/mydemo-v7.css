@@ -266,7 +266,7 @@ html[lang="el"] .md-ai-wrap #ai-discovery-title{
   transition:transform .22s,border-color .22s,background .22s;
 }
 .md-ai-wrap .ai-discovery-card:after{
-  content:"↗";position:absolute;right:17px;top:14px;
+  content:"";position:absolute;right:17px;top:14px;
   color:#ff0000;
   font:800 23px 'Barlow',Arial,sans-serif;
 }
