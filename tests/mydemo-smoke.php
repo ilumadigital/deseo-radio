@@ -360,7 +360,7 @@ foreach ([
         exit(1);
     }
 }
-if (substr_count($html, 'class="md-menu-promo') !== 3 ||
+if (preg_match_all('~class="md-menu-promo(?:\\s|")~', $html) !== 3 ||
     substr_count($html, 'data-carousel-to=') !== 3 ||
     str_contains($html, 'THE SOUNDTRACK</span>' . "\n" . '          <em>OF YOUR')) {
     fwrite(STDERR, "Menu carousel or modern word-by-word hero missing\n");
