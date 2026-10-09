@@ -171,3 +171,46 @@
   }
   .md-preloader-token--red > span { background: none !important; -webkit-text-fill-color: #f00 !important; }
 }
+
+
+/*
+ * MyDemo desktop hero — larger NOW PLAYING / ONAIR NOW / SPONSOR tiles.
+ * V14/V15 limit each 1:1 tile via --md-hero-square, with an especially
+ * small cap on short/zoomed desktop viewports. Keep the original embeds,
+ * ILUMA Signal sponsor rotation, ordering and <=1099px layouts intact.
+ */
+@media (min-width:1100px) {
+  .md-hero .md-hero-content {
+    --md-hero-square: clamp(360px, calc(100svh - 400px), 495px) !important;
+    padding-top: clamp(120px, 15svh, 160px) !important;
+    padding-bottom: clamp(72px, 8svh, 95px) !important;
+  }
+  .md-hero .md-hero-grid {
+    gap: clamp(20px, 2.8svh, 34px) !important;
+  }
+  #md-custom-player .md-player-squares {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: clamp(18px, 2.2vw, 42px) !important;
+  }
+  #md-custom-player .md-nowplaying-column,
+  #md-custom-player .md-dj-column,
+  #md-custom-player .md-sponsor-column {
+    max-width: var(--md-hero-square) !important;
+    width: 100% !important;
+  }
+  #md-custom-player .md-player-square-label {
+    font-size: clamp(12px, .85vw, 14px) !important;
+    margin-bottom: 12px !important;
+  }
+}
+@media (min-width:1100px) and (max-height:740px) {
+  /* Increase scale even on zoomed laptops, without hiding the heading. */
+  .md-hero .md-hero-content {
+    --md-hero-square: clamp(325px, calc(100svh - 320px), 410px) !important;
+    padding-top: 112px !important;
+    padding-bottom: 70px !important;
+  }
+  .md-hero .md-hero-grid {
+    gap: 22px !important;
+  }
+}
