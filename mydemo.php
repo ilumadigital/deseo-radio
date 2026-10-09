@@ -164,8 +164,7 @@ foreach ($program as $show) {
         $start = $base->setTime($startPieces[0] ?? 0, $startPieces[1] ?? 0, $startPieces[2] ?? 0);
         $end = $base->setTime($endPieces[0] ?? 23, $endPieces[1] ?? 59, $endPieces[2] ?? 59);
         if ($end <= $start) $end = $end->modify('+1 day');
-        // Never present a pre-premiere Season 6 occurrence as a live DJ set.
-        if ($start < $seasonStart) continue;
+        // Like the production homepage, keep daily music zones live before the Season 6 premiere.
         $occurrences[] = ['row' => $show, 'start' => $start, 'end' => $end];
     }
 }
@@ -173,7 +172,7 @@ usort($occurrences, static fn(array $a, array $b): int => $a['start'] <=> $b['st
 $live = null;
 $next = null;
 foreach ($occurrences as $item) {
-    if ($item['start'] <= $now && $now < $item['end']) {
+    if ($live === null && $item['start'] <= $now && $now < $item['end']) {
         $live = $item;
     } elseif ($item['start'] > $now && $next === null) {
         $next = $item;
@@ -251,7 +250,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <div class="md-hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="md-shell md-hero-content">
     <div class="md-hero-copy">
-      <div class="md-eyebrow"><span class="md-redline"></span> DESEO RADIO <span class="md-split"></span> ATHENS / WORLDWIDE <span class="md-split"></span> EST. 2021</div>
+      <div class="md-eyebrow"><span class="md-redline"></span> DESEO RADIO <span class="md-split"></span> ATHENS / WORLDWIDE <span class="md-split"></span> 24/7 SOUND</div>
       <h1 class="md-masthead">FEEL <span>THE</span><em>FREQUENCY<span class="md-period">.</span></em></h1>
       <div class="md-hero-bottom">
         <div>
@@ -280,7 +279,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
     </div>
     <div class="md-player-embed">
       <div class="md-player-top"><span>DESEO / LIVE PLAYER</span><span>↗ IRADIOS</span></div>
-      <iframe title="Deseo Radio official live audio player" loading="eager" src="https://play.iradios.gr/widget/deseo-radio?autoplay=false" allow="autoplay; encrypted-media; clipboard-write" referrerpolicy="no-referrer" ></iframe>
+      <iframe title="Deseo Radio official live audio player" loading="eager" src="https://play.iradios.gr/widget/deseo-radio?autoplay=false" allow="autoplay; encrypted-media; clipboard-write" referrerpolicy="origin" ></iframe>
     </div>
     <div class="md-onair">
       <span class="md-small-label"><?= demo_e($copy['now']) ?></span>
@@ -299,7 +298,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <section class="md-section md-season" id="lineup">
   <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">01 / THE ARTISTS</span><span>SEASON 06 — 2026 / 2027</span></div>
+    <div class="md-section-top"><span class="md-index">01 / THE ARTISTS</span><span>SEASON 06 — 2026</span></div>
     <div class="md-section-heading"><h2>NOT JUST DJs.<br><em>CULTURE MAKERS.</em></h2><p><?= demo_e($copy['lineup_sub']) ?></p></div>
     <div class="md-season-banner">
       <div class="md-season-info">
