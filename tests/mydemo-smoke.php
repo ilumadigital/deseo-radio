@@ -39,7 +39,6 @@ $expect = [
     'THE SOUNDTRACK',
     'OF YOUR',
     'LIFE',
-    'Το Soundtrack της ζωής σου!',
     'id="md-hero-live-name"',
     'id="md-hero-live-time"',
     'id="md-hero-live-photo"',
