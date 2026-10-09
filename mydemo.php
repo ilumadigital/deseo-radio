@@ -95,6 +95,7 @@ $tracks = [];
 $playlists = [];
 $profiles = [];
 $dbOnline = false;
+$feedOnly = (($_GET['feed'] ?? '') === '1');
 
 try {
     require __DIR__ . '/iluma/connection.php';
@@ -112,6 +113,8 @@ try {
              ORDER BY day_of_week ASC, start_time ASC'
         )->fetchAll(PDO::FETCH_ASSOC);
     }
+    // JSON schedule refresh only needs the program, not track, playlist or public profile queries.
+    if (!$feedOnly) {
     try {
         $tracks = $pdo->query(
             'SELECT id, spotify_url, track_name, artist_name, artwork_url, position
@@ -152,6 +155,7 @@ try {
         } catch (Throwable $error) {
             error_log('mydemo DJ profiles unavailable: ' . $error->getMessage());
         }
+    }
     }
 } catch (Throwable $error) {
     error_log('mydemo read-only CMS unavailable: ' . $error->getMessage());
@@ -223,25 +227,15 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v18-animated-preloader">
+  <meta name="deseo-demo-build" content="v19-mobile-speed">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-refinements.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-refinements.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-refinements.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v6.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v6.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v6.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v7.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v7.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v7.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v8.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v8.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v8.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v9.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v9.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v9.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v10.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v10.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v10.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v11.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v11.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v11.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v12.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v12.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v12.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v13.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v13.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v13.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v14.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v14.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v14.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v15.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v15.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v15.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v16.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v16.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v16.css') : 1 ?>">
-  <link rel="stylesheet" href="/assets/css/mydemo-v17.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v17.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v17.css') : 1 ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://play.iradios.gr" crossorigin>
+  <link rel="preconnect" href="https://radios.iluma.gr" crossorigin>
+  <link rel="stylesheet" href="/assets/css/mydemo-bundle-v1.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-bundle-v1.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-bundle-v1.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
-  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1850);</script>
+  <script>document.documentElement.classList.add('md-preloading');</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-header.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-header.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-header.js') : 1 ?>" defer></script>
@@ -308,7 +302,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         <a class="md-menu-showcase md-menu-feature" href="#schedule" aria-label="DJ SA Radioshow — Every weekend at 17:00">
           <span class="md-menu-showcase-head">DESEO / FEATURED ON AIR <span class="md-fs-link-mark" aria-hidden="true"></span></span>
           <span class="md-menu-feature-art">
-            <img src="https://deseoradio.com/iluma/uploads/djs/profile-85-DJ_SA_RADIOSHOW-20261007-144654-0c15cd.png" alt="DJ SA Radioshow" loading="eager" decoding="async" onerror="this.onerror=null;this.src='/assets/img/deseoradio-djcallwebsite.png'">
+            <img src="https://deseoradio.com/iluma/uploads/djs/profile-85-DJ_SA_RADIOSHOW-20261007-144654-0c15cd.png" alt="DJ SA Radioshow" loading="lazy" decoding="async" fetchpriority="low" onerror="this.onerror=null;this.src='/assets/img/deseoradio-djcallwebsite.png'">
             <span class="md-menu-promo-shade"></span>
             <span class="md-menu-promo-content"><small>DESEO / RESIDENT DJS</small>
               <strong>DJ SA<br>RADIOSHOW</strong><em>EVERY WEEKEND <b>@ 17:00</b></em></span>
@@ -347,14 +341,14 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
                 <a class="md-custom-sponsor" href="https://iluma.gr/" target="_blank" rel="noopener noreferrer"
                   data-iluma-signal-slot="hero-sponsor" aria-label="ILUMA Digital Agency — sponsor">
                   <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency"
-                    data-iluma-signal-image loading="eager">
+                    data-iluma-signal-image loading="eager" decoding="async" fetchpriority="high">
                 </a>
               </div>
               <div class="md-dj-column">
                 <div class="md-player-square-label">ONAIR NOW</div>
                 <div class="md-dj-artwork">
                   <img id="md-hero-live-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>"
-                    alt="" loading="eager" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
+                    alt="" loading="eager" decoding="async" fetchpriority="high" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
                   <div class="md-dj-artwork-caption">
                     <span class="md-dj-live-tag"><i></i> ON AIR / DESEO</span>
                     <strong id="md-hero-live-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong>
@@ -399,7 +393,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
     <a class="md-dock-sponsor" href="https://iluma.gr/" target="_blank" rel="noopener noreferrer"
        data-iluma-signal-slot="sticky-sponsor" aria-label="ILUMA Digital Agency — sponsor">
        <img src="/assets/img/iluma-digital-agency-banner.jpg" data-iluma-signal-image
-         alt="ILUMA Digital Agency" loading="lazy">
+         alt="ILUMA Digital Agency" loading="lazy" decoding="async" fetchpriority="low">
     </a>
   </div>
 </div>
@@ -426,7 +420,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       <a class="md-partner-card" href="<?= demo_e($partner['url']) ?>" target="_blank"
          rel="noopener noreferrer" aria-label="<?= demo_e($partner['name']) ?>">
         <img src="/assets/img/<?= demo_e($partner['asset']) ?>"
-             alt="<?= demo_e($partner['name']) ?>" loading="lazy"
+             alt="<?= demo_e($partner['name']) ?>" loading="lazy" decoding="async" fetchpriority="low"
              onerror="this.onerror=null;this.src='/assets/img/deseoradio-logo.png'">
         <span class="md-partner-arrow md-ui-arrow" aria-hidden="true"></span>
       </a>
@@ -474,7 +468,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       </div>
       <div class="md-season-art" aria-label="Season 6 official lineup artwork">
         <span class="md-season-vertical" aria-hidden="true">SOUND CULTURE / ATHENS</span>
-        <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy">
+        <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy" decoding="async" fetchpriority="low" width="1100" height="1100">
 
       </div>
     </div>
@@ -515,7 +509,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '';
           ?>
             <<?= $profile ? 'button' : 'article' ?> class="md-show-card <?= $isLive ? 'is-live' : '' ?>" <?= $profile ? 'type="button" data-profile="' . demo_e($profileJson) . '" aria-label="' . demo_e($copy['read_more'] . ': ' . $slot['dj_name']) . '"' : '' ?>>
-              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/bg.png'"></div>
+              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" decoding="async" fetchpriority="low" width="360" height="360" onerror="this.onerror=null;this.src='/assets/img/bg.png'"></div>
               <div class="md-show-details">
                  <?php if ($isLive): ?><span class="md-show-status">● ON AIR</span><?php endif; ?>
                  <h3><?= demo_e($slot['dj_name']) ?></h3>
@@ -544,7 +538,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       ?>
       <div class="md-track-row">
         <span class="md-track-number"><?= str_pad((string)(int)$track['position'], 2, '0', STR_PAD_LEFT) ?></span>
-        <div class="md-track-cover"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" onerror="this.style.display='none'"><?php endif; ?></div>
+        <div class="md-track-cover"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="96" height="96" onerror="this.style.display='none'"><?php endif; ?></div>
         <div class="md-track-info"><strong><?= demo_e($track['track_name']) ?></strong><span><?= demo_e($track['artist_name']) ?></span></div>
         <span class="md-track-category">HOT TRACK / DESEO</span>
         <?php if ($href): ?><a class="md-circle-link" href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ' ' . $track['track_name']) ?>"><span class="md-ui-arrow" aria-hidden="true"></span></a><?php endif; ?>
@@ -566,7 +560,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       ?>
       <div class="md-playlist">
         <?php if ($href): ?><a href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ': ' . $playlist['title']) ?>"><?php endif; ?>
-          <div class="md-playlist-art"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" onerror="this.style.display='none'"><?php endif; ?><span class="md-playlist-arrow"><i class="md-ui-arrow" aria-hidden="true"></i></span></div>
+          <div class="md-playlist-art"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="400" height="400" onerror="this.style.display='none'"><?php endif; ?><span class="md-playlist-arrow"><i class="md-ui-arrow" aria-hidden="true"></i></span></div>
           <div class="md-playlist-meta"><span>DESEO SELECTION / <?= demo_e(str_pad((string)(int)($playlist['position'] ?? 0), 2, '0', STR_PAD_LEFT)) ?></span><strong><?= demo_e($playlist['title']) ?></strong></div>
         <?php if ($href): ?></a><?php endif; ?>
       </div>
@@ -588,7 +582,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         <a href="https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue" target="_blank" rel="noopener noreferrer">SPOTIFY <span class="md-ui-arrow" aria-hidden="true"></span></a>
       </div>
     </div>
-    <div class="md-shows-art"><div class="md-disc"><span><img src="/assets/img/favicon-nobg.png" alt="Deseo Radio" loading="lazy"></span></div><span class="md-disc-caption">DESEO RADIO / ALL THE FEELS / SEASON 06</span></div>
+    <div class="md-shows-art"><div class="md-disc"><span><img src="/assets/img/favicon-nobg.png" alt="Deseo Radio" loading="lazy" decoding="async"></span></div><span class="md-disc-caption">DESEO RADIO / ALL THE FEELS / SEASON 06</span></div>
   </div>
 </section>
 
@@ -639,7 +633,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
     </div>
     <div class="md-footer-main">
       <div class="md-footer-identity">
-        <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50" loading="lazy"></a>
+        <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50" loading="lazy" decoding="async"></a>
         <p class="md-footer-eyebrow">STAY TUNED. KEEP FEELING.</p>
         <h2 class="md-footer-statement">THE<br><span class="md-footer-soundtrack">SOUNDTRACK</span><br><em>OF YOUR</em><br>LIFE</h2>
       </div>
@@ -655,7 +649,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer"><span>MEDIA KIT</span><b class="md-ui-arrow" aria-hidden="true"></b></a>
         </div>
         <a class="md-footer-contact" href="mailto:radio@iluma.gr">GET IN TOUCH <span class="md-ui-arrow" aria-hidden="true"></span></a>
-        <div class="md-footer-icon" aria-hidden="true"><img src="/assets/img/favicon-nobg.png" alt=""></div>
+        <div class="md-footer-icon" aria-hidden="true"><img src="/assets/img/favicon-nobg.png" alt="" loading="lazy" decoding="async"></div>
       </div>
     </div>
     <div class="md-footer-bottom">
@@ -666,8 +660,18 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 </footer>
 <dialog id="md-dj-dialog" aria-labelledby="md-dialog-title">
   <button type="button" id="md-dialog-close" aria-label="<?= demo_e($copy['dj_close']) ?>">×</button>
-  <img id="md-dialog-photo" src="/assets/img/bg.png" alt="">
+  <img id="md-dialog-photo" alt="" loading="lazy" decoding="async">
   <div class="md-dj-details"><span class="md-index"><?= demo_e($copy['dj_info']) ?> / SEASON 06</span><h2 id="md-dialog-title"></h2><p id="md-dialog-bio"></p><div id="md-dialog-links"></div></div>
 </dialog>
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mobile = window.matchMedia('(max-width: 850px)').matches;
+  // Start only after markup is available. Mobile users should not wait for a long logo animation.
+  window.setTimeout(function () {
+    document.documentElement.classList.remove('md-preloading');
+  }, reduced ? 0 : (mobile ? 620 : 1500));
+}());
+</script>
 </body>
 </html>
