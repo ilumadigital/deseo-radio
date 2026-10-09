@@ -42,6 +42,9 @@ $required = [
     '/assets/js/deseo-next.js',
     'deseoCookieConsentV2',
     'id="cookie-banner"',
+    'id="md-app-install"',
+    'id="md-app-ios-guide"',
+    "navigator.serviceWorker.register('/sw.js?v='",
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
