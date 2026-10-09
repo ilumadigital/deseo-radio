@@ -1,6 +1,9 @@
 /* DESEO /mydemo v10 — cinematic three-beat brand reveal + curated menu features.
    Additive to v9: no production player or CMS changes. */
 
+/* Source logos are 220 x 100; preserve their intrinsic proportions in the header. */
+.md-logo img{width:150px;max-height:72px;height:auto;object-fit:contain}
+@media(max-width:550px){.md-logo img{width:108px;max-height:50px}}
 /* Three-stage preloader: transparent mark > DESEO lockup > full RADIO wordmark. */
 .md-preloader{
   overflow:hidden;background:#070607;isolation:isolate;
