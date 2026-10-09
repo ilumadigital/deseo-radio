@@ -39,16 +39,16 @@ $lang = deseo_lang();
 $en = $lang === 'en';
 $copy = $en ? [
     'hero' => 'THE SOUNDTRACK OF YOUR LIFE.',
-    'hero_sub' => 'From Athens, for everywhere. A different kind of radio experience: House, Afro House, Organic House, Indie Dance and electronic culture, 24/7.',
+    'hero_sub' => 'From Athens, for everywhere. Every moment has a sound of its own. House, Afro House, Organic House, Indie Dance and electronic selections — around the clock.',
     'listen' => 'LISTEN LIVE', 'explore' => 'EXPLORE THE SOUND',
     'now' => 'CURRENT RADIO SLOT', 'auto' => 'DESEO NON-STOP', 'next' => 'UP NEXT',
-    'schedule' => 'THE SCHEDULE', 'schedule_sub' => 'Your week. Our frequencies. All showtimes are in Athens time (Europe/Athens).',
+    'schedule' => 'THE SCHEDULE', 'schedule_sub' => 'The DJs, the sets, the selections. A different soundtrack for every day of your week. All times Athens.',
     'premiere' => 'SEASON 6 STARTS IN', 'launched' => 'SEASON 6 · ON AIR NOW',
-    'lineup' => 'MEET THE LINEUP', 'lineup_sub' => 'The people behind the frequency. Select a day and discover the resident DJ sets.',
-    'tracks' => 'FRESH SOUNDS', 'tracks_sub' => 'The Hot Tracks selected by Deseo. Open each track on Spotify.',
-    'playlists' => 'YOUR NEXT MOOD', 'playlists_sub' => 'Carefully curated playlists, straight from Deseo.',
-    'podcasts' => 'THE SHOW GOES ON.', 'podcasts_sub' => 'Catch up on DJ sets and radio shows through our official channels.',
-    'brand' => 'WE ARE DESEO.', 'brand_sub' => 'Not just a station. A space for the music that stays with you.',
+    'lineup' => 'MEET THE LINEUP', 'lineup_sub' => 'More than names on a schedule. The people who give each week its own sound. Choose a day, discover their sets.',
+    'tracks' => 'FRESH SOUNDS', 'tracks_sub' => 'The sounds that stay with you. Discover the latest Deseo Hot Tracks, then find them on Spotify.',
+    'playlists' => 'YOUR NEXT MOOD', 'playlists_sub' => 'From the first light to the last hours of the night. Curated playlists for every version of you.',
+    'podcasts' => 'THE SHOW GOES ON.', 'podcasts_sub' => 'Some sets deserve another listen. Relive the moments through our DJ sets and official podcast channels.',
+    'brand' => 'WE ARE DESEO.', 'brand_sub' => 'Every road, every night, every moment has its own rhythm. The soundtrack of your life.',
     'follow' => 'STAY ON OUR FREQUENCY', 'all' => 'ALL WEEK', 'nonstop' => '24/7 NON-STOP MUSIC',
     'open' => 'OPEN ON SPOTIFY', 'empty_tracks' => 'New Hot Tracks are coming soon.',
     'empty_playlists' => 'New playlists are coming soon.', 'empty_program' => 'Non-stop music all day.',
@@ -58,16 +58,16 @@ $copy = $en ? [
     'friday' => 'FRIDAY', 'read_more' => 'VIEW PROFILE',
 ] : [
     'hero' => 'ΤΟ SOUNDTRACK ΤΗΣ ΖΩΗΣ ΣΟΥ.',
-    'hero_sub' => 'Από την Αθήνα, παντού. House, Afro House, Organic House, Indie Dance και ηλεκτρονική μουσική με χαρακτήρα. 24 ώρες την ημέρα.',
+    'hero_sub' => 'Από την Αθήνα, παντού. Κάθε στιγμή έχει τον δικό της ήχο. House, Afro House, Organic House, Indie Dance και επιλεγμένη ηλεκτρονική μουσική, 24/7.',
     'listen' => 'ΑΚΟΥ LIVE', 'explore' => 'ΑΝΑΚΑΛΥΨΕ ΤΟΝ ΗΧΟ',
     'now' => 'ΤΡΕΧΟΥΣΑ ΖΩΝΗ', 'auto' => 'DESEO NON-STOP', 'next' => 'ΣΤΗ ΣΥΝΕΧΕΙΑ',
-    'schedule' => 'ΤΟ ΠΡΟΓΡΑΜΜΑ', 'schedule_sub' => 'Η εβδομάδα σου, στη συχνότητά μας. Όλες οι ώρες είναι ώρα Ελλάδας.',
+    'schedule' => 'ΤΟ ΠΡΟΓΡΑΜΜΑ', 'schedule_sub' => 'Οι DJs, τα sets και οι μουσικές επιλογές που δίνουν ρυθμό σε κάθε εβδομάδα. Όλες οι ώρες είναι ώρα Ελλάδας.',
     'premiere' => 'Η SEASON 6 ΞΕΚΙΝΑ ΣΕ', 'launched' => 'SEASON 6 · ON AIR NOW',
-    'lineup' => 'ΓΝΩΡΙΣΕ ΤΟΥΣ DJs', 'lineup_sub' => 'Οι άνθρωποι πίσω από τον ήχο. Επίλεξε ημέρα και ανακάλυψε τα resident DJ sets.',
-    'tracks' => 'FRESH SOUNDS', 'tracks_sub' => 'Τα Hot Tracks που ξεχωρίζει το Deseo. Άνοιξε κάθε κομμάτι στο Spotify.',
-    'playlists' => 'Η ΔΙΚΗ ΣΟΥ ΔΙΑΘΕΣΗ', 'playlists_sub' => 'Επιλεγμένες playlists με την υπογραφή του Deseo.',
-    'podcasts' => 'THE SHOW GOES ON.', 'podcasts_sub' => 'Άκου ξανά DJ sets και radio shows από τα επίσημα κανάλια μας.',
-    'brand' => 'WE ARE DESEO.', 'brand_sub' => 'Όχι απλά ένας σταθμός. Ένας χώρος για τη μουσική που μένει μαζί σου.',
+    'lineup' => 'ΓΝΩΡΙΣΕ ΤΟΥΣ DJs', 'lineup_sub' => 'Περισσότερο από ονόματα στο πρόγραμμα. Οι άνθρωποι που δίνουν σε κάθε εβδομάδα τη δική της μουσική ταυτότητα.',
+    'tracks' => 'FRESH SOUNDS', 'tracks_sub' => 'Οι ήχοι που ξεχωρίζουν τώρα. Τα Hot Tracks που δίνουν ρυθμό στη μέρα και μένουν μαζί σου.',
+    'playlists' => 'Η ΔΙΚΗ ΣΟΥ ΔΙΑΘΕΣΗ', 'playlists_sub' => 'Από το πρώτο φως μέχρι τις τελευταίες ώρες της νύχτας. Μουσική για κάθε διάθεση, με την υπογραφή του Deseo.',
+    'podcasts' => 'THE SHOW GOES ON.', 'podcasts_sub' => 'Κάποια sets αξίζει να τα ξαναζήσεις. Οι στιγμές που ξεχώρισες συνεχίζονται στα επίσημα podcast κανάλια μας.',
+    'brand' => 'WE ARE DESEO.', 'brand_sub' => 'Κάθε διαδρομή, κάθε βράδυ, κάθε στιγμή έχει τον δικό της ήχο. Το Soundtrack της ζωής σου!',
     'follow' => 'ΜΕΙΝΕ ΣΤΟΝ ΗΧΟ ΜΑΣ', 'all' => 'ΟΛΗ ΤΗΝ ΕΒΔΟΜΑΔΑ', 'nonstop' => '24/7 NON-STOP MUSIC',
     'open' => 'ΑΝΟΙΓΜΑ ΣΤΟ SPOTIFY', 'empty_tracks' => 'Νέα Hot Tracks έρχονται σύντομα.',
     'empty_playlists' => 'Νέες playlists έρχονται σύντομα.', 'empty_program' => 'Non-stop μουσική όλη μέρα.',
@@ -249,32 +249,53 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <div class="md-hero-photo" aria-hidden="true"></div>
   <div class="md-hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="md-shell md-hero-content">
-    <div class="md-hero-copy">
-      <div class="md-eyebrow"><span class="md-redline"></span> DESEO RADIO <span class="md-split"></span> ATHENS / WORLDWIDE <span class="md-split"></span> 24/7 SOUND</div>
-      <h1 class="md-masthead">FEEL <span>THE</span><em>FREQUENCY<span class="md-period">.</span></em></h1>
-      <div class="md-hero-bottom">
-        <div>
-          <p class="md-overline">HOUSE MUSIC. NO COMPROMISES.</p>
-          <h2><?= demo_e($copy['hero']) ?></h2>
+    <div class="md-hero-grid">
+      <div class="md-hero-copy">
+        <div class="md-eyebrow"><span class="md-redline"></span> DESEO RADIO <span class="md-split"></span> ATHENS / WORLDWIDE <span class="md-split"></span> 24/7 SOUND</div>
+        <p class="md-hero-led">FEEL THE FREQUENCY.</p>
+        <h1 class="md-masthead"><span>THE SOUND</span><em>IS LIVE<span class="md-period">.</span></em></h1>
+        <div class="md-hero-bottom">
+          <h2 class="md-brand-slogan"><?= demo_e($copy['hero']) ?></h2>
           <p class="md-hero-description"><?= demo_e($copy['hero_sub']) ?></p>
           <div class="md-hero-cta">
             <a class="md-button md-button-red" href="#player"><?= demo_e($copy['listen']) ?> <span aria-hidden="true">↗</span></a>
             <a class="md-text-link" href="#tracks"><?= demo_e($copy['explore']) ?> <span aria-hidden="true">↘</span></a>
           </div>
         </div>
-        <div class="md-hero-serial" aria-hidden="true"><strong>06</strong><span>THE NEW<br>SEASON</span></div>
       </div>
+      <aside class="md-hero-live-card" aria-label="<?= demo_e($copy['now']) ?>">
+        <div class="md-hero-card-heading"><span><span class="md-dot"></span> DESEO / ON AIR</span><span>LIVE 24:7</span></div>
+        <div class="md-hero-live-art">
+          <img id="md-hero-live-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>" alt="" loading="eager" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
+          <span class="md-hero-photo-label">DESEO RADIO / ATHENS</span>
+        </div>
+        <div class="md-hero-live-details">
+          <span><?= demo_e($copy['now']) ?></span>
+          <strong id="md-hero-live-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong>
+          <small id="md-hero-live-time"><?= demo_e($liveShow['time'] ?? '24 / 7') ?></small>
+        </div>
+        <div class="md-hero-live-next"><span><?= demo_e($copy['next']) ?></span><strong id="md-hero-next-name"><?= demo_e($nextShow['name'] ?? $copy['nonstop']) ?></strong></div>
+        <a class="md-hero-live-link" href="#player"><?= demo_e($copy['listen']) ?> <span aria-hidden="true">↗</span></a>
+      </aside>
     </div>
   </div>
-  <div class="md-hero-border md-shell"><span>SCROLL TO FEEL IT</span><span>DESEO — ALWAYS IN YOUR ELEMENT.</span><span>↓</span></div>
+  <div class="md-hero-border md-shell"><span>DESEO RADIO / HOUSE MUSIC</span><span>THE SOUNDTRACK OF YOUR LIFE</span><span>↓</span></div>
+</section>
+
+<section class="md-sponsor-band" aria-label="<?= demo_e($copy['sponsor']) ?>">
+  <div class="md-shell md-sponsor-strip">
+    <div class="md-sponsor-head"><span class="md-small-label"><?= demo_e($copy['sponsor']) ?></span><strong>ILUMA <span>×</span> DESEO RADIO</strong></div>
+    <a class="md-sponsor-brand" href="https://iluma.gr/" target="_blank" rel="noopener noreferrer" aria-label="ILUMA Digital Agency"><img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" loading="lazy"></a>
+    <a class="md-sponsor-out" href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA DIGITAL AGENCY <span aria-hidden="true">↗</span></a>
+  </div>
 </section>
 
 <section class="md-player-band" id="player" aria-label="Live audio">
   <div class="md-shell md-player-grid">
     <div class="md-player-intro">
       <span class="md-tag"><span class="md-dot"></span> ON AIR / 24·7</span>
-      <h2>THE SOUND<br><em>IS LIVE.</em></h2>
-      <p><?= $en ? 'Your 24/7 connection to the music you love.' : 'Η μουσική που αγαπάς, ζωντανά κάθε στιγμή.' ?></p>
+      <h2>TURN IT<br><em>UP.</em></h2>
+      <p><?= $en ? 'Not just a frequency. A soundtrack that moves with you, wherever you are.' : 'Δεν ακούς απλώς μουσική. Ζεις την κάθε στιγμή με τον ήχο της.' ?></p>
       <div class="md-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </div>
     <div class="md-player-embed">
@@ -426,19 +447,15 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <div class="md-shell">
     <p>THIS IS YOUR FREQUENCY.</p>
     <h2>MORE THAN<br><em>MUSIC.</em><br>IT'S <span>A FEELING.</span></h2>
-    <div class="md-manifesto-bottom"><span>DESEO RADIO / ATHENS</span><p><?= demo_e($copy['brand_sub']) ?></p><a href="#player" class="md-button md-button-red"><?= demo_e($copy['listen']) ?> ↗</a></div>
+    <div class="md-manifesto-bottom"><span class="md-manifesto-signature"><?= demo_e($copy['hero']) ?></span><p><?= demo_e($copy['brand_sub']) ?></p><a href="#player" class="md-button md-button-red"><?= demo_e($copy['listen']) ?> ↗</a></div>
   </div>
 </section>
 
-<section class="md-sponsor md-shell">
-  <span class="md-small-label"><?= demo_e($copy['sponsor']) ?></span>
-  <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer" aria-label="ILUMA Digital Agency"><img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" loading="lazy"></a>
-</section>
 </main>
 
 <footer class="md-footer">
   <div class="md-shell">
-    <div class="md-footer-main"><div><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50"><p>STAY TUNED, ΣΤΟ SOUNDTRACK ΤΗΣ ΖΩΗΣ ΣΟΥ.</p></div><nav aria-label="Social channels"><a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a><a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">FACEBOOK ↗</a><a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer">MEDIA KIT ↗</a><a href="/" ><?= demo_e($copy['return']) ?> ↗</a></nav></div>
+    <div class="md-footer-main"><div><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50"><p class="md-footer-slogan"><?= demo_e($copy['hero']) ?></p></div><nav aria-label="Social channels"><a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a><a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">FACEBOOK ↗</a><a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer">MEDIA KIT ↗</a><a href="/" ><?= demo_e($copy['return']) ?> ↗</a></nav></div>
     <div class="md-footer-bottom"><span>© <?= $now->format('Y') ?> DESEO RADIO / ATHENS</span><span><?= demo_e($copy['preview']) ?> · NOINDEX</span><span>DESIGNED BY <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA</a></span></div>
   </div>
 </footer>
