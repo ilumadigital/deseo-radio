@@ -248,6 +248,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <section class="md-hero" id="home">
   <div class="md-hero-photo" aria-hidden="true"></div>
   <div class="md-hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="md-hero-gridlines" aria-hidden="true"></div>
+  <div class="md-hero-citymark" aria-hidden="true"><span>DESEO / ATH</span><strong>06</strong><span>THE CITY HAS A SOUND.</span></div>
   <div class="md-shell md-hero-content">
     <div class="md-hero-grid">
       <div class="md-hero-copy">
@@ -264,8 +266,10 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         </div>
       </div>
       <aside class="md-hero-live-card" aria-label="<?= demo_e($copy['now']) ?>">
+        <span class="md-hero-live-number" aria-hidden="true">D/06 — NO ORDINARY SOUND</span>
         <div class="md-hero-card-heading"><span><span class="md-dot"></span> DESEO / ON AIR</span><span>LIVE 24:7</span></div>
         <div class="md-hero-live-art">
+          <span class="md-hero-art-corner" aria-hidden="true">06 / DESEO</span>
           <img id="md-hero-live-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>" alt="" loading="eager" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
           <span class="md-hero-photo-label">DESEO RADIO / ATHENS</span>
         </div>
@@ -331,7 +335,9 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         <a href="#schedule" class="md-text-link"><?= demo_e($copy['schedule']) ?> ↗</a>
       </div>
       <div class="md-season-art" aria-label="Season 6 official lineup artwork">
+        <span class="md-season-vertical" aria-hidden="true">SOUND CULTURE / ATHENS</span>
         <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy">
+        <span class="md-season-stamp" aria-hidden="true">DESEO<br>06</span>
       </div>
     </div>
   </div>
@@ -443,7 +449,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   </div>
 </section>
 
-<section class="md-manifesto">
+<section class="md-manifesto" aria-label="Deseo Radio manifesto">
   <div class="md-shell">
     <p>THIS IS YOUR FREQUENCY.</p>
     <h2>MORE THAN<br><em>MUSIC.</em><br>IT'S <span>A FEELING.</span></h2>
@@ -453,10 +459,46 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 </main>
 
-<footer class="md-footer">
+<footer class="md-footer" id="contact">
   <div class="md-shell">
-    <div class="md-footer-main"><div><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50"><p class="md-footer-slogan"><?= demo_e($copy['hero']) ?></p></div><nav aria-label="Social channels"><a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a><a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">FACEBOOK ↗</a><a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer">MEDIA KIT ↗</a><a href="/" ><?= demo_e($copy['return']) ?> ↗</a></nav></div>
-    <div class="md-footer-bottom"><span>© <?= $now->format('Y') ?> DESEO RADIO / ATHENS</span><span><?= demo_e($copy['preview']) ?> · NOINDEX</span><span>DESIGNED BY <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA</a></span></div>
+    <div class="md-footer-top">
+      <span>DESEO RADIO / ATHENS / WORLDWIDE</span>
+      <span><span class="md-dot"></span> LIVE 24/7 <span class="md-footer-top-separator">·</span> HOUSE MUSIC &amp; MORE</span>
+    </div>
+    <div class="md-footer-main">
+      <div class="md-footer-identity">
+        <p class="md-footer-eyebrow">STAY TUNED. KEEP FEELING.</p>
+        <h2 class="md-footer-statement">THE SOUND<br><em>STAYS</em><br>WITH YOU<span>.</span></h2>
+        <p class="md-footer-slogan"><?= demo_e($copy['hero']) ?></p>
+      </div>
+      <div class="md-footer-directory">
+        <nav class="md-footer-links" aria-label="<?= $en ? 'Explore Deseo' : 'Πλοήγηση Deseo' ?>">
+          <h3><?= $en ? 'EXPLORE' : 'ΕΞΕΡΕΥΝΗΣΕ' ?></h3>
+          <a href="#home"><?= $en ? 'Home' : 'Αρχική' ?> <span>↗</span></a>
+          <a href="#player"><?= $en ? 'Listen Live' : 'Άκου Live' ?> <span>↗</span></a>
+          <a href="#schedule"><?= $en ? 'Schedule' : 'Πρόγραμμα' ?> <span>↗</span></a>
+          <a href="#lineup">Season 06 <span>↗</span></a>
+          <a href="#tracks">Fresh Sounds <span>↗</span></a>
+          <a href="#playlists">Playlists <span>↗</span></a>
+          <a href="#shows">Podcasts <span>↗</span></a>
+        </nav>
+        <nav class="md-footer-links" aria-label="<?= $en ? 'Connect with Deseo' : 'Επικοινωνία Deseo' ?>">
+          <h3><?= $en ? 'CONNECT' : 'ΕΠΙΚΟΙΝΩΝΙΑ' ?></h3>
+          <a href="https://www.instagram.com/deseoradio/" target="_blank" rel="noopener noreferrer">Instagram <span>↗</span></a>
+          <a href="https://www.facebook.com/deseoradiogr/" target="_blank" rel="noopener noreferrer">Facebook <span>↗</span></a>
+          <a href="https://www.mixcloud.com/deseoradio/" target="_blank" rel="noopener noreferrer">Mixcloud <span>↗</span></a>
+          <a href="mailto:radio@iluma.gr">Email <span>↗</span></a>
+          <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer">Media Kit <span>↗</span></a>
+          <a href="/"><?= demo_e($copy['return']) ?> <span>↗</span></a>
+        </nav>
+        <div class="md-footer-icon" aria-hidden="true"><img src="/assets/img/favicon.png" alt=""></div>
+      </div>
+    </div>
+    <div class="md-footer-bottom">
+      <span>© <?= $now->format('Y') ?> DESEO RADIO / ATHENS</span>
+      <span>DESEO / <?= demo_e($copy['preview']) ?> / NOINDEX</span>
+      <span>CREATIVE &amp; TECHNOLOGY <a href="https://iluma.gr/" target="_blank" rel="noopener noreferrer">ILUMA ↗</a></span>
+    </div>
   </div>
 </footer>
 <dialog id="md-dj-dialog" aria-labelledby="md-dialog-title">
