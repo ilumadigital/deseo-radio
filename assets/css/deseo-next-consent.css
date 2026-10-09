@@ -1,0 +1,89 @@
+/* New-design cookie consent UI. Retains the production consent code and
+   storage key deseoCookieConsentV2 without pulling in legacy style.css. */
+.cookie-banner[hidden],.cookie-options[hidden]{display:none!important}
+.cookie-banner{
+ position:fixed;bottom:clamp(14px,3vw,36px);left:clamp(14px,3vw,36px);
+ right:clamp(14px,3vw,36px);z-index:4005;max-width:900px;
+ display:flex;align-items:center;gap:18px;
+ background:rgba(15,14,16,.97);color:#fff;
+ border:1px solid rgba(255,255,255,.22);
+ border-top:2px solid #ff0000;border-radius:12px;
+ box-shadow:0 24px 70px rgba(0,0,0,.72);
+ padding:clamp(18px,3vw,27px);
+ font-family:'Google Sans',Arial,sans-serif;
+ opacity:0;transform:translateY(15px);
+ transition:opacity .26s ease,transform .26s ease;
+}
+.cookie-banner.is-visible{opacity:1;transform:translateY(0)}
+.cookie-icon{font-size:27px;line-height:1;color:#ff0000}
+.cookie-content{flex:1;min-width:0;display:grid;gap:9px}
+.cookie-content h2{font-size:17px;font-weight:800;margin:0}
+.cookie-content p{color:#c4bfc3;line-height:1.55;font-size:13px;margin:0}
+.cookie-options{display:flex;flex-wrap:wrap;gap:12px 24px;padding:8px 0}
+.cookie-options label{display:flex;align-items:center;gap:9px;font-size:12px}
+.cookie-options input{accent-color:#ff0000}
+.cookie-actions{display:flex;gap:9px;flex-wrap:wrap;padding-top:8px}
+.cookie-actions button{
+ border:1px solid rgba(255,255,255,.23);border-radius:5px;
+ min-height:40px;padding:9px 16px;cursor:pointer;
+ background:transparent;color:#fff;
+ font:700 12px 'Google Sans',Arial,sans-serif;
+ transition:background-color .18s,border-color .18s;
+}
+.cookie-actions .button-primary{background:#ff0000;border-color:#ff0000}
+.cookie-actions button:hover,.cookie-actions button:focus-visible{
+ border-color:#ff0000;background:#b50000
+}
+@media(max-width:640px){
+ .cookie-banner{align-items:flex-start;max-height:75dvh;overflow-y:auto}
+ .cookie-icon{display:none}
+ .cookie-actions{display:grid;grid-template-columns:1fr 1fr}
+ .cookie-actions button:last-child{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){.cookie-banner,.cookie-actions button{transition:none}}
+
+/* Preserved installable radio app with a restrained bottom-left prompt;
+   it cannot cover the DJ/sponsor sticky card on the bottom right. */
+.md-app-install[hidden],.md-app-ios-guide:not([open]){display:none!important}
+.md-app-install{
+ position:fixed;left:clamp(12px,2.5vw,30px);bottom:clamp(12px,2.5vw,28px);
+ z-index:2200;display:flex;align-items:center;gap:12px;
+ padding:12px 14px;background:rgba(14,13,15,.96);color:#fff;
+ border:1px solid rgba(255,255,255,.22);border-left:3px solid #ff0000;
+ border-radius:12px;box-shadow:0 22px 65px rgba(0,0,0,.65);
+ font-family:'Google Sans',Arial,sans-serif;
+ max-width:min(390px,calc(100vw - 24px));
+}
+.md-app-install>img{width:42px;height:42px;object-fit:contain;flex:0 0 42px}
+.md-app-install-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.md-app-install-copy strong{font-size:13px}
+.md-app-install-copy small{font-size:10px;color:#bdb9bb;line-height:1.35}
+.md-app-install-action{
+ appearance:none;border:1px solid rgba(255,255,255,.26);border-radius:6px;
+ background:#ff0000;color:white;cursor:pointer;
+ font:800 11px 'Google Sans',Arial,sans-serif;padding:10px 12px;
+}
+.md-app-install-action:hover{background:#c80000}
+.md-app-install-dismiss{border:0;background:transparent;color:#bbb;cursor:pointer;
+ font:400 22px/1 Arial,sans-serif;align-self:flex-start}
+.md-app-ios-guide{
+ position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+ width:min(480px,calc(100vw - 30px));max-width:480px;
+ border:1px solid rgba(255,255,255,.25);border-top:3px solid #ff0000;
+ border-radius:13px;background:#141214;color:#fff;
+ padding:35px 28px;box-shadow:0 30px 90px rgba(0,0,0,.78);
+ font-family:'Google Sans',Arial,sans-serif;
+}
+.md-app-ios-guide::backdrop{background:rgba(0,0,0,.8)}
+.md-app-ios-guide .md-app-ios-kicker{font:800 11px 'Barlow',Arial,sans-serif;color:#ff0000;letter-spacing:.14em}
+.md-app-ios-guide h2{font:800 25px/1.15 'Google Sans',Arial,sans-serif;margin:14px 0}
+.md-app-ios-guide p{font-size:14px;line-height:1.65;color:#ddd}
+.md-app-ios-close{
+ position:absolute;right:13px;top:9px;background:transparent;border:0;color:#fff;
+ font:400 26px Arial,sans-serif;cursor:pointer;
+}
+@media(max-width:550px){
+ .md-app-install{left:10px;bottom:10px;padding:10px 9px;gap:7px}
+ .md-app-install>img{width:34px;height:34px;flex-basis:34px}
+ .md-app-install-action{padding:8px;font-size:10px}
+}
