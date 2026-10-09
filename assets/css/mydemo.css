@@ -805,3 +805,12 @@ button.md-show-card:hover .md-show-photo img{transform:scale(1.09) rotate(-.8deg
   .md-footer-directory{gap:12px}
   .md-footer-links a{font-size:12px}
 }
+
+
+/* Language detail: Latin text uses Barlow; Greek glyphs stay in Google Sans.
+   Body copy remains natural and legible while memorial headlines are condensed. */
+html[lang="en"] body{font-family:'Barlow','Google Sans','Google Sans Flex',Arial,sans-serif}
+html[lang="el"] .md-footer-links a,
+html[lang="el"] .md-footer-links h3{
+  font-family:'Barlow','Google Sans','Google Sans Flex',Arial,sans-serif
+}
