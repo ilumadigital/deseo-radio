@@ -33,6 +33,13 @@ $expect = [
     'id="md-hero-live-time"',
     'id="md-hero-live-photo"',
     'class="md-sponsor-band"',
+    'class="md-hero-gridlines"',
+    'class="md-footer-statement"',
+    'THE SOUND',
+    'STAYS',
+    'WITH YOU',
+    'class="md-footer-directory"',
+    'href="https://iluma.gr/radios/mediakit"',
 ];
 foreach ($expect as $needle) {
     if (!str_contains($html, $needle)) {
@@ -54,6 +61,10 @@ $css = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo.css');
 $js = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo.js');
 if (!str_contains($css, "'Barlow Condensed'") || !str_contains($css, "'Google Sans Flex'")) {
     fwrite(STDERR, "mydemo typography families missing\n");
+    exit(1);
+}
+if (!str_contains($css, "'Barlow','Google Sans'") || !str_contains($css, '.md-show-photo') || !str_contains($css, '.md-footer-statement')) {
+    fwrite(STDERR, "mydemo urban visual and bilingual typography rules missing\n");
     exit(1);
 }
 if (!str_contains($js, 'md-hero-live-name')) {
