@@ -171,7 +171,7 @@
         // Keep server-rendered CMS data visible if the network temporarily fails.
       });
   }
-  if (liveName) {
+  if (liveName || heroLiveName) {
     window.setInterval(refreshSchedule, 60000);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) refreshSchedule();
