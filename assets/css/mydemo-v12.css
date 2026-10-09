@@ -1,0 +1,201 @@
+/* DESEO /mydemo V12 — accessible cursor contrast and robust DJ biographies.
+   No changes to the site-wide player, stream, schedule or production homepage. */
+
+/* Header only has wordmark, language selector and fullscreen menu. */
+.md-header-actions{margin-left:auto!important;justify-content:flex-end!important}
+.md-header .md-header-live{display:none!important}
+
+/* A simple, high-contrast dot: red on dark backgrounds; white on red UI. */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  html.md-has-custom-cursor .md-custom-cursor{
+    border-color:#ff0000!important;
+    background:#ff0000!important;
+    box-shadow:0 0 0 1px rgba(0,0,0,.22);
+    pointer-events:none!important;
+  }
+  html.md-has-custom-cursor .md-custom-cursor.is-interactive{
+    background:rgba(255,0,0,.09)!important;
+  }
+  html.md-has-custom-cursor .md-custom-cursor.is-light{
+    border-color:#fff!important;
+    background:#fff!important;
+    box-shadow:0 0 0 1px rgba(0,0,0,.20);
+  }
+  html.md-has-custom-cursor .md-custom-cursor.is-light.is-interactive{
+    border-color:#fff!important;
+    background:rgba(255,255,255,.2)!important;
+    box-shadow:0 0 0 1px rgba(0,0,0,.24);
+  }
+  /* Native dialogs belong to the browser's top layer. JS re-parents the
+     cursor inside the open dialog so it stays above photo, bio and controls. */
+  #md-dj-dialog > .md-custom-cursor{
+    position:fixed!important;
+    z-index:2147483647!important;
+    pointer-events:none!important;
+    overflow:visible!important;
+  }
+}
+
+/* DJ profile modal: stable maximum size, independent scroll for long bios,
+   natural wrapping for long names and source text, always-visible close. */
+#md-dj-dialog{
+  box-sizing:border-box!important;
+  width:min(880px,calc(100vw - 36px))!important;
+  max-width:880px!important;
+  height:auto!important;
+  max-height:min(84dvh,820px)!important;
+  grid-template-columns:minmax(0,.82fr) minmax(0,1fr)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:15px!important;
+  background:linear-gradient(145deg,#191417,#0b0b0d)!important;
+  box-shadow:0 30px 120px rgba(0,0,0,.83)!important;
+  overflow:hidden!important;
+  isolation:isolate;
+}
+#md-dj-dialog[open]{display:grid!important}
+#md-dj-dialog::backdrop{background:rgba(2,2,4,.85);backdrop-filter:blur(9px)}
+#md-dj-dialog > img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-height:min(84dvh,820px)!important;
+  min-height:0!important;
+  min-width:0!important;
+  object-fit:cover!important;
+  object-position:center top;
+}
+#md-dj-dialog > .md-dj-details{
+  display:flex!important;
+  flex-direction:column;
+  align-items:stretch;
+  box-sizing:border-box;
+  min-width:0!important;
+  min-height:0!important;
+  width:100%;
+  max-height:min(84dvh,820px)!important;
+  padding:clamp(44px,4.5vw,62px) clamp(20px,3vw,39px) clamp(22px,3vw,38px)!important;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#ff0000 #161315;
+}
+#md-dj-dialog .md-index{
+  color:#ff0000;
+  font:800 11px/1.4 'Barlow','Google Sans',Arial,sans-serif;
+  letter-spacing:.14em;
+  flex:0 0 auto;
+}
+#md-dj-dialog #md-dialog-title{
+  font-family:'Google Sans','Google Sans Flex',Arial,sans-serif!important;
+  font-weight:800!important;
+  font-size:clamp(24px,2.35vw,39px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.037em!important;
+  margin:18px 0 20px!important;
+  text-transform:uppercase;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  hyphens:auto;
+  text-wrap:balance;
+  flex:0 0 auto;
+}
+#md-dj-dialog #md-dialog-bio{
+  display:block;
+  box-sizing:border-box;
+  min-height:0;
+  max-height:clamp(145px,33dvh,350px)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  overflow-wrap:anywhere!important;
+  word-break:normal;
+  white-space:pre-line!important;
+  scrollbar-width:thin;
+  scrollbar-color:#ff0000 #161315;
+  color:#cbc4c7!important;
+  font:400 14px/1.75 'Google Sans','Google Sans Flex',Arial,sans-serif!important;
+  margin:0 0 6px!important;
+  padding:0 9px 3px 0;
+  flex:0 1 auto;
+}
+#md-dj-dialog #md-dialog-bio[hidden]{display:none!important}
+#md-dj-dialog #md-dialog-links{
+  display:flex;flex-wrap:wrap;gap:8px;
+  flex:0 0 auto;
+  margin:clamp(13px,2.5vh,27px) 0 0!important;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.14);
+  min-width:0;
+}
+#md-dj-dialog #md-dialog-links:empty{display:none!important}
+#md-dj-dialog #md-dialog-links a{
+  display:inline-flex;align-items:center;gap:9px;
+  max-width:100%;min-width:0;overflow-wrap:anywhere;
+  padding:9px 11px!important;
+  border:1px solid rgba(255,255,255,.25)!important;border-radius:5px;
+  color:white;
+  font:700 12px/1.3 'Google Sans','Google Sans Flex',Arial,sans-serif!important;
+  text-decoration:none;
+  transition:background .2s,border-color .2s;
+}
+#md-dj-dialog #md-dialog-links a:hover,
+#md-dj-dialog #md-dialog-links a:focus-visible{
+  background:#ff0000!important;border-color:#ff0000!important;
+}
+#md-dj-dialog #md-dialog-close{
+  position:absolute!important;
+  top:12px!important;right:12px!important;
+  width:39px!important;height:39px!important;
+  display:grid;place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:50%;
+  background:#ff0000!important;
+  color:#fff!important;
+  font:400 27px/1 Arial,sans-serif!important;
+  z-index:3!important;
+}
+#md-dj-dialog #md-dialog-close:hover,
+#md-dj-dialog #md-dialog-close:focus-visible{
+  background:#c80000!important;
+}
+@media(max-width:760px){
+  #md-dj-dialog{
+    width:min(520px,calc(100vw - 26px))!important;
+    max-width:520px!important;
+    max-height:calc(100dvh - 32px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+  #md-dj-dialog[open]{display:block!important}
+  #md-dj-dialog>img{
+    height:clamp(170px,27dvh,285px)!important;
+    min-height:0!important;
+    max-height:285px!important;
+    object-position:center 27%;
+  }
+  #md-dj-dialog>.md-dj-details{
+    max-height:none!important;
+    overflow:visible!important;
+    padding:23px 23px 27px!important;
+  }
+  #md-dj-dialog #md-dialog-title{
+    font-size:clamp(24px,6.1vw,35px)!important;
+    margin:12px 0 14px!important;
+  }
+  #md-dj-dialog #md-dialog-bio{
+    max-height:clamp(140px,35dvh,315px)!important;
+    font-size:13px!important;
+    line-height:1.73!important;
+  }
+  #md-dj-dialog #md-dialog-close{top:10px!important;right:10px!important}
+}
+@media(max-width:390px){
+  #md-dj-dialog>.md-dj-details{padding:19px 17px 23px!important}
+  #md-dj-dialog #md-dialog-title{font-size:25px!important}
+  #md-dj-dialog #md-dialog-links a{font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #md-dj-dialog #md-dialog-links a{transition:none!important}
+}
