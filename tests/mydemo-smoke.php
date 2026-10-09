@@ -30,6 +30,15 @@ $required = [
     'data-iluma-signal-slot="sticky-sponsor"',
     'data-iluma-signal-image',
     'https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1',
+    'id="faq"',
+    'id="md-faq-title"',
+    'class="md-faq-list"',
+    'class="md-faq-item"',
+    'id="ask-ai"',
+    'id="ai-discovery-title"',
+    'class="ai-discovery-grid"',
+    'class="md-ai-wrap"',
+    '/assets/css/mydemo-v7.css',
     'id="listen-everywhere"',
     'id="about"',
     'THE WEEKLY LINEUP',
@@ -75,6 +84,40 @@ foreach ($forbidden as $needle) {
 if (substr_count($html, 'id="md-iradios-player"') !== 1 ||
     substr_count($html, 'id="md-player-dock"') !== 1) {
     fwrite(STDERR, "Exactly one official iRadios iframe and one informational dock required\n");
+    exit(1);
+}
+if (substr_count($html, 'class="md-faq-item"') !== DESEO_PUBLIC_FAQ_COUNT) {
+    fwrite(STDERR, "Demo must use all public FAQ answers from shared translations\n");
+    exit(1);
+}
+if (substr_count($html, 'class="ai-discovery-card"') !== 4 ||
+    !str_contains($html, 'chatgpt.com/?q=') ||
+    !str_contains($html, 'claude.ai/new?q=') ||
+    !str_contains($html, 'www.perplexity.ai/search/new?q=')) {
+    fwrite(STDERR, "Demo must reuse the four live AI provider links and official prompt\n");
+    exit(1);
+}
+$faqPos = strpos($html, 'id="faq"');
+$aiPos = strpos($html, 'id="ask-ai"');
+$footerPos = strpos($html, '<footer class="md-footer"');
+if ($faqPos === false || $aiPos === false || $footerPos === false ||
+    !($faqPos < $aiPos && $aiPos < $footerPos)) {
+    fwrite(STDERR, "FAQ and AI must render in that order before the footer\n");
+    exit(1);
+}
+$demoSource = (string)file_get_contents(__DIR__ . '/../mydemo.php');
+if (str_contains($demoSource, 'class="md-hero-cta"') ||
+    str_contains($html, 'class="md-hero-cta"')) {
+    fwrite(STDERR, "Demo hero CTAs should be removed completely\n");
+    exit(1);
+}
+$v7Css = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v7.css');
+if (!str_contains($v7Css, '@media(max-width:1159px)') ||
+    !str_contains($v7Css, '.md-hero-grid > .md-player-home') ||
+    !str_contains($v7Css, 'order:1;') ||
+    !str_contains($v7Css, '.md-hero-grid > .md-hero-copy') ||
+    !str_contains($v7Css, 'order:2;')) {
+    fwrite(STDERR, "Demo must show the player before hero titles at tablet/mobile breakpoints\n");
     exit(1);
 }
 if (substr_count($html, 'class="md-partner-card"') !== 8) {
