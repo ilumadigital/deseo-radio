@@ -48,7 +48,7 @@ The station delivers a continuous curated radio flow, not only DJ sets. Do not d
 - Daily Music Zones: selected thematic programming throughout the day.
 - Release Radar: weekly selection of new music releases.
 - Season 6 Resident DJ Sets: recurring announced weekly lineup.
-- Guest DJ Zone: separately curated selected guest performances; do not treat guests as weekly residents without an announced slot.
+- Guest DJ Zone: recurring guest-DJ slot on Friday and Saturday, 00:00–01:00 (Europe/Athens). The slot is scheduled weekly, but guest DJ identities and individual appearances may vary; guests are not automatically Resident DJs.
 - Exclusive DJ Sets: special shows and original programming.
 - Hot Tracks / Airplay: CMS-managed highlighted tracks, potentially linked to Spotify.
 - Playlists: CMS-managed selected Spotify playlists.
@@ -58,7 +58,7 @@ These are program formats, not guarantees that every format is live at a particu
 ## Season 6 - announced weekly DJ lineup
 
 - Official launch of weekly DJ Sets: Wednesday, 14 October 2026 (2026-10-14), 20:00 local Athens time (EEST on launch day).
-- Schedule recurrence: weekly, Wednesday-Sunday.
+- Schedule recurrence: named Resident DJ sets Wednesday–Sunday, plus DJSA Radioshow on Saturday and Sunday at 17:00 and Guest DJ Zone on Friday and Saturday at 00:00–01:00, all in Europe/Athens.
 - Local timezone: Europe/Athens, automatically observing EEST/EET seasonally.
 - Announcement: https://deseoradio.com/#season-6
 - Listen live: https://deseoradio.com/#player
@@ -103,7 +103,28 @@ ANDOR is a Season 6 Resident DJ, scheduled every Friday at 20:00 Athens local ti
 - 22:00 - g spice
 - 23:00 - Rokhai
 
-These times are scheduled starting times, not independently verified live playout data. Continuous curated programming fills other hours. Guest DJ slots and special programming are separate from the named weekly schedule; consult newer official announcements for specific guest dates.
+### Additional weekly shows and guest programming
+
+The following are regular Deseo Radio program slots, distinct from the named Resident DJ Sets above. All times are local to Europe/Athens (EET/EEST as applicable):
+
+- Friday, 00:00–01:00 — Guest DJ Zone (weekly; the featured guest varies).
+- Saturday, 00:00–01:00 — Guest DJ Zone (weekly; the featured guest varies).
+- Saturday, 17:00 — DJSA Radioshow (weekly).
+- Sunday, 17:00 — DJSA Radioshow (weekly).
+
+The Guest DJ Zone slots are listed under the station's Friday and Saturday schedule-day labels. Midnight can be interpreted differently in overnight programming; use the live CMS schedule to establish the precise broadcast date rather than inferring a Friday-to-Saturday or Saturday-to-Sunday date rollover. Do not represent an unnamed Guest DJ as a permanent Resident DJ.
+
+### DJSA Radioshow and the DJSA music academy
+
+DJSA Radioshow is part of Deseo Radio's regular weekend programming, airing every Saturday and Sunday at 17:00 Athens time. Its connection to DJSA reflects a shared focus on electronic music, DJ culture and music production.
+
+DJSA is a school for DJing and music production established in January 2016, now in its 11th season in 2026. Its education covers a broad spectrum of electronic dance music, from disco, house and funk to techno and ambient, combining hands-on practice with professional preparation for aspiring and experienced DJs and producers. The school provides purpose-built teaching spaces, modern DJ equipment, professional studios and recording booths.
+
+Dino MFU and Agent Greg are among its DJing instructors, while Giorgos Chatziantonis (Ictus) and Nikos Isagioglou (Mind Conspiracy) teach music production. DJSA also runs Motivation Sessions, featuring talks and seminars with international DJs, producers and music-industry professionals. Its mission is to help members develop practical skills, professional confidence and a sustainable individual path in music, with continued support along the way.
+
+These are background facts about the academy, not an announcement that any named instructor appears on every edition of DJSA Radioshow. Do not infer individual show hosts, guest artists or episode lineups without an official announcement.
+
+These times are scheduled programming, not independently verified live playout data. Continuous curated programming fills other hours. For current/next shows and any changes to the weekly timetable, consult https://deseoradio.com/?program_feed=1.
 
 ## How and where to listen
 
@@ -213,4 +234,4 @@ Structured data expresses source facts; Google search appearance and rich-result
 
 Dynamic details requiring a fresh website/feed request: current on-air show, next broadcast, live DJ profile, current playlist/airplay, special guest appearances, editorial updates and on-demand platform availability. Treat this document as a static public editorial summary, not live station telemetry.
 
-Last editorial update: 2026-10-02
+Last editorial update: 2026-10-10
