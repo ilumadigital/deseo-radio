@@ -11,6 +11,70 @@
   var lastFocus = null;
   var hiding = null;
   var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var carousel = menu.querySelector('.md-menu-showcase');
+  var carouselTrack = document.getElementById('md-menu-carousel-track');
+  var carouselSlides = carousel ? Array.prototype.slice.call(carousel.querySelectorAll('.md-menu-promo')) : [];
+  var carouselDots = carousel ? Array.prototype.slice.call(carousel.querySelectorAll('[data-carousel-to]')) : [];
+  var carouselCounter = document.getElementById('md-menu-carousel-current');
+  var carouselIndex = 0;
+  var carouselTimer = null;
+
+  function showCarouselSlide(index) {
+    if (!carouselTrack || !carouselSlides.length) return;
+    carouselIndex = (index + carouselSlides.length) % carouselSlides.length;
+    carouselTrack.style.transform = 'translate3d(-' + (carouselIndex * 100) + '%,0,0)';
+    carouselSlides.forEach(function (slide, i) {
+      var selected = i === carouselIndex;
+      slide.tabIndex = selected ? 0 : -1;
+      slide.setAttribute('aria-hidden', selected ? 'false' : 'true');
+      slide.classList.toggle('is-current', selected);
+    });
+    carouselDots.forEach(function (dot, i) {
+      var active = i === carouselIndex;
+      dot.classList.toggle('is-active', active);
+      dot.setAttribute('aria-current', active ? 'true' : 'false');
+    });
+    if (carouselCounter) {
+      carouselCounter.textContent = String(carouselIndex + 1).padStart(2, '0');
+    }
+  }
+  function stopCarouselRotation() {
+    if (carouselTimer) window.clearInterval(carouselTimer);
+    carouselTimer = null;
+  }
+  function startCarouselRotation() {
+    stopCarouselRotation();
+    if (prefersReduced || !isOpen() || carouselSlides.length < 2) return;
+    carouselTimer = window.setInterval(function () {
+      showCarouselSlide(carouselIndex + 1);
+    }, 5600);
+  }
+  if (carousel) {
+    showCarouselSlide(0);
+    var prev = carousel.querySelector('.md-menu-carousel-prev');
+    var next = carousel.querySelector('.md-menu-carousel-next');
+    if (prev) prev.addEventListener('click', function () {
+      showCarouselSlide(carouselIndex - 1);
+      startCarouselRotation();
+    });
+    if (next) next.addEventListener('click', function () {
+      showCarouselSlide(carouselIndex + 1);
+      startCarouselRotation();
+    });
+    carouselDots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        showCarouselSlide(Number(dot.getAttribute('data-carousel-to')));
+        startCarouselRotation();
+      });
+    });
+    carousel.addEventListener('mouseenter', stopCarouselRotation);
+    carousel.addEventListener('mouseleave', startCarouselRotation);
+    carousel.addEventListener('focusin', stopCarouselRotation);
+    carousel.addEventListener('focusout', function (event) {
+      if (!carousel.contains(event.relatedTarget)) startCarouselRotation();
+    });
+  }
+
 
   function isOpen() {
     return !menu.hidden && menu.classList.contains('is-open');
@@ -34,6 +98,7 @@
     // Let the browser apply the initial frame before animating the overlay.
     window.requestAnimationFrame(function () {
       menu.classList.add('is-open');
+      startCarouselRotation();
       closeButton.focus({ preventScroll: true });
     });
   }
@@ -41,6 +106,7 @@
   function closeMenu(restoreFocus) {
     if (menu.hidden) return;
     menu.classList.remove('is-open');
+    stopCarouselRotation();
     trigger.setAttribute('aria-expanded', 'false');
     document.documentElement.classList.remove('md-menu-open');
     if (restoreFocus !== false && lastFocus && typeof lastFocus.focus === 'function') {
