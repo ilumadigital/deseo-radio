@@ -348,7 +348,7 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 /* V11: the actual live contract, no carousel or obsolete menu copy. */
 foreach ([
     '/assets/css/mydemo-v11.css',
-    'content="v13-fullwidth-player"',
+    'content="v14-hero-glass-and-layout"',
     'class="md-fs-menu-brand"',
     '<h2 class="md-fs-menu-title" id="md-fs-menu-title">',
     'class="md-fs-title-red"',
