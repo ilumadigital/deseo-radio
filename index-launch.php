@@ -62,6 +62,7 @@ require __DIR__ . '/includes/launch-2026/footer.php';
 if ($deseo_launch_public) {
     // Shared GA consent + marketing permission, same storage keys as legacy homepage.
     require_once __DIR__ . '/includes/cookiebanner.php';
+    require __DIR__ . '/includes/launch-2026/pwa.php';
 }
 ?>
 </body>
