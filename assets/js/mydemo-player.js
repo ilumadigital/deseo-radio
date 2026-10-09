@@ -108,9 +108,19 @@
       : (english ? 'Mute' : 'Σίγαση'));
   });
 
+  // Preserve the original hero height during DOM reparenting so the page
+  // never jumps or repeatedly triggers the viewport observer.
+  var expandedHeight = 0;
+  function rememberExpandedHeight() {
+    if (player.parentNode === home && !player.classList.contains('is-mini')) {
+      expandedHeight = Math.ceil(player.getBoundingClientRect().height);
+      if (expandedHeight > 0) home.style.minHeight = expandedHeight + 'px';
+    }
+  }
   function changeLayout() {
     var shouldMini = customMini || isBelowHero;
     if (shouldMini) {
+      rememberExpandedHeight();
       if (player.parentNode !== dock) dock.appendChild(player);
       dock.removeAttribute('aria-hidden');
     } else {
@@ -118,9 +128,15 @@
       dock.setAttribute('aria-hidden', 'true');
     }
     player.classList.toggle('is-mini', shouldMini);
-    // The official now-playing iframe is only displayed in expanded mode;
-    // this prevents an oversized secondary widget in the corner dock.
+    if (!shouldMini) rememberExpandedHeight();
   }
+  rememberExpandedHeight();
+  window.addEventListener('resize', function () {
+    if (player.parentNode === home) {
+      home.style.minHeight = '';
+      rememberExpandedHeight();
+    }
+  }, { passive: true });
   if (minify) minify.addEventListener('click', function () {
     customMini = true;
     changeLayout();
