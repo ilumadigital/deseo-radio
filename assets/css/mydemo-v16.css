@@ -1,0 +1,58 @@
+/* Deseo Radio /mydemo V16.
+   Anchor navigation to the bottom of the available fullscreen menu area,
+   rather than approximating this with an arbitrary top margin.
+   Keep the title high and the DJ SA feature aligned with the lower row.
+   Phones retain their vertically scrollable menu. */
+@media (min-width:851px) {
+  .md-fs-menu .md-fs-menu-main {
+    align-items:stretch!important;
+  }
+
+  .md-fs-menu .md-fs-menu-nav {
+    display:flex!important;
+    flex-direction:column!important;
+    align-self:stretch!important;
+    min-width:0!important;
+    min-height:0!important;
+  }
+
+  .md-fs-menu .md-fs-menu-nav .md-fs-menu-title {
+    flex:0 0 auto!important;
+  }
+
+  /* With a flex auto margin, the links' bottom edge sits immediately
+     above the footer no matter how tall the available desktop viewport is. */
+  .md-fs-menu .md-fs-menu-nav .md-fs-menu-links {
+    flex:0 0 auto!important;
+    margin-top:auto!important;
+    margin-bottom:0!important;
+    min-height:0!important;
+    grid-template-rows:repeat(5,minmax(0,auto))!important;
+    align-content:end!important;
+  }
+
+  .md-fs-menu .md-fs-menu-main .md-fs-menu-side {
+    display:flex!important;
+    flex-direction:column!important;
+    align-self:stretch!important;
+    justify-content:flex-end!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    min-width:0!important;
+  }
+}
+
+/* On touch/mobile screens, never force links to viewport bottom; the long
+   single-column menu must remain naturally scrollable and accessible. */
+@media (max-width:850px) {
+  .md-fs-menu .md-fs-menu-nav .md-fs-menu-links {
+    flex:0 0 auto!important;
+    margin-top:0!important;
+    grid-template-rows:none!important;
+    align-content:initial!important;
+  }
+  .md-fs-menu .md-fs-menu-main .md-fs-menu-side {
+    justify-content:flex-start!important;
+    align-self:auto!important;
+  }
+}
