@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <link rel="icon" href="/assets/img/favicon.png">
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-refinements.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-refinements.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-refinements.css') : 1 ?>">
@@ -238,7 +238,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <a class="md-skip" href="#main">Skip to content</a>
 <div class="md-noise" aria-hidden="true"></div>
 <div class="md-preloader" aria-hidden="true"><div class="md-preloader-lockup">
-<img class="md-preloader-mark" src="/assets/img/favicon.png" width="72" height="72" alt="">
+<img class="md-preloader-mark" src="/assets/img/favicon-nobg.png" width="72" height="72" alt="">
 <img class="md-preloader-wordmark" src="/assets/img/deseoradio-logo.png" width="170" height="60" alt="">
 </div><span class="md-preloader-line"></span></div>
 
@@ -527,7 +527,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         <a href="https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue" target="_blank" rel="noopener noreferrer">SPOTIFY <span>↗</span></a>
       </div>
     </div>
-    <div class="md-shows-art"><div class="md-disc"><span><img src="/assets/img/favicon.png" alt="Deseo Radio" loading="lazy"></span></div><span class="md-disc-caption">DESEO RADIO / ALL THE FEELS / SEASON 06</span></div>
+    <div class="md-shows-art"><div class="md-disc"><span><img src="/assets/img/favicon-nobg.png" alt="Deseo Radio" loading="lazy"></span></div><span class="md-disc-caption">DESEO RADIO / ALL THE FEELS / SEASON 06</span></div>
   </div>
 </section>
 
@@ -594,7 +594,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           <a href="https://iluma.gr/radios/mediakit" target="_blank" rel="noopener noreferrer"><span>MEDIA KIT</span><b>↗</b></a>
         </div>
         <a class="md-footer-contact" href="mailto:radio@iluma.gr">GET IN TOUCH <span>↗</span></a>
-        <div class="md-footer-icon" aria-hidden="true"><img src="/assets/img/favicon.png" alt=""></div>
+        <div class="md-footer-icon" aria-hidden="true"><img src="/assets/img/favicon-nobg.png" alt=""></div>
       </div>
     </div>
     <div class="md-footer-bottom">
