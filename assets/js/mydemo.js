@@ -1,4 +1,4 @@
-/* /mydemo only: accessible tabs, published DJ profiles, live schedule refresh. */
+/* Shared Deseo homepage: accessible DJ tabs, profiles and live schedule refresh. */
 (function () {
   'use strict';
 
@@ -166,7 +166,8 @@
   }
   function refreshSchedule() {
     if (document.hidden) return;
-    fetch('/mydemo?feed=1', { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
+    var feedPath = window.location.pathname.indexOf('/mydemo') === 0 ? '/mydemo?feed=1' : '/?feed=1';
+    fetch(feedPath, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
