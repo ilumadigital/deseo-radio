@@ -38,7 +38,7 @@ function demo_clock($time): string {
 $lang = deseo_lang();
 $en = $lang === 'en';
 $copy = $en ? [
-    'hero' => 'THE SOUNDTRACK OF YOUR LIFE.',
+    'hero' => 'The Soundtrack of your life!',
     'hero_sub' => 'From Athens, for everywhere. Every moment has a sound of its own. House, Afro House, Organic House, Indie Dance and electronic selections — around the clock.',
     'listen' => 'LISTEN LIVE', 'explore' => 'EXPLORE THE SOUND',
     'now' => 'CURRENT RADIO SLOT', 'auto' => 'DESEO NON-STOP', 'next' => 'UP NEXT',
@@ -57,7 +57,7 @@ $copy = $en ? [
     'return' => 'ORIGINAL WEBSITE', 'preview' => 'PRIVATE DESIGN PREVIEW',
     'friday' => 'FRIDAY', 'read_more' => 'VIEW PROFILE',
 ] : [
-    'hero' => 'ΤΟ SOUNDTRACK ΤΗΣ ΖΩΗΣ ΣΟΥ.',
+    'hero' => 'Το Soundtrack της ζωής σου!',
     'hero_sub' => 'Από την Αθήνα, παντού. Κάθε στιγμή έχει τον δικό της ήχο. House, Afro House, Organic House, Indie Dance και επιλεγμένη ηλεκτρονική μουσική, 24/7.',
     'listen' => 'ΑΚΟΥ LIVE', 'explore' => 'ΑΝΑΚΑΛΥΨΕ ΤΟΝ ΗΧΟ',
     'now' => 'ΤΡΕΧΟΥΣΑ ΖΩΝΗ', 'auto' => 'DESEO NON-STOP', 'next' => 'ΣΤΗ ΣΥΝΕΧΕΙΑ',
