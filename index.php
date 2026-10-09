@@ -576,8 +576,8 @@ $partners = [
                                    rel="noopener noreferrer"
                                    data-analytics-event="spotify_track_click">
                                     <img class="deseo-row-cover"
-                                         src="<?= deseo_e($track['artwork_url'] ?: '/assets/img/favicon.png') ?>"
-                                         data-fallback="/assets/img/favicon.png"
+                                         src="<?= deseo_e($track['artwork_url'] ?: '/assets/img/favicon-nobg.png') ?>"
+                                         data-fallback="/assets/img/favicon-nobg.png"
                                          alt="">
 
                                     <span class="deseo-row-copy">
@@ -661,8 +661,8 @@ $partners = [
                                     <span class="deseo-row-index"><?= str_pad((string)(int)$playlist['position'], 2, '0', STR_PAD_LEFT) ?></span>
 
                                     <img class="deseo-row-cover"
-                                         src="<?= deseo_e($playlist['artwork_url'] ?: '/assets/img/favicon.png') ?>"
-                                         data-fallback="/assets/img/favicon.png"
+                                         src="<?= deseo_e($playlist['artwork_url'] ?: '/assets/img/favicon-nobg.png') ?>"
+                                         data-fallback="/assets/img/favicon-nobg.png"
                                          alt="<?= deseo_e($playlist['title']) ?>">
 
                                     <span class="deseo-row-copy">
