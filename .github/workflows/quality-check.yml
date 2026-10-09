@@ -60,6 +60,12 @@ jobs:
       - name: Public homepage launch candidate smoke
         run: php tests/launch-home-smoke.php
 
+      - name: Public homepage feed compatibility
+        run: php tests/launch-home-feed.php
+
+      - name: Private English launch preview
+        run: php tests/launch-home-preview.php
+
       - name: JavaScript syntax
         run: |
           node --check sw.js
