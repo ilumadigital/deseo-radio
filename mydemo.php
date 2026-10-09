@@ -39,7 +39,7 @@ $lang = deseo_lang();
 $en = $lang === 'en';
 $copy = $en ? [
     'hero' => 'The Soundtrack of your life!',
-    'hero_sub' => 'Some sounds are meant to be felt.',
+    'hero_sub' => 'Nothing but music that stays with you.',
     'listen' => 'LISTEN LIVE', 'explore' => 'EXPLORE THE SOUND',
     'now' => 'CURRENT RADIO SLOT', 'auto' => 'DESEO NON-STOP', 'next' => 'UP NEXT',
     'schedule' => 'THE SCHEDULE', 'schedule_sub' => 'The DJs, the sets, the selections. A different soundtrack for every day of your week. All times Athens.',
@@ -58,7 +58,7 @@ $copy = $en ? [
     'friday' => 'FRIDAY', 'read_more' => 'VIEW PROFILE',
 ] : [
     'hero' => 'Το Soundtrack της ζωής σου!',
-    'hero_sub' => 'Κάθε στιγμή κρύβει έναν ήχο.',
+    'hero_sub' => 'Παίζουμε μόνο μουσικάρες για την κάθε σου στιγμή.',
     'listen' => 'ΑΚΟΥ LIVE', 'explore' => 'ΑΝΑΚΑΛΥΨΕ ΤΟΝ ΗΧΟ',
     'now' => 'ΤΡΕΧΟΥΣΑ ΖΩΝΗ', 'auto' => 'DESEO NON-STOP', 'next' => 'ΣΤΗ ΣΥΝΕΧΕΙΑ',
     'schedule' => 'ΤΟ ΠΡΟΓΡΑΜΜΑ', 'schedule_sub' => 'Οι DJs, τα sets και οι μουσικές επιλογές που δίνουν ρυθμό σε κάθε εβδομάδα. Όλες οι ώρες είναι ώρα Ελλάδας.',
@@ -221,6 +221,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
+  <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
 </head>
 <body>
 <a class="md-skip" href="#main">Skip to content</a>
@@ -255,13 +256,13 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <div class="md-shell md-hero-content">
     <div class="md-hero-grid">
       <div class="md-hero-copy">
-        <div class="md-eyebrow"><span class="md-redline"></span> DESEO RADIO <span class="md-split"></span> ATHENS / WORLDWIDE <span class="md-split"></span> 24/7 SOUND</div>
-        <p class="md-hero-led">SOME SOUNDS STAY.</p>
-        <h1 class="md-masthead"><span>THE SOUND</span><em>IS LIVE<span class="md-period">.</span></em></h1>
-        <div class="md-hero-bottom">
-          <h2 class="md-brand-slogan"><?= demo_e($copy['hero']) ?></h2>
-          <p class="md-hero-description"><?= demo_e($copy['hero_sub']) ?></p>
-          <div class="md-hero-cta">
+        <h1 class="md-masthead md-brand-headline" aria-label="The Soundtrack of your Life!">
+          <span>THE SOUNDTRACK</span>
+          <em>OF YOUR</em>
+          <strong>LIFE<span class="md-period">!</span></strong>
+        </h1>
+        <p class="md-hero-description"><?= $en ? 'Nothing but <strong>great music</strong> for every moment.' : 'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.' ?></p>
+        <div class="md-hero-cta">
             <button class="md-button md-button-red" id="md-hero-play" type="button"><?= demo_e($copy['listen']) ?> <span aria-hidden="true">↗</span></button>
             <a class="md-text-link" href="#lineup">SEASON 06 <span aria-hidden="true">↘</span></a>
           </div>
@@ -278,46 +279,60 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
             </div>
           </div>
           <div class="md-custom-inner">
-            <div class="md-custom-brand"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="160" height="45"><span>FEEL THE UNSEEN.</span></div>
-            <div class="md-custom-track">
-              <div class="md-nowplaying-title">
-                <span class="md-custom-eyebrow"><?= $en ? 'NOW PLAYING' : 'ΠΑΙΖΕΙ ΤΩΡΑ' ?></span>
-                <strong><?= $en ? 'WHAT YOU HEAR. WHAT YOU FEEL.' : 'Ο ΗΧΟΣ ΤΗΣ ΣΤΙΓΜΗΣ.' ?></strong>
+            <div class="md-player-squares">
+              <div class="md-nowplaying-column">
+                <div class="md-player-square-label"><?= $en ? 'NOW PLAYING' : 'ΠΑΙΖΕΙ ΤΩΡΑ' ?></div>
+                <div class="md-nowplaying-frame">
+                  <iframe src="https://play.iradios.gr/widget-now/deseo-radio"
+                          title="<?= $en ? 'Deseo Radio now playing track and artwork' : 'Deseo Radio: τραγούδι και εξώφυλλο που παίζει τώρα' ?>"
+                          width="100%" frameborder="0" loading="eager"
+                          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                </div>
               </div>
-              <div class="md-nowplaying-frame">
-                <iframe src="https://play.iradios.gr/widget-now/deseo-radio"
-                        title="<?= $en ? 'Deseo Radio now playing track and artwork' : 'Deseo Radio: τραγούδι και εξώφυλλο που παίζει τώρα' ?>"
-                        width="100%" frameborder="0" loading="eager"
-                        referrerpolicy="strict-origin-when-cross-origin"></iframe>
-              </div>
-              <div class="md-mini-track" aria-label="<?= $en ? 'Radio currently on air' : 'Τρέχουσα ραδιοφωνική εκπομπή' ?>">
-                <img src="/assets/img/favicon.png" alt="" width="44" height="44">
-                <span><small>DESEO / LIVE RADIO</small><strong id="md-mini-show-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong></span>
+              <div class="md-sponsor-column">
+                <div class="md-player-square-label"><?= $en ? 'OFFICIAL SPONSOR' : 'ΕΠΙΣΗΜΟΣ ΧΟΡΗΓΟΣ' ?></div>
+                <a class="md-custom-sponsor" href="https://iluma.gr/"
+                   target="_blank" rel="noopener noreferrer"
+                   data-iluma-signal-slot="hero-sponsor"
+                   aria-label="ILUMA Digital Agency — sponsor">
+                  <img src="/assets/img/iluma-digital-agency-banner.jpg"
+                       data-iluma-signal-image alt="ILUMA Digital Agency" loading="eager">
+                </a>
               </div>
             </div>
             <div class="md-custom-show">
-              <span class="md-custom-eyebrow"><?= demo_e($copy['now']) ?></span>
               <div class="md-custom-show-row">
-                <img id="md-hero-live-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>" alt="" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
-                <div class="md-custom-show-text"><strong id="md-hero-live-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong><span id="md-hero-live-time"><?= demo_e($liveShow['time'] ?? '24 / 7') ?></span></div>
+                <img id="md-hero-live-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>"
+                     alt="" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/bg.png'">
+                <div class="md-custom-show-text">
+                  <span class="md-custom-eyebrow"><?= demo_e($copy['now']) ?></span>
+                  <strong id="md-hero-live-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong>
+                  <span id="md-hero-live-time"><?= demo_e($liveShow['time'] ?? '24 / 7') ?></span>
+                </div>
                 <span class="md-custom-live-indicator">ON AIR</span>
               </div>
               <div class="md-custom-next"><?= demo_e($copy['next']) ?> <strong id="md-hero-next-name"><?= demo_e($nextShow['name'] ?? $copy['nonstop']) ?></strong></div>
             </div>
             <div class="md-custom-controls">
-              <button type="button" class="md-custom-play" id="md-audio-toggle" aria-label="<?= $en ? 'Play radio' : 'Έναρξη ραδιοφώνου' ?>" aria-pressed="false"><span id="md-audio-symbol" aria-hidden="true">▶</span></button>
-              <div class="md-custom-meter"><div class="md-custom-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span id="md-playback-label" role="status"><?= $en ? 'CONNECTING…' : 'ΣΥΝΔΕΣΗ…' ?></span></div>
+              <button type="button" class="md-custom-play" id="md-audio-toggle"
+                      aria-label="<?= $en ? 'Play radio' : 'Έναρξη ραδιοφώνου' ?>" aria-pressed="false">
+                <span id="md-audio-symbol" aria-hidden="true">▶</span>
+              </button>
+              <div class="md-custom-meter">
+                <div class="md-custom-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <span id="md-playback-label" role="status"><?= $en ? 'CONNECTING…' : 'ΣΥΝΔΕΣΗ…' ?></span>
+              </div>
               <div class="md-custom-volume">
                 <button type="button" class="md-volume-mute" id="md-volume-mute" aria-label="<?= $en ? 'Mute' : 'Σίγαση' ?>">♫</button>
-                <input id="md-volume" type="range" min="0" max="100" value="75" aria-label="<?= $en ? 'Volume' : 'Ένταση' ?>">
+                <input id="md-volume" type="range" min="0" max="100" value="75"
+                       aria-label="<?= $en ? 'Volume' : 'Ένταση' ?>">
               </div>
             </div>
+            <div class="md-mini-track" aria-label="<?= $en ? 'Radio currently on air' : 'Τρέχουσα ραδιοφωνική εκπομπή' ?>">
+              <img src="/assets/img/favicon.png" alt="" width="44" height="44">
+              <span><small>DESEO / LIVE RADIO</small><strong id="md-mini-show-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong></span>
+            </div>
           </div>
-          <a class="md-custom-sponsor" href="https://iluma.gr/" target="_blank" rel="noopener noreferrer" aria-label="ILUMA Digital Agency — official sponsor">
-            <span><?= $en ? 'OFFICIAL SPONSOR' : 'ΕΠΙΣΗΜΟΣ ΧΟΡΗΓΟΣ' ?></span>
-            <img src="/assets/img/iluma-digital-agency-banner.jpg" alt="ILUMA Digital Agency" loading="eager">
-          </a>
-          <div class="md-custom-bottom"><span>THE SOUNDTRACK OF YOUR LIFE.</span><span>DESEO / ATH</span></div>
         </aside>
       </div>
     </div>
@@ -461,8 +476,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <section class="md-manifesto" aria-label="Deseo Radio manifesto">
   <div class="md-shell">
     <p>THIS IS YOUR FREQUENCY.</p>
-    <h2>MORE THAN<br><em>MUSIC.</em><br>IT'S <span>A FEELING.</span></h2>
-    <div class="md-manifesto-bottom"><span class="md-manifesto-signature"><?= demo_e($copy['hero']) ?></span><p><?= demo_e($copy['brand_sub']) ?></p><a href="#player" class="md-button md-button-red"><?= demo_e($copy['listen']) ?> ↗</a></div>
+    <h2 class="md-brand-monument">THE SOUNDTRACK<br><em>OF YOUR</em><br>LIFE<span>!</span></h2>
+    <div class="md-manifesto-bottom"><span class="md-manifesto-origin">DESEO RADIO / ATHENS</span><p><?= demo_e($copy['brand_sub']) ?></p><a href="#player" class="md-button md-button-red"><?= demo_e($copy['listen']) ?> ↗</a></div>
   </div>
 </section>
 
@@ -478,8 +493,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       <div class="md-footer-identity">
         <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50" loading="lazy"></a>
         <p class="md-footer-eyebrow">STAY TUNED. KEEP FEELING.</p>
-        <h2 class="md-footer-statement">THE SOUND<br><em>STAYS</em><br>WITH YOU<span>.</span></h2>
-        <p class="md-footer-slogan"><?= demo_e($copy['hero']) ?></p>
+        <h2 class="md-footer-statement">THE SOUNDTRACK<br><em>OF YOUR</em><br>LIFE<span>!</span></h2>
       </div>
       <div class="md-footer-directory">
         <nav class="md-footer-links" aria-label="<?= $en ? 'Explore Deseo' : 'Πλοήγηση Deseo' ?>">
