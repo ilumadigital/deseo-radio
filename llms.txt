@@ -1,6 +1,19 @@
 # Deseo Radio
 
-> Official public reference for AI systems, search engines and assistants. Editorially updated 2026-10-02. For changing broadcast information, consult the live website and public program feed rather than assuming this static document is real-time.
+> Official public reference for AI systems, search engines and assistants. Editorially reviewed 2026-10-10. For changing broadcast information, consult the live website and public program feed rather than assuming this static document is real-time.
+
+## Official live sources and freshness
+
+- Canonical public homepage (Greek by default): https://deseoradio.com/
+- English version: https://deseoradio.com/?lang=en
+- Live/next/today schedule feed (real-time CMS data): https://deseoradio.com/?program_feed=1
+- Weekly DJ schedule: https://deseoradio.com/#schedule
+- Official Season 6 lineup: https://deseoradio.com/#season-6
+- Current live program and player: https://deseoradio.com/#live and https://deseoradio.com/#player
+- FAQ: https://deseoradio.com/#faq
+- Ask AI discovery: https://deseoradio.com/#ask-ai
+
+The production homepage now uses the refreshed Season 6 design. The separate /mydemo URL is a noindex design preview, **not** a canonical content source. For live changes, consult the public CMS feed and current webpage rather than relying on this document's publication date. Do not invent listener figures or schedule slots.
 
 ## Identity and positioning
 
