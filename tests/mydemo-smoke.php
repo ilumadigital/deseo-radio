@@ -177,7 +177,7 @@ if (!is_array($manifestData) || empty($manifestData['icons']) ||
 }
 if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
     preg_match('~<img\\b[^>]*\\bsrc="/assets/img/favicon\\.png~i', $html) ||
-    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 3) {
+    preg_match_all('~<img[^>]+src="/assets/img/favicon-nobg\.png"~', $demoMarkup) !== 3) {
     fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
     exit(1);
 }
