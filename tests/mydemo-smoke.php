@@ -186,4 +186,66 @@ if (str_contains($footerMarkup, '/assets/img/favicon.png') ||
     fwrite(STDERR, "Page-visible fallback emblems must be transparent\n");
     exit(1);
 }
+/* V8 design: consistent width, compact seven-day navigation, typography-only
+ * arrows, sponsor-safe central attribution and accessible cursor fallback. */
+foreach ([
+    '/assets/css/mydemo-v8.css',
+    '/assets/js/mydemo-cursor.js',
+    'class="md-footer-credit"',
+    'Handcrafted by',
+    'ILUMA Digital Agency',
+    'href="https://iluma.gr/"',
+    'SOMETHING IN THE AIR...',
+    'DESEO RADIO <b>✦</b> SEASON 6 <b>✦</b> THE SOUNDTRACK OF YOUR LIFE',
+    'ILUMA RADIOS <b>✦</b> GUEST DJ ZONE <b>✦</b> RESIDENT DJS',
+    'id="md-custom-cursor"',
+    'class="md-ui-arrow"',
+] as $needle) {
+    if (!str_contains($html, $needle)) {
+        fwrite(STDERR, "Missing V8 visual or brand contract: {$needle}\n");
+        exit(1);
+    }
+}
+$demoSource = (string)file_get_contents(__DIR__ . '/../mydemo.php');
+if (str_contains($demoSource, 'DESEO / <?= demo_e($copy[\'preview\']) ?> / NOINDEX') ||
+    str_contains($demoSource, 'THIS IS YOUR FREQUENCY.') ||
+    str_contains($demoSource, 'HOUSE IS A FEELING <b>✦</b> ATHENS') ||
+    preg_match('~<b>↗</b>|<span>↗</span>~u', $demoSource)) {
+    fwrite(STDERR, "Old branded copy or emoji-style arrow controls remain\n");
+    exit(1);
+}
+foreach (['MO','TU','WE','TH','FR','SA','SU'] as $abbr) {
+    if (!preg_match('~<button[^>]*class="md-day-tab[^"]*"[^>]*>' . $abbr . '</button>~', $html)) {
+        fwrite(STDERR, "Seven English day initials must be present in every language: {$abbr}\n");
+        exit(1);
+    }
+}
+$cssV8 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v8.css');
+foreach ([
+    '--shell:1850px',
+    '.md-ai-wrap .wide-shell',
+    'grid-template-columns:repeat(7,minmax(0,1fr))!important',
+    'overflow:visible!important',
+    '.md-ai-wrap .ai-discovery-card:after',
+    'content:""!important',
+    '.md-footer-credit',
+    'grid-column:2',
+    'scrollbar-color:#ff0000',
+    '::-webkit-scrollbar-thumb',
+    '.md-custom-cursor',
+] as $needle) {
+    if (!str_contains($cssV8, $needle)) {
+        fwrite(STDERR, "Missing design consistency / responsive / icon styling: {$needle}\n");
+        exit(1);
+    }
+}
+$cursorJs = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-cursor.js');
+if (!str_contains($cursorJs, 'pointer: fine') ||
+    !str_contains($cursorJs, 'pointermove') ||
+    !str_contains($cursorJs, 'requestAnimationFrame') ||
+    !str_contains($cursorJs, 'prefers-reduced-motion') ||
+    !str_contains($cursorJs, "iframe, input, textarea")) {
+    fwrite(STDERR, "Custom cursor must only operate safely on fine pointers\n");
+    exit(1);
+}
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
