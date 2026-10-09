@@ -456,8 +456,13 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '';
           ?>
             <<?= $profile ? 'button' : 'article' ?> class="md-show-card <?= $isLive ? 'is-live' : '' ?>" <?= $profile ? 'type="button" data-profile="' . demo_e($profileJson) . '" aria-label="' . demo_e($copy['read_more'] . ': ' . $slot['dj_name']) . '"' : '' ?>>
-              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/bg.png'"><span><?= demo_clock($slot['start_time']) ?> — <?= demo_clock($slot['end_time']) ?></span></div>
-              <div class="md-show-details"><span><?= $isLive ? '● ON AIR' : 'DESEO RADIO / S06' ?></span><h3><?= demo_e($slot['dj_name']) ?></h3><small><?= $profile ? demo_e($copy['read_more']) . ' ↗' : 'RESIDENT / DJ SET' ?></small></div>
+              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" onerror="this.onerror=null;this.src='/assets/img/bg.png'"><span>DESEO / SEASON 06</span></div>
+              <div class="md-show-details">
+                 <span class="md-show-status"><?= $isLive ? '● ON AIR' : 'DESEO RADIO / S06' ?></span>
+                 <h3><?= demo_e($slot['dj_name']) ?></h3>
+                 <div class="md-show-hours"><?= demo_clock($slot['start_time']) ?> — <?= demo_clock($slot['end_time']) ?> <small>ATHENS TIME</small></div>
+                 <small><?= $profile ? demo_e($copy['read_more']) . ' ↗' : 'RESIDENT / DJ SET' ?></small>
+               </div>
             </<?= $profile ? 'button' : 'article' ?>>
           <?php endforeach; ?>
           </div>
