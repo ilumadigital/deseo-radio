@@ -234,6 +234,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v9.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v9.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v9.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v10.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v10.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v10.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v11.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v11.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v11.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v12.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v12.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v12.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
@@ -270,7 +271,6 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         <span>/</span>
         <a <?= $en ? 'aria-current="page"' : '' ?> href="/mydemo?lang=en">EN</a>
       </div>
-      <a class="md-pill md-header-live" href="#player"><span class="md-dot"></span> LIVE RADIO <span class="md-ui-arrow" aria-hidden="true"></span></a>
       <button type="button" class="md-menu-trigger" id="md-menu-trigger" aria-controls="md-fs-menu" aria-expanded="false" aria-haspopup="dialog" aria-label="Open menu"><span class="md-menu-trigger-label">MENU</span><span class="md-menu-bars" aria-hidden="true"><i></i><i></i></span></button>
     </div>
   </div>
@@ -665,7 +665,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <dialog id="md-dj-dialog" aria-labelledby="md-dialog-title">
   <button type="button" id="md-dialog-close" aria-label="<?= demo_e($copy['dj_close']) ?>">×</button>
   <img id="md-dialog-photo" src="/assets/img/bg.png" alt="">
-  <div><span class="md-index"><?= demo_e($copy['dj_info']) ?> / SEASON 06</span><h2 id="md-dialog-title"></h2><p id="md-dialog-bio"></p><div id="md-dialog-links"></div></div>
+  <div class="md-dj-details"><span class="md-index"><?= demo_e($copy['dj_info']) ?> / SEASON 06</span><h2 id="md-dialog-title"></h2><p id="md-dialog-bio"></p><div id="md-dialog-links"></div></div>
 </dialog>
 </body>
 </html>
