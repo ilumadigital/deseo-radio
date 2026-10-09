@@ -484,4 +484,36 @@ foreach ([
         exit(1);
     }
 }
+// Regression: the cursor becomes a direct <div> child of a native DJ
+// dialog, where legacy CSS added huge padding. It must keep the exact
+// compact geometry of the regular pointer even after being re-parented.
+$cursorRuleStart = strpos($v12Css, '#md-dj-dialog > .md-custom-cursor{');
+$cursorRuleEnd = $cursorRuleStart !== false ? strpos($v12Css, '}', $cursorRuleStart) : false;
+$modalCursorRule = $cursorRuleStart !== false && $cursorRuleEnd !== false
+    ? substr($v12Css, $cursorRuleStart, $cursorRuleEnd - $cursorRuleStart)
+    : '';
+foreach ([
+    'width:9px!important;',
+    'height:9px!important;',
+    'padding:0!important;',
+    'margin:0!important;',
+    'box-sizing:border-box!important;',
+    'position:fixed!important;',
+    'z-index:2147483647!important;',
+] as $needle) {
+    if (!str_contains($modalCursorRule, $needle)) {
+        fwrite(STDERR, "DJ modal cursor enlarged by layout: {$needle}\n");
+        exit(1);
+    }
+}
+$hoverCursorRuleStart = strpos($v12Css, '#md-dj-dialog > .md-custom-cursor.is-interactive{');
+$hoverCursorRule = $hoverCursorRuleStart !== false
+    ? substr($v12Css, $hoverCursorRuleStart,
+        (int)strpos($v12Css, '}', $hoverCursorRuleStart) - $hoverCursorRuleStart)
+    : '';
+if (!str_contains($hoverCursorRule, 'width:20px!important;') ||
+    !str_contains($hoverCursorRule, 'height:20px!important;')) {
+    fwrite(STDERR, "DJ modal cursor hover size differs from the rest of the site\n");
+    exit(1);
+}
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
