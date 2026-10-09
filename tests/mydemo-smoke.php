@@ -177,7 +177,7 @@ if (!is_array($manifestData) || empty($manifestData['icons']) ||
 }
 if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
     preg_match('~<img\\b[^>]*\\bsrc="/assets/img/favicon\\.png~i', $html) ||
-    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 4) {
+    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 3) {
     fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
     exit(1);
 }
@@ -299,7 +299,7 @@ foreach ([
     }
 }
 if (!str_contains($footerHtml, 'class="md-footer-social-grid"') ||
-    !str_contains($menuHtml, 'class="md-menu-showcase"')) {
+    !str_contains($menuHtml, 'class="md-menu-showcase md-menu-feature"')) {
     fwrite(STDERR, "Social footer and menu promotional carousel missing\n");
     exit(1);
 }
@@ -334,12 +334,17 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
     }
 }
 
-/* V10: triple logo, balanced no-exclamation brand, working DJ carousel. */
+/* V11: the actual live contract, no carousel or obsolete menu copy. */
 foreach ([
-    '/assets/css/mydemo-v10.css',
+    '/assets/css/mydemo-v11.css',
+    'content="v11-menu-brand-feature"',
+    'class="md-fs-menu-brand"',
+    '<h2 class="md-fs-menu-title" id="md-fs-menu-title">',
+    'class="md-fs-title-red"',
+    'class="md-menu-showcase md-menu-feature"',
+    'src="/assets/img/favicon-nobg.png"',
     'src="/assets/img/deseo-logo.png"',
     'src="/assets/img/deseoradio-logo.png"',
-    'src="/assets/img/favicon-nobg.png"',
     'class="md-preloader-final"',
     'class="md-word-the"',
     'class="md-word-soundtrack"',
@@ -349,48 +354,67 @@ foreach ([
     '>SPONSOR</div>',
     '>ONAIR NOW</div>',
     'COMING UP NEXT',
-    'md-menu-carousel-track',
     'DJ SA',
     'EVERY WEEKEND',
     '@ 17:00',
     'profile-85-DJ_SA_RADIOSHOW-20261007-144654-0c15cd.png',
 ] as $needle) {
     if (!str_contains($html, $needle)) {
-        fwrite(STDERR, "V10 demo upgrade missing: {$needle}\n");
+        fwrite(STDERR, "V11 demo requirement missing: {$needle}\n");
         exit(1);
     }
 }
-if (preg_match_all('~class="md-menu-promo(?:\\s|")~', $html) !== 3 ||
-    substr_count($html, 'data-carousel-to=') !== 3 ||
-    str_contains($html, 'THE SOUNDTRACK</span>' . "\n" . '          <em>OF YOUR')) {
-    fwrite(STDERR, "Menu carousel or modern word-by-word hero missing\n");
+$menuHtml = substr($html, strpos($html, 'id="md-fs-menu"'), strpos($html, '<main id="main">') - strpos($html, 'id="md-fs-menu"'));
+if (str_contains($menuHtml, 'FIND YOUR') ||
+    str_contains($menuHtml, 'AFTER DARK') ||
+    str_contains($menuHtml, 'md-menu-carousel-track') ||
+    str_contains($menuHtml, 'md-menu-carousel-next') ||
+    str_contains($menuHtml, 'md-menu-carousel-dots')) {
+    fwrite(STDERR, "V11 fullscreen menu must not contain outdated copy or a slideshow\n");
     exit(1);
 }
-$cssV10 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v10.css');
+if (substr_count($menuHtml, 'class="md-menu-showcase md-menu-feature"') !== 1 ||
+    substr_count($menuHtml, 'class="md-fs-menu-brand"') !== 1) {
+    fwrite(STDERR, "V11 menu must show exactly one featured DJ SA and one logo\n");
+    exit(1);
+}
+$preloaderStart = strpos($html, '<div class="md-preloader"');
+$headerStart = strpos($html, '<header class="md-header">');
+$preloaderHtml = substr($html, $preloaderStart, $headerStart - $preloaderStart);
+$logoNames = ['/assets/img/favicon-nobg.png', '/assets/img/deseo-logo.png', '/assets/img/deseoradio-logo.png'];
+$lastPos = -1;
+foreach ($logoNames as $src) {
+    $p = strpos($preloaderHtml, 'src="' . $src . '"');
+    if ($p === false || $p <= $lastPos) {
+        fwrite(STDERR, "V11 preloader logos must appear in order: {$src}\n");
+        exit(1);
+    }
+    $lastPos = $p;
+}
+$cssV11 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v11.css');
 foreach ([
-    '.md-brand-headline>.md-word-the',
-    '.md-brand-headline>.md-word-soundtrack',
-    'color:#ff0000!important',
-    '.md-preloader-final',
-    'md-brand-middle',
-    'md-brand-final',
-    '@media(min-width:1160px) and (max-width:1649px)',
-    '.md-menu-carousel-track',
-    '.md-menu-carousel-dots',
+    '.md-header .md-logo img',
+    'width:460px!important',
+    '.md-fs-menu-brand img',
+    '.md-menu-feature-art',
+    'md-v11-mark',
+    'md-v11-word',
+    'md-v11-radio',
+    'font-size:clamp(98px,6.43vw,110px)',
+    '@media(max-width:600px)',
+    'prefers-reduced-motion',
 ] as $needle) {
-    if (!str_contains($cssV10, $needle)) {
-        fwrite(STDERR, "V10 typography / preloader / carousel stylesheet incomplete: {$needle}\n");
+    if (!str_contains($cssV11, $needle)) {
+        fwrite(STDERR, "V11 design sizing / motion missing: {$needle}\n");
         exit(1);
     }
 }
-foreach ([
-    'showCarouselSlide', 'startCarouselRotation', 'stopCarouselRotation',
-    'md-menu-carousel-next', 'md-menu-carousel-prev', 'data-carousel-to',
-    'carouselSlides', 'aria-hidden',
-] as $needle) {
-    if (!str_contains($menuJs, $needle)) {
-        fwrite(STDERR, "V10 carousel missing functional or accessible interaction: {$needle}\n");
-        exit(1);
-    }
+$menuScript = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-menu.js');
+if (str_contains($menuScript, 'carouselSlides') ||
+    str_contains($menuScript, 'showCarouselSlide') ||
+    str_contains($menuScript, 'startCarouselRotation') ||
+    !str_contains($menuScript, 'closeMenu')) {
+    fwrite(STDERR, "V11 menu behavior must not auto-rotate or duplicate a carousel\n");
+    exit(1);
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
