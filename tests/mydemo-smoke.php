@@ -153,4 +153,37 @@ if (!str_contains($htaccess, 'RewriteRule ^mydemo/?$ mydemo.php [L,QSA]') ||
     fwrite(STDERR, "Preview crawler restrictions missing\n");
     exit(1);
 }
+// The browser / installed app keeps favicon.png; on-page artwork uses only favicon-nobg.png.
+$demoPath = __DIR__ . '/../mydemo.php';
+$demoMarkup = (string)file_get_contents($demoPath);
+$headMarkup = (string)file_get_contents(__DIR__ . '/../includes/head-meta.php');
+$footerMarkup = (string)file_get_contents(__DIR__ . '/../includes/footer.php');
+$homeMarkup = (string)file_get_contents(__DIR__ . '/../index.php');
+$manifestContent = (string)file_get_contents(__DIR__ . '/../manifest.json');
+$manifestData = json_decode($manifestContent, true);
+if (!is_array($manifestData) || empty($manifestData['icons']) ||
+    !is_file(__DIR__ . '/../assets/img/favicon.png') ||
+    !is_file(__DIR__ . '/../assets/img/favicon-nobg.png')) {
+    fwrite(STDERR, "Expected both approved favicon assets and PWA metadata\n");
+    exit(1);
+}
+if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
+    substr_count($demoMarkup, '/assets/img/favicon.png') !== 1 ||
+    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 3) {
+    fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
+    exit(1);
+}
+if (!str_contains($headMarkup, '/assets/img/favicon.png?v=<?= $faviconVersion ?>') ||
+    !str_contains($headMarkup, 'rel="apple-touch-icon"') ||
+    !str_contains((string)($manifestData['icons'][0]['src'] ?? ''), '/assets/img/favicon.png?v=')) {
+    fwrite(STDERR, "Domain tab, Apple icon and installed PWA must keep the canonical background favicon\n");
+    exit(1);
+}
+if (str_contains($footerMarkup, '/assets/img/favicon.png') ||
+    str_contains($homeMarkup, '/assets/img/favicon.png') ||
+    !str_contains($footerMarkup, '/assets/img/favicon-nobg.png') ||
+    !str_contains($homeMarkup, '/assets/img/favicon-nobg.png')) {
+    fwrite(STDERR, "Page-visible fallback emblems must be transparent\n");
+    exit(1);
+}
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
