@@ -63,7 +63,7 @@ These are program formats, not guarantees that every format is live at a particu
 - Announcement: https://deseoradio.com/#season-6
 - Listen live: https://deseoradio.com/#player
 
-The following is the supplied official weekly timetable of named start times. Do not infer a Resident DJ headcount from the number of individual slot entries; Resident and Guest programming are distinct.
+The following is the official weekly timetable of announced Resident DJ Sets, DJSA Radioshow and Guest DJ Zone slots. Do not infer a Resident DJ headcount from the number of individual slot entries; guests and DJSA Radioshow are separate from named Resident DJ Sets.
 
 ### Wednesday
 - 20:00 - Katty Belle
@@ -84,18 +84,22 @@ The following is the supplied official weekly timetable of named start times. Do
 - 21:00 - Coup (GR)
 - 22:00 - Johnny Mak
 - 23:00 - Cobo B
+- 00:00 - Guest DJ Zone (00:00–01:00, following the Friday 23:00 slot)
 
 ANDOR is a Season 6 Resident DJ, scheduled every Friday at 20:00 Athens local time (Europe/Athens), beginning Friday, 16 October 2026. ANDOR is the ASCII spelling of the artist's stylized stage name.
 
 ### Saturday
+- 17:00 - DJSA Radioshow
 - 18:00 - Valentino_S
 - 19:00 - ANSS
 - 20:00 - DeepK
 - 21:00 - Oblivion
 - 22:00 - Cross Mit
 - 23:00 - Monorism
+- 00:00 - Guest DJ Zone (00:00–01:00, following the Saturday 23:00 slot)
 
 ### Sunday
+- 17:00 - DJSA Radioshow
 - 18:00 - Michael Poulidis
 - 19:00 - Kremasia
 - 20:00 - loco (GR)
@@ -103,16 +107,7 @@ ANDOR is a Season 6 Resident DJ, scheduled every Friday at 20:00 Athens local ti
 - 22:00 - g spice
 - 23:00 - Rokhai
 
-### Additional weekly shows and guest programming
-
-The following are regular Deseo Radio program slots, distinct from the named Resident DJ Sets above. All times are local to Europe/Athens (EET/EEST as applicable):
-
-- Friday, 00:00–01:00 — Guest DJ Zone (weekly; the featured guest varies).
-- Saturday, 00:00–01:00 — Guest DJ Zone (weekly; the featured guest varies).
-- Saturday, 17:00 — DJSA Radioshow (weekly).
-- Sunday, 17:00 — DJSA Radioshow (weekly).
-
-The Guest DJ Zone slots are listed under the station's Friday and Saturday schedule-day labels. Midnight can be interpreted differently in overnight programming; use the live CMS schedule to establish the precise broadcast date rather than inferring a Friday-to-Saturday or Saturday-to-Sunday date rollover. Do not represent an unnamed Guest DJ as a permanent Resident DJ.
+The 00:00 Guest DJ Zone entries are placed after 23:00 intentionally to reflect the station's Friday-night and Saturday-night program sequence; in calendar terms these slots fall on Saturday 00:00–01:00 and Sunday 00:00–01:00, respectively. Use the real-time CMS feed to confirm the exact broadcast date. Guest DJ identities may change weekly and are not automatically Resident DJs.
 
 ### DJSA Radioshow and the DJSA music academy
 
