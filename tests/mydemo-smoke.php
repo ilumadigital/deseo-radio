@@ -69,7 +69,7 @@ $required = [
     '/assets/css/mydemo-v13.css',
     '/assets/css/mydemo-v14.css',
     '/assets/js/mydemo-header.js',
-    'content="v15-menu-spacing-and-widgets"',
+    'content="v16-bottom-anchored-menu"',
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
@@ -348,7 +348,7 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 /* V11: the actual live contract, no carousel or obsolete menu copy. */
 foreach ([
     '/assets/css/mydemo-v11.css',
-    'content="v15-menu-spacing-and-widgets"',
+    'content="v16-bottom-anchored-menu"',
     'class="md-fs-menu-brand"',
     '<h2 class="md-fs-menu-title" id="md-fs-menu-title">',
     'class="md-fs-title-red"',
@@ -663,7 +663,7 @@ if ($seasonArtHtml === '' || str_contains($seasonArtHtml, 'md-season-stamp') ||
     exit(1);
 }
 if (!str_contains($html, '/assets/css/mydemo-v15.css') ||
-    !str_contains($html, 'content="v15-menu-spacing-and-widgets"')) {
+    !str_contains($html, 'content="v16-bottom-anchored-menu"')) {
     fwrite(STDERR, "V15 stylesheet or demo cache-bust marker missing\n");
     exit(1);
 }
@@ -688,5 +688,43 @@ if ($mainStart === false ||
     str_contains($cssV15, '.md-fs-menu-title{margin-top:')) {
     fwrite(STDERR, "V15 must leave title position unchanged and move only menu links/feature\n");
     exit(1);
+}
+/* V16: six editorial section overlines without numeric prefixes; menu
+ * navigation truly bottom-anchored rather than pushed by a fixed margin. */
+foreach ([
+    'THE ARTISTS', 'THE PROGRAM', 'MUSIC DISCOVERY',
+    'DESEO CURATED', 'DESEO ORIGINALS', 'DESEO UNFILTERED',
+] as $label) {
+    if (!str_contains($html, 'class="md-index">' . $label . '</span>')) {
+        fwrite(STDERR, "V16 missing unnumbered editorial section label: {$label}\n");
+        exit(1);
+    }
+}
+if (preg_match('~class="md-index">\s*0[1-6]\s*/~', $html)) {
+    fwrite(STDERR, "V16 editorial section headings must not be numbered\n");
+    exit(1);
+}
+if (!str_contains($html, '/assets/css/mydemo-v16.css')) {
+    fwrite(STDERR, "V16 bottom-aligned fullscreen menu style missing\n");
+    exit(1);
+}
+$cssV16 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v16.css');
+foreach ([
+    '@media (min-width:851px)',
+    '.md-fs-menu .md-fs-menu-main',
+    'align-items:stretch!important',
+    '.md-fs-menu .md-fs-menu-nav .md-fs-menu-links',
+    'margin-top:auto!important',
+    'flex:0 0 auto!important',
+    'align-content:end!important',
+    '.md-fs-menu .md-fs-menu-main .md-fs-menu-side',
+    'justify-content:flex-end!important',
+    '@media (max-width:850px)',
+    'justify-content:flex-start!important',
+] as $needle) {
+    if (!str_contains($cssV16, $needle)) {
+        fwrite(STDERR, "V16 bottom menu anchoring or mobile flow incomplete: {$needle}\n");
+        exit(1);
+    }
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
