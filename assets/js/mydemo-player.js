@@ -43,7 +43,7 @@
   function renderAudio() {
     var playing = !audio.paused && !audio.ended;
     player.classList.toggle('is-playing', playing);
-    if (symbol) symbol.textContent = playing ? 'Ⅱ' : '▶';
+    if (symbol) symbol.classList.toggle('is-pause', playing);
     if (playButton) {
       playButton.setAttribute('aria-pressed', playing ? 'true' : 'false');
       playButton.setAttribute('aria-label', playing ? (english ? 'Pause radio' : 'Παύση ραδιοφώνου')
