@@ -398,6 +398,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <script>
     document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
     window.DESEO_ASSET_VERSION = <?= json_encode((string)$assetVersion) ?>;
+    <?php if ($deseo_home_redesign): ?>document.documentElement.classList.add('md-preloading');<?php endif; ?>
     </script>
 
     <?php if (!$private_page): ?>
