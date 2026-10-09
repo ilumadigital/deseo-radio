@@ -174,8 +174,19 @@
           var heading = card.querySelector('h3');
           var active = !!live && heading && heading.textContent === live.name;
           card.classList.toggle('is-live', !!active);
-          var status = card.querySelector('.md-show-details > span');
-          if (status) status.textContent = active ? '● ON AIR' : 'DESEO RADIO / S06';
+          var details = card.querySelector('.md-show-details');
+          if (!details) return;
+          var status = details.querySelector('.md-show-status');
+          if (active) {
+            if (!status) {
+              status = document.createElement('span');
+              status.className = 'md-show-status';
+              details.insertBefore(status, details.firstChild);
+            }
+            status.textContent = '● ON AIR';
+          } else if (status) {
+            status.remove();
+          }
         });
       }).catch(function () {
         // Keep server-rendered CMS data visible if the network temporarily fails.
