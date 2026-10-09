@@ -646,12 +646,33 @@ else: ?>
 </dialog>
 <script>
 (function () {
+  var root = document.documentElement;
+  if (!root.classList.contains('md-preloading')) return;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var mobile = window.matchMedia('(max-width: 850px)').matches;
-  // Start only after markup is available. Mobile users should not wait for a long logo animation.
-  window.setTimeout(function () {
-    document.documentElement.classList.remove('md-preloading');
-  }, reduced ? 0 : (mobile ? 620 : 1500));
+  if (reduced) {
+    root.classList.remove('md-preloading');
+    return;
+  }
+
+  // Finish the entire animation (including the red SOUNDTRACK sweep) before
+  // unveiling the homepage. The fallback protects against missed/cancelled events.
+  var completed = false;
+  var fallback;
+  function finishIntro() {
+    if (completed) return;
+    completed = true;
+    window.clearTimeout(fallback);
+    root.classList.remove('md-preloading');
+  }
+  var redWord = document.querySelector('.md-preloader-token--red > span');
+  if (redWord) {
+    redWord.addEventListener('animationend', function (event) {
+      if (event.animationName === 'md18-red-sweep') {
+        window.setTimeout(finishIntro, 260);
+      }
+    });
+  }
+  fallback = window.setTimeout(finishIntro, 2850);
 }());
 </script>
 <?php if ($isProductionHome): ?>
