@@ -147,6 +147,10 @@
       weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     }).format(date);
   }
+  function updatePhotoIfChanged(image, url) {
+    // Avoid redundant image requests/decodes on every minute tick.
+    if (image && image.getAttribute('src') !== url) image.src = url;
+  }
   function refreshSchedule() {
     if (document.hidden) return;
     fetch('/mydemo?feed=1', { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
@@ -160,13 +164,13 @@
         if (heroLiveName) heroLiveName.textContent = live ? live.name : 'DESEO NON-STOP';
         if (dockShowName) dockShowName.textContent = live ? live.name : 'DESEO NON-STOP';
         if (dockShowTime) dockShowTime.textContent = live ? live.time : '24 / 7';
-        if (dockShowPhoto) dockShowPhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
+        updatePhotoIfChanged(dockShowPhoto, live && live.photo ? live.photo : '/assets/img/bg.png');
         if (heroLiveTime) heroLiveTime.textContent = live ? live.time : '24 / 7';
-        if (heroLivePhoto) heroLivePhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
+        updatePhotoIfChanged(heroLivePhoto, live && live.photo ? live.photo : '/assets/img/bg.png');
         if (heroNextName) heroNextName.textContent = next ? next.name : '24/7 NON-STOP MUSIC';
         if (liveName) liveName.textContent = live ? live.name : 'DESEO NON-STOP';
         if (liveTime) liveTime.textContent = live ? live.time : '24 / 7';
-        if (livePhoto) livePhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
+        updatePhotoIfChanged(livePhoto, live && live.photo ? live.photo : '/assets/img/bg.png');
         if (liveLabel) liveLabel.innerHTML = '<span class="md-dot"></span> ' + (live ? 'ON AIR' : 'NON-STOP');
         if (nextName) nextName.textContent = next ? next.name : '24/7 NON-STOP MUSIC';
         if (nextTime) nextTime.textContent = next ? formatAthens(next.start) : '';
