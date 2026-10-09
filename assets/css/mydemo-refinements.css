@@ -78,7 +78,8 @@ html[lang="el"] .md-player-square-label {font-family:'Google Sans','Google Sans 
   display:flex!important;align-items:center;justify-content:center;
   background:#111!important;border-radius:9px;object-fit:contain!important;
 }
-.md-custom-sponsor img{
+/* Size only the fallback banner; Signal injects independent logo + QR images. */
+.md-custom-sponsor > img{
   width:100%!important;height:100%!important;max-width:100%!important;
   max-height:100%!important;object-fit:contain!important;filter:none!important;
 }
