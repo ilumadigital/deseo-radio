@@ -67,7 +67,9 @@ $required = [
     '/assets/js/mydemo-menu.js',
     'href="https://iluma.gr/radios/mediakit"',
     '/assets/css/mydemo-v13.css',
-    'content="v13-fullwidth-player"',
+    '/assets/css/mydemo-v14.css',
+    '/assets/js/mydemo-header.js',
+    'content="v14-hero-glass-and-layout"',
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
@@ -590,5 +592,62 @@ if (preg_match('~#md-custom-player\s+\.md-custom-sponsor\s+img\s*\{~',
     $cssV13)) {
     fwrite(STDERR, "V13 CSS must never constrain Signal-injected nested images\n");
     exit(1);
+}
+/* V14: centered headline, right sponsor, center program, responsive stack,
+   hero-height and transparent-on-top header without touching the iframe. */
+$heroCredit = 'href="https://radios.iluma.gr/"';
+if (!str_contains($heroHtml, $heroCredit) ||
+    !str_contains($heroHtml, 'Powered by <strong>ILUMA Radios</strong>') ||
+    str_contains($heroHtml, 'DESEO RADIO / HOUSE MUSIC</span>') ||
+    str_contains($heroHtml, '<span>THE SOUNDTRACK OF YOUR LIFE</span>')) {
+    fwrite(STDERR, "V14 hero attribution must link to radios.iluma.gr without old microcopy\n");
+    exit(1);
+}
+if (substr_count($heroHtml, 'class="md-hero-powered"') !== 1) {
+    fwrite(STDERR, "V14 only one hero Powered by ILUMA Radios backlink required\n");
+    exit(1);
+}
+$styleV14 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v14.css');
+foreach ([
+    '.md-header.md-header.is-scrolled',
+    'background:transparent!important',
+    'backdrop-filter:blur(22px)!important',
+    '.md-hero .md-hero-content',
+    'min-height:100svh!important',
+    '--md-hero-square',
+    'padding:clamp(145px,17svh,187px)',
+    '#md-custom-player .md-nowplaying-column',
+    '#md-custom-player .md-sponsor-column',
+    '#md-custom-player .md-dj-column',
+    'grid-column:1!important',
+    'grid-column:2!important',
+    'grid-column:3!important',
+    'grid-row:2!important',
+    'grid-row:3!important',
+    'justify-content:center!important',
+    '.md-hero-grid .md-brand-headline',
+    '.md-hero .md-hero-powered',
+    'https://radios.iluma.gr/',
+] as $needle) {
+    // The source URL is supplied in HTML rather than CSS, so check separately.
+    if ($needle === 'https://radios.iluma.gr/') continue;
+    if (!str_contains($styleV14, $needle)) {
+        fwrite(STDERR, "V14 hero/menu CSS incomplete: {$needle}\n");
+        exit(1);
+    }
+}
+if (str_contains($styleV14, 'justify-content:space-between!important')) {
+    fwrite(STDERR, "V14 slogan must be centered, not justified across the entire width\n");
+    exit(1);
+}
+$headerScript = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-header.js');
+foreach ([
+    "'scroll'", 'is-scrolled', 'requestAnimationFrame',
+    'window.scrollY', 'pageshow', 'passive: true', 'sync()'
+] as $needle) {
+    if (!str_contains($headerScript, $needle)) {
+        fwrite(STDERR, "V14 scroll-aware glass header JS missing: {$needle}\n");
+        exit(1);
+    }
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
