@@ -1,0 +1,201 @@
+/* DESEO /mydemo V6 — official iRadios engine, big art, crisp red.
+   Loaded AFTER all earlier demo styles; production remains untouched. */
+:root{--red:#ff0000}
+.md-hero{height:auto!important;min-height:100svh!important;max-height:none!important;overflow:hidden}
+.md-hero-content{
+  width:min(1850px,calc(100% - 72px))!important;
+  height:auto!important;min-height:100svh!important;
+  padding:112px 0 72px!important;box-sizing:border-box;
+  display:flex;align-items:center
+}
+.md-hero-grid{width:100%;display:grid;grid-template-columns:minmax(0,.84fr) minmax(0,1.74fr);gap:clamp(26px,3vw,65px);align-items:center}
+.md-hero-copy{min-width:0}
+.md-brand-headline{font-size:clamp(57px,5.4vw,102px)!important;line-height:.82!important}
+.md-brand-headline>span{font-size:1em!important}
+.md-brand-headline>em{font-size:1.18em!important}
+.md-brand-headline>strong{font-size:1.3em!important}
+.md-player-home{width:100%!important;max-height:none!important;min-height:0!important;max-width:none!important;align-self:center}
+.md-custom-player{
+  width:100%;max-width:none;max-height:none!important;overflow:hidden!important;
+  background:linear-gradient(150deg,rgba(29,26,29,.98),rgba(13,13,15,.98));
+  border:1px solid rgba(255,255,255,.22);border-radius:17px!important;box-shadow:0 28px 90px rgba(0,0,0,.57)
+}
+.md-custom-player:before{background:#ff0000}
+.md-custom-player .md-custom-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px clamp(16px,1.6vw,27px)!important;min-height:55px;
+  background:rgba(15,14,16,.64);border-bottom:1px solid rgba(255,255,255,.13);
+}
+.md-custom-status{color:#fff;font-weight:800;font-size:12px}
+.md-custom-status .md-dot{background:#ff0000}
+.md-player-engine{font:700 10px 'Barlow','Google Sans',sans-serif;letter-spacing:.18em;color:#999}
+.md-custom-player .md-custom-inner{padding:clamp(18px,1.4vw,30px)!important}
+.md-custom-player .md-player-squares{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(15px,1.2vw,24px)}
+.md-nowplaying-column,.md-sponsor-column,.md-dj-column{min-width:0}
+.md-player-square-label{
+  font:700 12px/1.3 'Barlow','Google Sans Flex',sans-serif!important;
+  letter-spacing:.1em;color:#eee;margin:0 0 13px!important;overflow:visible
+}
+html[lang=el] .md-player-square-label{font-family:'Google Sans','Google Sans Flex',sans-serif!important;font-size:11px!important}
+.md-custom-player .md-nowplaying-frame,
+.md-custom-player .md-custom-sponsor,
+.md-custom-player .md-dj-artwork{
+  display:block;width:100%;height:auto;aspect-ratio:1/1;overflow:hidden;
+  border:1px solid rgba(255,255,255,.18)!important;border-radius:14px!important;
+  clip-path:none;max-height:none!important;max-width:none!important;
+  background:#0d0d0e
+}
+.md-custom-player .md-nowplaying-frame iframe{
+  display:block;width:100%;height:100%;aspect-ratio:1/1;border:0;
+  pointer-events:auto!important;border-radius:0!important
+}
+.md-custom-player .md-custom-sponsor{display:flex!important;padding:0!important;align-items:center;justify-content:center;min-height:0!important}
+.md-custom-player .md-custom-sponsor img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
+.md-dj-artwork{isolation:isolate;position:relative}
+.md-dj-artwork img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.92) contrast(1.1)}
+.md-dj-artwork-caption{left:clamp(13px,1.2vw,21px);bottom:clamp(12px,1vw,19px);right:12px;gap:7px}
+.md-dj-artwork-caption strong{font-size:clamp(18px,1.8vw,28px);line-height:1.04;font-weight:900}
+.md-dj-artwork-caption small{font-size:13px}
+.md-dj-live-tag,.md-dj-live-tag i{color:#ff0000}
+.md-custom-next{
+  margin:20px 0 0!important;padding:18px 0 2px!important;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.16)!important;
+  border-bottom:0!important
+}
+.md-custom-next span{font-weight:800;font-size:11px;color:#ff0000}
+.md-custom-next strong{font:700 15px 'Google Sans','Google Sans Flex',Arial,sans-serif;color:#fff}
+.md-custom-controls,.md-mini-track,.md-player-minify,.md-player-expand,.md-custom-show{display:none!important}
+.md-custom-player .md-custom-sponsor{position:relative}
+.md-custom-player .md-custom-sponsor:hover{border-color:#ff0000!important}
+.md-hero-border{bottom:0}
+.md-header-inner{justify-content:space-between}
+.md-header .md-nav{display:none!important}
+.md-header-actions{margin-left:auto}
+.md-hero-cta .md-button{background:#ff0000}
+.md-dot{background:#ff0000}
+
+/* Floating Now On Air summary: totally independent of official player iframe. */
+#md-player-dock.md-dock{
+  position:fixed;right:clamp(12px,2.2vw,32px);bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  z-index:1001;width:min(500px,calc(100vw - 24px));max-width:calc(100vw - 24px);
+  padding:0;overflow:hidden;background:linear-gradient(145deg,#191719,#0e0d0f);
+  border:1px solid rgba(255,255,255,.32);border-radius:16px;
+  box-shadow:0 20px 65px rgba(0,0,0,.8)
+}
+#md-player-dock[hidden]{display:none!important}
+.md-dock-top{min-height:36px;padding:8px 15px;border-bottom:1px solid rgba(255,255,255,.13);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;color:white}
+.md-dock-top>span{display:flex;align-items:center;gap:10px;font:800 11px 'Barlow',Arial,sans-serif;letter-spacing:.12em}
+.md-dock-top .md-dot{width:7px;height:7px}
+.md-dock-expand{width:29px;height:29px;border:1px solid rgba(255,255,255,.45);border-radius:50%;display:grid;place-items:center;font-size:18px}
+.md-dock-expand:hover{background:#ff0000;border-color:#ff0000}
+.md-dock-body{display:grid;grid-template-columns:minmax(0,1fr) 99px;gap:13px;align-items:center;padding:12px 13px}
+.md-dock-program{display:flex;align-items:center;gap:13px;min-width:0}
+.md-dock-program>img{display:block;width:86px;height:86px;object-fit:cover;aspect-ratio:1/1;border-radius:8px;flex:0 0 auto}
+.md-dock-program-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.md-dock-program-copy small{font:800 10px 'Barlow','Google Sans',sans-serif;letter-spacing:.12em;color:#ff0000}
+.md-dock-program-copy strong{font:800 clamp(15px,1.4vw,21px)/1.15 'Google Sans','Google Sans Flex',Arial,sans-serif;text-transform:uppercase;overflow-wrap:anywhere}
+.md-dock-program-copy>span{font:600 12px 'Google Sans','Google Sans Flex',Arial,sans-serif;color:#bbb}
+.md-dock-sponsor{width:99px;height:99px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#09090a;border-radius:8px;border:1px solid rgba(255,255,255,.11)}
+.md-dock-sponsor>img{display:block;width:100%;height:100%;object-fit:contain;max-width:100%;max-height:100%}
+.md-dock-program:hover strong{color:#ff0000}
+.md-footer .md-footer-links{display:none!important}
+.md-footer-connections{display:flex!important;flex-direction:column;align-items:stretch;gap:0;position:relative}
+.md-footer-connect-overline{font:800 13px 'Barlow',Arial,sans-serif;letter-spacing:.17em;color:#ff0000}
+.md-footer-connections h3{font:900 clamp(34px,3.4vw,60px)/.93 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.02em;margin:19px 0 25px}
+.md-footer-social-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.md-footer-social-grid a{display:flex;align-items:center;justify-content:space-between;gap:9px;
+  padding:15px 13px;border:1px solid rgba(255,255,255,.16);border-radius:8px;
+  background:rgba(255,255,255,.025);font:800 12px/1.2 'Barlow','Google Sans',sans-serif;letter-spacing:.05em;
+  transition:border-color .2s,background .2s}
+.md-footer-social-grid b{color:#ff0000;font-size:19px}
+.md-footer-social-grid a:hover{background:rgba(255,0,0,.10);border-color:rgba(255,0,0,.75)}
+.md-footer-contact{display:flex;align-items:center;justify-content:space-between;padding:18px 4px;
+  margin-top:19px;border-top:1px solid rgba(255,255,255,.18);font:700 13px 'Barlow',sans-serif;letter-spacing:.14em}
+.md-footer-contact span{color:#ff0000;font-size:22px}
+
+/* Release Radar is a title treatment rather than separate Fresh Sounds. */
+.md-tracks .md-section-heading h2{font:800 clamp(64px,8.4vw,137px)/.8 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.035em}
+.md-tracks .md-section-heading h2 em{color:#ff0000}
+
+/* Intentional micro-preloader. Never blocks for network/media downloads. */
+.md-preloader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  background:#080809;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .19s ease,visibility .19s}
+html.md-preloading .md-preloader{opacity:1;visibility:visible;pointer-events:auto}
+.md-preloader-lockup{display:grid;place-items:center;width:205px;height:105px;position:relative}
+.md-preloader-mark{position:absolute;width:72px;height:72px;object-fit:contain;
+  animation:md-pre-mark .75s cubic-bezier(.2,.7,.2,1) both}
+.md-preloader-wordmark{width:170px;height:60px;object-fit:contain;position:absolute;opacity:0;
+  animation:md-pre-word .75s ease both}
+.md-preloader-line{position:absolute;top:calc(50% + 65px);width:165px;height:2px;
+  background:#ff0000;transform-origin:left;animation:md-pre-line .8s ease both}
+@keyframes md-pre-mark{0%{opacity:0;transform:translateY(24px) scale(1.3)}18%{opacity:1;transform:translateY(0) scale(1)}
+  55%{opacity:1;transform:translateX(0) scale(1)}85%,100%{opacity:0;transform:translateX(-60px) scale(.35)}}
+@keyframes md-pre-word{0%,54%{opacity:0;transform:translateX(35px)}77%,100%{opacity:1;transform:translateX(0)}}
+@keyframes md-pre-line{0%{transform:scaleX(0)}70%,100%{transform:scaleX(1)}}
+
+/* Typical laptop: keep generous squares by placing the hero lockup above player. */
+@media(min-width:1650px){
+  .md-hero-grid{grid-template-columns:minmax(450px,.82fr) minmax(990px,1.75fr)}
+  .md-hero-content{width:min(1850px,calc(100% - 64px))!important}
+  .md-brand-headline{font-size:clamp(75px,5vw,103px)!important}
+}
+@media(min-width:1160px) and (max-width:1649px){
+  .md-hero-content{width:calc(100% - 54px)!important}
+  .md-hero-grid{grid-template-columns:minmax(350px,.72fr) minmax(0,1.83fr);gap:26px}
+  .md-brand-headline{font-size:clamp(53px,5vw,79px)!important}
+}
+@media(max-width:1159px){
+  .md-hero{height:auto!important;min-height:100svh!important;max-height:none!important}
+  .md-hero-content{width:calc(100% - 44px)!important;min-height:0!important;padding:144px 0 90px!important}
+  .md-hero-grid{display:grid;grid-template-columns:1fr;gap:44px}
+  .md-hero-copy{max-width:740px}
+  .md-brand-headline{font-size:clamp(70px,8vw,112px)!important}
+  .md-player-home{width:100%;max-width:1100px!important;justify-self:center}
+}
+@media(max-width:800px){
+  .md-hero-grid{gap:32px}
+  .md-player-home{max-width:560px!important}
+  .md-custom-player .md-player-squares{grid-template-columns:1fr!important;gap:24px!important}
+  .md-custom-player .md-custom-inner{padding:20px!important}
+  .md-nowplaying-column,.md-sponsor-column,.md-dj-column{width:100%;max-width:350px;justify-self:center;display:block!important}
+  .md-sponsor-column{grid-column:auto!important;display:block!important}
+  .md-player-square-label{margin-bottom:11px!important}
+  .md-custom-next{margin:18px auto 0!important;max-width:350px}
+  .md-dj-artwork-caption strong{font-size:27px}
+  .md-hero-content{padding:148px 0 90px!important}
+}
+@media(max-width:600px){
+  .md-header-inner{padding-top:13px;padding-bottom:11px;height:64px;align-content:center}
+  .md-header-actions{margin:0 0 0 auto}
+  .md-hero-content{width:calc(100% - 34px)!important;padding-top:113px!important;padding-bottom:80px!important}
+  .md-brand-headline{font-size:clamp(49px,11vw,76px)!important}
+  .md-custom-player .md-custom-inner{padding:15px!important}
+  .md-nowplaying-column,.md-sponsor-column,.md-dj-column{max-width:350px}
+  .md-custom-player .md-custom-top{padding:12px 14px!important}
+  .md-custom-status{font-size:10px}
+  .md-player-engine{font-size:9px}
+  .md-dock{right:9px!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+    width:calc(100vw - 18px)!important;max-width:460px!important}
+  .md-dock-body{grid-template-columns:minmax(0,1fr) 83px;gap:9px;padding:9px}
+  .md-dock-program{gap:10px}
+  .md-dock-program>img{width:72px;height:72px}
+  .md-dock-sponsor{width:83px;height:83px}
+  .md-dock-program-copy strong{font-size:16px}
+  .md-dock-program-copy>span{font-size:11px}
+  .md-footer-social-grid a{padding:13px 10px;font-size:11px}
+  .md-tracks .md-section-heading h2{font-size:clamp(61px,11vw,87px)}
+}
+@media(max-width:375px){
+  .md-header-live{font-size:10px}
+  .md-player-engine{display:none}
+  .md-dock-program>img{width:59px;height:59px}
+  .md-dock-program-copy strong{font-size:13px}
+  .md-dock-body{grid-template-columns:minmax(0,1fr) 72px}
+  .md-dock-sponsor{width:72px;height:72px}
+  .md-footer-social-grid{grid-template-columns:1fr 1fr;gap:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .md-preloader,.md-preloader-mark,.md-preloader-wordmark,.md-preloader-line{animation:none!important;transition:none!important}
+}
