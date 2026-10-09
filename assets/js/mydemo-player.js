@@ -29,7 +29,9 @@
 
   function safeVolume() {
     try {
-      var saved = Number(window.localStorage.getItem('deseoDemoVolume'));
+      var raw = window.localStorage.getItem('deseoDemoVolume');
+      if (raw === null) return .75;
+      var saved = Number(raw);
       return Number.isFinite(saved) && saved >= 0 && saved <= 1 ? saved : .75;
     } catch (_) {
       return .75;
