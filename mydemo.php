@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v11-menu-brand-feature">
+  <meta name="deseo-demo-build" content="v13-fullwidth-player">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -235,6 +235,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v10.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v10.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v10.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v11.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v11.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v11.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v12.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v12.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v12.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v13.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v13.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v13.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
@@ -322,21 +323,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <div class="md-hero-citymark" aria-hidden="true"><span>DESEO / ATH</span><strong>06</strong><span>THE CITY HAS A SOUND.</span></div>
   <div class="md-shell md-hero-content">
     <div class="md-hero-grid">
-      <div class="md-hero-copy">
-        <h1 class="md-masthead md-brand-headline" aria-label="The Soundtrack of Your Life">
-          <span class="md-word-the">THE</span>
-          <span class="md-word-soundtrack">SOUNDTRACK</span>
-          <span class="md-word-of">OF YOUR</span>
-          <span class="md-word-life">LIFE</span>
-        </h1>
-        <p class="md-hero-description"><?= $en ? 'Nothing but <strong>great music</strong> for every moment.' : 'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.' ?></p>
-        </div>
       <div id="player" class="md-player-home">
         <aside class="md-custom-player" id="md-custom-player" aria-label="<?= $en ? 'Deseo live player' : 'Ζωντανή ακρόαση Deseo Radio' ?>">
-          <div class="md-custom-top">
-            <div class="md-custom-status"><span class="md-dot"></span> DESEO / LIVE ON AIR</div>
-            <span class="md-player-engine">IRADIOS / DESEO RADIO</span>
-          </div>
           <div class="md-custom-inner">
             <div class="md-player-squares">
               <div class="md-nowplaying-column">
@@ -368,13 +356,22 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
                     <small id="md-hero-live-time"><?= demo_e($liveShow['time'] ?? '24 / 7') ?></small>
                   </div>
                 </div>
+                <div class="md-custom-next">
+                  <span>COMING UP NEXT</span>
+                  <strong id="md-hero-next-name"><?= demo_e($nextShow['name'] ?? $copy['nonstop']) ?></strong>
+                </div>
               </div>
-            </div>
-            <div class="md-custom-next"><span>COMING UP NEXT</span>
-              <strong id="md-hero-next-name"><?= demo_e($nextShow['name'] ?? $copy['nonstop']) ?></strong>
             </div>
           </div>
         </aside>
+      </div>
+      <div class="md-hero-copy">
+        <h1 class="md-masthead md-brand-headline" aria-label="The Soundtrack of Your Life">
+          <span class="md-word-the">THE</span>
+          <span class="md-word-soundtrack">SOUNDTRACK</span>
+          <span class="md-word-of">OF YOUR</span>
+          <span class="md-word-life">LIFE</span>
+        </h1>
       </div>
     </div>
   </div>
