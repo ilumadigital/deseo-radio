@@ -204,7 +204,6 @@ if (str_contains($footerMarkup, '/assets/img/favicon.png') ||
 /* V8 design: consistent width, compact seven-day navigation, typography-only
  * arrows, sponsor-safe central attribution and accessible cursor fallback. */
 foreach ([
-    '/assets/css/mydemo-v8.css',
     '/assets/js/mydemo-cursor.js',
     'class="md-footer-credit"',
     'Handcrafted by',
@@ -442,7 +441,6 @@ if ($headerStart === false || $headerEnd === false ||
     exit(1);
 }
 foreach ([
-    '/assets/css/mydemo-v12.css',
     'class="md-dj-details"',
     'id="md-dj-dialog"',
     'id="md-dialog-bio"',
