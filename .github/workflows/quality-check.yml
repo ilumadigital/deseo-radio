@@ -54,8 +54,13 @@ jobs:
           set -euo pipefail
           php tests/hearthis-artwork-preview.php
 
+      - name: Isolated /mydemo smoke contract
+        run: php tests/mydemo-smoke.php
+
       - name: JavaScript syntax
-        run: node --check sw.js
+        run: |
+          node --check sw.js
+          node --check assets/js/mydemo.js
 
       - name: Critical files
         shell: bash
