@@ -19,7 +19,6 @@ $expect = [
     'id="schedule"',
     'THE WEEKLY LINEUP',
     'id="md-tab-1"',
-    'md-show-hours',
     'id="tracks"',
     'id="playlists"',
     'id="lineup"',
@@ -125,6 +124,11 @@ if (!str_contains($playerCss, 'height:100vh!important') ||
 
 if (!str_contains($playerCss, '.md-custom-player.is-mini') || !str_contains($playerCss, '.md-nowplaying-frame iframe')) {
     fwrite(STDERR, "mydemo custom player responsive styles missing\n");
+    exit(1);
+}
+$demoSource = (string)file_get_contents(__DIR__ . '/../mydemo.php');
+if (!str_contains($demoSource, 'class="md-show-hours"')) {
+    fwrite(STDERR, "mydemo must put CMS showtimes on the right of each weekly lineup card\n");
     exit(1);
 }
 $refinements = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-refinements.css');
