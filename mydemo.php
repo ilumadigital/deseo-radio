@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v13-fullwidth-player">
+  <meta name="deseo-demo-build" content="v14-hero-glass-and-layout">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -236,12 +236,14 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v11.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v11.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v11.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v12.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v12.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v12.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v13.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v13.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v13.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v14.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v14.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v14.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
   <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},910);</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
+  <script src="/assets/js/mydemo-header.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-header.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-header.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-cursor.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-cursor.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-cursor.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-menu.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-menu.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-menu.js') : 1 ?>" defer></script>
   <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.2" data-station="deseo" data-surface="station_website" defer></script>
@@ -375,7 +377,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       </div>
     </div>
   </div>
-  <div class="md-hero-border md-shell"><span>DESEO RADIO / HOUSE MUSIC</span><span>THE SOUNDTRACK OF YOUR LIFE</span><span>↓</span></div>
+  <div class="md-hero-border md-shell"><a class="md-hero-powered" href="https://radios.iluma.gr/" target="_blank" rel="noopener noreferrer" aria-label="Powered by ILUMA Radios — radios.iluma.gr">Powered by <strong>ILUMA Radios</strong><span class="md-hero-powered-arrow" aria-hidden="true">↗</span></a></div>
 </section>
 
 <div id="md-player-dock" class="md-dock" hidden>
