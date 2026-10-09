@@ -61,7 +61,8 @@ $required = [
     'id="md-fs-close"',
     'class="md-fs-menu-links"',
     'class="md-menu-feature"',
-    'data-md-carousel',
+    'class="md-menu-feature-card"',
+    'class="md-fs-menu-logo"',
     'class="md-footer-social-grid"',
     'class="md-footer-directory md-footer-connections md-footer-minimal"',
     '/assets/css/mydemo-v9.css',
@@ -302,11 +303,22 @@ foreach ([
     }
 }
 if (!str_contains($footerHtml, 'class="md-footer-social-grid"') ||
-    !str_contains($menuHtml, 'data-md-carousel') ||
+    !str_contains($menuHtml, 'class="md-fs-menu-logo"') ||
+    !str_contains($menuHtml, '/assets/img/deseoradio-logo.png') ||
+    !str_contains($menuHtml, 'width="220" height="100"') ||
+    !str_contains($menuHtml, 'THE<br>SOUNDTRACK<br><em>OF YOUR LIFE.</em>') ||
+    !str_contains($menuHtml, 'FEATURED ON AIR') ||
+    !str_contains($menuHtml, 'class="md-menu-feature-card"') ||
     !str_contains($menuHtml, '/assets/img/djsa02%20%281%29.png') ||
     !str_contains($menuHtml, 'Every Weekend <strong>@ 17:00</strong>') ||
-    !str_contains($menuHtml, 'DESEO<br>DJs')) {
-    fwrite(STDERR, "Curated show carousel or restored footer socials missing\n");
+    substr_count($menuHtml, 'class="md-menu-feature-card"') !== 1 ||
+    str_contains($menuHtml, 'AFTER DARK') ||
+    str_contains($menuHtml, 'FIND YOUR') ||
+    str_contains($menuHtml, 'data-md-carousel') ||
+    str_contains($menuHtml, 'data-md-slide') ||
+    str_contains($menuHtml, 'data-md-dot') ||
+    str_contains($menuHtml, 'md-menu-feature-controls')) {
+    fwrite(STDERR, "Menu requires brand logo, soundtrack slogan and one static DJ SA feature\n");
     exit(1);
 }
 if (!str_contains($html, 'class="md-preloader-symbol"') ||
@@ -349,18 +361,28 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 $cssV10 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v10.css');
 $experienceJs = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-experience.js');
 foreach (['.md-preloader-symbol', 'md-pre-v10-wordmark',
-          '.md-menu-feature-slide.is-active', '.md-footer-minimal .md-footer-social-grid',
+          '.md-fs-menu-logo', '.md-menu-feature-card',
+          'font-size:clamp(90px,7vw,106px)!important',
+          '.md-footer-minimal .md-footer-social-grid',
           '@media(prefers-reduced-motion:reduce)'] as $needle) {
     if (!str_contains($cssV10, $needle)) {
-        fwrite(STDERR, "Three-stage reveal or menu carousel styling missing: {$needle}\n");
+        fwrite(STDERR, "Three-stage reveal, larger hero title or static menu styling missing: {$needle}\n");
         exit(1);
     }
 }
-foreach (['md-preloading', 'data-md-slide', 'aria-selected', 'touchstart',
-          'prefers-reduced-motion', 'data-fallback'] as $needle) {
+foreach (['md-preloading', '2650', 'prefers-reduced-motion',
+          'md-menu-feature-card', 'data-fallback'] as $needle) {
     if (!str_contains($experienceJs, $needle)) {
-        fwrite(STDERR, "Carousel/preloader progressive script incomplete: {$needle}\n");
+        fwrite(STDERR, "Static feature/preloader script incomplete: {$needle}\n");
         exit(1);
     }
 }
-echo "mydemo: official iRadios player, cinematic loader, feature carousel, footer socials and noindex OK\n";
+if (str_contains($experienceJs, 'setInterval') ||
+    str_contains($experienceJs, 'data-md-carousel') ||
+    str_contains($cssV10, '.md-menu-feature-slide') ||
+    !str_contains($demoTemplate, 'class="md-logo"') ||
+    !str_contains($demoTemplate, 'alt="Deseo Radio" width="220" height="100"')) {
+    fwrite(STDERR, "Obsolete carousel or undersized header brand remains\n");
+    exit(1);
+}
+echo "mydemo: official iRadios player, cinematic logo reveal, static DJ SA feature, large branding and noindex OK\n";
