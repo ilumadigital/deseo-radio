@@ -23,6 +23,8 @@ $meta_image_alt = $meta_image_alt ?? 'Deseo Radio — Το Soundtrack της ζ�
 $faviconPath = __DIR__ . '/../assets/img/favicon.png';
 $faviconVersion = is_file($faviconPath) ? (int)filemtime($faviconPath) : 1;
 $private_page = !empty($private_page);
+$deseo_next_layout = !empty($deseo_next_layout);
+$deseo_next_scripts = isset($deseo_next_scripts) && is_array($deseo_next_scripts) ? $deseo_next_scripts : [];
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 $cloudflareAnalyticsToken = trim((string)(getenv('CLOUDFLARE_WEB_ANALYTICS_TOKEN') ?: ''));
 
@@ -377,8 +379,10 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Deseo Radio">
 
+    <?php if (!$deseo_next_layout): ?>
     <link rel="preload" href="/assets/img/bg.png?v=<?= $assetVersion ?>" as="image">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= $assetVersion ?>">
+    <?php endif; ?>
     <?php foreach ($extra_styles as $extraStyle): ?>
         <link rel="stylesheet" href="<?= deseo_e((string)$extraStyle) ?>?v=<?= $assetVersion ?>">
     <?php endforeach; ?>
@@ -389,7 +393,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     </script>
 
     <?php if (!$private_page): ?>
-    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
+    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=<?= $deseo_next_layout ? '1.1.2' : '1.1.1' ?>" data-station="deseo" data-surface="station_website" defer></script>
     <!-- Google Analytics 4 — consent-aware -->
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -447,7 +451,28 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     window.DeseoAnalytics = { loaded: false, pageviewSent: false, load: function(){}, sendPageView: function(){}, event: function(){} };
     </script>
     <?php endif; ?>
+    <?php if ($deseo_next_layout): ?>
+    <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
+    <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
+    <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
+    <script>
+      document.documentElement.classList.add('md-preloading');
+      window.setTimeout(function () { document.documentElement.classList.remove('md-preloading'); }, 910);
+      window.DESEO_HOME_FEED_URL = '/?feed=1';
+    </script>
+    <?php foreach ($deseo_next_scripts as $nextScript): ?>
+    <script src="<?= deseo_e((string)$nextScript) ?>?v=<?= $assetVersion ?>" defer></script>
+    <?php endforeach; ?>
+    <?php if ($private_page): ?>
+    <!-- Private launch-review routes still need sponsor preview, but never analytics indexing. -->
+    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.2" data-station="deseo" data-surface="station_website" defer></script>
+    <?php endif; ?>
+    <?php endif; ?>
 </head>
 <body>
+<?php if ($deseo_next_layout): ?>
+<a class="md-skip" href="#main"><?= deseo_e(deseo_t('skip.content')) ?></a>
+<?php else: ?>
 <a class="skip-link" href="#main-content" data-i18n="skip.content"><?= deseo_e(deseo_t('skip.content')) ?></a>
+<?php endif; ?>
 
