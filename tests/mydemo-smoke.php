@@ -431,4 +431,57 @@ if (str_contains($menuScript, 'carouselSlides') ||
     fwrite(STDERR, "V11 menu behavior must not auto-rotate or duplicate a carousel\n");
     exit(1);
 }
+/* V12: Live Radio removed from header, high-contrast top-layer cursor and DJ bios. */
+$headerStart = strpos($html, '<header class="md-header">');
+$headerEnd = strpos($html, '</header>', $headerStart);
+if ($headerStart === false || $headerEnd === false ||
+    str_contains(substr($html, $headerStart, $headerEnd - $headerStart), 'LIVE RADIO') ||
+    str_contains(substr($html, $headerStart, $headerEnd - $headerStart), 'md-header-live')) {
+    fwrite(STDERR, "The V12 header must not contain the Live Radio button\n");
+    exit(1);
+}
+foreach ([
+    '/assets/css/mydemo-v12.css',
+    'class="md-dj-details"',
+    'id="md-dj-dialog"',
+    'id="md-dialog-bio"',
+    'id="md-dialog-title"',
+] as $needle) {
+    if (!str_contains($html, $needle)) {
+        fwrite(STDERR, "V12 DJ modal markup or CSS missing: {$needle}\n");
+        exit(1);
+    }
+}
+$cursorV12 = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-cursor.js');
+foreach ([
+    'isRedCssColor', 'isOnRedElement', 'is-light', 'pointermove',
+    'MutationObserver', "attributeFilter: ['open']", 'dialog.open',
+    'dialog.addEventListener', 'parent.appendChild(cursor)',
+    'iframe, input, textarea', 'prefers-reduced-motion',
+] as $needle) {
+    if (!str_contains($cursorV12, $needle)) {
+        fwrite(STDERR, "V12 cursor contrast, DJ top-layer sync or pointer safety missing: {$needle}\n");
+        exit(1);
+    }
+}
+$v12Css = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v12.css');
+foreach ([
+    '.md-custom-cursor.is-light',
+    '.md-custom-cursor.is-light.is-interactive',
+    '#md-dj-dialog > .md-custom-cursor',
+    '#md-dj-dialog[open]',
+    '#md-dj-dialog > .md-dj-details',
+    '#md-dj-dialog #md-dialog-title',
+    'font-size:clamp(24px,2.35vw,39px)',
+    '#md-dj-dialog #md-dialog-bio',
+    'max-height:clamp(145px,33dvh,350px)',
+    'overflow-y:auto',
+    '@media(max-width:760px)',
+    '.md-header .md-header-live{display:none!important}',
+] as $needle) {
+    if (!str_contains($v12Css, $needle)) {
+        fwrite(STDERR, "V12 modal responsiveness or cursor visibility style missing: {$needle}\n");
+        exit(1);
+    }
+}
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
