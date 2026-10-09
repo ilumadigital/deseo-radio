@@ -25,6 +25,14 @@ $expect = [
     '/assets/css/mydemo.css',
     '/assets/js/mydemo.js',
     'id="md-season-countdown"',
+    'class="md-masthead"',
+    'THE SOUND',
+    'IS LIVE',
+    'Το Soundtrack της ζωής σου!',
+    'id="md-hero-live-name"',
+    'id="md-hero-live-time"',
+    'id="md-hero-live-photo"',
+    'class="md-sponsor-band"',
 ];
 foreach ($expect as $needle) {
     if (!str_contains($html, $needle)) {
@@ -40,6 +48,20 @@ if (!str_contains($htaccess, 'RewriteRule ^mydemo/?$ mydemo.php [L,QSA]')) {
 }
 if (substr_count($robots, 'Disallow: /mydemo') < 2) {
     fwrite(STDERR, "/mydemo missing from robots groups\n");
+    exit(1);
+}
+$css = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo.css');
+$js = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo.js');
+if (!str_contains($css, "'Barlow Condensed'") || !str_contains($css, "'Google Sans Flex'")) {
+    fwrite(STDERR, "mydemo typography families missing\n");
+    exit(1);
+}
+if (!str_contains($js, 'md-hero-live-name')) {
+    fwrite(STDERR, "mydemo hero live refresh missing\n");
+    exit(1);
+}
+if (strpos($html, 'class="md-sponsor-band"') > strpos($html, 'id="player"')) {
+    fwrite(STDERR, "mydemo sponsor should sit immediately before the player\n");
     exit(1);
 }
 echo "mydemo: isolated preview, public sections, playback embed, and crawl exclusion OK\n";
