@@ -647,7 +647,7 @@ html[lang="el"] .md-sponsor-head .md-small-label{
 .md-show-photo:after{background:linear-gradient(5deg,rgba(106,14,25,.73),transparent 55%)}
 .md-show-details{position:relative;background:linear-gradient(180deg,#131011,#090909)}
 .md-show-details:after{
-  content:'↗';position:absolute;right:13px;bottom:14px;
+  content:'';position:absolute;right:13px;bottom:14px;
   color:var(--red);opacity:.5;font:900 30px/.7 'Barlow Condensed';pointer-events:none
 }
 button.md-show-card:hover .md-show-photo img{transform:scale(1.09) rotate(-.8deg);filter:grayscale(.24) contrast(1.08)}
