@@ -303,7 +303,7 @@ foreach ([
 }
 if (!str_contains($footerHtml, 'class="md-footer-social-grid"') ||
     !str_contains($menuHtml, 'data-md-carousel') ||
-    !str_contains($menuHtml, '/iluma/djsa02.png') ||
+    !str_contains($menuHtml, '/assets/img/djsa02%20%281%29.png') ||
     !str_contains($menuHtml, 'Every Weekend <strong>@ 17:00</strong>') ||
     !str_contains($menuHtml, 'DESEO<br>DJs')) {
     fwrite(STDERR, "Curated show carousel or restored footer socials missing\n");
