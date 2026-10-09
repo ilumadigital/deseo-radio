@@ -69,7 +69,7 @@ $required = [
     '/assets/css/mydemo-v13.css',
     '/assets/css/mydemo-v14.css',
     '/assets/js/mydemo-header.js',
-    'content="v14-hero-glass-and-layout"',
+    'content="v15-menu-spacing-and-widgets"',
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
@@ -348,7 +348,7 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 /* V11: the actual live contract, no carousel or obsolete menu copy. */
 foreach ([
     '/assets/css/mydemo-v11.css',
-    'content="v14-hero-glass-and-layout"',
+    'content="v15-menu-spacing-and-widgets"',
     'class="md-fs-menu-brand"',
     '<h2 class="md-fs-menu-title" id="md-fs-menu-title">',
     'class="md-fs-title-red"',
@@ -649,5 +649,44 @@ foreach ([
         fwrite(STDERR, "V14 scroll-aware glass header JS missing: {$needle}\n");
         exit(1);
     }
+}
+/* V15: intentional removal of season artwork stamp, modest desktop-only
+ * tile growth and lowered nav/feature without moving the two-line title. */
+$seasonArtStart = strpos($html, 'class="md-season-art"');
+$seasonArtEnd = $seasonArtStart !== false ? strpos($html, '</section>', $seasonArtStart) : false;
+$seasonArtHtml = ($seasonArtStart !== false && $seasonArtEnd !== false)
+    ? substr($html, $seasonArtStart, $seasonArtEnd - $seasonArtStart)
+    : '';
+if ($seasonArtHtml === '' || str_contains($seasonArtHtml, 'md-season-stamp') ||
+    str_contains($seasonArtHtml, 'DESEO<br>06')) {
+    fwrite(STDERR, "V15: remove the DESEO 06 stamp from the lineup artwork\n");
+    exit(1);
+}
+if (!str_contains($html, '/assets/css/mydemo-v15.css') ||
+    !str_contains($html, 'content="v15-menu-spacing-and-widgets"')) {
+    fwrite(STDERR, "V15 stylesheet or demo cache-bust marker missing\n");
+    exit(1);
+}
+$cssV15 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v15.css');
+foreach ([
+    '.md-season-art .md-season-stamp{display:none!important}',
+    '@media (min-width:1500px) and (min-height:770px)',
+    '--md-hero-square:clamp(380px,calc(100svh - 390px),445px)!important',
+    '@media (min-width:1201px) and (min-height:760px)',
+    '.md-fs-menu-nav .md-fs-menu-links',
+    '.md-fs-menu-main .md-fs-menu-side',
+    'padding-top:clamp(55px,8vh,88px)!important',
+    '@media(max-width:850px)',
+] as $needle) {
+    if (!str_contains($cssV15, $needle)) {
+        fwrite(STDERR, "V15 layout contract missing: {$needle}\n");
+        exit(1);
+    }
+}
+$mainStart = strpos($cssV15, '@media (min-width:851px) and (min-height:760px)');
+if ($mainStart === false ||
+    str_contains($cssV15, '.md-fs-menu-title{margin-top:')) {
+    fwrite(STDERR, "V15 must leave title position unchanged and move only menu links/feature\n");
+    exit(1);
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
