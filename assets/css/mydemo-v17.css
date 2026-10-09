@@ -1,0 +1,17 @@
+/* Deseo Radio /mydemo: matte branded preloader */
+.md-preloader{background:radial-gradient(ellipse at 50% 45%,#202021 0%,#141415 43%,#0b0b0c 100%)!important;overflow:hidden!important;transition:opacity .2s ease,visibility .2s ease!important}
+.md-preloader:before,.md-preloader-glow,.md-preloader-mark,.md-preloader-wordmark,.md-preloader-caption,.md-preloader-line,.md-preloader-stage:before,.md-preloader-stage:after{display:none!important}
+.md-preloader-stage{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:min(960px,94vw)!important;min-height:340px!important}
+.md-preloader-symbols{width:clamp(235px,26vw,340px)!important;height:clamp(107px,12vw,155px)!important;position:relative!important;margin-bottom:24px!important}
+.md-preloader-final{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;filter:none!important;animation:md-matte-logo .82s ease both!important}
+.md-preloader-tagline{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:.12em .18em;max-width:92vw;text-align:center;text-transform:uppercase;font:900 clamp(27px,4.35vw,64px)/.95 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.04em;animation:md-matte-title .65s ease .16s both}
+.md-preloader-outline{color:transparent;-webkit-text-stroke:1.2px #f5f4f3}
+.md-preloader-red{color:#f00}
+.md-preloader-white{color:#f7f6f5}
+.md-preloader-progress{height:1px;width:min(490px,70vw);margin-top:28px;background:#474747;overflow:hidden}
+.md-preloader-progress span{display:block;width:100%;height:100%;background:#f00;transform-origin:left;animation:md-matte-progress .85s ease both}
+@keyframes md-matte-logo{from{opacity:0;transform:translateY(15px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
+@keyframes md-matte-title{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes md-matte-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(max-width:600px){.md-preloader-stage{min-height:290px!important}.md-preloader-symbols{width:235px!important;height:108px!important;margin-bottom:16px!important}.md-preloader-tagline{font-size:clamp(28px,9vw,43px);max-width:350px;gap:.08em .14em}.md-preloader-progress{width:75vw;margin-top:24px}}
+@media(prefers-reduced-motion:reduce){.md-preloader-final,.md-preloader-tagline,.md-preloader-progress span{animation:none!important;opacity:1!important;transform:none!important}}
