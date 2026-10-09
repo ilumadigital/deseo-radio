@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v15-menu-spacing-and-widgets">
+  <meta name="deseo-demo-build" content="v16-bottom-anchored-menu">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -238,6 +238,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v13.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v13.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v13.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v14.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v14.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v14.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v15.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v15.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v15.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v16.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v16.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v16.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
@@ -459,7 +460,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <section class="md-section md-season" id="lineup">
   <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">01 / THE ARTISTS</span><span>SEASON 06 — 2026</span></div>
+    <div class="md-section-top"><span class="md-index">THE ARTISTS</span><span>SEASON 06 — 2026</span></div>
     <div class="md-section-heading"><h2>NOT JUST DJs.<br><em>CULTURE MAKERS.</em></h2><p><?= demo_e($copy['lineup_sub']) ?></p></div>
     <div class="md-season-banner">
       <div class="md-season-info">
@@ -481,7 +482,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <section class="md-section md-schedule" id="schedule">
   <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">02 / THE PROGRAM</span><span>TIMEZONE / EUROPE — ATHENS</span></div>
+    <div class="md-section-top"><span class="md-index">THE PROGRAM</span><span>TIMEZONE / EUROPE — ATHENS</span></div>
     <div class="md-section-heading"><h2><?= demo_e($copy['schedule']) ?><span class="md-period">.</span></h2><p><?= demo_e($copy['schedule_sub']) ?></p></div>
     <div class="md-day-tabs" role="tablist" aria-label="<?= demo_e($copy['schedule']) ?>">
       <?php foreach ($days as $dayNumber => $dayNames): ?>
@@ -532,7 +533,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <section class="md-section md-tracks" id="tracks">
   <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">03 / MUSIC DISCOVERY</span><span>THE DESEO SELECTION</span></div>
+    <div class="md-section-top"><span class="md-index">MUSIC DISCOVERY</span><span>THE DESEO SELECTION</span></div>
     <div class="md-section-heading"><h2>RELEASE RADAR<br><em>DISCOVERY.</em></h2><p><?= demo_e($copy['tracks_sub']) ?></p></div>
     <div class="md-track-list">
       <?php if (!$tracks): ?><p class="md-list-empty"><?= demo_e($copy['empty_tracks']) ?></p><?php endif; ?>
@@ -554,7 +555,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <section class="md-section md-playlists" id="playlists">
   <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">04 / DESEO CURATED</span><span>LISTEN BEYOND RADIO</span></div>
+    <div class="md-section-top"><span class="md-index">DESEO CURATED</span><span>LISTEN BEYOND RADIO</span></div>
     <div class="md-section-heading"><h2>CHOOSE<br><em>YOUR MOOD.</em></h2><p><?= demo_e($copy['playlists_sub']) ?></p></div>
     <?php if (!$playlists): ?><p class="md-list-empty"><?= demo_e($copy['empty_playlists']) ?></p><?php endif; ?>
     <div class="md-playlist-grid">
@@ -576,7 +577,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <section class="md-section md-shows" id="shows">
   <div class="md-shell md-shows-grid">
     <div>
-      <div class="md-section-top"><span class="md-index">05 / DESEO ORIGINALS</span></div>
+      <div class="md-section-top"><span class="md-index">DESEO ORIGINALS</span></div>
       <h2>THE SHOW<br><em>GOES ON.</em></h2>
       <p><?= demo_e($copy['podcasts_sub']) ?></p>
       <div class="md-platform-links">
@@ -601,7 +602,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <section class="md-section md-faq-section" id="faq" aria-labelledby="md-faq-title">
   <div class="md-shell">
     <div class="md-section-top">
-      <span class="md-index">06 / DESEO UNFILTERED</span>
+      <span class="md-index">DESEO UNFILTERED</span>
       <span><?= $en ? 'THE ANSWERS BEHIND THE SOUND' : 'ΟΛΑ ΓΙΑ ΤΟΝ ΗΧΟ ΜΑΣ' ?></span>
     </div>
     <div class="md-section-heading md-faq-heading">
