@@ -467,6 +467,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
     </div>
     <div class="md-footer-main">
       <div class="md-footer-identity">
+        <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50" loading="lazy"></a>
         <p class="md-footer-eyebrow">STAY TUNED. KEEP FEELING.</p>
         <h2 class="md-footer-statement">THE SOUND<br><em>STAYS</em><br>WITH YOU<span>.</span></h2>
         <p class="md-footer-slogan"><?= demo_e($copy['hero']) ?></p>
