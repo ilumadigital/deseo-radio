@@ -132,7 +132,7 @@ function md_current_song(): ?array {
 }
 
 function md_key(string $value): string {
-    $value = mb_strtolower($value, 'UTF-8');
+    $value = function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
     $value = preg_replace('/[^\pL\pN]+/u', ' ', $value) ?? '';
     return trim(preg_replace('/\s+/u', ' ', $value) ?? '');
 }
@@ -147,7 +147,7 @@ function md_artwork_url(string $url): string {
     $u = parse_url($url);
     if (!is_array($u) || strtolower($u['scheme'] ?? '') !== 'https') return '';
     $host = strtolower($u['host'] ?? '');
-    return preg_match('/^(?:is\d+-ssl\.mzstatic\.com|i\d+\.scdn\.co|lastfm\.freetls\.fastly\.net|(?:\w+\.)?last\.fm)$/', $host) ? $url : '';
+    return preg_match('/^(?:is\d+-ssl\.mzstatic\.com|i(?:\d+)?\.scdn\.co|lastfm\.freetls\.fastly\.net|(?:\w+\.)?last\.fm)$/', $host) ? $url : '';
 }
 
 function md_spotify_art(array $song): ?array {
