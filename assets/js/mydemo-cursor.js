@@ -43,6 +43,11 @@
   document.addEventListener('pointerout', function (event) {
     if (!event.relatedTarget) hide();
   }, {passive:true});
+  // Embedded iRadios controls own their pointer. Never leave a ghost red dot
+  // over an interactive cross-origin iframe.
+  document.querySelectorAll('iframe').forEach(function (frame) {
+    frame.addEventListener('pointerenter', hide, {passive:true});
+  });
   window.addEventListener('blur', hide);
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) hide();
