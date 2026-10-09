@@ -256,7 +256,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <header class="md-header">
   <div class="md-shell md-header-inner">
-    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="150" height="68"></a>
+    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="100"></a>
     <div class="md-header-actions">
       <div class="md-lang" aria-label="Language">
         <a <?= !$en ? 'aria-current="page"' : '' ?> href="/mydemo?lang=el">EL</a>
@@ -271,11 +271,11 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <div class="md-fs-menu" id="md-fs-menu" role="dialog" aria-modal="true" aria-labelledby="md-fs-menu-title" aria-hidden="true" hidden>
   <div class="md-fs-menu-glow" aria-hidden="true"></div>
   <div class="md-fs-menu-inner">
-    <div class="md-fs-menu-top"><span class="md-fs-menu-overline"><span class="md-dot"></span> DESEO RADIO / SEASON 06</span>
+    <div class="md-fs-menu-top"><a class="md-fs-menu-logo" href="#home" aria-label="Deseo Radio home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="100"></a>
       <button type="button" class="md-fs-close" id="md-fs-close" aria-label="<?= $en ? 'Close menu' : 'Κλείσιμο μενού' ?>"><span><?= $en ? 'CLOSE' : 'ΚΛΕΙΣΙΜΟ' ?></span><i aria-hidden="true"></i></button>
     </div>
     <div class="md-fs-menu-main">
-      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title">FIND YOUR<br><em>FREQUENCY.</em></h2>
+      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title">THE<br>SOUNDTRACK<br><em>OF YOUR LIFE.</em></h2>
         <nav class="md-fs-menu-links" aria-label="Deseo Radio sections">
           <a href="#player"><span class="md-fs-menu-count">01</span>JUST LISTEN<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="#listen-everywhere"><span class="md-fs-menu-count">02</span>PARTNERS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
@@ -290,49 +290,16 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
         </nav>
       </div>
       <aside class="md-fs-menu-side">
-        <span class="md-fs-side-kicker">ON THE RADAR / DESEO PICKS</span>
-        <section class="md-menu-feature" data-md-carousel aria-label="Featured radio shows">
-          <div class="md-menu-feature-viewport">
-            <div class="md-menu-feature-track">
-              <a class="md-menu-feature-slide is-active" href="#shows" data-md-slide aria-label="DJ SA Radioshow, Every Weekend at 17:00">
-                <img class="md-menu-feature-photo" src="/assets/img/djsa02%20%281%29.png" data-fallback="/assets/img/bg.png" alt="" loading="lazy" decoding="async">
-                <div class="md-menu-feature-copy">
-                  <span class="md-menu-feature-eyebrow">01 / WEEKEND FEATURE</span>
-                  <h3>DJ SA<br>RADIOSHOW</h3>
-                  <p>Every Weekend <strong>@ 17:00</strong></p>
-                  <span class="md-menu-feature-cta">DISCOVER THE SHOW <span class="md-ui-arrow" aria-hidden="true"></span></span>
-                </div>
-              </a>
-              <a class="md-menu-feature-slide" href="#lineup" data-md-slide tabindex="-1" aria-hidden="true" aria-label="Discover Deseo DJs">
-                <img class="md-menu-feature-photo" src="<?= demo_e(demo_photo($program[0]['photo_path'] ?? '')) ?>" data-fallback="/assets/img/bg.png" alt="" loading="lazy" decoding="async">
-                <div class="md-menu-feature-copy">
-                  <span class="md-menu-feature-eyebrow">02 / THE PEOPLE</span>
-                  <h3>DESEO<br>DJs</h3>
-                  <p>The people behind the sound.</p>
-                  <span class="md-menu-feature-cta">MEET THE LINEUP <span class="md-ui-arrow" aria-hidden="true"></span></span>
-                </div>
-              </a>
-              <a class="md-menu-feature-slide md-menu-feature-slide--shows" href="#shows" data-md-slide tabindex="-1" aria-hidden="true" aria-label="Discover Deseo Radioshows">
-                <img class="md-menu-feature-photo" src="/assets/img/favicon-nobg.png" alt="" loading="lazy" decoding="async">
-                <div class="md-menu-feature-copy">
-                  <span class="md-menu-feature-eyebrow">03 / ALWAYS ON</span>
-                  <h3>DESEO<br>RADIOSHOWS</h3>
-                  <p>The show goes on.</p>
-                  <span class="md-menu-feature-cta">EXPLORE RADIOSHOWS <span class="md-ui-arrow" aria-hidden="true"></span></span>
-                </div>
-              </a>
+        <span class="md-fs-side-kicker">FEATURED ON AIR</span>
+        <section class="md-menu-feature" aria-label="DJ SA Radioshow featured on air">
+          <a class="md-menu-feature-card" href="#shows" aria-label="DJ SA Radioshow — Every Weekend at 17:00">
+            <img class="md-menu-feature-photo" src="/assets/img/djsa02%20%281%29.png" data-fallback="/assets/img/bg.png" alt="" loading="lazy" decoding="async">
+            <div class="md-menu-feature-copy">
+              <h3>DJ SA<br>RADIOSHOW</h3>
+              <p>Every Weekend <strong>@ 17:00</strong></p>
+              <span class="md-menu-feature-cta">DISCOVER THE SHOW <span class="md-ui-arrow" aria-hidden="true"></span></span>
             </div>
-          </div>
-          <div class="md-menu-feature-controls">
-            <button type="button" class="md-menu-feature-arrow" data-md-prev aria-label="Previous feature"><span aria-hidden="true">←</span></button>
-            <div class="md-menu-feature-dots" role="tablist" aria-label="Choose featured show">
-              <button type="button" role="tab" data-md-dot="0" aria-selected="true" aria-label="Show DJ SA Radioshow"></button>
-              <button type="button" role="tab" data-md-dot="1" aria-selected="false" aria-label="Show Deseo DJs" tabindex="-1"></button>
-              <button type="button" role="tab" data-md-dot="2" aria-selected="false" aria-label="Show Deseo Radioshows" tabindex="-1"></button>
-            </div>
-            <button type="button" class="md-menu-feature-arrow" data-md-next aria-label="Next feature"><span aria-hidden="true">→</span></button>
-            <span class="md-menu-feature-counter" aria-live="polite"><b data-md-current>01</b> / 03</span>
-          </div>
+          </a>
         </section>
       </aside>
     </div>
