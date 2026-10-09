@@ -263,7 +263,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 
 <header class="md-header">
   <div class="md-shell md-header-inner">
-    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="330" height="100" fetchpriority="high"></a>
+    <a class="md-logo" href="#home" aria-label="Deseo Radio demo home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="100" fetchpriority="high"></a>
     <div class="md-header-actions">
       <div class="md-lang" aria-label="Language">
         <a <?= !$en ? 'aria-current="page"' : '' ?> href="/mydemo?lang=el">EL</a>
@@ -284,7 +284,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       <button type="button" class="md-fs-close" id="md-fs-close" aria-label="<?= $en ? 'Close menu' : 'Κλείσιμο μενού' ?>"><span><?= $en ? 'CLOSE' : 'ΚΛΕΙΣΙΜΟ' ?></span><i aria-hidden="true"></i></button>
     </div>
     <div class="md-fs-menu-main">
-      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title"><span>THE</span><span class="md-fs-title-red">SOUNDTRACK</span><em>OF YOUR</em><span>LIFE</span></h2>
+      <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title"><span class="md-fs-title-line"><span class="md-fs-title-outline">THE</span> <span class="md-fs-title-red">SOUNDTRACK</span></span><span class="md-fs-title-line"><span class="md-fs-title-outline">OF YOUR</span> <span class="md-fs-title-white">LIFE</span></span></h2>
         <nav class="md-fs-menu-links" aria-label="Deseo Radio sections">
           <a href="#player"><span class="md-fs-menu-count">01</span>JUST LISTEN<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="#listen-everywhere"><span class="md-fs-menu-count">02</span>PARTNERS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
