@@ -56,7 +56,14 @@ $required = [
     '/assets/js/mydemo-player.js',
     'class="md-preloader"',
     'md-preloading',
-    'class="md-footer-social-grid"',
+    'id="md-fs-menu"',
+    'id="md-menu-trigger"',
+    'id="md-fs-close"',
+    'class="md-fs-menu-links"',
+    'class="md-fs-menu-social"',
+    'class="md-footer-minimal"',
+    '/assets/css/mydemo-v9.css',
+    '/assets/js/mydemo-menu.js',
     'href="https://iluma.gr/radios/mediakit"',
     'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.',
 ];
@@ -169,7 +176,7 @@ if (!is_array($manifestData) || empty($manifestData['icons']) ||
 }
 if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
     preg_match('~<img\\b[^>]*\\bsrc="/assets/img/favicon\\.png~i', $html) ||
-    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 3) {
+    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 4) {
     fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
     exit(1);
 }
@@ -247,5 +254,82 @@ if (!str_contains($cursorJs, 'pointer: fine') ||
     !str_contains($cursorJs, "iframe, input, textarea")) {
     fwrite(STDERR, "Custom cursor must only operate safely on fine pointers\n");
     exit(1);
+}
+
+/* V9: fullscreen accessible menu and its links, red label cleanup and animation. */
+$menuStart = strpos($html, 'id="md-fs-menu"');
+$menuEnd = strpos($html, '<main id="main">');
+if ($menuStart === false || $menuEnd === false || $menuStart > $menuEnd) {
+    fwrite(STDERR, "Fullscreen menu must be outside the main and before the hero\n");
+    exit(1);
+}
+$menuHtml = substr($html, $menuStart, $menuEnd - $menuStart);
+$menuLinks = [
+    'JUST LISTEN' => '#player',
+    'PARTNERS' => '#listen-everywhere',
+    'ABOUT US' => '#about',
+    'LINEUP' => '#lineup',
+    'PROGRAM' => '#schedule',
+    'RELEASE RADAR' => '#tracks',
+    'PLAYLISTS' => '#playlists',
+    'RADIOSHOWS' => '#shows',
+    'FAQ' => '#faq',
+    'CONTACT' => 'mailto:radio@iluma.gr',
+];
+foreach ($menuLinks as $label => $href) {
+    if (!str_contains($menuHtml, 'href="' . $href . '"') ||
+        !str_contains($menuHtml, $label)) {
+        fwrite(STDERR, "Fullscreen menu section link missing: {$label}\n");
+        exit(1);
+    }
+}
+foreach ([
+    'instagram.com/deseoradio/',
+    'facebook.com/deseoradiogr/',
+    'mixcloud.com/deseoradio/',
+    'podcasts.apple.com/us/podcast/deseo-radioshows',
+    'open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue',
+    'iluma.gr/radios/mediakit',
+] as $external) {
+    if (!str_contains($menuHtml, $external)) {
+        fwrite(STDERR, "Fullscreen menu social link missing: {$external}\n");
+        exit(1);
+    }
+}
+$footerHtml = substr($html, strpos($html, '<footer class="md-footer"'));
+if (str_contains($footerHtml, 'class="md-footer-social-grid"') ||
+    str_contains($footerHtml, 'class="md-footer-social-grid"')) {
+    fwrite(STDERR, "Footer social links should appear only in fullscreen menu\n");
+    exit(1);
+}
+$demoTemplate = (string)file_get_contents(__DIR__ . '/../mydemo.php');
+if (str_contains($demoTemplate, 'RESIDENT / DJ SET') ||
+    str_contains($demoTemplate, 'DESEO RADIO / S06') ||
+    str_contains($demoTemplate, '<span>DESEO / SEASON 06</span>') ||
+    !str_contains($demoTemplate, 'DESEO RADIOSHOW')) {
+    fwrite(STDERR, "Program cards must only describe DESEO RADIOSHOW, without old red tags\n");
+    exit(1);
+}
+$demoJsV9 = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo.js');
+if (str_contains($demoJsV9, "'DESEO RADIO / S06'")) {
+    fwrite(STDERR, "CMS schedule updates must not reintroduce old radio season labels\n");
+    exit(1);
+}
+$menuJs = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-menu.js');
+foreach (['Escape', 'aria-expanded', 'is-open', 'md-menu-open',
+          'IntersectionObserver', 'prefers-reduced-motion', 'closeMenu', 'Tab'] as $needle) {
+    if (!str_contains($menuJs, $needle)) {
+        fwrite(STDERR, "Menu accessibility or progressive section animation missing: {$needle}\n");
+        exit(1);
+    }
+}
+$cssV9 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v9.css');
+foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
+          '.md-fs-menu-links', '.md-fs-menu-social', '.md-reveal',
+          '@media(max-width:700px)', '@media(prefers-reduced-motion:reduce)'] as $needle) {
+    if (!str_contains($cssV9, $needle)) {
+        fwrite(STDERR, "Fullscreen menu/mobile animation stylesheet incomplete: {$needle}\n");
+        exit(1);
+    }
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
