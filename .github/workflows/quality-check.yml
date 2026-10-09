@@ -57,6 +57,9 @@ jobs:
       - name: Isolated /mydemo smoke contract
         run: php tests/mydemo-smoke.php
 
+      - name: Production homepage SEO and AI schema contract
+        run: php tests/homepage-live.php
+
       - name: JavaScript syntax
         run: |
           node --check sw.js
