@@ -23,12 +23,14 @@ $meta_image_alt = $meta_image_alt ?? 'Deseo Radio — Το Soundtrack της ζ�
 $faviconPath = __DIR__ . '/../assets/img/favicon.png';
 $faviconVersion = is_file($faviconPath) ? (int)filemtime($faviconPath) : 1;
 $private_page = !empty($private_page);
+$deseo_home_redesign = !empty($deseo_home_redesign);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
 $cloudflareAnalyticsToken = trim((string)(getenv('CLOUDFLARE_WEB_ANALYTICS_TOKEN') ?: ''));
 
 $assetVersion = 1;
 foreach ([
     __DIR__ . '/../assets/css/style.css',
+    __DIR__ . '/../assets/css/home.css',
     __DIR__ . '/../manifest.json',
     __DIR__ . '/../sw.js',
     __DIR__ . '/../assets/img/bg.png',
@@ -87,6 +89,8 @@ $schema = [
                 'https://www.facebook.com/deseoradiogr/',
                 'https://www.mixcloud.com/deseoradio/',
                 'https://open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue?si=_3btuPp0Qy-nHs950YFIpg',
+                'https://podcasts.apple.com/us/podcast/deseo-radioshows/id1711008342',
+                'https://hearthis.at/deseoradio/set/season-6/',
                 'https://soundcloud.com/deseo-radio',
                 'https://play.iradios.gr/station/deseo-radio',
             ],
@@ -369,7 +373,9 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="preconnect" href="https://play.iradios.gr">
+        <?php if (!$deseo_home_redesign): ?>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap">
+        <?php endif; ?>
     <?php endif; ?>
 
     <link rel="manifest" href="/manifest.json?v=<?= $assetVersion ?>">
@@ -377,8 +383,14 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Deseo Radio">
 
+    <?php if ($deseo_home_redesign): ?>
+    <link rel="preconnect" href="https://radios.iluma.gr" crossorigin>
+    <link rel="preload" href="/assets/img/deseoradio-logo.png" as="image" fetchpriority="high">
+    <link rel="stylesheet" href="/assets/css/home.css?v=<?= $assetVersion ?>">
+    <?php else: ?>
     <link rel="preload" href="/assets/img/bg.png?v=<?= $assetVersion ?>" as="image">
     <link rel="stylesheet" href="/assets/css/style.css?v=<?= $assetVersion ?>">
+    <?php endif; ?>
     <?php foreach ($extra_styles as $extraStyle): ?>
         <link rel="stylesheet" href="<?= deseo_e((string)$extraStyle) ?>?v=<?= $assetVersion ?>">
     <?php endforeach; ?>
@@ -389,7 +401,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     </script>
 
     <?php if (!$private_page): ?>
-    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
+    <script src="https://radios.iluma.gr/signal/v1/signal.js?v=<?= $deseo_home_redesign ? '1.1.2' : '1.1.1' ?>" data-station="deseo" data-surface="station_website" defer></script>
     <!-- Google Analytics 4 — consent-aware -->
     <script>
     window.dataLayer = window.dataLayer || [];
@@ -449,5 +461,5 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
     <?php endif; ?>
 </head>
 <body>
-<a class="skip-link" href="#main-content" data-i18n="skip.content"><?= deseo_e(deseo_t('skip.content')) ?></a>
+<a class="<?= $deseo_home_redesign ? 'md-skip' : 'skip-link' ?>" href="<?= $deseo_home_redesign ? '#main' : '#main-content' ?>" data-i18n="skip.content"><?= deseo_e(deseo_t('skip.content')) ?></a>
 
