@@ -67,4 +67,16 @@ foreach (['.md-player-squares','.md-preloader-token','.md-fs-menu','.cookie-bann
         exit(1);
     }
 }
+/* Mobile preloader must keep LIFE on the same line and display the complete
+   staggered title + SOUNDTRACK sweep before uncovering the live player. */
+$renderer = (string)file_get_contents(dirname(__DIR__) . '/mydemo.php');
+if (!str_contains($css, 'font-size: clamp(17px, 5.6vw, 27px) !important;') ||
+    !str_contains($css, 'flex-wrap: nowrap !important;') ||
+    !str_contains($css, 'white-space: nowrap !important;') ||
+    !str_contains($renderer, "event.animationName === 'md18-red-sweep'") ||
+    !str_contains($renderer, 'window.setTimeout(finishIntro, 260);') ||
+    !str_contains($renderer, 'fallback = window.setTimeout(finishIntro, 2850);')) {
+    fwrite(STDERR, "Mobile slogan or full preloader animation regression\n");
+    exit(1);
+}
 echo "mydemo: private preview, single CSS, native player, sponsors, CMS widgets and AI section OK\n";
