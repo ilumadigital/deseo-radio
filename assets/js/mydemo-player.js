@@ -5,6 +5,7 @@
   var player = document.getElementById('md-custom-player');
   var home = document.getElementById('player');
   var dock = document.getElementById('md-player-dock');
+  var hero = document.getElementById('home');
   if (!audio || !player || !home || !dock) return;
 
   var el = function (id) { return document.getElementById(id); };
@@ -134,13 +135,13 @@
   if ('IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function (entries) {
       isBelowHero = !entries[0].isIntersecting &&
-        home.getBoundingClientRect().top < 0;
+        hero.getBoundingClientRect().bottom <= 0;
       changeLayout();
-    }, { threshold: 0, rootMargin: '-45px 0px 0px 0px' });
-    observer.observe(home);
+    }, { threshold: 0 });
+    observer.observe(hero);
   } else {
     window.addEventListener('scroll', function () {
-      isBelowHero = home.getBoundingClientRect().bottom < 0;
+      isBelowHero = hero.getBoundingClientRect().bottom < 0;
       changeLayout();
     }, { passive: true });
   }
