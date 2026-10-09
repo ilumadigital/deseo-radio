@@ -218,7 +218,9 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <title>Deseo Radio — Design Preview / Season 06</title>
   <link rel="icon" href="/assets/img/favicon.png">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
+  <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
 </head>
 <body>
 <a class="md-skip" href="#main">Skip to content</a>
@@ -313,7 +315,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           </a>
           <div class="md-custom-bottom"><span>THE SOUNDTRACK OF YOUR LIFE.</span><span>DESEO / ATH</span></div>
         </aside>
-      </div>aside>
+      </div>
     </div>
   </div>
   <div class="md-hero-border md-shell"><span>DESEO RADIO / HOUSE MUSIC</span><span>THE SOUNDTRACK OF YOUR LIFE</span><span>↓</span></div>
