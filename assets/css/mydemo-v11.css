@@ -1,55 +1,60 @@
 /* Deseo Radio /mydemo V11. Single-purpose override after v1-v10.
    Premium fullscreen identity, immutable featured DJ SA, bold but safe typography. */
 
-/* Promote the actual approved primary wordmark. Source has optical padding so
-   we center/crop transparent margins instead of making the entire header 200px tall. */
-@media(min-width:981px){
-  .md-header .md-header-inner{
-    height:102px!important;min-height:102px!important;
-    padding-block:0!important;
-    align-content:center;
-  }
-  .md-header .md-logo{
-    width:320px!important;max-width:320px;height:101px;
-    position:relative;flex:0 0 320px;overflow:hidden;
-    display:block;
-  }
-  .md-header .md-logo img{
-    position:absolute!important;left:50%;top:50%;
-    width:460px!important;height:auto!important;max-height:none!important;
-    min-width:460px;
-    transform:translate(-50%,-50%);
-    object-fit:contain!important;
-    display:block;
-  }
+/* The supplied file is 220×100: render the artwork as supplied.
+   No crop, overflow mask, positioning or exaggerated scale at any breakpoint. */
+.md-header .md-header-inner{
+  height:102px!important;
+  min-height:102px!important;
+  padding-block:0!important;
+  align-content:center!important;
+  align-items:center!important;
+}
+.md-header .md-logo{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  position:static!important;
+  flex:0 0 220px!important;
+  width:220px!important;
+  height:100px!important;
+  min-width:0!important;
+  max-width:220px!important;
+  overflow:visible!important;
+  padding:0!important;
+}
+.md-header .md-logo img{
+  display:block!important;
+  position:static!important;
+  width:220px!important;
+  height:100px!important;
+  min-width:0!important;
+  max-width:220px!important;
+  max-height:100px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  transform:none!important;
+  margin:0!important;
+  padding:0!important;
 }
 @media(min-width:601px) and (max-width:980px){
-  .md-header .md-logo{
-    width:245px!important;height:81px!important;position:relative;overflow:hidden;
-    flex:0 0 245px;
-  }
-  .md-header .md-logo img{
-    position:absolute;left:50%;top:50%;
-    width:350px!important;height:auto!important;max-height:none!important;
-    transform:translate(-50%,-50%);
-  }
-  .md-header .md-header-inner{height:84px!important;min-height:84px!important;align-content:center}
+  .md-header .md-header-inner{height:90px!important;min-height:90px!important}
+  .md-header .md-logo{height:90px!important}
+  .md-header .md-logo img{height:90px!important;width:198px!important;max-width:198px!important}
 }
 @media(max-width:600px){
+  .md-header .md-header-inner{height:72px!important;min-height:72px!important}
   .md-header .md-logo{
-    display:block;position:relative;width:145px!important;min-width:0;
-    flex:0 0 145px;height:60px!important;overflow:hidden;
+    width:148px!important;max-width:148px!important;flex-basis:148px!important;height:68px!important;
   }
   .md-header .md-logo img{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:218px!important;height:auto!important;max-height:none!important;
-    min-width:218px!important;
+    width:148px!important;max-width:148px!important;
+    height:auto!important;max-height:68px!important;
   }
-  .md-header .md-header-inner{height:66px!important;min-height:66px!important;padding-block:0!important}
 }
 @media(max-width:380px){
-  .md-header .md-logo{width:112px!important;flex-basis:112px!important}
-  .md-header .md-logo img{width:177px!important;min-width:177px!important}
+  .md-header .md-logo{width:117px!important;max-width:117px!important;flex-basis:117px!important}
+  .md-header .md-logo img{width:117px!important;max-width:117px!important}
 }
 
 /* Four words, four lines: bring headline back to 106px class on 1650px
@@ -95,54 +100,127 @@
   .md-brand-headline{font-size:43px!important}
 }
 
-/* Menu has a real primary image in the top bar, not an invisible pseudo logo. */
+/* Fullscreen overlay stays exactly the viewport height, with native logo. */
+.md-fs-menu{
+  height:100vh!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.md-fs-menu-inner{
+  box-sizing:border-box;
+  height:100%;
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+}
 .md-fs-menu-top{
   display:grid!important;
-  grid-template-columns:minmax(185px,1fr) auto minmax(112px,1fr)!important;
-  align-items:center;
-  gap:clamp(10px,1.5vw,27px);
-  min-height:100px!important;padding:0!important;
+  grid-template-columns:minmax(175px,1fr) auto minmax(110px,1fr)!important;
+  align-items:center!important;
+  gap:clamp(10px,1.5vw,24px)!important;
+  height:clamp(75px,11.5vh,100px)!important;
+  min-height:75px!important;
+  padding:0!important;
+  flex:0 0 auto!important;
 }
 .md-fs-menu-brand{
-  display:block;position:relative;
-  width:245px;max-width:100%;height:98px;
-  overflow:hidden;justify-self:start;
+  position:static!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  justify-self:start!important;
+  overflow:visible!important;
+  width:220px!important;
+  height:100px!important;
+  max-width:100%!important;
+  min-width:0!important;
 }
 .md-fs-menu-brand img{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:355px;height:auto;max-width:none;max-height:none;
-  object-fit:contain;
+  position:static!important;
+  display:block!important;
+  width:220px!important;
+  height:100px!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  transform:none!important;
 }
 .md-fs-menu-overline{justify-self:center}
 .md-fs-close{justify-self:end}
-.md-fs-menu-title{
-  margin-top:0;margin-bottom:clamp(24px,3vw,52px);
-  font:900 clamp(66px,6.2vw,119px)/.78 'Barlow Condensed',Impact,sans-serif!important;
-  letter-spacing:-.041em!important;
-  overflow:visible;
-}
-.md-fs-menu-title>span,.md-fs-menu-title>em{
-  display:block;
-  width:max-content;max-width:100%;
-  white-space:nowrap;
-  font:inherit;
-  font-style:normal!important;
-}
-.md-fs-menu-title>span:first-child,
-.md-fs-menu-title>em{
-  color:transparent!important;-webkit-text-stroke:1.5px rgba(255,255,255,.96)!important
-}
-.md-fs-menu-title>.md-fs-title-red{
-  color:#ff0000!important;-webkit-text-stroke:0!important;
-}
-.md-fs-menu-title>span:last-child{
-  color:#fff!important;-webkit-text-stroke:0!important
-}
 .md-fs-menu-main{
-  grid-template-columns:minmax(0,1.45fr) minmax(315px,.67fr);
-  gap:clamp(30px,5vw,100px)
+  display:grid!important;
+  grid-template-columns:minmax(0,1.38fr) minmax(280px,.68fr)!important;
+  align-items:start!important;
+  gap:clamp(20px,4vw,66px)!important;
+  flex:1 1 auto!important;
+  min-height:0;
+  padding:clamp(13px,2.8vh,30px) 0 clamp(12px,2vh,24px)!important;
 }
-
+.md-fs-menu-nav{display:flex;flex-direction:column;min-height:0;min-width:0}
+.md-fs-menu-title{
+  font:900 clamp(57px,5.3vw,96px)/.82 'Barlow Condensed',Impact,sans-serif!important;
+  letter-spacing:-.037em!important;
+  margin:0 0 clamp(12px,2.1vh,26px)!important;
+  width:100%;
+}
+.md-fs-menu-title>.md-fs-title-line{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+  line-height:.87!important;
+  font:inherit!important;
+}
+.md-fs-menu-title>.md-fs-title-line > span{
+  display:inline!important;
+  font:inherit!important;
+  font-style:normal!important;
+  white-space:nowrap!important;
+  letter-spacing:inherit!important;
+}
+.md-fs-title-outline{
+  color:transparent!important;
+  -webkit-text-stroke:1.35px #f7f7f7!important;
+}
+.md-fs-title-red{color:#ff0000!important;-webkit-text-stroke:0!important}
+.md-fs-title-white{color:#fff!important;-webkit-text-stroke:0!important}
+.md-fs-menu-links{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-auto-flow:column;
+  grid-template-rows:repeat(5,minmax(0,1fr));
+  flex:1 1 auto;
+  min-height:0;
+}
+.md-fs-menu-links a{
+  font-size:clamp(20px,2vw,33px)!important;
+  padding:clamp(6px,1.2vh,12px) 4px clamp(6px,1.2vh,12px) 0!important;
+  min-height:0!important;
+}
+.md-fs-menu-bottom{
+  flex:0 0 auto!important;
+  padding:clamp(9px,1.3vh,16px) 0!important;
+}
+.md-fs-menu-side{padding-top:0!important}
+.md-menu-feature-art{
+  height:min(52vh,480px)!important;
+  max-height:min(52vh,480px)!important;
+  min-height:240px!important;
+  aspect-ratio:auto!important;
+}
+@media(min-width:851px) and (max-width:1200px){
+  .md-fs-menu-main{grid-template-columns:minmax(0,1.5fr) minmax(255px,.68fr)!important}
+  .md-fs-menu-title{font-size:clamp(49px,5.1vw,68px)!important}
+  .md-fs-menu-links a{font-size:clamp(20px,2.15vw,28px)!important}
+}
+@media(max-height:720px) and (min-width:851px){
+  .md-fs-menu-top{height:76px!important;min-height:76px!important}
+  .md-fs-menu-title{font-size:clamp(43px,4.7vw,72px)!important;margin-bottom:12px!important}
+  .md-fs-menu-main{padding:12px 0!important}
+  .md-fs-menu-links a{padding:6px 4px 6px 0!important;font-size:clamp(19px,1.95vw,29px)!important}
+  .md-menu-feature-art{height:48vh!important;max-height:48vh!important;min-height:205px!important}
+}
 /* Only one evergreen featured DJ tile, no carousel/controls to surprise users. */
 .md-fs-menu-side{
   display:flex!important;flex-direction:column;gap:0!important;
@@ -204,27 +282,36 @@
   font:800 clamp(12px,1.05vw,15px)/1.4 'Barlow','Google Sans',sans-serif;
   letter-spacing:.10em;
 }
-@media(max-width:1100px){
- .md-fs-menu-main{grid-template-columns:1fr!important;gap:34px}
- .md-fs-menu-side{max-width:620px!important;width:100%!important}
- .md-menu-feature-art{aspect-ratio:16 / 10;min-height:265px;max-height:none}
- .md-fs-menu-title{font-size:clamp(65px,9vw,97px)!important}
+@media(max-width:850px){
+  .md-fs-menu-main{
+    grid-template-columns:1fr!important;
+    flex:0 0 auto!important;
+    min-height:auto!important;
+    gap:25px!important;
+  }
+  .md-fs-menu-title{font-size:clamp(46px,8vw,71px)!important}
+  .md-fs-menu-links a{font-size:clamp(23px,3.5vw,32px)!important;padding:10px 3px 10px 0!important}
+  .md-fs-menu-side{max-width:570px!important;width:100%!important}
+  .md-menu-feature-art{height:auto!important;max-height:430px!important;aspect-ratio:16/10!important;min-height:250px!important}
 }
 @media(max-width:700px){
- .md-fs-menu-top{grid-template-columns:minmax(0,1fr) auto!important;min-height:74px!important}
- .md-fs-menu-brand{width:180px;height:72px}
- .md-fs-menu-brand img{width:270px}
- .md-fs-menu-overline{display:none!important}
- .md-fs-menu-title{font-size:clamp(57px,11.7vw,79px)!important}
- .md-menu-feature-art{aspect-ratio:5 / 5.3;min-height:245px}
- .md-menu-feature .md-menu-promo-content strong{font-size:clamp(43px,10vw,63px)}
+  .md-fs-menu-top{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    height:76px!important;min-height:76px!important;
+  }
+  .md-fs-menu-brand{width:162px!important;height:74px!important}
+  .md-fs-menu-brand img{width:162px!important;height:74px!important}
+  .md-fs-menu-overline{display:none!important}
+  .md-fs-menu-title{font-size:clamp(43px,10.3vw,65px)!important}
+  .md-fs-menu-links{grid-template-columns:1fr!important;grid-auto-flow:row!important;grid-template-rows:none!important}
+  .md-fs-menu-links a{font-size:clamp(24px,6.8vw,36px)!important}
+  .md-fs-menu-links a:nth-child(5){border-bottom:0}
+  .md-menu-feature-art{aspect-ratio:5/5!important;min-height:240px!important}
 }
 @media(max-width:380px){
- .md-fs-menu-brand{width:150px}
- .md-fs-menu-brand img{width:229px}
- .md-fs-menu-title{font-size:clamp(46px,11.2vw,57px)!important}
+  .md-fs-menu-title{font-size:clamp(39px,10.5vw,46px)!important}
+  .md-fs-menu-brand,.md-fs-menu-brand img{width:147px!important}
 }
-
 /* A visibly staged but sub-second image-based sequence.
    Favicon => Deseo => Deseo Radio; don't rely on DOM-load to display images. */
 .md-preloader{
