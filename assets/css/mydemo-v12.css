@@ -29,10 +29,32 @@
   /* Native dialogs belong to the browser's top layer. JS re-parents the
      cursor inside the open dialog so it stays above photo, bio and controls. */
   #md-dj-dialog > .md-custom-cursor{
+    /* The earlier #md-dj-dialog > div rule adds 65px/35px padding to
+       ALL divs, including this cursor after JS moves it into the dialog.
+       Completely reset that inherited modal-box layout. */
     position:fixed!important;
+    display:block!important;
+    box-sizing:border-box!important;
+    left:0!important;
+    top:0!important;
+    width:9px!important;
+    height:9px!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    padding:0!important;
+    margin:0!important;
+    border-width:1px!important;
+    border-style:solid!important;
+    border-radius:50%!important;
     z-index:2147483647!important;
     pointer-events:none!important;
     overflow:visible!important;
+  }
+  #md-dj-dialog > .md-custom-cursor.is-interactive{
+    width:20px!important;
+    height:20px!important;
   }
 }
 
