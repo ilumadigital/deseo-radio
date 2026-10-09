@@ -50,7 +50,8 @@ html[lang=el] .md-player-square-label{font-family:'Google Sans','Google Sans Fle
   pointer-events:auto!important;border-radius:0!important
 }
 .md-custom-player .md-custom-sponsor{display:flex!important;padding:0!important;align-items:center;justify-content:center;min-height:0!important}
-.md-custom-player .md-custom-sponsor img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
+/* Do not stretch Signal's injected QR and logo; target only the fallback artwork. */
+.md-custom-player .md-custom-sponsor > img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
 .md-dj-artwork{isolation:isolate;position:relative}
 .md-dj-artwork img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.92) contrast(1.1)}
 .md-dj-artwork-caption{left:clamp(13px,1.2vw,21px);bottom:clamp(12px,1vw,19px);right:12px;gap:7px}
