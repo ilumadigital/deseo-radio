@@ -66,7 +66,8 @@ $required = [
     '/assets/css/mydemo-v9.css',
     '/assets/js/mydemo-menu.js',
     'href="https://iluma.gr/radios/mediakit"',
-    'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.',
+    '/assets/css/mydemo-v13.css',
+    'content="v13-fullwidth-player"',
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
@@ -522,6 +523,72 @@ $hoverCursorRule = $hoverCursorRuleStart !== false
 if (!str_contains($hoverCursorRule, 'width:20px!important;') ||
     !str_contains($hoverCursorRule, 'height:20px!important;')) {
     fwrite(STDERR, "DJ modal cursor hover size differs from the rest of the site\n");
+    exit(1);
+}
+/* V13: primary listening widgets span hero width without enclosing frame.
+ * The official iRadios iframe/ILUMA Signal integration stay unchanged. */
+$heroStart = strpos($html, '<section class="md-hero" id="home">');
+$heroEnd = strpos($html, '<div id="md-player-dock"', $heroStart);
+$heroHtml = ($heroStart !== false && $heroEnd !== false)
+    ? substr($html, $heroStart, $heroEnd - $heroStart)
+    : '';
+if ($heroHtml === '' ||
+    !str_contains($heroHtml, 'id="player"') ||
+    !str_contains($heroHtml, 'class="md-player-squares"') ||
+    !str_contains($heroHtml, 'class="md-custom-next"') ||
+    str_contains($heroHtml, 'class="md-custom-top"') ||
+    str_contains($heroHtml, 'md-hero-description') ||
+    str_contains($heroHtml, 'Παίζουμε') ||
+    str_contains($heroHtml, 'Nothing but')) {
+    fwrite(STDERR, "V13 hero missing full-width widgets or still has obsolete frame/copy\n");
+    exit(1);
+}
+$playerPos = strpos($heroHtml, 'id="player"');
+$nowPos = strpos($heroHtml, 'class="md-nowplaying-column"');
+$sponsorPos = strpos($heroHtml, 'class="md-sponsor-column"');
+$djPos = strpos($heroHtml, 'class="md-dj-column"');
+$nextPos = strpos($heroHtml, 'class="md-custom-next"');
+$copyPos = strpos($heroHtml, 'class="md-hero-copy"');
+if ($playerPos === false || $nowPos === false || $sponsorPos === false ||
+    $djPos === false || $nextPos === false || $copyPos === false ||
+    !($playerPos < $nowPos && $nowPos < $sponsorPos &&
+      $sponsorPos < $djPos && $djPos < $nextPos && $nextPos < $copyPos)) {
+    fwrite(STDERR, "V13 order must be Now Playing, Sponsor, On Air / Coming Up, then brand slogan\n");
+    exit(1);
+}
+if (substr_count($heroHtml, 'class="md-custom-next"') !== 1 ||
+    substr_count($heroHtml, 'class="md-player-square-label"') !== 3 ||
+    !str_contains($heroHtml, 'data-iluma-signal-slot="hero-sponsor"') ||
+    !str_contains($heroHtml, 'data-iluma-signal-image') ||
+    !str_contains($heroHtml, 'https://play.iradios.gr/widget/deseo-radio?autoplay=true')) {
+    fwrite(STDERR, "V13 must retain exactly 3 working widgets, CMS next show and Signal\n");
+    exit(1);
+}
+$cssV13 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v13.css');
+foreach ([
+    '#md-custom-player.md-custom-player',
+    'background:transparent!important;',
+    'border:0!important;',
+    'box-shadow:none!important;',
+    'grid-template-columns:repeat(3,minmax(0,1fr))!important;',
+    'max-width:440px!important;',
+    'aspect-ratio:1 / 1!important;',
+    '.md-custom-sponsor > img[data-iluma-signal-image]',
+    '.md-dj-column .md-custom-next',
+    'display:flex!important;',
+    'justify-content:space-between!important;',
+    'white-space:nowrap!important;',
+    '@media(max-width:850px)',
+    'grid-template-columns:minmax(0,1fr)!important;',
+] as $needle) {
+    if (!str_contains($cssV13, $needle)) {
+        fwrite(STDERR, "V13 full-width, minimal player or mobile style incomplete: {$needle}\n");
+        exit(1);
+    }
+}
+if (preg_match('~#md-custom-player\s+\.md-custom-sponsor\s+img\s*\{~',
+    $cssV13)) {
+    fwrite(STDERR, "V13 CSS must never constrain Signal-injected nested images\n");
     exit(1);
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
