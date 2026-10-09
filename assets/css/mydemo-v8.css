@@ -253,3 +253,19 @@ html::-webkit-scrollbar-thumb,body::-webkit-scrollbar-thumb{
 }
 html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{background:#f33}
 html::-webkit-scrollbar-corner,body::-webkit-scrollbar-corner{background:#111013}
+
+/* DJ-card link marker is also a drawn line arrow, never a font emoji. */
+.md-show-details:after{
+  content:""!important;
+  display:block!important;
+  position:absolute;
+  right:18px;bottom:18px;
+  width:9px;height:9px;
+  border-top:1.5px solid #ff0000;
+  border-right:1.5px solid #ff0000;
+  color:transparent!important;
+  font-size:0!important;
+  line-height:0!important;
+  background:transparent!important;
+}
+article.md-show-card .md-show-details:after{display:none!important}
