@@ -95,7 +95,11 @@
             a.href = url;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
-            a.textContent = label + ' ↗';
+            a.textContent = label;
+            var arrow = document.createElement('span');
+            arrow.className = 'md-ui-arrow';
+            arrow.setAttribute('aria-hidden', 'true');
+            a.appendChild(arrow);
             links.appendChild(a);
           });
         }
