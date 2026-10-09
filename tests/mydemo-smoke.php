@@ -391,11 +391,25 @@ foreach ($logoNames as $src) {
     }
     $lastPos = $p;
 }
+// Logos must be rendered at their supplied aspect ratio, never cropped/enlarged.
+if (!str_contains($html, 'alt="Deseo Radio" width="220" height="100" fetchpriority="high"') ||
+    !str_contains($html, 'id="md-fs-menu-title"><span class="md-fs-title-line">') ||
+    substr_count($html, 'class="md-fs-title-line"') !== 2 ||
+    str_contains($html, 'width="330" height="100"')) {
+    fwrite(STDERR, "Header logo size or exactly-two-line menu title regression\n");
+    exit(1);
+}
 $cssV11 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v11.css');
 foreach ([
     '.md-header .md-logo img',
-    'width:460px!important',
+    'width:220px!important',
+    'height:100px!important',
+    'transform:none!important',
+    'overflow:visible!important',
+    'height:100dvh!important',
     '.md-fs-menu-brand img',
+    '.md-fs-title-line',
+    '.md-fs-title-outline',
     '.md-menu-feature-art',
     'md-v11-mark',
     'md-v11-word',
