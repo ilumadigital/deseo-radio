@@ -17,6 +17,13 @@ require_once __DIR__ . '/includes/i18n.php';
 function demo_e($value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
+/* The shared AI discovery include also renders on the production homepage.
+ * It expects deseo_e(), which is normally provided by the homepage bootstrap. */
+if (!function_exists('deseo_e')) {
+    function deseo_e($value): string {
+        return demo_e($value);
+    }
+}
 function demo_url($value): string {
     $url = trim((string)$value);
     if ($url === '') return '';
