@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v14-hero-glass-and-layout">
+  <meta name="deseo-demo-build" content="v15-menu-spacing-and-widgets">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -237,6 +237,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v12.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v12.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v12.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v13.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v13.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v13.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v14.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v14.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v14.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v15.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v15.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v15.css') : 1 ?>">
   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
@@ -472,7 +473,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
       <div class="md-season-art" aria-label="Season 6 official lineup artwork">
         <span class="md-season-vertical" aria-hidden="true">SOUND CULTURE / ATHENS</span>
         <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy">
-        <span class="md-season-stamp" aria-hidden="true">DESEO<br>06</span>
+
       </div>
     </div>
   </div>
