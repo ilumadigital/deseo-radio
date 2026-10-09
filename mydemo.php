@@ -265,8 +265,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           </div>
         </div>
       </div>
-      <div id="md-player-home" class="md-player-home">
-        <aside class="md-custom-player" id="player" aria-label="Deseo Radio custom live player">
+      <div id="player" class="md-player-home">
+        <aside class="md-custom-player" id="md-custom-player" aria-label="Deseo Radio custom live player">
           <div class="md-custom-top">
             <div class="md-custom-status"><span class="md-dot"></span><span>DESEO / LIVE STREAM</span></div>
             <div class="md-custom-top-actions">
