@@ -221,7 +221,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-refinements.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-refinements.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-refinements.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v6.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v6.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v6.css') : 1 ?>">
-  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},850);</script>
+  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},780);</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
   <script src="https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1" data-station="deseo" data-surface="station_website" defer></script>
