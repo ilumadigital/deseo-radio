@@ -122,6 +122,7 @@
   // Never show a fake "currently playing track": Hot Tracks are selections,
   // while this panel describes the current scheduled DJ slot.
   var heroLiveName = document.getElementById('md-hero-live-name');
+  var miniShowName = document.getElementById('md-mini-show-name');
   var heroLiveTime = document.getElementById('md-hero-live-time');
   var heroLivePhoto = document.getElementById('md-hero-live-photo');
   var heroNextName = document.getElementById('md-hero-next-name');
@@ -151,6 +152,7 @@
         var live = data.live;
         var next = data.next;
         if (heroLiveName) heroLiveName.textContent = live ? live.name : 'DESEO NON-STOP';
+        if (miniShowName) miniShowName.textContent = live ? live.name : 'DESEO NON-STOP';
         if (heroLiveTime) heroLiveTime.textContent = live ? live.time : '24 / 7';
         if (heroLivePhoto) heroLivePhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
         if (heroNextName) heroNextName.textContent = next ? next.name : '24/7 NON-STOP MUSIC';
