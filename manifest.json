@@ -21,7 +21,7 @@
   ],
   "icons": [
     {
-      "src": "/assets/img/favicon.png",
+      "src": "/assets/img/favicon.png?v=20261009",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -34,7 +34,7 @@
       "url": "/#player",
       "icons": [
         {
-          "src": "/assets/img/favicon.png",
+          "src": "/assets/img/favicon.png?v=20261009",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -46,7 +46,7 @@
       "url": "/#playlists",
       "icons": [
         {
-          "src": "/assets/img/favicon.png",
+          "src": "/assets/img/favicon.png?v=20261009",
           "sizes": "512x512",
           "type": "image/png"
         }
