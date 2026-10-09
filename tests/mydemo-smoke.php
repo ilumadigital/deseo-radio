@@ -141,6 +141,14 @@ foreach (['grid-template-columns:repeat(3,minmax(0,1fr))','aspect-ratio:1/1',
         exit(1);
     }
 }
+/* Signal inserts logo + QR below the anchor. Fallback sizing must not affect them. */
+$refinedStyle = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-refinements.css');
+if (!str_contains($style, '.md-custom-player .md-custom-sponsor > img') ||
+    !str_contains($refinedStyle, '.md-custom-sponsor > img') ||
+    preg_match('/\\.md-custom-sponsor\\s+img\\s*\\{/', $style . "\n" . $refinedStyle)) {
+    fwrite(STDERR, "Sponsor sizing must target the fallback image directly, never Signal's QR and logo\n");
+    exit(1);
+}
 $script = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-player.js');
 if (str_contains($script, 'audio.play(') || str_contains($script, 'dock.appendChild(player)') ||
     !str_contains($script, 'hero.getBoundingClientRect().bottom')) {
