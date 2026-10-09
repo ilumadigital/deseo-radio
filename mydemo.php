@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v16-bottom-anchored-menu">
+  <meta name="deseo-demo-build" content="v17-matte-preloader">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -239,7 +239,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v14.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v14.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v14.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v15.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v15.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v15.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v16.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v16.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v16.css') : 1 ?>">
-  <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
+  <link rel="stylesheet" href="/assets/css/mydemo-v17.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v17.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v17.css') : 1 ?>">
+   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
   <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
   <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},910);</script>
@@ -256,14 +257,11 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <div class="md-custom-cursor" id="md-custom-cursor" aria-hidden="true"></div>
 <div class="md-preloader" aria-hidden="true">
   <div class="md-preloader-stage">
-    <div class="md-preloader-glow" aria-hidden="true"></div>
     <div class="md-preloader-symbols">
-      <img class="md-preloader-mark" src="/assets/img/favicon-nobg.png" width="100" height="100" alt="">
-      <img class="md-preloader-wordmark" src="/assets/img/deseo-logo.png" width="220" height="100" alt="">
-      <img class="md-preloader-final" src="/assets/img/deseoradio-logo.png" width="220" height="100" alt="">
+      <img class="md-preloader-final" src="/assets/img/deseoradio-logo.png" width="310" height="141" alt="">
     </div>
-    <span class="md-preloader-caption">DESEO / FEEL THE FREQUENCY</span>
-    <span class="md-preloader-line"></span>
+    <div class="md-preloader-tagline"><span class="md-preloader-outline">THE</span> <span class="md-preloader-red">SOUNDTRACK</span> <span class="md-preloader-outline">OF YOUR</span> <span class="md-preloader-white">LIFE</span></div>
+    <div class="md-preloader-progress" aria-hidden="true"><span></span></div>
   </div>
 </div>
 
