@@ -3,6 +3,8 @@ Options -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # Isolated noindex design preview. Production homepage remains unchanged.
+    RewriteRule ^mydemo/?$ mydemo.php [L,QSA]
     # DJ application form: canonical slug is /dj
     RewriteCond %{THE_REQUEST} \s/+djs(?:\.php)?[?\s] [NC]
     RewriteRule ^djs(?:\.php)?$ /dj [R=301,L]
