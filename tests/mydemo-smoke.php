@@ -17,10 +17,18 @@ $expect = [
     'THE SOUND',
     'id="player"',
     'id="schedule"',
+    'THE WEEKLY LINEUP',
+    'id="md-tab-1"',
+    'md-show-hours',
     'id="tracks"',
     'id="playlists"',
     'id="lineup"',
     'id="shows"',
+    'id="listen-everywhere"',
+    'id="about"',
+    'class="md-partner-grid"',
+    'class="md-about-grid"',
+    'https://mytuner-radio.com/radio/deseo-radio-479969/',
     'https://play.iradios.gr/widget-now/deseo-radio',
     'https://ec4.yesstreaming.net:2090/stream',
     'id="md-live-audio"',
@@ -42,6 +50,11 @@ $expect = [
     'id="md-hero-live-name"',
     'id="md-hero-live-time"',
     'id="md-hero-live-photo"',
+    'class="md-dj-column"',
+    'class="md-dj-artwork"',
+    'class="md-control-symbol"',
+    'class="md-control-symbol" aria-hidden="true"',
+    '/assets/css/mydemo-refinements.css',
     'class="md-custom-sponsor"',
     'data-iluma-signal-slot="hero-sponsor"',
     'data-iluma-signal-image',
@@ -112,6 +125,29 @@ if (!str_contains($playerCss, 'height:100vh!important') ||
 
 if (!str_contains($playerCss, '.md-custom-player.is-mini') || !str_contains($playerCss, '.md-nowplaying-frame iframe')) {
     fwrite(STDERR, "mydemo custom player responsive styles missing\n");
+    exit(1);
+}
+$refinements = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-refinements.css');
+if (!str_contains($refinements, '--red:#ff0000') ||
+    !str_contains($refinements, 'position:fixed!important') ||
+    !str_contains($refinements, 'aspect-ratio:1/1') ||
+    !str_contains($refinements, '.md-show-card:hover .md-show-photo img') ||
+    !str_contains($refinements, 'object-fit:contain') ||
+    !str_contains($refinements, '.md-partner-grid')) {
+    fwrite(STDERR, "mydemo brand red, sticky header, hover, square photos, partner section or undistorted playlists missing\n");
+    exit(1);
+}
+if (!str_contains($playerJs, "symbol.classList.toggle('is-pause', playing)") ||
+    str_contains($playerJs, "symbol.textContent = playing ? 'Ⅱ'")) {
+    fwrite(STDERR, "mydemo player pause must use the accessible CSS two-bar pause icon\n");
+    exit(1);
+}
+if (substr_count($html, 'class="md-partner-card"') !== 8) {
+    fwrite(STDERR, "mydemo must render all eight confirmed streaming partners\n");
+    exit(1);
+}
+if (preg_match('/class="md-day-tab[^"]*"[^>]*>[^<]*<span/u', $html)) {
+    fwrite(STDERR, "mydemo day tabs must not contain episode counters\n");
     exit(1);
 }
 echo "mydemo: isolated preview, public sections, playback embed, and crawl exclusion OK\n";
