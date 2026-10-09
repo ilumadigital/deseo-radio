@@ -61,7 +61,7 @@ $required = [
     'id="md-fs-close"',
     'class="md-fs-menu-links"',
     'class="md-fs-menu-social"',
-    'class="md-footer-minimal"',
+    'class="md-footer-directory md-footer-connections md-footer-minimal"',
     '/assets/css/mydemo-v9.css',
     '/assets/js/mydemo-menu.js',
     'href="https://iluma.gr/radios/mediakit"',
