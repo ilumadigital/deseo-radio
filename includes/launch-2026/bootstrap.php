@@ -250,7 +250,7 @@ $live_dj = $live ? array_merge($live['row'], [
     'public_profile' => $profiles[(int)($live['row']['mylive_account_id'] ?? 0)] ?? null,
 ]) : null;
 
-if (!empty($deseo_launch_public) && $dbOnline) {
+if (!empty($deseo_launch_public) && empty($deseo_launch_disable_jobs) && $dbOnline) {
     // Preserve the throttled MyLive scheduler previously invoked from index.php.
     try {
         require_once dirname(__DIR__, 2) . '/includes/mylive-email-reminders.php';
