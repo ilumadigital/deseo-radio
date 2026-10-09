@@ -181,7 +181,7 @@ if (!is_array($manifestData) || empty($manifestData['icons']) ||
 }
 if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
     preg_match('~<img\\b[^>]*\\bsrc="/assets/img/favicon\\.png~i', $html) ||
-    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 3) {
+    substr_count($demoMarkup, '/assets/img/favicon-nobg.png') !== 4) {
     fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
     exit(1);
 }
@@ -321,11 +321,22 @@ if (!str_contains($footerHtml, 'class="md-footer-social-grid"') ||
     fwrite(STDERR, "Menu requires brand logo, soundtrack slogan and one static DJ SA feature\n");
     exit(1);
 }
-if (!str_contains($html, 'class="md-preloader-symbol"') ||
-    !str_contains($html, '/assets/img/deseo-logo.png') ||
-    strpos($html, '/assets/img/favicon-nobg.png') >= strpos($html, '/assets/img/deseo-logo.png') ||
-    strpos($html, '/assets/img/deseo-logo.png') >= strpos($html, '/assets/img/deseoradio-logo.png')) {
-    fwrite(STDERR, "Preloader must reveal emblem, DESEO, then DESEO RADIO\n");
+$preloaderStart = strpos($html, '<div class="md-preloader"');
+$preloaderEnd = strpos($html, '<header class="md-header">', $preloaderStart ?: 0);
+$preloaderHtml = ($preloaderStart !== false && $preloaderEnd !== false)
+    ? substr($html, $preloaderStart, $preloaderEnd - $preloaderStart) : '';
+if ($preloaderHtml === '' ||
+    substr_count($preloaderHtml, '<img ') !== 2 ||
+    !str_contains($preloaderHtml, 'class="md-preloader-mark"') ||
+    !str_contains($preloaderHtml, 'class="md-preloader-symbol"') ||
+    !str_contains($preloaderHtml, '/assets/img/favicon-nobg.png') ||
+    !str_contains($preloaderHtml, '/assets/img/deseo-logo.png') ||
+    str_contains($preloaderHtml, '/assets/img/deseoradio-logo.png') ||
+    str_contains($preloaderHtml, 'md-preloader-wordmark') ||
+    str_contains($preloaderHtml, 'md-preloader-line') ||
+    !str_contains($preloaderHtml, 'md-preloader-beat') ||
+    !str_contains($preloaderHtml, 'md-preloader-streak')) {
+    fwrite(STDERR, "Preloader must show exactly two approved logos and no third wordmark or typography\n");
     exit(1);
 }
 $demoTemplate = (string)file_get_contents(__DIR__ . '/../mydemo.php');
@@ -360,17 +371,18 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 }
 $cssV10 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v10.css');
 $experienceJs = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-experience.js');
-foreach (['.md-preloader-symbol', 'md-pre-v10-wordmark',
+foreach (['.md-preloader-symbol', 'md-funky-mark',
+          'md-funky-symbol', 'md-funky-slogan', 'md-funky-hero',
           '.md-fs-menu-logo', '.md-menu-feature-card',
           'font-size:clamp(90px,7vw,106px)!important',
           '.md-footer-minimal .md-footer-social-grid',
           '@media(prefers-reduced-motion:reduce)'] as $needle) {
     if (!str_contains($cssV10, $needle)) {
-        fwrite(STDERR, "Three-stage reveal, larger hero title or static menu styling missing: {$needle}\n");
+        fwrite(STDERR, "Dual-logo groove, hero title or static menu styling missing: {$needle}\n");
         exit(1);
     }
 }
-foreach (['md-preloading', '2650', 'prefers-reduced-motion',
+foreach (['md-preloading', '2200', 'prefers-reduced-motion',
           'md-menu-feature-card', 'data-fallback'] as $needle) {
     if (!str_contains($experienceJs, $needle)) {
         fwrite(STDERR, "Static feature/preloader script incomplete: {$needle}\n");
@@ -380,9 +392,11 @@ foreach (['md-preloading', '2650', 'prefers-reduced-motion',
 if (str_contains($experienceJs, 'setInterval') ||
     str_contains($experienceJs, 'data-md-carousel') ||
     str_contains($cssV10, '.md-menu-feature-slide') ||
+    str_contains($cssV10, '.md-preloader-wordmark') ||
+    str_contains($cssV10, 'md-pre-v10-wordmark') ||
     !str_contains($demoTemplate, 'class="md-logo"') ||
     !str_contains($demoTemplate, 'alt="Deseo Radio" width="220" height="100"')) {
     fwrite(STDERR, "Obsolete carousel or undersized header brand remains\n");
     exit(1);
 }
-echo "mydemo: official iRadios player, cinematic logo reveal, static DJ SA feature, large branding and noindex OK\n";
+echo "mydemo: official iRadios player, funky dual-logo reveal, static DJ SA feature, large branding and noindex OK\n";
