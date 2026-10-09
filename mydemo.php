@@ -223,7 +223,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <meta name="theme-color" content="#090808">
   <meta name="color-scheme" content="dark">
   <title>Deseo Radio — Design Preview / Season 06</title>
-  <meta name="deseo-demo-build" content="v17-matte-preloader">
+  <meta name="deseo-demo-build" content="v18-animated-preloader">
   <link rel="icon" type="image/png" href="/assets/img/favicon.png?v=<?= is_file(__DIR__ . '/assets/img/favicon.png') ? (int)filemtime(__DIR__ . '/assets/img/favicon.png') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo.css?v=<?= $cssVersion ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
@@ -240,10 +240,8 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-v15.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v15.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v15.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v16.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v16.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v16.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v17.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v17.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v17.css') : 1 ?>">
-   <link rel="preload" as="image" href="/assets/img/favicon-nobg.png">
-  <link rel="preload" as="image" href="/assets/img/deseo-logo.png">
   <link rel="preload" as="image" href="/assets/img/deseoradio-logo.png">
-  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},910);</script>
+  <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},window.matchMedia('(prefers-reduced-motion: reduce)').matches?120:1850);</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
   <script src="/assets/js/mydemo-header.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-header.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-header.js') : 1 ?>" defer></script>
@@ -258,9 +256,14 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
 <div class="md-preloader" aria-hidden="true">
   <div class="md-preloader-stage">
     <div class="md-preloader-symbols">
-      <img class="md-preloader-final" src="/assets/img/deseoradio-logo.png" width="310" height="141" alt="">
+      <img class="md-preloader-final" src="/assets/img/deseoradio-logo.png" width="220" height="100" alt="" decoding="async">
     </div>
-    <div class="md-preloader-tagline"><span class="md-preloader-outline">THE</span> <span class="md-preloader-red">SOUNDTRACK</span> <span class="md-preloader-outline">OF YOUR</span> <span class="md-preloader-white">LIFE</span></div>
+    <div class="md-preloader-tagline" aria-label="THE SOUNDTRACK OF YOUR LIFE">
+      <span class="md-preloader-token md-preloader-token--outline"><span>THE</span></span>
+      <span class="md-preloader-token md-preloader-token--red"><span>SOUNDTRACK</span></span>
+      <span class="md-preloader-token md-preloader-token--outline"><span>OF YOUR</span></span>
+      <span class="md-preloader-token md-preloader-token--white"><span>LIFE</span></span>
+    </div>
     <div class="md-preloader-progress" aria-hidden="true"><span></span></div>
   </div>
 </div>
