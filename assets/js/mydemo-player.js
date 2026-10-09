@@ -16,15 +16,9 @@
   var mute = el('md-volume-mute');
   var minify = el('md-player-minify');
   var expand = el('md-player-expand');
-  var cover = el('md-current-cover');
-  var track = el('md-current-track');
-  var artist = el('md-current-artist');
-  var provider = el('md-track-provider');
-  var trackLabel = el('md-track-label');
   var english = document.documentElement.lang === 'en';
   var customMini = false;
   var isBelowHero = false;
-  var pendingMetadata = false;
   var userPaused = false;
 
   function safeVolume() {
@@ -123,6 +117,8 @@
       dock.setAttribute('aria-hidden', 'true');
     }
     player.classList.toggle('is-mini', shouldMini);
+    // The official now-playing iframe is only displayed in expanded mode;
+    // this prevents an oversized secondary widget in the corner dock.
   }
   if (minify) minify.addEventListener('click', function () {
     customMini = true;
@@ -155,74 +151,6 @@
     });
   });
 
-  function validArtwork(url) {
-    if (typeof url !== 'string') return '';
-    try {
-      var parsed = new URL(url);
-      return parsed.protocol === 'https:' &&
-        /^(?:is\d+-ssl\.mzstatic\.com|i(?:\d+)?\.scdn\.co|lastfm\.freetls\.fastly\.net)$/.test(parsed.hostname)
-        ? parsed.href : '';
-    } catch (_) {
-      return '';
-    }
-  }
-  function resetTrack() {
-    if (track) track.textContent = english ? 'THE SOUND OF DESEO' : 'Ο ΗΧΟΣ ΤΟΥ DESEO';
-    if (artist) artist.textContent = english ? 'Live from Athens · 24/7' : 'Ζωντανά από την Αθήνα · 24/7';
-    if (provider) provider.textContent = '';
-    if (cover) {
-      cover.onerror = null;
-      cover.src = '/assets/img/favicon.png';
-      cover.alt = '';
-      cover.classList.remove('has-cover');
-    }
-    if (trackLabel) trackLabel.textContent = english ? 'LIVE RADIO' : 'ΖΩΝΤΑΝΑ';
-  }
-  function fetchMetadata() {
-    if (document.hidden || pendingMetadata) return;
-    pendingMetadata = true;
-    fetch('/mydemo-nowplaying.php', { cache: 'no-store', credentials: 'same-origin' })
-      .then(function (response) {
-        if (!response.ok) throw new Error('metadata HTTP ' + response.status);
-        return response.json();
-      }).then(function (data) {
-        if (!data || !data.ok || !data.track || !data.artist) {
-          resetTrack();
-          return;
-        }
-        if (track) track.textContent = String(data.track);
-        if (artist) artist.textContent = String(data.artist);
-        if (trackLabel) trackLabel.textContent = english ? 'NOW PLAYING' : 'ΠΑΙΖΕΙ ΤΩΡΑ';
-        if (provider) provider.textContent = data.provider ? 'COVER · ' + data.provider : '';
-        var url = validArtwork(data.artwork);
-        if (cover && url) {
-          cover.onerror = function () {
-            cover.onerror = null;
-            cover.src = '/assets/img/favicon.png';
-            cover.classList.remove('has-cover');
-            if (provider) provider.textContent = '';
-          };
-          cover.src = url;
-          cover.alt = String(data.track) + ' — ' + String(data.artist);
-          cover.classList.add('has-cover');
-        } else if (cover) {
-          cover.onerror = null;
-          cover.src = '/assets/img/favicon.png';
-          cover.alt = '';
-          cover.classList.remove('has-cover');
-        }
-      }).catch(function () {
-        // Stream may still be playing normally even if metadata source is offline.
-        resetTrack();
-      }).finally(function () {
-        pendingMetadata = false;
-      });
-  }
-  fetchMetadata();
-  window.setInterval(fetchMetadata, 45000);
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) fetchMetadata();
-  });
   renderAudio();
   // Browsers may reject audible autoplay; keep a real, clearly labelled play button.
   tryPlay();
