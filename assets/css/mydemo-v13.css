@@ -1,0 +1,336 @@
+/* DESEO /mydemo V13 — wide, unboxed radio hero.
+   Only presentation changes; the iRadios iframe, CMS metadata, and
+   ILUMA Signal hero / sticky slots retain their exact original contracts. */
+
+/* Entire player is the main visual; the single-line statement follows it. */
+.md-hero{
+  height:auto!important;
+  min-height:calc(100svh - 102px)!important;
+  max-height:none!important;
+  overflow:hidden;
+}
+.md-hero-content{
+  display:flex!important;
+  flex-direction:column;
+  align-items:stretch!important;
+  justify-content:center;
+  box-sizing:border-box!important;
+  height:auto!important;
+  min-height:calc(100svh - 102px)!important;
+  padding:clamp(34px,6vh,68px) 0 clamp(80px,9vh,105px)!important;
+}
+.md-hero-grid{
+  width:100%!important;
+  min-width:0;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  gap:clamp(34px,4.4vh,58px)!important;
+}
+.md-hero-grid>.md-player-home{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-height:none!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  margin:0!important;
+  order:0!important;
+}
+.md-hero-grid>.md-hero-copy{
+  display:block;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0;
+  padding:0!important;
+  margin:0!important;
+  order:1!important;
+}
+
+/* No grey box, header bar, vignette, chrome or frame around the three assets. */
+#md-custom-player.md-custom-player{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  clip-path:none!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:visible!important;
+}
+#md-custom-player.md-custom-player::before,
+#md-custom-player.md-custom-player::after,
+#md-custom-player .md-custom-top{display:none!important}
+#md-custom-player .md-custom-inner{
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  width:100%;
+  max-width:none!important;
+  overflow:visible!important;
+}
+
+/* Three true, independent 1:1 tiles across the WHOLE content width.
+   Their optical size is capped near the homepage scale rather than
+   expanding to enormous, distorted banners on ultrawide displays. */
+#md-custom-player .md-player-squares{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:start!important;
+  justify-items:stretch!important;
+  gap:clamp(16px,3vw,70px)!important;
+  width:100%;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+#md-custom-player .md-nowplaying-column,
+#md-custom-player .md-sponsor-column,
+#md-custom-player .md-dj-column{
+  display:block!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  box-sizing:border-box;
+  width:100%!important;
+  max-width:440px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  justify-self:center!important;
+  align-self:start!important;
+}
+#md-custom-player .md-player-square-label{
+  display:block!important;
+  margin:0 0 13px!important;
+  padding:0!important;
+  overflow:visible!important;
+  font:800 clamp(11px,.8vw,13px)/1.35 'Barlow','Google Sans',Arial,sans-serif!important;
+  letter-spacing:.15em!important;
+  text-overflow:clip!important;
+  white-space:nowrap;
+  color:#f1f0f0!important;
+}
+#md-custom-player .md-nowplaying-frame,
+#md-custom-player .md-custom-sponsor,
+#md-custom-player .md-dj-artwork{
+  box-sizing:border-box!important;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  max-width:none!important;
+  aspect-ratio:1 / 1!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:11px!important;
+  clip-path:none!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+/* These are the tile canvases only; do not add a grey outer panel. */
+#md-custom-player .md-nowplaying-frame,
+#md-custom-player .md-dj-artwork{background:#0b090b!important}
+#md-custom-player .md-nowplaying-frame iframe{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  aspect-ratio:1 / 1!important;
+  border:0!important;
+  border-radius:0!important;
+  pointer-events:auto!important;
+}
+#md-custom-player .md-custom-sponsor{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative;
+  background:transparent!important;
+  isolation:isolate;
+}
+/* Only the *original fallback* image is sized here. ILUMA Signal's
+   injected artwork, QR, logo and rotations keep their own inline geometry. */
+#md-custom-player .md-custom-sponsor > img[data-iluma-signal-image]{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center;
+}
+#md-custom-player .md-dj-artwork img{
+  position:absolute;
+  inset:0;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+/* Coming Up belongs only to ON AIR NOW, never underneath the sponsor/player. */
+#md-custom-player .md-dj-column .md-custom-next{
+  display:flex!important;
+  gap:9px 12px!important;
+  flex-wrap:wrap;
+  align-items:baseline;
+  width:100%;
+  margin:17px 0 0!important;
+  padding:14px 0 0!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.18)!important;
+  border-radius:0;
+  background:transparent!important;
+}
+#md-custom-player .md-dj-column .md-custom-next span{
+  color:#ff0000!important;
+  font:800 11px/1.3 'Barlow','Google Sans',sans-serif!important;
+  letter-spacing:.13em;
+  white-space:nowrap;
+}
+#md-custom-player .md-dj-column .md-custom-next strong{
+  color:#fff!important;
+  font:700 14px/1.35 'Google Sans','Google Sans Flex',Arial,sans-serif!important;
+  overflow-wrap:anywhere;
+}
+
+/* Brand headline — ONE continuous row, preserving the exact filled / outline
+   treatment of the previous THE / SOUNDTRACK / OF YOUR / LIFE composition. */
+.md-hero-grid .md-brand-headline{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:baseline!important;
+  justify-content:space-between!important;
+  gap:clamp(2px,1.2vw,26px)!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  font-family:'Barlow Condensed','Roboto Condensed',Impact,sans-serif!important;
+  font-size:clamp(23px,6.2vw,122px)!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:-.038em!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+.md-hero-grid .md-brand-headline>.md-word-the,
+.md-hero-grid .md-brand-headline>.md-word-soundtrack,
+.md-hero-grid .md-brand-headline>.md-word-of,
+.md-hero-grid .md-brand-headline>.md-word-life{
+  display:inline-block!important;
+  flex:0 1 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  font:inherit!important;
+  font-size:1em!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:-.04em!important;
+  white-space:nowrap!important;
+  transform:none!important;
+  text-shadow:none!important;
+}
+.md-hero-grid .md-brand-headline>.md-word-the,
+.md-hero-grid .md-brand-headline>.md-word-of{
+  -webkit-text-stroke:1.5px #fff!important;
+  color:transparent!important;
+}
+.md-hero-grid .md-brand-headline>.md-word-soundtrack{
+  -webkit-text-stroke:0!important;
+  color:#ff0000!important;
+}
+.md-hero-grid .md-brand-headline>.md-word-life{
+  -webkit-text-stroke:0!important;
+  color:#fff!important;
+}
+.md-hero-description{display:none!important}
+
+/* No 100vh cropping: low laptop screens can grow naturally if needed.
+   Program artwork and the sponsor never shrink to force a fixed hero height. */
+@media(min-width:981px) and (max-height:790px){
+  .md-hero-content{
+    min-height:calc(100svh - 102px)!important;
+    padding-top:27px!important;
+    padding-bottom:74px!important;
+  }
+  .md-hero-grid{gap:26px!important}
+  #md-custom-player .md-player-squares{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:clamp(16px,2.4vw,48px)!important;
+  }
+}
+@media(max-width:980px){
+  .md-hero{min-height:calc(100svh - 90px)!important}
+  .md-hero-content{
+    min-height:calc(100svh - 90px)!important;
+    padding-top:38px!important;
+    padding-bottom:85px!important;
+  }
+  .md-hero-grid{gap:35px!important}
+  .md-hero-grid>.md-player-home{max-width:none!important;margin:0!important}
+  #md-custom-player .md-player-squares{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:clamp(12px,2.1vw,24px)!important;
+  }
+  #md-custom-player .md-player-square-label{font-size:11px!important}
+  #md-custom-player .md-dj-column .md-custom-next{gap:6px!important}
+  #md-custom-player .md-dj-column .md-custom-next span{font-size:10px!important}
+  #md-custom-player .md-dj-column .md-custom-next strong{font-size:12px!important}
+}
+@media(max-width:850px){
+  .md-hero-content{padding-top:35px!important}
+  #md-custom-player .md-player-squares{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:29px!important;
+  }
+  #md-custom-player .md-nowplaying-column,
+  #md-custom-player .md-sponsor-column,
+  #md-custom-player .md-dj-column{
+    width:100%!important;
+    max-width:440px!important;
+    margin-inline:auto!important;
+    justify-self:center!important;
+  }
+  #md-custom-player .md-dj-column .md-custom-next{
+    margin-top:13px!important;
+  }
+  .md-hero-grid{gap:40px!important}
+}
+@media(max-width:600px){
+  .md-hero{min-height:calc(100svh - 72px)!important}
+  .md-hero-content{
+    min-height:calc(100svh - 72px)!important;
+    padding:27px 0 75px!important;
+  }
+  #md-custom-player .md-player-square-label{font-size:11px!important;margin-bottom:10px!important}
+  .md-hero-grid{gap:35px!important}
+  .md-hero-grid .md-brand-headline{
+    font-size:clamp(17px,5.7vw,37px)!important;
+    gap:clamp(2px,1vw,8px)!important;
+  }
+  .md-hero-grid .md-brand-headline>.md-word-the,
+  .md-hero-grid .md-brand-headline>.md-word-of{
+    -webkit-text-stroke:.75px #fff!important;
+  }
+}
+@media(max-width:380px){
+  .md-hero-grid .md-brand-headline{font-size:clamp(16px,5.45vw,22px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .md-hero-grid .md-brand-headline>*{transition:none!important}
+}
