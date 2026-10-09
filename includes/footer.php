@@ -45,7 +45,7 @@
 
 <button class="install-prompt" id="pwa-install-prompt" type="button" hidden aria-label="<?= deseo_e(deseo_t('install.title')) ?>">
     <span class="install-prompt-icon" aria-hidden="true">
-        <img src="/assets/img/favicon.png" alt="">
+        <img src="/assets/img/favicon-nobg.png" alt="">
     </span>
 
     <span class="install-prompt-copy">
@@ -61,7 +61,7 @@
 
 <div class="deseo-context-menu" id="deseo-context-menu" role="menu" aria-label="Deseo Radio quick menu" hidden>
     <div class="deseo-context-menu-head">
-        <img src="/assets/img/favicon.png" alt="" aria-hidden="true">
+        <img src="/assets/img/favicon-nobg.png" alt="" aria-hidden="true">
         <div>
             <strong>DESEO RADIO</strong>
             <small>Quick access</small>
@@ -115,7 +115,7 @@
         <button class="pwa-ios-guide-close" id="pwa-ios-guide-close" type="button" aria-label="Close">×</button>
 
         <div class="pwa-ios-guide-icon">
-            <img src="/assets/img/favicon.png" alt="">
+            <img src="/assets/img/favicon-nobg.png" alt="">
         </div>
 
         <span class="pwa-ios-guide-kicker">DESEO RADIO · iPHONE / iPAD</span>
