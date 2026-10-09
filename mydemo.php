@@ -295,7 +295,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           <div class="md-menu-feature-viewport">
             <div class="md-menu-feature-track">
               <a class="md-menu-feature-slide is-active" href="#shows" data-md-slide aria-label="DJ SA Radioshow, Every Weekend at 17:00">
-                <img class="md-menu-feature-photo" src="/iluma/djsa02.png" data-fallback="/assets/img/bg.png" alt="" loading="lazy" decoding="async">
+                <img class="md-menu-feature-photo" src="/assets/img/djsa02%20%281%29.png" data-fallback="/assets/img/bg.png" alt="" loading="lazy" decoding="async">
                 <div class="md-menu-feature-copy">
                   <span class="md-menu-feature-eyebrow">01 / WEEKEND FEATURE</span>
                   <h3>DJ SA<br>RADIOSHOW</h3>
