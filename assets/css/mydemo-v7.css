@@ -339,3 +339,8 @@ html[lang="el"] .md-ai-wrap #ai-discovery-title{
   .md-faq-toggle:before,
   .md-faq-toggle:after{transition:none!important}
 }
+
+/* The in-page icon is the transparent artwork, not the square browser favicon. */
+.md-footer-icon img,
+.md-shows-art .md-disc img,
+.md-preloader-mark {filter:none!important;object-fit:contain!important;background:transparent!important}
