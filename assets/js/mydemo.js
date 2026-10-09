@@ -121,6 +121,10 @@
   // The backend is the same READ-ONLY CMS schedule as the main site.
   // Never show a fake "currently playing track": Hot Tracks are selections,
   // while this panel describes the current scheduled DJ slot.
+  var heroLiveName = document.getElementById('md-hero-live-name');
+  var heroLiveTime = document.getElementById('md-hero-live-time');
+  var heroLivePhoto = document.getElementById('md-hero-live-photo');
+  var heroNextName = document.getElementById('md-hero-next-name');
   var liveName = document.getElementById('md-live-name');
   var liveTime = document.getElementById('md-live-time');
   var livePhoto = document.getElementById('md-live-photo');
@@ -146,6 +150,10 @@
         if (!data || !data.ok) return;
         var live = data.live;
         var next = data.next;
+        if (heroLiveName) heroLiveName.textContent = live ? live.name : 'DESEO NON-STOP';
+        if (heroLiveTime) heroLiveTime.textContent = live ? live.time : '24 / 7';
+        if (heroLivePhoto) heroLivePhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
+        if (heroNextName) heroNextName.textContent = next ? next.name : '24/7 NON-STOP MUSIC';
         if (liveName) liveName.textContent = live ? live.name : 'DESEO NON-STOP';
         if (liveTime) liveTime.textContent = live ? live.time : '24 / 7';
         if (livePhoto) livePhoto.src = live && live.photo ? live.photo : '/assets/img/bg.png';
