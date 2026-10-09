@@ -814,3 +814,7 @@ html[lang="el"] .md-footer-links a,
 html[lang="el"] .md-footer-links h3{
   font-family:'Barlow','Google Sans','Google Sans Flex',Arial,sans-serif
 }
+
+.md-footer-logo{display:inline-flex;align-items:center;margin-bottom:34px}
+.md-footer-logo img{width:175px;max-width:100%;height:auto;object-fit:contain}
+@media(max-width:600px){.md-footer-logo{margin-bottom:26px}.md-footer-logo img{width:145px}}
