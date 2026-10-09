@@ -36,3 +36,14 @@
   <img id="md-dialog-photo" src="/assets/img/bg.png" alt="">
   <div class="md-dj-details"><span class="md-index"><?= demo_e($copy['dj_info']) ?> / SEASON 06</span><h2 id="md-dialog-title"></h2><p id="md-dialog-bio"></p><div id="md-dialog-links"></div></div>
 </dialog>
+<!-- The production PWA keeps its existing manifest and offline fallback. -->
+<script>
+(function () {
+  'use strict';
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js?v=' + encodeURIComponent(window.DESEO_ASSET_VERSION || '1'))
+      .catch(function () { /* Non-blocking: radio must play without PWA support. */ });
+  }, { once: true });
+}());
+</script>
