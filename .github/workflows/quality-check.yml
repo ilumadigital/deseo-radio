@@ -61,6 +61,9 @@ jobs:
         run: |
           node --check sw.js
           node --check assets/js/mydemo.js
+          node --check assets/js/mydemo-menu.js
+          node --check assets/js/mydemo-player.js
+          node --check assets/js/mydemo-cursor.js
 
       - name: Critical files
         shell: bash
