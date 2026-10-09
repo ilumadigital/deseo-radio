@@ -4554,3 +4554,36 @@ html.md-motion-enabled .ai-discovery-card.is-visible:hover{transform:translateY(
   }
 }
 
+
+
+/* Mobile perceived speed: paint the dark Athens-inspired palette immediately;
+   start downloading the 1.8 MB background only after player content initializes. */
+@media (max-width:850px) {
+  .md-hero .md-hero-photo {
+    background-image:
+      linear-gradient(90deg,rgba(0,0,0,.84),rgba(0,0,0,.58) 60%,rgba(0,0,0,.71)),
+      radial-gradient(ellipse at 72% 55%,rgba(150,0,0,.43),transparent 64%),
+      linear-gradient(135deg,#10090b,#20080d 57%,#080809) !important;
+  }
+  .md-hero .md-hero-photo::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    background-position:center;
+    background-size:cover;
+    background-repeat:no-repeat;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .48s ease;
+  }
+  .md-hero .md-hero-photo.md-photo-ready::after {
+    background-image:
+      linear-gradient(90deg,rgba(0,0,0,.84),rgba(0,0,0,.57) 61%,rgba(0,0,0,.7)),
+      linear-gradient(0deg,#090707 2%,transparent 48%),
+      url('/assets/img/bg.png');
+    opacity:1;
+  }
+}
+@media (prefers-reduced-motion:reduce) and (max-width:850px) {
+  .md-hero .md-hero-photo::after { transition:none; }
+}
