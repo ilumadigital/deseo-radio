@@ -34,21 +34,27 @@ $expect = [
     '/assets/css/mydemo.css',
     '/assets/js/mydemo.js',
     'id="md-season-countdown"',
-    'class="md-masthead"',
+    'class="md-masthead md-brand-headline"',
     'THE SOUND',
-    'IS LIVE',
+    'THE SOUNDTRACK',
+    'OF YOUR',
+    'LIFE',
     'Το Soundtrack της ζωής σου!',
     'id="md-hero-live-name"',
     'id="md-hero-live-time"',
     'id="md-hero-live-photo"',
     'class="md-custom-sponsor"',
+    'data-iluma-signal-slot="hero-sponsor"',
+    'data-iluma-signal-image',
+    'https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1',
     'iluma-digital-agency-banner.jpg',
     'class="md-hero-gridlines"',
     'class="md-footer-statement"',
     'THE SOUND',
-    'STAYS',
-    'WITH YOU',
+    'THE SOUNDTRACK',
+    'OF YOUR',
     'class="md-footer-directory"',
+    'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.',
     'href="https://iluma.gr/radios/mediakit"',
 ];
 foreach ($expect as $needle) {
@@ -98,6 +104,13 @@ if (!str_contains($playerJs, 'audio.play()') ||
     exit(1);
 }
 $playerCss = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-player.css');
+if (!str_contains($playerCss, 'height:100vh!important') ||
+    !str_contains($playerCss, '.md-player-squares') ||
+    !str_contains($playerCss, '.md-custom-player.is-mini .md-sponsor-column')) {
+    fwrite(STDERR, "mydemo full-height hero, dual-square sponsor or sticky layout missing\n");
+    exit(1);
+}
+
 if (!str_contains($playerCss, '.md-custom-player.is-mini') || !str_contains($playerCss, '.md-nowplaying-frame iframe')) {
     fwrite(STDERR, "mydemo custom player responsive styles missing\n");
     exit(1);
