@@ -60,7 +60,7 @@ $required = [
     'id="md-menu-trigger"',
     'id="md-fs-close"',
     'class="md-fs-menu-links"',
-    'class="md-menu-showcase"',
+    'class="md-menu-showcase md-menu-feature"',
     'class="md-footer-directory md-footer-connections"',
     'class="md-footer-social-grid"',
     '/assets/css/mydemo-v9.css',
