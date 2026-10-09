@@ -1,0 +1,273 @@
+/* Deseo Radio /mydemo V11. Single-purpose override after v1-v10.
+   Premium fullscreen identity, immutable featured DJ SA, bold but safe typography. */
+
+/* Promote the actual approved primary wordmark. Source has optical padding so
+   we center/crop transparent margins instead of making the entire header 200px tall. */
+@media(min-width:981px){
+  .md-header .md-header-inner{
+    height:102px!important;min-height:102px!important;
+    padding-block:0!important;
+    align-content:center;
+  }
+  .md-header .md-logo{
+    width:320px!important;max-width:320px;height:101px;
+    position:relative;flex:0 0 320px;overflow:hidden;
+    display:block;
+  }
+  .md-header .md-logo img{
+    position:absolute!important;left:50%;top:50%;
+    width:460px!important;height:auto!important;max-height:none!important;
+    min-width:460px;
+    transform:translate(-50%,-50%);
+    object-fit:contain!important;
+    display:block;
+  }
+}
+@media(min-width:601px) and (max-width:980px){
+  .md-header .md-logo{
+    width:245px!important;height:81px!important;position:relative;overflow:hidden;
+    flex:0 0 245px;
+  }
+  .md-header .md-logo img{
+    position:absolute;left:50%;top:50%;
+    width:350px!important;height:auto!important;max-height:none!important;
+    transform:translate(-50%,-50%);
+  }
+  .md-header .md-header-inner{height:84px!important;min-height:84px!important;align-content:center}
+}
+@media(max-width:600px){
+  .md-header .md-logo{
+    display:block;position:relative;width:145px!important;min-width:0;
+    flex:0 0 145px;height:60px!important;overflow:hidden;
+  }
+  .md-header .md-logo img{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:218px!important;height:auto!important;max-height:none!important;
+    min-width:218px!important;
+  }
+  .md-header .md-header-inner{height:66px!important;min-height:66px!important;padding-block:0!important}
+}
+@media(max-width:380px){
+  .md-header .md-logo{width:112px!important;flex-basis:112px!important}
+  .md-header .md-logo img{width:177px!important;min-width:177px!important}
+}
+
+/* Four words, four lines: bring headline back to 106px class on 1650px
+   workstations; shrink progressively on narrow laptops so it never overlaps iRadios. */
+@media(min-width:1160px){
+  .md-brand-headline{
+    font-size:clamp(72px,6.45vw,112px)!important;
+    line-height:.84!important;
+    width:100%;
+  }
+  .md-hero-grid{
+    grid-template-columns:minmax(0,.84fr) minmax(0,1.78fr)!important;
+    gap:clamp(24px,2.35vw,52px)!important;
+  }
+  .md-brand-headline > .md-word-soundtrack{font-size:1em!important}
+  .md-brand-headline > .md-word-the,
+  .md-brand-headline > .md-word-of{font-size:1em!important}
+}
+@media(min-width:1160px) and (max-width:1400px){
+  .md-brand-headline{font-size:clamp(68px,6.0vw,84px)!important}
+  .md-hero-grid{grid-template-columns:minmax(0,.84fr) minmax(0,1.78fr)!important;gap:22px!important}
+}
+@media(min-width:1401px) and (max-width:1540px){
+  .md-brand-headline{font-size:clamp(84px,6.15vw,98px)!important}
+}
+@media(min-width:1541px) and (max-width:1750px){
+  .md-brand-headline{font-size:clamp(98px,6.43vw,110px)!important}
+}
+@media(min-width:1751px){.md-brand-headline{font-size:clamp(106px,5.75vw,116px)!important}}
+.md-brand-headline{isolation:isolate;position:relative;z-index:1}
+.md-brand-headline>.md-word-soundtrack{color:#ff0000!important}
+.md-brand-headline>.md-word-the,.md-brand-headline>.md-word-of{
+  -webkit-text-stroke:1.5px #fff!important;color:transparent!important
+}
+.md-brand-headline>.md-word-life{color:#f9f8f7!important}
+@media(max-width:1159px){
+  .md-brand-headline{font-size:clamp(58px,9vw,104px)!important}
+}
+@media(max-width:600px){
+  .md-brand-headline{font-size:clamp(46px,10.3vw,69px)!important}
+}
+@media(max-width:360px){
+  .md-brand-headline{font-size:43px!important}
+}
+
+/* Menu has a real primary image in the top bar, not an invisible pseudo logo. */
+.md-fs-menu-top{
+  display:grid!important;
+  grid-template-columns:minmax(185px,1fr) auto minmax(112px,1fr)!important;
+  align-items:center;
+  gap:clamp(10px,1.5vw,27px);
+  min-height:100px!important;padding:0!important;
+}
+.md-fs-menu-brand{
+  display:block;position:relative;
+  width:245px;max-width:100%;height:98px;
+  overflow:hidden;justify-self:start;
+}
+.md-fs-menu-brand img{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:355px;height:auto;max-width:none;max-height:none;
+  object-fit:contain;
+}
+.md-fs-menu-overline{justify-self:center}
+.md-fs-close{justify-self:end}
+.md-fs-menu-title{
+  margin-top:0;margin-bottom:clamp(24px,3vw,52px);
+  font:900 clamp(66px,6.2vw,119px)/.78 'Barlow Condensed',Impact,sans-serif!important;
+  letter-spacing:-.041em!important;
+  overflow:visible;
+}
+.md-fs-menu-title>span,.md-fs-menu-title>em{
+  display:block;
+  width:max-content;max-width:100%;
+  white-space:nowrap;
+  font:inherit;
+  font-style:normal!important;
+}
+.md-fs-menu-title>span:first-child,
+.md-fs-menu-title>em{
+  color:transparent!important;-webkit-text-stroke:1.5px rgba(255,255,255,.96)!important
+}
+.md-fs-menu-title>.md-fs-title-red{
+  color:#ff0000!important;-webkit-text-stroke:0!important;
+}
+.md-fs-menu-title>span:last-child{
+  color:#fff!important;-webkit-text-stroke:0!important
+}
+.md-fs-menu-main{
+  grid-template-columns:minmax(0,1.45fr) minmax(315px,.67fr);
+  gap:clamp(30px,5vw,100px)
+}
+
+/* Only one evergreen featured DJ tile, no carousel/controls to surprise users. */
+.md-fs-menu-side{
+  display:flex!important;flex-direction:column;gap:0!important;
+  padding-top:12px;
+  min-width:0;
+}
+.md-menu-showcase.md-menu-feature{
+  display:block;
+  width:100%;min-width:0;max-width:none;
+  padding:0;gap:0;
+  text-decoration:none;
+  color:#fff;
+  border:0;
+}
+.md-menu-showcase-head{
+  display:flex!important;justify-content:space-between;
+  align-items:center;margin-bottom:15px;
+  padding:0;
+  letter-spacing:.14em;font-weight:800;color:#ff0000!important
+}
+.md-menu-feature-art{
+  display:block;
+  width:100%;
+  aspect-ratio:4 / 4.4;
+  max-height:560px;
+  min-height:320px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.23);
+  border-radius:13px;
+  background:radial-gradient(circle at 35% 30%,rgba(200,0,0,.28),#0c0c0e 72%);
+  isolation:isolate;
+  box-shadow:0 20px 65px rgba(0,0,0,.31);
+  transition:border-color .23s,box-shadow .23s;
+}
+.md-menu-feature-art>img{
+  position:absolute;inset:0;
+  display:block;width:100%;height:100%;
+  object-fit:cover;object-position:center 28%;
+  filter:saturate(.94) contrast(1.07);
+  transition:transform .9s ease,filter .6s ease;
+}
+.md-menu-feature:hover .md-menu-feature-art,
+.md-menu-feature:focus-visible .md-menu-feature-art{
+  border-color:#ff0000;box-shadow:0 22px 65px rgba(255,0,0,.16)
+}
+.md-menu-feature:hover .md-menu-feature-art>img{
+  transform:scale(1.045);filter:saturate(1.13) contrast(1.1)
+}
+.md-menu-feature .md-menu-promo-shade{
+  background:linear-gradient(0deg,rgba(0,0,0,.96),rgba(0,0,0,.61) 34%,transparent 72%),
+    linear-gradient(140deg,rgba(255,0,0,.20),transparent 57%);
+}
+.md-menu-feature .md-menu-promo-content{bottom:clamp(18px,2vw,29px);left:clamp(18px,2.1vw,30px)}
+.md-menu-feature .md-menu-promo-content strong{
+  font:900 clamp(54px,4.3vw,81px)/.82 'Barlow Condensed',Impact,sans-serif;
+}
+.md-menu-feature .md-menu-promo-content em{
+  font:800 clamp(12px,1.05vw,15px)/1.4 'Barlow','Google Sans',sans-serif;
+  letter-spacing:.10em;
+}
+@media(max-width:1100px){
+ .md-fs-menu-main{grid-template-columns:1fr!important;gap:34px}
+ .md-fs-menu-side{max-width:620px!important;width:100%!important}
+ .md-menu-feature-art{aspect-ratio:16 / 10;min-height:265px;max-height:none}
+ .md-fs-menu-title{font-size:clamp(65px,9vw,97px)!important}
+}
+@media(max-width:700px){
+ .md-fs-menu-top{grid-template-columns:minmax(0,1fr) auto!important;min-height:74px!important}
+ .md-fs-menu-brand{width:180px;height:72px}
+ .md-fs-menu-brand img{width:270px}
+ .md-fs-menu-overline{display:none!important}
+ .md-fs-menu-title{font-size:clamp(57px,11.7vw,79px)!important}
+ .md-menu-feature-art{aspect-ratio:5 / 5.3;min-height:245px}
+ .md-menu-feature .md-menu-promo-content strong{font-size:clamp(43px,10vw,63px)}
+}
+@media(max-width:380px){
+ .md-fs-menu-brand{width:150px}
+ .md-fs-menu-brand img{width:229px}
+ .md-fs-menu-title{font-size:clamp(46px,11.2vw,57px)!important}
+}
+
+/* A visibly staged but sub-second image-based sequence.
+   Favicon => Deseo => Deseo Radio; don't rely on DOM-load to display images. */
+.md-preloader{
+ transition:opacity .09s ease,visibility .09s ease!important
+}
+.md-preloader-stage{width:min(450px,96vw);min-height:245px}
+.md-preloader-symbols{width:310px!important;height:141px!important}
+.md-preloader-mark,.md-preloader-wordmark,.md-preloader-final{
+ width:310px!important;height:141px!important;
+ max-width:100%!important;max-height:100%!important;
+}
+.md-preloader-mark{animation:md-v11-mark .91s cubic-bezier(.14,.72,.25,1) both!important}
+.md-preloader-wordmark{animation:md-v11-word .91s cubic-bezier(.14,.72,.25,1) both!important}
+.md-preloader-final{animation:md-v11-radio .91s cubic-bezier(.14,.72,.25,1) both!important}
+.md-preloader-glow{animation-duration:.91s!important}
+.md-preloader-caption{top:calc(50% + 70px);animation-duration:.91s!important}
+.md-preloader-line{top:calc(50% + 102px);animation-duration:.91s!important}
+.md-preloader-stage:before,.md-preloader-stage:after{animation-duration:.91s!important}
+@keyframes md-v11-mark{
+  0%{opacity:0;transform:scale(.3) rotate(-23deg);filter:blur(10px)}
+  10%{opacity:1;transform:scale(1.23);filter:blur(0)}
+  24%{opacity:1;transform:scale(1)}
+  36%,100%{opacity:0;transform:scale(1.5) translateX(-60px);filter:blur(4px)}
+}
+@keyframes md-v11-word{
+  0%,24%{opacity:0;transform:scale(.72) translateX(45px);filter:blur(7px)}
+  37%,50%{opacity:1;transform:scale(1);filter:blur(0)}
+  62%,100%{opacity:0;transform:scale(1.3) translateX(-46px);filter:blur(5px)}
+}
+@keyframes md-v11-radio{
+  0%,50%{opacity:0;transform:scale(.65) translateX(56px);filter:blur(7px)}
+  67%{opacity:1;transform:scale(1.06);filter:blur(0)}
+  78%,100%{opacity:1;transform:scale(1);filter:blur(0)}
+}
+@media(max-width:600px){
+ .md-preloader-symbols{width:252px!important;height:114px!important}
+ .md-preloader-mark,.md-preloader-wordmark,.md-preloader-final{
+  width:252px!important;height:114px!important
+ }
+ .md-preloader-glow{width:230px;height:230px}
+}
+@media(prefers-reduced-motion:reduce){
+ .md-preloader-mark,.md-preloader-wordmark{animation:none!important;opacity:0!important}
+ .md-preloader-final{animation:none!important;opacity:1!important;transform:none!important}
+ .md-menu-feature-art>img{transition:none!important}
+}
