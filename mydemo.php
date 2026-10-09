@@ -221,6 +221,7 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
   <link rel="stylesheet" href="/assets/css/mydemo-player.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-player.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-player.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-refinements.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-refinements.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-refinements.css') : 1 ?>">
   <link rel="stylesheet" href="/assets/css/mydemo-v6.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v6.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v6.css') : 1 ?>">
+  <link rel="stylesheet" href="/assets/css/mydemo-v7.css?v=<?= is_file(__DIR__ . '/assets/css/mydemo-v7.css') ? (int)filemtime(__DIR__ . '/assets/css/mydemo-v7.css') : 1 ?>">
   <script>document.documentElement.classList.add('md-preloading');window.setTimeout(function(){document.documentElement.classList.remove('md-preloading');},780);</script>
   <script src="/assets/js/mydemo.js?v=<?= $jsVersion ?>" defer></script>
   <script src="/assets/js/mydemo-player.js?v=<?= is_file(__DIR__ . '/assets/js/mydemo-player.js') ? (int)filemtime(__DIR__ . '/assets/js/mydemo-player.js') : 1 ?>" defer></script>
@@ -263,10 +264,6 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           <strong>LIFE<span class="md-period">!</span></strong>
         </h1>
         <p class="md-hero-description"><?= $en ? 'Nothing but <strong>great music</strong> for every moment.' : 'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.' ?></p>
-        <div class="md-hero-cta">
-            <a class="md-button md-button-red" href="#player"><?= demo_e($copy['listen']) ?> <span aria-hidden="true">↗</span></a>
-            <a class="md-text-link" href="#lineup">SEASON 06 <span aria-hidden="true">↘</span></a>
-          </div>
         </div>
       <div id="player" class="md-player-home">
         <aside class="md-custom-player" id="md-custom-player" aria-label="<?= $en ? 'Deseo live player' : 'Ζωντανή ακρόαση Deseo Radio' ?>">
@@ -534,6 +531,35 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
     <div class="md-manifesto-bottom"><span class="md-manifesto-origin">DESEO RADIO / ATHENS</span><p><?= demo_e($copy['brand_sub']) ?></p><a href="#player" class="md-button md-button-red"><?= demo_e($copy['listen']) ?> ↗</a></div>
   </div>
 </section>
+
+<section class="md-section md-faq-section" id="faq" aria-labelledby="md-faq-title">
+  <div class="md-shell">
+    <div class="md-section-top">
+      <span class="md-index">06 / DESEO UNFILTERED</span>
+      <span><?= $en ? 'THE ANSWERS BEHIND THE SOUND' : 'ΟΛΑ ΓΙΑ ΤΟΝ ΗΧΟ ΜΑΣ' ?></span>
+    </div>
+    <div class="md-section-heading md-faq-heading">
+      <h2 id="md-faq-title"><?= demo_e(deseo_t('faq.title')) ?><span class="md-faq-title-period">.</span></h2>
+      <p><?= demo_e(deseo_t('faq.text')) ?></p>
+    </div>
+    <div class="md-faq-list">
+      <?php for ($i = 1; $i <= DESEO_PUBLIC_FAQ_COUNT; $i++): ?>
+        <details class="md-faq-item">
+          <summary>
+            <span class="md-faq-number"><?= str_pad((string)$i, 2, '0', STR_PAD_LEFT) ?></span>
+            <strong><?= demo_e(deseo_t('faq.q' . $i)) ?></strong>
+            <span class="md-faq-toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="md-faq-answer"><p><?= demo_e(deseo_t('faq.a' . $i)) ?></p></div>
+        </details>
+      <?php endfor; ?>
+    </div>
+  </div>
+</section>
+
+<div class="md-ai-wrap">
+  <?php require __DIR__ . '/includes/ai-discovery.php'; ?>
+</div>
 
 </main>
 
