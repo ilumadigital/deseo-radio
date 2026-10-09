@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800;900&family=Google+Sans+Flex:wght@400..900&family=Roboto+Condensed:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@800;900&family=Google+Sans+Flex:wght@400..900&family=Roboto+Condensed:wght@800;900&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Google+Sans:400,500,700&display=swap');
 
 /* Entire experience is isolated to /mydemo. Does not touch production style.css. */
@@ -472,4 +472,336 @@ body,button,input,select,textarea{font-family:var(--md-ui)}
   .md-masthead{font-size:clamp(57px,13.7vw,67px)}
   .md-hero-bottom .md-brand-slogan{font-size:38px}
   .md-hero-live-art{min-height:148px}
+}
+
+
+/* ===== V3 / URBAN AFTER DARK =====
+   Bespoke geometries, city textures and expressive photo treatments, preserving
+   the original real-CMS sections. Not a third-party radio-site replica. */
+
+/* English microcopy: Barlow. Greek glyphs & normal Greek links: Google Sans.
+   For Greek full paragraphs always prefer Google Sans. */
+.md-nav a,.md-pill,.md-lang,.md-button,.md-text-link,.md-footer-links a,
+.md-footer-links h3,.md-footer-top,.md-footer-eyebrow,.md-footer-bottom,
+.md-hero-card-heading,.md-hero-live-details,.md-hero-live-next,
+.md-hero-photo-label,.md-hero-live-link,.md-season-vertical,.md-season-stamp,
+.md-eyebrow,.md-tag,.md-hero-border,.md-overline,.md-index,
+.md-section-top,.md-track-category,.md-disc-caption,.md-sponsor-head,
+.md-sponsor-out,.md-playlist-meta span,.md-track-number,.md-timebox span {
+  font-family:'Barlow','Google Sans','Google Sans Flex',Arial,sans-serif;
+}
+html[lang="el"] .md-nav a:first-child,
+html[lang="el"] .md-hero-cta a,
+html[lang="el"] .md-footer-links a,
+html[lang="el"] .md-footer-links h3,
+html[lang="el"] .md-sponsor-head .md-small-label{
+  font-family:'Google Sans','Google Sans Flex',Arial,sans-serif;
+}
+.md-footer-links a,.md-nav a{font-weight:600}
+.md-footer-links a:hover{color:#fff}
+.md-footer-links a span{color:var(--red)}
+
+/* Atmospheric backdrop: angular street-grid, torn-paper cuts, thin signals */
+.md-hero{isolation:isolate}
+.md-hero-gridlines{
+  pointer-events:none;position:absolute;inset:0;z-index:-1;opacity:.36;
+  background:repeating-linear-gradient(110deg,
+    transparent 0,transparent 119px,rgba(255,255,255,.09) 120px,
+    transparent 121px,transparent 220px),
+    linear-gradient(90deg,transparent 65%,rgba(255,255,255,.03) 65.1%,transparent 65.2%);
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,#000 38%,#000 100%);
+  mask-image:linear-gradient(to right,transparent 0%,#000 38%,#000 100%);
+}
+.md-hero:after{
+  content:'DESEO / 06';position:absolute;right:2.5vw;bottom:38px;
+  color:rgba(255,255,255,.08);font:800 clamp(38px,8vw,125px)/1 'Barlow Condensed',sans-serif;
+  letter-spacing:-.06em;pointer-events:none;transform:rotate(-90deg) translateX(30%);
+  transform-origin:bottom right;z-index:-1
+}
+.md-hero-citymark{
+  pointer-events:none;position:absolute;right:calc(max(16px,(100vw - var(--shell))/2) + 10px);top:100px;
+  display:flex;flex-direction:column;align-items:end;gap:8px;color:rgba(255,255,255,.45);
+  font:700 10px/1 'Barlow',sans-serif;letter-spacing:.22em;z-index:-1
+}
+.md-hero-citymark strong{
+  font:900 clamp(80px,10vw,165px)/.75 'Barlow Condensed',sans-serif;
+  color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.11)
+}
+.md-hero-live-card{
+  border:0;padding:17px;background:linear-gradient(154deg,#242020 0%,#100b0d 55%,#1b1114 100%);
+  clip-path:polygon(0 0,calc(100% - 30px) 0,100% 30px,100% 100%,25px 100%,0 calc(100% - 25px));
+  box-shadow:none
+}
+.md-hero-live-card:before{height:4px;width:105px;left:0;top:0;z-index:3}
+.md-hero-live-card:after{
+  content:'';pointer-events:none;position:absolute;inset:6px;
+  border:1px solid rgba(255,255,255,.15);clip-path:polygon(0 0,calc(100% - 27px) 0,100% 27px,100% 100%,20px 100%,0 calc(100% - 20px));
+}
+.md-hero-live-number{
+  display:block;text-align:right;color:rgba(255,255,255,.62);font:700 10px/1 'Barlow',sans-serif;
+  letter-spacing:.15em;padding:0 0 10px
+}
+.md-hero-live-art{
+  clip-path:polygon(0 0,calc(100% - 47px) 0,100% 47px,100% 100%,36px 100%,0 calc(100% - 36px));
+  isolation:isolate;background:#390e16
+}
+.md-hero-live-art:before{
+  content:'';position:absolute;inset:0;background:linear-gradient(132deg,rgba(0,0,0,.25) 0%,transparent 35%,rgba(187,21,38,.4) 100%);
+  z-index:1;mix-blend-mode:multiply;pointer-events:none
+}
+.md-hero-live-art:after{background:linear-gradient(0deg,rgba(0,0,0,.78),transparent 50%);z-index:2}
+.md-hero-live-art img{
+  filter:grayscale(1) contrast(1.3) brightness(.95);
+  transform:scale(1.03) rotate(-1deg);
+  transition:filter .5s,transform .7s
+}
+.md-hero-live-card:hover .md-hero-live-art img{
+  filter:grayscale(.35) contrast(1.15);transform:scale(1.10) rotate(0deg)
+}
+.md-hero-photo-label{z-index:3;left:17px;bottom:15px}
+.md-hero-art-corner{
+  position:absolute;right:10px;top:13px;z-index:3;color:#fff;
+  writing-mode:vertical-rl;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.18em
+}
+.md-hero-card-heading{font-size:12px}
+.md-hero-live-details strong{font-family:var(--md-ui);letter-spacing:-.03em}
+.md-hero-live-link{
+  clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,0 100%);
+  position:relative;z-index:3
+}
+.md-brand-slogan{overflow-wrap:break-word}
+.md-hero-led{
+  display:flex;align-items:center;gap:15px
+}
+.md-hero-led:before{
+  content:'';height:2px;width:42px;background:var(--red);flex:0 0 42px
+}
+.md-masthead em{text-shadow:0 20px 55px rgba(220,29,39,.22)}
+
+/* Shared cut-corner photographic vocabulary, not generic rounded cards */
+.md-onair-portrait{
+  clip-path:polygon(0 0,88% 0,100% 12%,100% 100%,15% 100%,0 85%);
+}
+.md-onair-portrait:before{
+  content:'NOW /';position:absolute;top:12px;left:11px;z-index:3;
+  font:800 13px 'Barlow Condensed',sans-serif;color:#fff;letter-spacing:.13em
+}
+.md-onair-portrait:after{box-shadow:none;background:linear-gradient(35deg,rgba(239,48,56,.35),transparent 65%)}
+.md-player-embed{
+  position:relative;transform:rotate(-1deg);
+  clip-path:polygon(0 0,92% 0,100% 8%,100% 100%,0 100%);
+  border-top:3px solid var(--red)
+}
+.md-player-embed iframe{transform:rotate(1deg);border-radius:0;clip-path:polygon(0 0,98% 0,100% 2%,100% 100%,0 100%)}
+
+/* The Season 6 image becomes a real urban magazine cover */
+.md-season-banner{border:0;position:relative;background:#191315}
+.md-season-banner:before{
+  content:'06 / THE PEOPLE BEHIND THE SOUND';position:absolute;left:18px;top:-22px;
+  font:700 11px 'Barlow',sans-serif;color:var(--red);letter-spacing:.12em
+}
+.md-season-art{position:relative;isolation:isolate;padding:22px;background:#220f14;overflow:hidden}
+.md-season-art:before{
+  content:'';position:absolute;inset:22px;background:linear-gradient(35deg,rgba(219,29,45,.22),transparent 55%);
+  z-index:1;pointer-events:none;clip-path:polygon(0 0,100% 0,100% 82%,81% 100%,0 100%)
+}
+.md-season-art img{
+  width:100%;height:100%;object-fit:cover;object-position:center;
+  clip-path:polygon(0 0,calc(100% - 70px) 0,100% 70px,100% 100%,48px 100%,0 calc(100% - 48px));
+  filter:contrast(1.14) saturate(.75)
+}
+.md-season-vertical{
+  position:absolute;top:43px;left:0;z-index:2;
+  writing-mode:vertical-rl;color:#fff;font-size:12px;font-weight:700;
+  letter-spacing:.24em;background:var(--red);padding:9px 7px
+}
+.md-season-stamp{
+  position:absolute;bottom:28px;right:27px;z-index:2;
+  font:900 clamp(35px,5vw,75px)/.75 'Barlow Condensed',sans-serif;letter-spacing:-.05em;text-align:right;
+  color:#f4eee9;text-shadow:2px 3px 22px #000
+}
+.md-season-info:before{font-family:var(--md-memorial);font-weight:900}
+
+/* Artist photographs: irregular city-poster silhouettes */
+.md-schedule{
+  position:relative;
+  background:repeating-linear-gradient(90deg,transparent,transparent 159px,rgba(255,255,255,.017) 160px),#101010
+}
+.md-show-card{position:relative;border:1px solid rgba(255,255,255,.15)}
+.md-show-card:nth-child(3n + 2){background:#141012}
+.md-show-card:before{
+  content:'';position:absolute;right:0;top:0;z-index:4;border-top:3px solid var(--red);width:45px;pointer-events:none
+}
+.md-show-photo{
+  clip-path:polygon(0 0,calc(100% - 32px) 0,100% 32px,100% 100%,19px 100%,0 calc(100% - 19px));
+  margin:8px 8px 0;aspect-ratio:5/4;
+  background:linear-gradient(135deg,#3c0d17,#171112 75%)
+}
+.md-show-card:nth-child(3n+2) .md-show-photo{
+  clip-path:polygon(0 0,100% 0,100% 83%,86% 100%,0 100%)
+}
+.md-show-card:nth-child(4n) .md-show-photo{
+  clip-path:polygon(10% 0,100% 0,100% 100%,0 100%,0 10%)
+}
+.md-show-photo img{filter:grayscale(1) contrast(1.18);transform:scale(1.02)}
+.md-show-photo:after{background:linear-gradient(5deg,rgba(106,14,25,.73),transparent 55%)}
+.md-show-details{position:relative;background:linear-gradient(180deg,#131011,#090909)}
+.md-show-details:after{
+  content:'↗';position:absolute;right:13px;bottom:14px;
+  color:var(--red);opacity:.5;font:900 30px/.7 'Barlow Condensed';pointer-events:none
+}
+button.md-show-card:hover .md-show-photo img{transform:scale(1.09) rotate(-.8deg);filter:grayscale(.24) contrast(1.08)}
+.md-show-details h3{letter-spacing:-.045em}
+
+/* No plain rectangles for covers; real CMS covers retain their source */
+.md-track-cover{
+  position:relative;clip-path:polygon(0 0,82% 0,100% 18%,100% 100%,0 100%);
+  filter:saturate(.78) contrast(1.12)
+}
+.md-track-number{font-weight:800;font-size:20px}
+.md-track-row:nth-child(2n) .md-track-cover{clip-path:polygon(0 0,100% 0,100% 85%,85% 100%,0 100%)}
+.md-track-row:hover .md-track-cover{filter:saturate(1.3) contrast(1.1)}
+.md-track-row:hover .md-track-info strong{color:#fff}
+.md-playlist-art{clip-path:polygon(0 0,90% 0,100% 12%,100% 100%,8% 100%,0 90%);background:#270f16}
+.md-playlist:nth-child(3n + 2) .md-playlist-art{clip-path:polygon(0 0,100% 0,100% 87%,87% 100%,0 100%)}
+.md-playlist:nth-child(3n + 3) .md-playlist-art{clip-path:polygon(10% 0,100% 0,100% 100%,0 100%,0 12%)}
+.md-playlist-art:after{
+  content:'';pointer-events:none;position:absolute;inset:0;
+  background:linear-gradient(160deg,transparent 47%,rgba(147,12,22,.25))
+}
+.md-playlist-art img{filter:saturate(.76) contrast(1.12);transition:filter .5s,transform .5s}
+.md-playlist a:hover .md-playlist-art img{filter:saturate(1.1);transform:scale(1.07)}
+.md-playlist-arrow{z-index:2;clip-path:polygon(0 0,100% 0,100% 100%,0 100%);border-radius:0}
+.md-playlist-meta strong{letter-spacing:-.045em;font-weight:800}
+
+/* Manifesto contrast stays iconic, never substituted with ordinary UI font */
+.md-manifesto{
+  background:radial-gradient(ellipse at 86% 35%,rgba(167,20,40,.23),transparent 45%),#080808
+}
+.md-manifesto:after{
+  content:'';position:absolute;right:-11vw;top:10%;width:50vw;height:50vw;
+  border:1px solid rgba(239,48,56,.28);border-radius:50%;pointer-events:none
+}
+.md-manifesto-signature{letter-spacing:-.02em}
+.md-manifesto h2{letter-spacing:-.045em}
+
+/* Editorial footer: huge memorial left, compact information architecture right.
+   Similar hierarchy to great radio editorial sites, unique Deseo copy and geometry. */
+.md-footer{
+  position:relative;isolation:isolate;overflow:hidden;background:
+    radial-gradient(ellipse at 25% 62%,rgba(106,17,32,.16),transparent 49%),
+    #0b0a0a
+}
+.md-footer:before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.34;
+  background:repeating-linear-gradient(104deg,transparent 0 48px,rgba(255,255,255,.035) 49px,transparent 50px 100px)
+}
+.md-footer-top{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  border-bottom:1px solid var(--hair);padding:20px 0;color:#aaa;
+  font-size:12px;letter-spacing:.17em
+}
+.md-footer-top .md-dot{margin-right:9px}
+.md-footer-top-separator{margin:0 8px;color:var(--red)}
+.md-footer-main{
+  display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+  gap:clamp(45px,6vw,115px);padding:95px 0 105px;align-items:start
+}
+.md-footer-identity{min-width:0}
+.md-footer-eyebrow{color:var(--red);font-size:14px;letter-spacing:.25em;font-weight:700;margin:0 0 36px}
+.md-footer-statement{
+  font:900 clamp(80px,9.5vw,155px)/.76 var(--md-memorial);
+  letter-spacing:-.045em;text-transform:uppercase;margin:0 0 55px;white-space:nowrap
+}
+.md-footer-statement em{font-style:normal;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9)}
+.md-footer-statement span{color:var(--red)}
+.md-footer-slogan{
+  font:900 clamp(29px,3.7vw,57px)/1 var(--md-memorial)!important;
+  letter-spacing:-.025em!important;max-width:600px;
+  text-transform:uppercase;margin:0!important
+}
+.md-footer-directory{
+  display:grid;grid-template-columns:1fr 1fr;gap:23px 35px;
+  padding-top:18px;position:relative
+}
+.md-footer-links{display:flex;flex-direction:column;gap:0;min-width:0}
+.md-footer-links h3{
+  color:var(--red);font-size:13px;letter-spacing:.18em;font-weight:800;margin:0 0 24px
+}
+.md-footer-links a{
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  padding:12px 0;border-bottom:1px solid rgba(255,255,255,.085);
+  color:#bdb8b9;font-size:15px;letter-spacing:.01em;line-height:1.4;
+  transition:color .25s,padding-left .25s
+}
+.md-footer-links a:hover{padding-left:5px}
+.md-footer-links a span{font-size:18px;font-weight:800}
+.md-footer-icon{
+  grid-column:1/-1;justify-self:end;margin-top:55px;
+  width:120px;height:120px;position:relative
+}
+.md-footer-icon:before,.md-footer-icon:after{
+  content:'';position:absolute;inset:-19px;border:1px solid rgba(239,48,56,.28);
+  border-radius:50%;pointer-events:none
+}
+.md-footer-icon:after{inset:-38px;border-color:rgba(255,255,255,.10)}
+.md-footer-icon img{width:100%;height:100%;object-fit:contain;filter:grayscale(1) contrast(2)}
+.md-footer-bottom{padding:27px 0;border-top:1px solid var(--hair);color:#8e898a;font-size:12px;font-weight:600;letter-spacing:.09em}
+.md-footer-bottom a{color:#fff}
+.md-footer-bottom a:hover{color:var(--red)}
+
+@media(max-width:1270px){
+  .md-footer-main{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:45px}
+  .md-footer-statement{font-size:clamp(70px,9vw,120px)}
+  .md-hero-citymark{right:17px}
+}
+@media(max-width:850px){
+  .md-hero-gridlines{opacity:.25}
+  .md-hero-citymark{top:130px}
+  .md-hero-live-card{max-width:530px}
+  .md-season-art{padding:16px}
+  .md-season-art:before{inset:16px}
+  .md-season-art img{object-fit:contain}
+  .md-footer-main{grid-template-columns:1fr;gap:58px;padding:68px 0 75px}
+  .md-footer-statement{font-size:clamp(82px,13vw,125px);margin-bottom:35px}
+  .md-footer-slogan{max-width:650px}
+  .md-footer-directory{padding:0;max-width:620px;width:100%}
+  .md-footer-icon{margin-top:20px;width:80px;height:80px}
+}
+@media(max-width:600px){
+  .md-hero-citymark{display:none}
+  .md-hero:after{display:none}
+  .md-hero-gridlines{opacity:.19}
+  .md-hero-led:before{width:21px;flex-basis:21px}
+  .md-hero-live-card{clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}
+  .md-hero-live-art{clip-path:polygon(0 0,calc(100% - 23px) 0,100% 23px,100% 100%,20px 100%,0 calc(100% - 20px))}
+  .md-hero-card-heading{font-size:10px}
+  .md-hero-live-number{font-size:9px}
+  .md-player-embed{transform:none}
+  .md-player-embed iframe{transform:none}
+  .md-onair-portrait{clip-path:polygon(0 0,85% 0,100% 15%,100% 100%,0 100%)}
+  .md-season-art{padding:8px}
+  .md-season-art:before{inset:8px}
+  .md-season-art img{clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,20px 100%,0 calc(100% - 20px))}
+  .md-season-stamp{font-size:45px;right:12px;bottom:15px}
+  .md-season-vertical{font-size:9px}
+  .md-show-photo{aspect-ratio:3/4;margin:5px 5px 0}
+  .md-track-cover{clip-path:polygon(0 0,81% 0,100% 19%,100% 100%,0 100%)}
+  .md-playlist-art{clip-path:polygon(0 0,85% 0,100% 15%,100% 100%,0 100%)}
+  .md-footer-top{flex-wrap:wrap;gap:8px;font-size:10px;padding:17px 0}
+  .md-footer-main{padding:60px 0 68px;gap:43px}
+  .md-footer-eyebrow{font-size:11px;margin-bottom:24px}
+  .md-footer-statement{font-size:clamp(66px,15vw,96px);line-height:.83;letter-spacing:-.05em;margin-bottom:30px}
+  .md-footer-statement em{-webkit-text-stroke:1px rgba(255,255,255,.95)}
+  .md-footer-slogan{font-size:clamp(31px,9vw,47px)!important}
+  .md-footer-directory{gap:20px}
+  .md-footer-links h3{font-size:12px;margin-bottom:14px}
+  .md-footer-links a{font-size:13px;padding:10px 0}
+  .md-footer-icon{margin-top:5px;width:65px;height:65px}
+  .md-footer-bottom{align-items:start;flex-direction:column;font-size:10px;line-height:1.4}
+}
+@media(max-width:375px){
+  .md-footer-statement{font-size:61px}
+  .md-footer-directory{gap:12px}
+  .md-footer-links a{font-size:12px}
 }
