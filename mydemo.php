@@ -280,15 +280,19 @@ $jsVersion = is_file(__DIR__ . '/assets/js/mydemo.js') ? (int)filemtime(__DIR__ 
           <div class="md-custom-inner">
             <div class="md-custom-brand"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="160" height="45"><span>FEEL THE UNSEEN.</span></div>
             <div class="md-custom-track">
-              <div class="md-custom-cover">
-                <img id="md-current-cover" src="/assets/img/favicon.png" alt="" loading="eager">
-                <span class="md-cover-mark" aria-hidden="true">D/06</span>
+              <div class="md-nowplaying-title">
+                <span class="md-custom-eyebrow"><?= $en ? 'NOW PLAYING' : 'ΠΑΙΖΕΙ ΤΩΡΑ' ?></span>
+                <strong><?= $en ? 'WHAT YOU HEAR. WHAT YOU FEEL.' : 'Ο ΗΧΟΣ ΤΗΣ ΣΤΙΓΜΗΣ.' ?></strong>
               </div>
-              <div class="md-custom-track-meta" aria-live="polite" aria-atomic="true">
-                <span class="md-custom-eyebrow" id="md-track-label"><?= $en ? 'NOW PLAYING' : 'ΠΑΙΖΕΙ ΤΩΡΑ' ?></span>
-                <strong id="md-current-track" class="md-current-track"><?= $en ? 'THE SOUND OF DESEO' : 'Ο ΗΧΟΣ ΤΟΥ DESEO' ?></strong>
-                <span id="md-current-artist" class="md-current-artist"><?= $en ? 'Live from Athens · 24/7' : 'Ζωντανά από την Αθήνα · 24/7' ?></span>
-                <small id="md-track-provider"></small>
+              <div class="md-nowplaying-frame">
+                <iframe src="https://play.iradios.gr/widget-now/deseo-radio"
+                        title="<?= $en ? 'Deseo Radio now playing track and artwork' : 'Deseo Radio: τραγούδι και εξώφυλλο που παίζει τώρα' ?>"
+                        width="100%" frameborder="0" loading="eager"
+                        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+              </div>
+              <div class="md-mini-track" aria-label="<?= $en ? 'Radio currently on air' : 'Τρέχουσα ραδιοφωνική εκπομπή' ?>">
+                <img src="/assets/img/favicon.png" alt="" width="44" height="44">
+                <span><small>DESEO / LIVE RADIO</small><strong id="md-mini-show-name"><?= demo_e($liveShow['name'] ?? $copy['auto']) ?></strong></span>
               </div>
             </div>
             <div class="md-custom-show">
