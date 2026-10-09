@@ -57,6 +57,9 @@ jobs:
       - name: Isolated /mydemo smoke contract
         run: php tests/mydemo-smoke.php
 
+      - name: Public homepage launch candidate smoke
+        run: php tests/launch-home-smoke.php
+
       - name: JavaScript syntax
         run: |
           node --check sw.js
