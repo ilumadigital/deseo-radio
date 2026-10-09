@@ -185,3 +185,6 @@ Disallow: /djs.php
 Disallow: /djterms
 Disallow: /djterms/
 Disallow: /djterms.php
+
+# Public canonical index
+Sitemap: https://deseoradio.com/sitemap.xml
