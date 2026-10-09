@@ -4277,11 +4277,22 @@ html.md-motion-enabled .ai-discovery-card.is-visible:hover{transform:translateY(
   .md-preloader-stage { min-height: 315px !important; }
   .md-preloader-symbols { width: 205px !important; height: 93px !important; margin-bottom: 25px !important; }
   .md-preloader-final { width: 205px !important; height: 93px !important; max-width: 205px !important; max-height: 93px !important; }
-  .md-preloader-tagline { max-width: 355px; font-size: clamp(29px,8.5vw,42px) !important; gap: .09em .15em; }
+
+  /* Mobile one-line slogan: THE SOUNDTRACK OF YOUR LIFE must stay together,
+     including on 320px phones, without shrinking the logo. */
+  .md-preloader-tagline {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+    font-size: clamp(17px, 5.6vw, 27px) !important;
+    letter-spacing: -.055em !important;
+    line-height: 1.1 !important;
+    gap: clamp(2px, .55vw, 4px) !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+  }
+  .md-preloader-token { flex: 0 0 auto; }
+  .md-preloader-token--outline > span { -webkit-text-stroke: .9px rgba(255,255,255,.94); }
   .md-preloader-progress { width: min(315px,75vw) !important; margin-top: 26px !important; }
-}
-@media(max-width:380px) {
-  .md-preloader-tagline { max-width: 310px; font-size: 30px !important; }
 }
 @media(prefers-reduced-motion:reduce) {
   .md-preloader::before { animation: none !important; }
