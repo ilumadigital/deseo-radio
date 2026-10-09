@@ -60,10 +60,14 @@ $required = [
     'id="md-menu-trigger"',
     'id="md-fs-close"',
     'class="md-fs-menu-links"',
-    'class="md-fs-menu-social"',
+    'class="md-menu-feature"',
+    'data-md-carousel',
+    'class="md-footer-social-grid"',
     'class="md-footer-directory md-footer-connections md-footer-minimal"',
     '/assets/css/mydemo-v9.css',
+    '/assets/css/mydemo-v10.css',
     '/assets/js/mydemo-menu.js',
+    '/assets/js/mydemo-experience.js',
     'href="https://iluma.gr/radios/mediakit"',
     'Παίζουμε <strong>μόνο μουσικάρες</strong> για την κάθε σου στιγμή.',
 ];
@@ -283,6 +287,7 @@ foreach ($menuLinks as $label => $href) {
         exit(1);
     }
 }
+$footerHtml = substr($html, strpos($html, '<footer class="md-footer"'));
 foreach ([
     'instagram.com/deseoradio/',
     'facebook.com/deseoradiogr/',
@@ -291,15 +296,24 @@ foreach ([
     'open.spotify.com/show/2x8ceF2a3gMmzEJ8y6W1ue',
     'iluma.gr/radios/mediakit',
 ] as $external) {
-    if (!str_contains($menuHtml, $external)) {
-        fwrite(STDERR, "Fullscreen menu social link missing: {$external}\n");
+    if (str_contains($menuHtml, $external) || !str_contains($footerHtml, $external)) {
+        fwrite(STDERR, "Social/mediakit link must appear in footer, not menu: {$external}\n");
         exit(1);
     }
 }
-$footerHtml = substr($html, strpos($html, '<footer class="md-footer"'));
-if (str_contains($footerHtml, 'class="md-footer-social-grid"') ||
-    str_contains($footerHtml, 'class="md-footer-social-grid"')) {
-    fwrite(STDERR, "Footer social links should appear only in fullscreen menu\n");
+if (!str_contains($footerHtml, 'class="md-footer-social-grid"') ||
+    !str_contains($menuHtml, 'data-md-carousel') ||
+    !str_contains($menuHtml, '/iluma/djsa02.png') ||
+    !str_contains($menuHtml, 'Every Weekend <strong>@ 17:00</strong>') ||
+    !str_contains($menuHtml, 'DESEO<br>DJs')) {
+    fwrite(STDERR, "Curated show carousel or restored footer socials missing\n");
+    exit(1);
+}
+if (!str_contains($html, 'class="md-preloader-symbol"') ||
+    !str_contains($html, '/assets/img/deseo-logo.png') ||
+    strpos($html, '/assets/img/favicon-nobg.png') >= strpos($html, '/assets/img/deseo-logo.png') ||
+    strpos($html, '/assets/img/deseo-logo.png') >= strpos($html, '/assets/img/deseoradio-logo.png')) {
+    fwrite(STDERR, "Preloader must reveal emblem, DESEO, then DESEO RADIO\n");
     exit(1);
 }
 $demoTemplate = (string)file_get_contents(__DIR__ . '/../mydemo.php');
@@ -325,11 +339,28 @@ foreach (['Escape', 'aria-expanded', 'is-open', 'md-menu-open',
 }
 $cssV9 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v9.css');
 foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
-          '.md-fs-menu-links', '.md-fs-menu-social', '.md-reveal',
+          '.md-fs-menu-links', '.md-fs-menu-side', '.md-reveal',
           '@media(max-width:700px)', '@media(prefers-reduced-motion:reduce)'] as $needle) {
     if (!str_contains($cssV9, $needle)) {
         fwrite(STDERR, "Fullscreen menu/mobile animation stylesheet incomplete: {$needle}\n");
         exit(1);
     }
 }
-echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
+$cssV10 = (string)file_get_contents(__DIR__ . '/../assets/css/mydemo-v10.css');
+$experienceJs = (string)file_get_contents(__DIR__ . '/../assets/js/mydemo-experience.js');
+foreach (['.md-preloader-symbol', 'md-pre-v10-wordmark',
+          '.md-menu-feature-slide.is-active', '.md-footer-minimal .md-footer-social-grid',
+          '@media(prefers-reduced-motion:reduce)'] as $needle) {
+    if (!str_contains($cssV10, $needle)) {
+        fwrite(STDERR, "Three-stage reveal or menu carousel styling missing: {$needle}\n");
+        exit(1);
+    }
+}
+foreach (['md-preloading', 'data-md-slide', 'aria-selected', 'touchstart',
+          'prefers-reduced-motion', 'data-fallback'] as $needle) {
+    if (!str_contains($experienceJs, $needle)) {
+        fwrite(STDERR, "Carousel/preloader progressive script incomplete: {$needle}\n");
+        exit(1);
+    }
+}
+echo "mydemo: official iRadios player, cinematic loader, feature carousel, footer socials and noindex OK\n";
