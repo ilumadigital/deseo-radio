@@ -29,7 +29,7 @@ $required = [
     'data-iluma-signal-slot="hero-sponsor"',
     'data-iluma-signal-slot="sticky-sponsor"',
     'data-iluma-signal-image',
-    'https://radios.iluma.gr/signal/v1/signal.js?v=1.1.1',
+    'https://radios.iluma.gr/signal/v1/signal.js?v=1.1.2',
     'id="faq"',
     'id="md-faq-title"',
     'class="md-faq-list"',
