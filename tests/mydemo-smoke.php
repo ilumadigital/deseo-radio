@@ -15,6 +15,7 @@ $html = (string)ob_get_clean();
 $required = [
     '<meta name="robots" content="noindex,nofollow',
     'id="player"',
+    '/assets/css/mydemo-bundle-v1.css',
     'id="md-iradios-player"',
     'https://play.iradios.gr/widget/deseo-radio?autoplay=true',
     'allow="autoplay; encrypted-media; clipboard-write"',
@@ -38,7 +39,6 @@ $required = [
     'id="ai-discovery-title"',
     'class="ai-discovery-grid"',
     'class="md-ai-wrap"',
-    '/assets/css/mydemo-v7.css',
     'id="listen-everywhere"',
     'id="about"',
     'THE WEEKLY LINEUP',
@@ -52,7 +52,6 @@ $required = [
     'class="md-partner-grid"',
     'class="md-about-grid"',
     'id="md-season-countdown"',
-    '/assets/css/mydemo-v6.css',
     '/assets/js/mydemo-player.js',
     'class="md-preloader"',
     'md-preloading',
@@ -63,13 +62,10 @@ $required = [
     'class="md-menu-showcase md-menu-feature"',
     'class="md-footer-directory md-footer-connections"',
     'class="md-footer-social-grid"',
-    '/assets/css/mydemo-v9.css',
     '/assets/js/mydemo-menu.js',
     'href="https://iluma.gr/radios/mediakit"',
-    '/assets/css/mydemo-v13.css',
-    '/assets/css/mydemo-v14.css',
     '/assets/js/mydemo-header.js',
-    'content="v16-bottom-anchored-menu"',
+    'content="v19-mobile-speed"',
 ];
 foreach ($required as $needle) {
     if (!str_contains($html, $needle)) {
@@ -188,7 +184,7 @@ if (!is_array($manifestData) || empty($manifestData['icons']) ||
 }
 if (!str_contains($html, '<link rel="icon" type="image/png" href="/assets/img/favicon.png?v=') ||
     preg_match('~<img\\b[^>]*\\bsrc="/assets/img/favicon\\.png~i', $html) ||
-    preg_match_all('~<img[^>]+src="/assets/img/favicon-nobg\.png"~', $demoMarkup) !== 3) {
+    preg_match_all('~<img[^>]+src="/assets/img/favicon-nobg\.png"~', $demoMarkup) !== 2) {
     fwrite(STDERR, "Demo must use the regular file solely as browser favicon and the transparent emblem in content\n");
     exit(1);
 }
@@ -347,14 +343,11 @@ foreach (['.md-fs-menu.is-open', 'position:fixed', 'overflow-y:auto',
 
 /* V11: the actual live contract, no carousel or obsolete menu copy. */
 foreach ([
-    '/assets/css/mydemo-v11.css',
-    'content="v16-bottom-anchored-menu"',
+    'content="v19-mobile-speed"',
     'class="md-fs-menu-brand"',
     '<h2 class="md-fs-menu-title" id="md-fs-menu-title">',
     'class="md-fs-title-red"',
     'class="md-menu-showcase md-menu-feature"',
-    'src="/assets/img/favicon-nobg.png"',
-    'src="/assets/img/deseo-logo.png"',
     'src="/assets/img/deseoradio-logo.png"',
     'class="md-preloader-final"',
     'class="md-word-the"',
@@ -392,15 +385,12 @@ if (substr_count($menuHtml, 'class="md-menu-showcase md-menu-feature"') !== 1 ||
 $preloaderStart = strpos($html, '<div class="md-preloader"');
 $headerStart = strpos($html, '<header class="md-header">');
 $preloaderHtml = substr($html, $preloaderStart, $headerStart - $preloaderStart);
-$logoNames = ['/assets/img/favicon-nobg.png', '/assets/img/deseo-logo.png', '/assets/img/deseoradio-logo.png'];
-$lastPos = -1;
-foreach ($logoNames as $src) {
-    $p = strpos($preloaderHtml, 'src="' . $src . '"');
-    if ($p === false || $p <= $lastPos) {
-        fwrite(STDERR, "V11 preloader logos must appear in order: {$src}\n");
-        exit(1);
-    }
-    $lastPos = $p;
+if (substr_count($preloaderHtml, 'src="/assets/img/deseoradio-logo.png"') !== 1 ||
+    !str_contains($preloaderHtml, 'width="220" height="100"') ||
+    !str_contains($preloaderHtml, 'md-preloader-token--red') ||
+    !str_contains($preloaderHtml, 'SOUNDTRACK')) {
+    fwrite(STDERR, "Preloader must use one native-resolution logo and animated editorial slogan\n");
+    exit(1);
 }
 // Logos must be rendered at their supplied aspect ratio, never cropped/enlarged.
 if (!str_contains($html, 'alt="Deseo Radio" width="220" height="100" fetchpriority="high"') ||
@@ -662,8 +652,8 @@ if ($seasonArtHtml === '' || str_contains($seasonArtHtml, 'md-season-stamp') ||
     fwrite(STDERR, "V15: remove the DESEO 06 stamp from the lineup artwork\n");
     exit(1);
 }
-if (!str_contains($html, '/assets/css/mydemo-v15.css') ||
-    !str_contains($html, 'content="v16-bottom-anchored-menu"')) {
+if (!is_file(__DIR__ . '/../assets/css/mydemo-v15.css') ||
+    !str_contains($html, 'content="v19-mobile-speed"')) {
     fwrite(STDERR, "V15 stylesheet or demo cache-bust marker missing\n");
     exit(1);
 }
@@ -704,7 +694,7 @@ if (preg_match('~class="md-index">\s*0[1-6]\s*/~', $html)) {
     fwrite(STDERR, "V16 editorial section headings must not be numbered\n");
     exit(1);
 }
-if (!str_contains($html, '/assets/css/mydemo-v16.css')) {
+if (!is_file(__DIR__ . '/../assets/css/mydemo-v16.css')) {
     fwrite(STDERR, "V16 bottom-aligned fullscreen menu style missing\n");
     exit(1);
 }
@@ -726,5 +716,21 @@ foreach ([
         fwrite(STDERR, "V16 bottom menu anchoring or mobile flow incomplete: {$needle}\n");
         exit(1);
     }
+}
+/* V19: one cacheable CSS request and safe mobile-first asset loading. */
+$bundleFile = __DIR__ . '/../assets/css/mydemo-bundle-v1.css';
+$bundle = (string)file_get_contents($bundleFile);
+if (!is_file($bundleFile) ||
+    substr_count($html, '<link rel="stylesheet"') !== 1 ||
+    !str_contains($html, '/assets/css/mydemo-bundle-v1.css?v=') ||
+    !str_contains($bundle, '.md-player-squares') ||
+    !str_contains($bundle, '.md-preloader-token') ||
+    !str_contains($bundle, 'margin-top:auto!important') ||
+    !str_contains($html, 'fetchpriority="low"') ||
+    !str_contains($html, 'decoding="async"') ||
+    str_contains($html, 'id="md-dialog-photo" src="/assets/img/bg.png"') ||
+    !str_contains($html, 'mobile ? 620 : 1500')) {
+    fwrite(STDERR, "V19 CSS bundle or mobile image/perceived-loading optimizations missing\n");
+    exit(1);
 }
 echo "mydemo: official iRadios player, sticky info, sponsor, sections, layout and noindex OK\n";
