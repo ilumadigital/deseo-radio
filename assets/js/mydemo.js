@@ -2,6 +2,19 @@
 (function () {
   'use strict';
 
+  // On small screens, defer the heavy decorative backdrop until after
+  // the live audio player and main content have received network priority.
+  if (window.matchMedia && window.matchMedia('(max-width: 850px)').matches) {
+    window.setTimeout(function () {
+      var backdrop = document.querySelector('.md-hero-photo');
+      if (!backdrop) return;
+      var image = new Image();
+      image.decoding = 'async';
+      image.onload = function () { backdrop.classList.add('md-photo-ready'); };
+      image.src = '/assets/img/bg.png';
+    }, 1400);
+  }
+
   var countdown = document.getElementById('md-season-countdown');
   if (countdown) {
     var start = Number(countdown.getAttribute('data-start')) * 1000;
