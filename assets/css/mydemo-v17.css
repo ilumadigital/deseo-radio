@@ -1,17 +1,173 @@
-/* Deseo Radio /mydemo: matte branded preloader */
-.md-preloader{background:radial-gradient(ellipse at 50% 45%,#202021 0%,#141415 43%,#0b0b0c 100%)!important;overflow:hidden!important;transition:opacity .2s ease,visibility .2s ease!important}
-.md-preloader:before,.md-preloader-glow,.md-preloader-mark,.md-preloader-wordmark,.md-preloader-caption,.md-preloader-line,.md-preloader-stage:before,.md-preloader-stage:after{display:none!important}
-.md-preloader-stage{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:min(960px,94vw)!important;min-height:340px!important}
-.md-preloader-symbols{width:clamp(235px,26vw,340px)!important;height:clamp(107px,12vw,155px)!important;position:relative!important;margin-bottom:24px!important}
-.md-preloader-final{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;filter:none!important;animation:md-matte-logo .82s ease both!important}
-.md-preloader-tagline{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:.12em .18em;max-width:92vw;text-align:center;text-transform:uppercase;font:900 clamp(27px,4.35vw,64px)/.95 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.04em;animation:md-matte-title .65s ease .16s both}
-.md-preloader-outline{color:transparent;-webkit-text-stroke:1.2px #f5f4f3}
-.md-preloader-red{color:#f00}
-.md-preloader-white{color:#f7f6f5}
-.md-preloader-progress{height:1px;width:min(490px,70vw);margin-top:28px;background:#474747;overflow:hidden}
-.md-preloader-progress span{display:block;width:100%;height:100%;background:#f00;transform-origin:left;animation:md-matte-progress .85s ease both}
-@keyframes md-matte-logo{from{opacity:0;transform:translateY(15px);filter:blur(5px)}to{opacity:1;transform:none;filter:none}}
-@keyframes md-matte-title{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes md-matte-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@media(max-width:600px){.md-preloader-stage{min-height:290px!important}.md-preloader-symbols{width:235px!important;height:108px!important;margin-bottom:16px!important}.md-preloader-tagline{font-size:clamp(28px,9vw,43px);max-width:350px;gap:.08em .14em}.md-preloader-progress{width:75vw;margin-top:24px}}
-@media(prefers-reduced-motion:reduce){.md-preloader-final,.md-preloader-tagline,.md-preloader-progress span{animation:none!important;opacity:1!important;transform:none!important}}
+/* Deseo Radio /mydemo — matte intro v18.
+   Keep the original 220x100 raster mark at or below native resolution.
+   Motion is concentrated on individually revealed slogan words. */
+.md-preloader {
+  background: radial-gradient(ellipse at 50% 43%, #232325 0%, #151516 43%, #0b0b0c 100%) !important;
+  overflow: hidden !important;
+  isolation: isolate;
+  transition: opacity .28s ease, visibility .28s ease !important;
+}
+.md-preloader::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: -20% !important;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 29%, rgba(255,255,255,.024) 49%, transparent 68%) !important;
+  opacity: 1 !important;
+  animation: md18-ambient 1.8s ease-in-out both !important;
+}
+.md-preloader-glow,
+.md-preloader-mark,
+.md-preloader-wordmark,
+.md-preloader-caption,
+.md-preloader-line,
+.md-preloader-stage::before,
+.md-preloader-stage::after { display: none !important; }
+.md-preloader-stage {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: min(1100px, 94vw) !important;
+  min-height: 320px !important;
+  padding: 24px 0 !important;
+}
+.md-preloader-symbols {
+  width: 210px !important;
+  height: 95px !important;
+  position: relative !important;
+  overflow: visible !important;
+  margin: 0 0 32px !important;
+  flex: 0 0 auto !important;
+}
+.md-preloader-final {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 210px !important;
+  height: 95px !important;
+  min-width: 0 !important;
+  max-width: 210px !important;
+  max-height: 95px !important;
+  object-fit: contain !important;
+  image-rendering: auto !important;
+  filter: none !important;
+  opacity: 0;
+  animation: md18-logo 1.02s cubic-bezier(.2,.72,.2,1) both !important;
+  backface-visibility: hidden;
+}
+.md-preloader-tagline {
+  width: 100%;
+  max-width: 1060px;
+  position: relative;
+  display: flex !important;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .12em .17em;
+  color: #f8f8f8;
+  text-align: center;
+  font: 900 clamp(30px, 4.75vw, 66px)/.98 "Barlow Condensed", Impact, "Arial Narrow", sans-serif !important;
+  letter-spacing: -.038em;
+  text-transform: uppercase;
+}
+.md-preloader-token {
+  display: inline-flex !important;
+  position: relative;
+  overflow: hidden;
+  padding: .06em .015em .13em;
+  margin: -.06em -.015em -.13em;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.md-preloader-token > span {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0,115%,0) rotate(4deg);
+  transform-origin: 0 100%;
+  animation: md18-word .7s cubic-bezier(.15,.8,.2,1) both;
+  will-change: transform,opacity;
+}
+.md-preloader-token:nth-child(1) > span { animation-delay: .22s; }
+.md-preloader-token:nth-child(2) > span { animation-delay: .38s; }
+.md-preloader-token:nth-child(3) > span { animation-delay: .57s; }
+.md-preloader-token:nth-child(4) > span { animation-delay: .75s; }
+.md-preloader-token--outline > span {
+  color: transparent !important;
+  -webkit-text-stroke: 1.15px rgba(255,255,255,.94);
+}
+.md-preloader-token--red > span {
+  color: #ff1010;
+  background: linear-gradient(108deg,#f00 0%,#f00 35%,#fff0f0 49%,#ff1515 59%,#f00 75%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation:
+    md18-word .7s cubic-bezier(.15,.8,.2,1) .38s both,
+    md18-red-sweep 1.05s ease-in-out .93s both;
+}
+.md-preloader-token--white > span { color: #f7f7f7; }
+.md-preloader-progress {
+  position: relative !important;
+  width: min(520px,72vw) !important;
+  height: 2px !important;
+  margin: 33px 0 0 !important;
+  overflow: hidden !important;
+  background: rgba(255,255,255,.13) !important;
+  opacity: 0;
+  animation: md18-progress-visible .3s ease .46s both;
+}
+.md-preloader-progress > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #f00;
+  transform-origin: left;
+  animation: md18-progress 1.48s cubic-bezier(.2,.7,.18,1) .22s both;
+}
+@keyframes md18-logo {
+  0% { opacity: 0; transform: translate3d(0,16px,0); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: translate3d(0,0,0); }
+}
+@keyframes md18-word {
+  0% { opacity: 0; transform: translate3d(0,115%,0) rotate(4deg); }
+  100% { opacity: 1; transform: translate3d(0,0,0) rotate(0); }
+}
+@keyframes md18-red-sweep {
+  0% { background-position: 110% 0; }
+  100% { background-position: -55% 0; }
+}
+@keyframes md18-progress-visible { to { opacity: 1; } }
+@keyframes md18-progress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@keyframes md18-ambient {
+  0% { transform: translateX(-9%); opacity: .4; }
+  100% { transform: translateX(8%); opacity: .85; }
+}
+@media(max-width:650px) {
+  .md-preloader-stage { min-height: 315px !important; }
+  .md-preloader-symbols { width: 205px !important; height: 93px !important; margin-bottom: 25px !important; }
+  .md-preloader-final { width: 205px !important; height: 93px !important; max-width: 205px !important; max-height: 93px !important; }
+  .md-preloader-tagline { max-width: 355px; font-size: clamp(29px,8.5vw,42px) !important; gap: .09em .15em; }
+  .md-preloader-progress { width: min(315px,75vw) !important; margin-top: 26px !important; }
+}
+@media(max-width:380px) {
+  .md-preloader-tagline { max-width: 310px; font-size: 30px !important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .md-preloader::before { animation: none !important; }
+  .md-preloader-final, .md-preloader-token > span, .md-preloader-progress,
+  .md-preloader-progress > span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .md-preloader-token--red > span { background: none !important; -webkit-text-fill-color: #f00 !important; }
+}
