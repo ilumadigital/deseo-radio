@@ -5,6 +5,10 @@ declare(strict_types=1);
  * Production homepage renderer. Called only by index.php.
  * Uses the canonical SEO and structured data from includes/head-meta.php.
  */
+if (!defined('DESEO_HOME_ENTRY')) {
+    http_response_code(404);
+    exit;
+}
 $isProductionHome = true;
 
 require_once dirname(__DIR__) . '/includes/i18n.php';
