@@ -21,7 +21,13 @@ $meta_image_version = is_file($meta_image_path) ? (int)filemtime($meta_image_pat
 $meta_image = $meta_image ?? ('https://deseoradio.com/assets/img/deseoradio-seo-branded.png?v=' . $meta_image_version);
 $meta_image_alt = $meta_image_alt ?? 'Deseo Radio — Το Soundtrack της ζωής σου';
 $faviconPath = __DIR__ . '/../assets/img/favicon.png';
-$faviconVersion = is_file($faviconPath) ? (int)filemtime($faviconPath) : 1;
+$faviconHash = is_file($faviconPath) ? hash_file('sha256', $faviconPath) : false;
+$faviconVersion = $faviconHash ? substr($faviconHash, 0, 16) : '20261010';
+if (!isset($brandLogoUrl)) {
+    $brandLogoPath = __DIR__ . '/../assets/img/deseoradio-logo.png';
+    $brandLogoHash = is_file($brandLogoPath) ? hash_file('sha256', $brandLogoPath) : false;
+    $brandLogoUrl = '/assets/img/deseoradio-logo.png?v=' . ($brandLogoHash ? substr($brandLogoHash, 0, 16) : 's6-20261010');
+}
 $private_page = !empty($private_page);
 $deseo_home_redesign = !empty($deseo_home_redesign);
 $extra_styles = isset($extra_styles) && is_array($extra_styles) ? $extra_styles : [];
@@ -44,7 +50,9 @@ foreach ($extra_styles as $extraStyle) {
 }
 
 if (!headers_sent()) {
-    header('Cache-Control: no-cache, must-revalidate');
+    header($deseo_home_redesign
+        ? 'Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0'
+        : 'Cache-Control: no-cache, must-revalidate');
     header('Pragma: no-cache');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
@@ -385,7 +393,7 @@ if (isset($live_dj) && is_array($live_dj) && trim((string)($live_dj['dj_name'] ?
 
     <?php if ($deseo_home_redesign): ?>
     <link rel="preconnect" href="https://radios.iluma.gr" crossorigin>
-    <link rel="preload" href="/assets/img/deseoradio-logo.png" as="image" fetchpriority="high">
+    <link rel="preload" href="<?= deseo_e($brandLogoUrl) ?>" as="image" fetchpriority="high">
     <link rel="stylesheet" href="/assets/css/home.css?v=<?= $assetVersion ?>">
     <?php else: ?>
     <link rel="preload" href="/assets/img/bg.png?v=<?= $assetVersion ?>" as="image">
