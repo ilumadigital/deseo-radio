@@ -1,7 +1,7 @@
 <header class="site-header" id="top">
     <div class="wide-shell header-bar">
         <a class="header-logo" href="/" aria-label="<?= deseo_e(deseo_t('header.home')) ?>" data-i18n-aria="header.home">
-            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+            <img src="<?= deseo_e($brandLogoUrl) ?>" alt="Deseo Radio" width="220" height="62">
         </a>
 
         <div class="header-actions">
