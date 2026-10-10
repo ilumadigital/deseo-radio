@@ -1670,12 +1670,6 @@ html[lang=el] .md-player-square-label{font-family:'Google Sans','Google Sans Fle
   box-shadow:0 20px 65px rgba(0,0,0,.8)
 }
 #md-player-dock[hidden]{display:none!important}
-.md-dock-top{min-height:36px;padding:8px 15px;border-bottom:1px solid rgba(255,255,255,.13);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;color:white}
-.md-dock-top>span{display:flex;align-items:center;gap:10px;font:800 11px 'Barlow',Arial,sans-serif;letter-spacing:.12em}
-.md-dock-top .md-dot{width:7px;height:7px}
-.md-dock-expand{width:29px;height:29px;border:1px solid rgba(255,255,255,.45);border-radius:50%;display:grid;place-items:center;font-size:18px}
-.md-dock-expand:hover{background:#ff0000;border-color:#ff0000}
 .md-dock-body{display:grid;grid-template-columns:minmax(0,1fr) 99px;gap:13px;align-items:center;padding:12px 13px}
 .md-dock-program{display:flex;align-items:center;gap:13px;min-width:0}
 .md-dock-program>img{display:block;width:86px;height:86px;object-fit:cover;aspect-ratio:1/1;border-radius:8px;flex:0 0 auto}
@@ -2183,11 +2177,6 @@ html[lang="el"] .md-ai-wrap #ai-discovery-title{
   transform-origin:right center;
 }
 .md-header-live .md-ui-arrow{margin-left:4px}
-.md-dock-expand .md-ui-arrow{
-  color:#fff;
-  width:11px!important;height:11px!important;
-  transform:translate(1px,1px);
-}
 .md-partner-arrow.md-ui-arrow{
   position:absolute;right:15px;top:15px;
   color:#ff0000;
@@ -4389,3 +4378,106 @@ html.md-motion-enabled .ai-discovery-card.is-visible:hover{transform:translateY(
 .cookie-options label{display:inline-flex;gap:7px;align-items:center;font-size:12px;color:#f1f1f1}
 .cookie-options input{accent-color:#f00}
 @media(max-width:520px){.cookie-banner{padding:17px 15px;gap:10px;bottom:max(9px,env(safe-area-inset-bottom))}.cookie-actions{gap:7px}.cookie-actions button{padding:9px 10px}}
+
+/* Season 6: dock is just the live-program/sponsor card (no heading/arrow). */
+#md-player-dock .md-dock-body {
+  padding: clamp(10px, 1.1vw, 15px);
+}
+@media (max-width:600px) {
+  #md-player-dock .md-dock-body { padding: 10px; }
+}
+
+/* Branded secondary-click quick navigation: scoped to shared homepage. */
+.deseo-context-menu {
+  position: fixed;
+  z-index: 11020;
+  top: 0;
+  left: 0;
+  width: min(304px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 15px;
+  background: linear-gradient(146deg, rgba(33,30,32,.98), rgba(9,9,11,.98));
+  color: #f6f5f4;
+  box-shadow: 0 20px 65px rgba(0,0,0,.75), 0 0 0 1px rgba(255,0,0,.05) inset;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: 'Barlow', Arial, sans-serif;
+}
+.deseo-context-menu[hidden] { display: none !important; }
+.deseo-context-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 0 6px 9px;
+  border-bottom: 1px solid rgba(255,255,255,.13);
+}
+.deseo-context-head > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 800 12px/1.2 'Barlow', Arial, sans-serif;
+  letter-spacing: .07em;
+}
+.deseo-context-head small {
+  color: #ff2626;
+  font: 800 9px/1.2 'Barlow', Arial, sans-serif;
+  letter-spacing: .12em;
+}
+.deseo-context-head .md-dot { width: 6px; height: 6px; }
+.deseo-context-close {
+  width: 30px; height: 30px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font: 500 20px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+.deseo-context-close:hover, .deseo-context-close:focus-visible {
+  background: #f00;
+  border-color: #f00;
+}
+.deseo-context-links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  padding: 8px 0;
+}
+.deseo-context-links a {
+  display: flex;
+  align-items: center;
+  min-height: 31px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: 800 11px/1.25 'Barlow', Arial, sans-serif;
+  letter-spacing: .065em;
+  color: #dcd9d8;
+  text-decoration: none;
+  transition: color .14s, background-color .14s, border-color .14s;
+}
+.deseo-context-links a:hover, .deseo-context-links a:focus-visible {
+  background: rgba(255,0,0,.13);
+  border-color: rgba(255,0,0,.27);
+  color: #fff;
+  outline-offset: 1px;
+}
+.deseo-context-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 10px 8px 2px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  color: #8d8989;
+  font: 800 9px/1.2 'Barlow', Arial, sans-serif;
+  letter-spacing: .11em;
+}
+.deseo-context-foot span { color: #f00; }
+@media (prefers-reduced-motion: reduce) {
+  .deseo-context-links a { transition: none; }
+}
