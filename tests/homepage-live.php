@@ -68,4 +68,29 @@ if (!str_contains($feedSource, "'today' => \$todayFeed") ||
   fwrite(STDERR, "The existing public program_feed shape must remain accessible\n");
   exit(1);
 }
+/* Minimal floating Now On Air dock + responsive branded context menu. */
+if (!str_contains($html, 'id="md-player-dock"') ||
+    !str_contains($html, 'class="md-dock-body"') ||
+    str_contains($html, 'DESEO / NOW ON AIR') ||
+    str_contains($html, 'class="md-dock-expand"') ||
+    str_contains($html, 'class="md-dock-top"') ||
+    substr_count($html, 'id="deseo-context-menu"') !== 1 ||
+    !str_contains($html, '/assets/js/home-context-menu.js?v=') ||
+    !str_contains($html, 'href="#schedule"') ||
+    !str_contains($html, 'href="#ask-ai"') ||
+    !str_contains($html, 'href="#listen-everywhere"')) {
+    fwrite(STDERR, "Dock heading, branded context navigation, or integration regression\n");
+    exit(1);
+}
+$contextJs = (string)file_get_contents(dirname(__DIR__) . '/assets/js/home-context-menu.js');
+$homeCss = (string)file_get_contents(dirname(__DIR__) . '/assets/css/home.css');
+if (!str_contains($contextJs, "document.addEventListener('contextmenu'") ||
+    !str_contains($contextJs, "document.addEventListener('keydown'") ||
+    !str_contains($contextJs, "['copy', 'cut', 'paste']") ||
+    !str_contains($contextJs, 'if (editable(event.target)) return;') ||
+    !str_contains($homeCss, '.deseo-context-menu[hidden]') ||
+    !str_contains($homeCss, '#md-player-dock .md-dock-body')) {
+    fwrite(STDERR, "Context-menu or shortcut deterrent assets missing\n");
+    exit(1);
+}
 echo "Production home: SEO canonicals/OG/hreflang/JSON-LD, CMS content, Signal, consent and legacy feed OK\n";
