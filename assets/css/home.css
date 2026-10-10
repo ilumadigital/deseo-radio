@@ -3397,18 +3397,24 @@ html.md-motion-enabled .ai-discovery-card.is-visible:hover{transform:translateY(
 }
 @media(max-width:760px){
   #md-dj-dialog{
-    width:min(520px,calc(100vw - 26px))!important;
-    max-width:520px!important;
-    max-height:calc(100dvh - 32px)!important;
+    width:min(540px,calc(100vw - 18px))!important;
+    max-width:540px!important;
+    max-height:calc(100dvh - 18px)!important;
     overflow-y:auto!important;
     overflow-x:hidden!important;
+    overscroll-behavior:contain;
   }
   #md-dj-dialog[open]{display:block!important}
   #md-dj-dialog>img{
-    height:clamp(170px,27dvh,285px)!important;
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    aspect-ratio:3 / 4!important;
     min-height:0!important;
-    max-height:285px!important;
-    object-position:center 27%;
+    max-height:none!important;
+    object-fit:cover!important;
+    object-position:center 20%!important;
+    background:#100e10;
   }
   #md-dj-dialog>.md-dj-details{
     max-height:none!important;
