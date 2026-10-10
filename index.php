@@ -17,4 +17,5 @@ if (($_GET['program_feed'] ?? '') === '1') {
     exit;
 }
 
+define('DESEO_HOME_ENTRY', true);
 require __DIR__ . '/includes/homepage.php';
