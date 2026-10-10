@@ -1,7 +1,7 @@
 <footer class="site-footer">
     <div class="wide-shell footer-main">
         <div class="footer-brand">
-            <img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="220" height="62">
+            <img src="<?= deseo_e($brandLogoUrl) ?>" alt="Deseo Radio" width="220" height="62">
             <p class="metal-title footer-tagline" data-i18n="footer.tagline"><?= deseo_e(deseo_t('footer.tagline')) ?></p>
             <div class="footer-brand-actions">
                 <a class="footer-iluma" href="https://iluma.gr/radios" target="_blank" rel="noopener noreferrer" data-analytics-event="iluma_network_click">ILUMA RADIOS</a>
