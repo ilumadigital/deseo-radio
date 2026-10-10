@@ -4,7 +4,7 @@ Options -MultiViews
 <IfModule mod_rewrite.c>
     RewriteEngine On
     # Retired design preview: permanently consolidate onto the canonical homepage.
-    RewriteRule ^mydemo(?:\\.php)?/?$ / [R=301,L,NE]
+    RewriteRule ^mydemo(?:\.php)?/?$ / [R=301,L,NE]
     # DJ application form: canonical slug is /dj
     RewriteCond %{THE_REQUEST} \s/+djs(?:\.php)?[?\s] [NC]
     RewriteRule ^djs(?:\.php)?$ /dj [R=301,L]
