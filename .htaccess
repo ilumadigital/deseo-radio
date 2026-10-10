@@ -3,8 +3,8 @@ Options -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # /mydemo is an isolated noindex preview; / is the production redesign.
-    RewriteRule ^mydemo/?$ mydemo.php [L,QSA]
+    # Retired design preview: permanently consolidate onto the canonical homepage.
+    RewriteRule ^mydemo(?:\\.php)?/?$ / [R=301,L,NE]
     # DJ application form: canonical slug is /dj
     RewriteCond %{THE_REQUEST} \s/+djs(?:\.php)?[?\s] [NC]
     RewriteRule ^djs(?:\.php)?$ /dj [R=301,L]
