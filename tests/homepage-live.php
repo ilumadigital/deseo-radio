@@ -164,19 +164,19 @@ if (!preg_match('~<div class="deseo-context-links">(.*?)</div>~s', $html, $conte
     fwrite(STDERR, "Context section navigation order is inconsistent\n");
     exit(1);
 }
-/* DJ modal must show a generous portrait on phones, preserving 3:4 ratio,
+/* DJ modal must show a generous landscape photo on phones, preserving 4:3 ratio,
    normal scrolling for smaller viewports, and responsive desktop grid. */
 $mobileModalStyles = (string)file_get_contents(dirname(__DIR__) . '/assets/css/home.css');
 $profileJs = (string)file_get_contents(dirname(__DIR__) . '/assets/js/home.js');
 if (!preg_match('~@media\\s*\\(max-width:760px\\)[\\s\\S]*?#md-dj-dialog>img\\s*\\{([^}]+)\\}~', $mobileModalStyles, $photoRules) ||
-    !str_contains($photoRules[1], 'aspect-ratio:3 / 4!important;') ||
+    !str_contains($photoRules[1], 'aspect-ratio:4 / 3!important;') ||
     !str_contains($photoRules[1], 'height:auto!important;') ||
     !str_contains($photoRules[1], 'max-height:none!important;') ||
     !str_contains($photoRules[1], 'object-fit:cover!important;') ||
     !str_contains($mobileModalStyles, 'max-height:calc(100dvh - 18px)!important;') ||
     !str_contains($profileJs, "image.loading = 'eager';") ||
     !str_contains($profileJs, "image.fetchPriority = 'high';")) {
-    fwrite(STDERR, "Mobile DJ profile portrait or modal overflow regression\n");
+    fwrite(STDERR, "Mobile DJ profile 4:3 photo or modal overflow regression\n");
     exit(1);
 }
 echo "Production home: SEO canonicals/OG/hreflang/JSON-LD, CMS content, Signal, consent and legacy feed OK\n";
