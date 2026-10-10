@@ -391,9 +391,6 @@ else: ?>
 </section>
 
 <div id="md-player-dock" class="md-dock" hidden>
-  <div class="md-dock-top"><span><i class="md-dot"></i> DESEO / NOW ON AIR</span>
-    <a href="#player" class="md-dock-expand" aria-label="<?= $en ? 'Back to live player' : 'Επιστροφή στον player' ?>"><span class="md-ui-arrow" aria-hidden="true"></span></a>
-  </div>
   <div class="md-dock-body">
     <a href="#player" class="md-dock-program">
       <img id="md-dock-photo" src="<?= demo_e($liveShow['photo'] ?? '/assets/img/bg.png') ?>" alt=""
@@ -639,6 +636,30 @@ else: ?>
 </main>
 
 <?php require __DIR__ . '/includes/home-footer.php'; ?>
+<?php /* Branded navigation on secondary-click: links follow the live homepage anchors. */ ?>
+<nav id="deseo-context-menu" class="deseo-context-menu" role="menu"
+     aria-label="<?= $en ? 'Deseo Radio quick navigation' : 'Γρήγορη πλοήγηση Deseo Radio' ?>" hidden>
+  <div class="deseo-context-head">
+    <span><i class="md-dot" aria-hidden="true"></i> DESEO RADIO <small>QUICK NAV</small></span>
+    <button type="button" class="deseo-context-close" aria-label="<?= $en ? 'Close quick menu' : 'Κλείσιμο γρήγορου μενού' ?>">×</button>
+  </div>
+  <div class="deseo-context-links">
+    <a role="menuitem" href="#player"><?= $en ? 'LISTEN LIVE' : 'ΑΚΟΥ LIVE' ?></a>
+    <a role="menuitem" href="#live"><?= $en ? 'ON AIR NOW' : 'ΣΤΟΝ ΑΕΡΑ' ?></a>
+    <a role="menuitem" href="#listen-everywhere"><?= $en ? 'LISTEN EVERYWHERE' : 'ΑΚΟΥ ΠΑΝΤΟΥ' ?></a>
+    <a role="menuitem" href="#about"><?= $en ? 'ABOUT DESEO' : 'ABOUT DESEO' ?></a>
+    <a role="menuitem" href="#lineup">SEASON 6 LINEUP</a>
+    <a role="menuitem" href="#schedule"><?= $en ? 'WEEKLY PROGRAM' : 'ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ' ?></a>
+    <a role="menuitem" href="#tracks">RELEASE RADAR</a>
+    <a role="menuitem" href="#playlists">PLAYLISTS</a>
+    <a role="menuitem" href="#shows">RADIOSHOWS</a>
+    <a role="menuitem" href="#faq">FAQ</a>
+    <a role="menuitem" href="#ask-ai">ASK AI</a>
+    <a role="menuitem" href="#contact"><?= $en ? 'CONTACT' : 'ΕΠΙΚΟΙΝΩΝΙΑ' ?></a>
+  </div>
+  <div class="deseo-context-foot">THE SOUNDTRACK OF YOUR LIFE <span aria-hidden="true">↗</span></div>
+</nav>
+<script src="/assets/js/home-context-menu.js?v=<?= is_file(__DIR__ . '/assets/js/home-context-menu.js') ? (int)filemtime(__DIR__ . '/assets/js/home-context-menu.js') : 1 ?>" defer></script>
 <dialog id="md-dj-dialog" aria-labelledby="md-dialog-title">
   <button type="button" id="md-dialog-close" aria-label="<?= demo_e($copy['dj_close']) ?>">×</button>
   <img id="md-dialog-photo" alt="" loading="lazy" decoding="async">
