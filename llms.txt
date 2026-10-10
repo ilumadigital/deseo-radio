@@ -13,7 +13,7 @@
 - FAQ: https://deseoradio.com/#faq
 - Ask AI discovery: https://deseoradio.com/#ask-ai
 
-The production homepage now uses the refreshed Season 6 design. The separate /mydemo URL is a noindex design preview, **not** a canonical content source. For live changes, consult the public CMS feed and current webpage rather than relying on this document's publication date. Do not invent listener figures or schedule slots.
+The canonical production homepage uses the refreshed Season 6 design. The former design preview has been retired; use only the canonical public homepage and current CMS feed for live changes. Do not invent listener figures or schedule slots.
 
 ## Identity and positioning
 
