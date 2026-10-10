@@ -54,25 +54,24 @@ jobs:
           set -euo pipefail
           php tests/hearthis-artwork-preview.php
 
-      - name: Isolated /mydemo smoke contract
-        run: php tests/mydemo-smoke.php
-
       - name: Production homepage SEO and AI schema contract
         run: php tests/homepage-live.php
 
       - name: JavaScript syntax
         run: |
           node --check sw.js
-          node --check assets/js/mydemo.js
-          node --check assets/js/mydemo-menu.js
-          node --check assets/js/mydemo-player.js
-          node --check assets/js/mydemo-cursor.js
+          node --check assets/js/home.js
+          node --check assets/js/home-context-menu.js
 
       - name: Critical files
         shell: bash
         run: |
           set -euo pipefail
           test -f index.php
+          test -f includes/homepage.php
+          test -f assets/css/home.css
+          test -f assets/js/home.js
+          test ! -f mydemo.php
           test -f assets/css/style.css
           test -f iluma/connection.php
           test -f iluma/db.php
