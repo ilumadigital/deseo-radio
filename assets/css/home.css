@@ -3409,7 +3409,7 @@ html.md-motion-enabled .ai-discovery-card.is-visible:hover{transform:translateY(
     display:block!important;
     width:100%!important;
     height:auto!important;
-    aspect-ratio:3 / 4!important;
+    aspect-ratio:4 / 3!important;
     min-height:0!important;
     max-height:none!important;
     object-fit:cover!important;
