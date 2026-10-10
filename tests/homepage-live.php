@@ -121,4 +121,47 @@ if (!str_contains($worker, 'deseo-static-v10') ||
     fwrite(STDERR, "PWA cache, retired preview redirect or brand version contract broken\n");
     exit(1);
 }
+/* Homepage editorial order: player > program > artists > radar > playlists
+   > platforms, then all remaining sections in their previous relative order. */
+$orderedSections = [
+    '<section class="md-hero" id="home">',
+    '<section class="md-section md-schedule" id="schedule">',
+    '<section class="md-section md-season" id="lineup">',
+    '<section class="md-section md-tracks" id="tracks">',
+    '<section class="md-section md-playlists" id="playlists">',
+    '<section class="md-section md-listen-everywhere" id="listen-everywhere">',
+    '<section class="md-section md-about-experience" id="about">',
+    '<div class="md-marquee"',
+    '<section class="md-section md-shows" id="shows">',
+    '<section class="md-manifesto"',
+    '<section class="md-section md-faq-section" id="faq">',
+    '<div class="md-ai-wrap">',
+];
+$lastOffset = -1;
+foreach ($orderedSections as $marker) {
+    $offset = strpos($html, $marker);
+    if ($offset === false || $offset <= $lastOffset || substr_count($html, $marker) !== 1) {
+        fwrite(STDERR, "Homepage section order incorrect or duplicated: {$marker}\n");
+        exit(1);
+    }
+    $lastOffset = $offset;
+}
+if (!preg_match('~<nav class="md-fs-menu-links"[^>]*>(.*?)</nav>~s', $html, $menuMatch) ||
+    !preg_match_all('~href="([^"]+)"~', $menuMatch[1], $menuLinks) ||
+    $menuLinks[1] !== [
+        '#player', '#schedule', '#lineup', '#tracks', '#playlists',
+        '#listen-everywhere', '#about', '#shows', '#faq', 'mailto:radio@iluma.gr',
+    ]) {
+    fwrite(STDERR, "Fullscreen section navigation order is inconsistent\n");
+    exit(1);
+}
+if (!preg_match('~<div class="deseo-context-links">(.*?)</div>~s', $html, $contextMatch) ||
+    !preg_match_all('~href="([^"]+)"~', $contextMatch[1], $contextLinks) ||
+    $contextLinks[1] !== [
+        '#player', '#live', '#schedule', '#lineup', '#tracks', '#playlists',
+        '#listen-everywhere', '#about', '#shows', '#faq', '#ask-ai', '#contact',
+    ]) {
+    fwrite(STDERR, "Context section navigation order is inconsistent\n");
+    exit(1);
+}
 echo "Production home: SEO canonicals/OG/hreflang/JSON-LD, CMS content, Signal, consent and legacy feed OK\n";
