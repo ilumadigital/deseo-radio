@@ -99,6 +99,9 @@
           bio.hidden = !profile.bio;
         }
         if (image) {
+          // Photo loads only when the profile opens, then receives high priority.
+          image.loading = 'eager';
+          image.fetchPriority = 'high';
           image.src = typeof profile.photo === 'string' && (profile.photo[0] === '/' || allowedUrl(profile.photo))
             ? profile.photo : '/assets/img/bg.png';
           image.alt = profile.name || '';
