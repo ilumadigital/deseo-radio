@@ -377,6 +377,122 @@ $live_dj = $live['row'] ?? null;
   </div>
 </div>
 
+<section class="md-section md-schedule" id="schedule"><span id="program" class="md-anchor-alias" aria-hidden="true"></span>
+  <div class="md-shell">
+    <div class="md-section-top"><span class="md-index">THE PROGRAM</span><span>TIMEZONE / EUROPE — ATHENS</span></div>
+    <div class="md-section-heading"><h2><?= demo_e($copy['schedule']) ?><span class="md-period">.</span></h2><p><?= demo_e($copy['schedule_sub']) ?></p></div>
+    <div class="md-day-tabs" role="tablist" aria-label="<?= demo_e($copy['schedule']) ?>">
+      <?php foreach ($days as $dayNumber => $dayNames): ?>
+        <button id="md-tab-<?= $dayNumber ?>" type="button" class="md-day-tab <?= $dayNumber === $activeDay ? 'is-active' : '' ?>" role="tab" aria-controls="md-panel-<?= $dayNumber ?>" aria-selected="<?= $dayNumber === $activeDay ? 'true' : 'false' ?>" tabindex="<?= $dayNumber === $activeDay ? '0' : '-1' ?>" data-day="<?= $dayNumber ?>" aria-label="<?= demo_e($dayNames[1]) ?>"><?= demo_e($dayNames[0]) ?></button>
+      <?php endforeach; ?>
+    </div>
+    <div class="md-program-panels">
+      <?php foreach ($days as $dayNumber => $dayNames): ?>
+      <div id="md-panel-<?= $dayNumber ?>" class="md-program-panel" role="tabpanel" aria-labelledby="md-tab-<?= $dayNumber ?>" <?= $dayNumber !== $activeDay ? 'hidden' : '' ?>>
+        <?php if (!$showsByDay[$dayNumber]): ?>
+        <div class="md-empty"><span>∞</span><strong><?= demo_e($copy['nonstop']) ?></strong><p><?= demo_e($copy['empty_program']) ?></p><a href="#player"><?= demo_e($copy['listen']) ?> <span class="md-ui-arrow" aria-hidden="true"></span></a></div>
+        <?php else: ?>
+          <div class="md-show-grid">
+          <?php foreach ($showsByDay[$dayNumber] as $slot):
+            $profile = $profiles[(int)($slot['mylive_account_id'] ?? 0)] ?? null;
+            $isLive = $liveShow && (int)$liveShow['id'] === (int)$slot['id'];
+            $picture = demo_photo($slot['photo_path'] ?? '');
+            $profileJson = $profile ? json_encode([
+                'name' => (string)$slot['dj_name'],
+                'photo' => $picture,
+                'bio' => (string)($profile['bio'] ?? ''),
+                'links' => array_filter([
+                    'Instagram' => demo_url($profile['instagram'] ?? ''),
+                    'TikTok' => demo_url($profile['tiktok'] ?? ''),
+                    'SoundCloud' => demo_url($profile['soundcloud'] ?? ''),
+                    'Spotify' => demo_url($profile['spotify'] ?? ''),
+                    'Website' => demo_url($profile['website'] ?? ''),
+                ]),
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '';
+          ?>
+            <<?= $profile ? 'button' : 'article' ?> class="md-show-card <?= $isLive ? 'is-live' : '' ?>" <?= $profile ? 'type="button" data-profile="' . demo_e($profileJson) . '" aria-label="' . demo_e($copy['read_more'] . ': ' . $slot['dj_name']) . '"' : '' ?>>
+              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" decoding="async" fetchpriority="low" width="360" height="360" onerror="this.onerror=null;this.src='/assets/img/bg.png'"></div>
+              <div class="md-show-details">
+                 <?php if ($isLive): ?><span class="md-show-status">● ON AIR</span><?php endif; ?>
+                 <h3><?= demo_e($slot['dj_name']) ?></h3>
+                 <div class="md-show-hours"><?= demo_clock($slot['start_time']) ?> — <?= demo_clock($slot['end_time']) ?> <small>ATHENS TIME</small></div>
+                 <small>DESEO RADIOSHOW</small>
+               </div>
+            </<?= $profile ? 'button' : 'article' ?>>
+          <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section class="md-section md-season" id="lineup"><span id="season-6" class="md-anchor-alias" aria-hidden="true"></span>
+  <div class="md-shell">
+    <div class="md-section-top"><span class="md-index">THE ARTISTS</span><span>SEASON 06 — 2026</span></div>
+    <div class="md-section-heading"><h2>NOT JUST DJs.<br><em>CULTURE MAKERS.</em></h2><p><?= demo_e($copy['lineup_sub']) ?></p></div>
+    <div class="md-season-banner">
+      <div class="md-season-info">
+        <span class="md-tag">DESEO RADIO / SEASON 06</span>
+        <p><?= demo_e($copy['premiere']) ?></p>
+        <div id="md-season-countdown" data-start="<?= $seasonStart->getTimestamp() ?>" data-ended="<?= demo_e($copy['launched']) ?>">
+          <div class="md-timebox"><strong data-counter="days">--</strong><span>DAYS</span></div><div class="md-timebox"><strong data-counter="hours">--</strong><span>HOURS</span></div><div class="md-timebox"><strong data-counter="minutes">--</strong><span>MINUTES</span></div>
+        </div>
+        <a href="#schedule" class="md-text-link"><?= demo_e($copy['schedule']) ?> <span class="md-ui-arrow" aria-hidden="true"></span></a>
+      </div>
+      <div class="md-season-art" aria-label="Season 6 official lineup artwork">
+        <span class="md-season-vertical" aria-hidden="true">SOUND CULTURE / ATHENS</span>
+        <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy" decoding="async" fetchpriority="low" width="1100" height="1100">
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="md-section md-tracks" id="tracks">
+  <div class="md-shell">
+    <div class="md-section-top"><span class="md-index">MUSIC DISCOVERY</span><span>THE DESEO SELECTION</span></div>
+    <div class="md-section-heading"><h2>RELEASE RADAR<br><em>DISCOVERY.</em></h2><p><?= demo_e($copy['tracks_sub']) ?></p></div>
+    <div class="md-track-list">
+      <?php if (!$tracks): ?><p class="md-list-empty"><?= demo_e($copy['empty_tracks']) ?></p><?php endif; ?>
+      <?php foreach ($tracks as $track):
+        $href = demo_url($track['spotify_url'] ?? '');
+        $cover = demo_url($track['artwork_url'] ?? '');
+      ?>
+      <div class="md-track-row">
+        <span class="md-track-number"><?= str_pad((string)(int)$track['position'], 2, '0', STR_PAD_LEFT) ?></span>
+        <div class="md-track-cover"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="96" height="96" onerror="this.style.display='none'"><?php endif; ?></div>
+        <div class="md-track-info"><strong><?= demo_e($track['track_name']) ?></strong><span><?= demo_e($track['artist_name']) ?></span></div>
+        <span class="md-track-category">HOT TRACK / DESEO</span>
+        <?php if ($href): ?><a class="md-circle-link" href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ' ' . $track['track_name']) ?>"><span class="md-ui-arrow" aria-hidden="true"></span></a><?php endif; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section class="md-section md-playlists" id="playlists">
+  <div class="md-shell">
+    <div class="md-section-top"><span class="md-index">DESEO CURATED</span><span>LISTEN BEYOND RADIO</span></div>
+    <div class="md-section-heading"><h2>CHOOSE<br><em>YOUR MOOD.</em></h2><p><?= demo_e($copy['playlists_sub']) ?></p></div>
+    <?php if (!$playlists): ?><p class="md-list-empty"><?= demo_e($copy['empty_playlists']) ?></p><?php endif; ?>
+    <div class="md-playlist-grid">
+      <?php foreach (array_slice($playlists, 0, 6) as $playlist):
+        $href = demo_url($playlist['spotify_url'] ?? '');
+        $cover = demo_url($playlist['artwork_url'] ?? '');
+      ?>
+      <div class="md-playlist">
+        <?php if ($href): ?><a href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ': ' . $playlist['title']) ?>"><?php endif; ?>
+          <div class="md-playlist-art"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="400" height="400" onerror="this.style.display='none'"><?php endif; ?><span class="md-playlist-arrow"><i class="md-ui-arrow" aria-hidden="true"></i></span></div>
+          <div class="md-playlist-meta"><span>DESEO SELECTION / <?= demo_e(str_pad((string)(int)($playlist['position'] ?? 0), 2, '0', STR_PAD_LEFT)) ?></span><strong><?= demo_e($playlist['title']) ?></strong></div>
+        <?php if ($href): ?></a><?php endif; ?>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
 <section class="md-section md-listen-everywhere" id="listen-everywhere" aria-labelledby="md-listen-title">
   <div class="md-shell">
     <div class="md-section-top"><span class="md-index">DESEO / LISTEN EVERYWHERE</span><span>THE SOUND GOES WITH YOU</span></div>
@@ -431,122 +547,6 @@ $live_dj = $live['row'] ?? null;
 
 
 <div class="md-marquee" aria-hidden="true"><div>DESEO RADIO <b>✦</b> SEASON 6 <b>✦</b> THE SOUNDTRACK OF YOUR LIFE <b>✦</b> ILUMA RADIOS <b>✦</b> GUEST DJ ZONE <b>✦</b> RESIDENT DJS <b>✦</b> DESEO RADIO <b>✦</b> SEASON 6 <b>✦</b> THE SOUNDTRACK OF YOUR LIFE <b>✦</b> ILUMA RADIOS <b>✦</b> GUEST DJ ZONE <b>✦</b> RESIDENT DJS <b>✦</b></div></div>
-
-<section class="md-section md-season" id="lineup"><span id="season-6" class="md-anchor-alias" aria-hidden="true"></span>
-  <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">THE ARTISTS</span><span>SEASON 06 — 2026</span></div>
-    <div class="md-section-heading"><h2>NOT JUST DJs.<br><em>CULTURE MAKERS.</em></h2><p><?= demo_e($copy['lineup_sub']) ?></p></div>
-    <div class="md-season-banner">
-      <div class="md-season-info">
-        <span class="md-tag">DESEO RADIO / SEASON 06</span>
-        <p><?= demo_e($copy['premiere']) ?></p>
-        <div id="md-season-countdown" data-start="<?= $seasonStart->getTimestamp() ?>" data-ended="<?= demo_e($copy['launched']) ?>">
-          <div class="md-timebox"><strong data-counter="days">--</strong><span>DAYS</span></div><div class="md-timebox"><strong data-counter="hours">--</strong><span>HOURS</span></div><div class="md-timebox"><strong data-counter="minutes">--</strong><span>MINUTES</span></div>
-        </div>
-        <a href="#schedule" class="md-text-link"><?= demo_e($copy['schedule']) ?> <span class="md-ui-arrow" aria-hidden="true"></span></a>
-      </div>
-      <div class="md-season-art" aria-label="Season 6 official lineup artwork">
-        <span class="md-season-vertical" aria-hidden="true">SOUND CULTURE / ATHENS</span>
-        <img src="/assets/img/season6%20lineup.png" alt="Deseo Radio Season 6 official lineup" loading="lazy" decoding="async" fetchpriority="low" width="1100" height="1100">
-
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="md-section md-schedule" id="schedule"><span id="program" class="md-anchor-alias" aria-hidden="true"></span>
-  <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">THE PROGRAM</span><span>TIMEZONE / EUROPE — ATHENS</span></div>
-    <div class="md-section-heading"><h2><?= demo_e($copy['schedule']) ?><span class="md-period">.</span></h2><p><?= demo_e($copy['schedule_sub']) ?></p></div>
-    <div class="md-day-tabs" role="tablist" aria-label="<?= demo_e($copy['schedule']) ?>">
-      <?php foreach ($days as $dayNumber => $dayNames): ?>
-        <button id="md-tab-<?= $dayNumber ?>" type="button" class="md-day-tab <?= $dayNumber === $activeDay ? 'is-active' : '' ?>" role="tab" aria-controls="md-panel-<?= $dayNumber ?>" aria-selected="<?= $dayNumber === $activeDay ? 'true' : 'false' ?>" tabindex="<?= $dayNumber === $activeDay ? '0' : '-1' ?>" data-day="<?= $dayNumber ?>" aria-label="<?= demo_e($dayNames[1]) ?>"><?= demo_e($dayNames[0]) ?></button>
-      <?php endforeach; ?>
-    </div>
-    <div class="md-program-panels">
-      <?php foreach ($days as $dayNumber => $dayNames): ?>
-      <div id="md-panel-<?= $dayNumber ?>" class="md-program-panel" role="tabpanel" aria-labelledby="md-tab-<?= $dayNumber ?>" <?= $dayNumber !== $activeDay ? 'hidden' : '' ?>>
-        <?php if (!$showsByDay[$dayNumber]): ?>
-        <div class="md-empty"><span>∞</span><strong><?= demo_e($copy['nonstop']) ?></strong><p><?= demo_e($copy['empty_program']) ?></p><a href="#player"><?= demo_e($copy['listen']) ?> <span class="md-ui-arrow" aria-hidden="true"></span></a></div>
-        <?php else: ?>
-          <div class="md-show-grid">
-          <?php foreach ($showsByDay[$dayNumber] as $slot):
-            $profile = $profiles[(int)($slot['mylive_account_id'] ?? 0)] ?? null;
-            $isLive = $liveShow && (int)$liveShow['id'] === (int)$slot['id'];
-            $picture = demo_photo($slot['photo_path'] ?? '');
-            $profileJson = $profile ? json_encode([
-                'name' => (string)$slot['dj_name'],
-                'photo' => $picture,
-                'bio' => (string)($profile['bio'] ?? ''),
-                'links' => array_filter([
-                    'Instagram' => demo_url($profile['instagram'] ?? ''),
-                    'TikTok' => demo_url($profile['tiktok'] ?? ''),
-                    'SoundCloud' => demo_url($profile['soundcloud'] ?? ''),
-                    'Spotify' => demo_url($profile['spotify'] ?? ''),
-                    'Website' => demo_url($profile['website'] ?? ''),
-                ]),
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '';
-          ?>
-            <<?= $profile ? 'button' : 'article' ?> class="md-show-card <?= $isLive ? 'is-live' : '' ?>" <?= $profile ? 'type="button" data-profile="' . demo_e($profileJson) . '" aria-label="' . demo_e($copy['read_more'] . ': ' . $slot['dj_name']) . '"' : '' ?>>
-              <div class="md-show-photo"><img src="<?= demo_e($picture) ?>" alt="<?= demo_e($slot['dj_name']) ?>" loading="lazy" decoding="async" fetchpriority="low" width="360" height="360" onerror="this.onerror=null;this.src='/assets/img/bg.png'"></div>
-              <div class="md-show-details">
-                 <?php if ($isLive): ?><span class="md-show-status">● ON AIR</span><?php endif; ?>
-                 <h3><?= demo_e($slot['dj_name']) ?></h3>
-                 <div class="md-show-hours"><?= demo_clock($slot['start_time']) ?> — <?= demo_clock($slot['end_time']) ?> <small>ATHENS TIME</small></div>
-                 <small>DESEO RADIOSHOW</small>
-               </div>
-            </<?= $profile ? 'button' : 'article' ?>>
-          <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-      </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-
-<section class="md-section md-tracks" id="tracks">
-  <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">MUSIC DISCOVERY</span><span>THE DESEO SELECTION</span></div>
-    <div class="md-section-heading"><h2>RELEASE RADAR<br><em>DISCOVERY.</em></h2><p><?= demo_e($copy['tracks_sub']) ?></p></div>
-    <div class="md-track-list">
-      <?php if (!$tracks): ?><p class="md-list-empty"><?= demo_e($copy['empty_tracks']) ?></p><?php endif; ?>
-      <?php foreach ($tracks as $track):
-        $href = demo_url($track['spotify_url'] ?? '');
-        $cover = demo_url($track['artwork_url'] ?? '');
-      ?>
-      <div class="md-track-row">
-        <span class="md-track-number"><?= str_pad((string)(int)$track['position'], 2, '0', STR_PAD_LEFT) ?></span>
-        <div class="md-track-cover"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="96" height="96" onerror="this.style.display='none'"><?php endif; ?></div>
-        <div class="md-track-info"><strong><?= demo_e($track['track_name']) ?></strong><span><?= demo_e($track['artist_name']) ?></span></div>
-        <span class="md-track-category">HOT TRACK / DESEO</span>
-        <?php if ($href): ?><a class="md-circle-link" href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ' ' . $track['track_name']) ?>"><span class="md-ui-arrow" aria-hidden="true"></span></a><?php endif; ?>
-      </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-
-<section class="md-section md-playlists" id="playlists">
-  <div class="md-shell">
-    <div class="md-section-top"><span class="md-index">DESEO CURATED</span><span>LISTEN BEYOND RADIO</span></div>
-    <div class="md-section-heading"><h2>CHOOSE<br><em>YOUR MOOD.</em></h2><p><?= demo_e($copy['playlists_sub']) ?></p></div>
-    <?php if (!$playlists): ?><p class="md-list-empty"><?= demo_e($copy['empty_playlists']) ?></p><?php endif; ?>
-    <div class="md-playlist-grid">
-      <?php foreach (array_slice($playlists, 0, 6) as $playlist):
-        $href = demo_url($playlist['spotify_url'] ?? '');
-        $cover = demo_url($playlist['artwork_url'] ?? '');
-      ?>
-      <div class="md-playlist">
-        <?php if ($href): ?><a href="<?= demo_e($href) ?>" target="_blank" rel="noopener noreferrer" aria-label="<?= demo_e($copy['open'] . ': ' . $playlist['title']) ?>"><?php endif; ?>
-          <div class="md-playlist-art"><?php if ($cover): ?><img src="<?= demo_e($cover) ?>" alt="" loading="lazy" decoding="async" fetchpriority="low" width="400" height="400" onerror="this.style.display='none'"><?php endif; ?><span class="md-playlist-arrow"><i class="md-ui-arrow" aria-hidden="true"></i></span></div>
-          <div class="md-playlist-meta"><span>DESEO SELECTION / <?= demo_e(str_pad((string)(int)($playlist['position'] ?? 0), 2, '0', STR_PAD_LEFT)) ?></span><strong><?= demo_e($playlist['title']) ?></strong></div>
-        <?php if ($href): ?></a><?php endif; ?>
-      </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
 
 <section class="md-section md-shows" id="shows">
   <div class="md-shell md-shows-grid">
