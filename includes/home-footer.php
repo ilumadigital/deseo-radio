@@ -1,4 +1,4 @@
-<?php /* Shared redesign footer for / and /mydemo */ ?>
+<?php /* Production redesign footer */ ?>
 <footer class="md-footer" id="contact">
   <div class="md-shell">
     <div class="md-footer-top">
@@ -7,7 +7,7 @@
     </div>
     <div class="md-footer-main">
       <div class="md-footer-identity">
-        <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="/assets/img/deseoradio-logo.png" alt="Deseo Radio" width="175" height="50" loading="lazy" decoding="async"></a>
+        <a class="md-footer-logo" href="#home" aria-label="Deseo Radio — home"><img src="<?= deseo_e($brandLogoUrl) ?>" alt="Deseo Radio" width="175" height="50" loading="lazy" decoding="async"></a>
         <p class="md-footer-eyebrow">STAY TUNED. KEEP FEELING.</p>
         <h2 class="md-footer-statement">THE<br><span class="md-footer-soundtrack">SOUNDTRACK</span><br><em>OF YOUR</em><br>LIFE</h2>
       </div>
