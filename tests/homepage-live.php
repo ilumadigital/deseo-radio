@@ -93,4 +93,32 @@ if (!str_contains($contextJs, "document.addEventListener('contextmenu'") ||
     fwrite(STDERR, "Context-menu or shortcut deterrent assets missing\n");
     exit(1);
 }
+/* Brand-cache regression: F5 must use content-addressed imagery, not the
+   previously cached unversioned logo URL, and PWA cache must prefer network. */
+if (substr_count($html, '/assets/img/deseoradio-logo.png?v=') < 4 ||
+    str_contains($html, 'src="/assets/img/deseoradio-logo.png"') ||
+    !str_contains($html, 'rel="preload" href="/assets/img/deseoradio-logo.png?v=') ||
+    !str_contains($html, '/assets/js/home.js?v=') ||
+    str_contains($html, '/assets/js/mydemo.js') ||
+    str_contains($html, '/mydemo.php') ||
+    !str_contains((string)file_get_contents(dirname(__DIR__) . '/index.php'), "includes/homepage.php")) {
+    fwrite(STDERR, "Stale logo, retired preview, or missing production bundle detected\n");
+    exit(1);
+}
+$worker = (string)file_get_contents(dirname(__DIR__) . '/sw.js');
+$rules = (string)file_get_contents(dirname(__DIR__) . '/.htaccess');
+$robots = (string)file_get_contents(dirname(__DIR__) . '/robots.txt');
+$renderer = (string)file_get_contents(dirname(__DIR__) . '/includes/homepage.php');
+if (!str_contains($worker, 'deseo-static-v10') ||
+    !str_contains($worker, "fetch(request, { cache: 'no-cache' })") ||
+    !str_contains($worker, 'assets/js/home.js') ||
+    !str_contains($renderer, "hash_file('sha256', \$brandLogoPath)") ||
+    !str_contains($rules, 'RewriteRule ^mydemo') ||
+    !str_contains($rules, '[R=301,L,NE]') ||
+    str_contains($robots, 'Disallow: /mydemo') ||
+    !str_contains((string)file_get_contents(dirname(__DIR__) . '/manifest.json'), '20261010-s6') ||
+    is_file(dirname(__DIR__) . '/mydemo.php')) {
+    fwrite(STDERR, "PWA cache, retired preview redirect or brand version contract broken\n");
+    exit(1);
+}
 echo "Production home: SEO canonicals/OG/hreflang/JSON-LD, CMS content, Signal, consent and legacy feed OK\n";
