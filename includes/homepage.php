@@ -269,12 +269,12 @@ $live_dj = $live['row'] ?? null;
       <div class="md-fs-menu-nav"><h2 class="md-fs-menu-title" id="md-fs-menu-title"><span class="md-fs-title-line"><span class="md-fs-title-outline">THE</span> <span class="md-fs-title-red">SOUNDTRACK</span></span><span class="md-fs-title-line"><span class="md-fs-title-outline">OF YOUR</span> <span class="md-fs-title-white">LIFE</span></span></h2>
         <nav class="md-fs-menu-links" aria-label="Deseo Radio sections">
           <a href="#player"><span class="md-fs-menu-count">01</span>JUST LISTEN<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#listen-everywhere"><span class="md-fs-menu-count">02</span>PARTNERS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#about"><span class="md-fs-menu-count">03</span>ABOUT US<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#lineup"><span class="md-fs-menu-count">04</span>LINEUP<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#schedule"><span class="md-fs-menu-count">05</span>PROGRAM<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#tracks"><span class="md-fs-menu-count">06</span>RELEASE RADAR<span class="md-fs-link-mark" aria-hidden="true"></span></a>
-          <a href="#playlists"><span class="md-fs-menu-count">07</span>PLAYLISTS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#schedule"><span class="md-fs-menu-count">02</span>PROGRAM<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#lineup"><span class="md-fs-menu-count">03</span>LINEUP<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#tracks"><span class="md-fs-menu-count">04</span>RELEASE RADAR<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#playlists"><span class="md-fs-menu-count">05</span>PLAYLISTS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#listen-everywhere"><span class="md-fs-menu-count">06</span>PLATFORMS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
+          <a href="#about"><span class="md-fs-menu-count">07</span>ABOUT US<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="#shows"><span class="md-fs-menu-count">08</span>RADIOSHOWS<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="#faq"><span class="md-fs-menu-count">09</span>FAQ<span class="md-fs-link-mark" aria-hidden="true"></span></a>
           <a href="mailto:radio@iluma.gr"><span class="md-fs-menu-count">10</span>CONTACT<span class="md-fs-link-mark" aria-hidden="true"></span></a>
@@ -615,12 +615,12 @@ $live_dj = $live['row'] ?? null;
   <div class="deseo-context-links">
     <a role="menuitem" href="#player"><?= $en ? 'LISTEN LIVE' : 'ΑΚΟΥ LIVE' ?></a>
     <a role="menuitem" href="#live"><?= $en ? 'ON AIR NOW' : 'ΣΤΟΝ ΑΕΡΑ' ?></a>
-    <a role="menuitem" href="#listen-everywhere"><?= $en ? 'LISTEN EVERYWHERE' : 'ΑΚΟΥ ΠΑΝΤΟΥ' ?></a>
-    <a role="menuitem" href="#about"><?= $en ? 'ABOUT DESEO' : 'ABOUT DESEO' ?></a>
-    <a role="menuitem" href="#lineup">SEASON 6 LINEUP</a>
     <a role="menuitem" href="#schedule"><?= $en ? 'WEEKLY PROGRAM' : 'ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ' ?></a>
+    <a role="menuitem" href="#lineup">SEASON 6 LINEUP</a>
     <a role="menuitem" href="#tracks">RELEASE RADAR</a>
     <a role="menuitem" href="#playlists">PLAYLISTS</a>
+    <a role="menuitem" href="#listen-everywhere"><?= $en ? 'LISTEN EVERYWHERE' : 'ΑΚΟΥ ΠΑΝΤΟΥ' ?></a>
+    <a role="menuitem" href="#about">ABOUT DESEO</a>
     <a role="menuitem" href="#shows">RADIOSHOWS</a>
     <a role="menuitem" href="#faq">FAQ</a>
     <a role="menuitem" href="#ask-ai">ASK AI</a>
