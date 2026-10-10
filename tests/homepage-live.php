@@ -129,12 +129,12 @@ $orderedSections = [
     '<section class="md-section md-season" id="lineup">',
     '<section class="md-section md-tracks" id="tracks">',
     '<section class="md-section md-playlists" id="playlists">',
-    '<section class="md-section md-listen-everywhere" id="listen-everywhere">',
-    '<section class="md-section md-about-experience" id="about">',
+    '<section class="md-section md-listen-everywhere" id="listen-everywhere"',
+    '<section class="md-section md-about-experience" id="about"',
     '<div class="md-marquee"',
     '<section class="md-section md-shows" id="shows">',
     '<section class="md-manifesto"',
-    '<section class="md-section md-faq-section" id="faq">',
+    '<section class="md-section md-faq-section" id="faq"',
     '<div class="md-ai-wrap">',
 ];
 $lastOffset = -1;
